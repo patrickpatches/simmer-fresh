@@ -190,9 +190,9 @@ const RECIPES=[
   heroColor:'#8B4513',
   heroImg:'https://images.unsplash.com/photo-MNHQqLNEvow?w=600&q=80',
   ingredients:[
-    {id:'i1',name:'Beef mince (80/20 fat)',amount:200,unit:'g',scales:'linear',notes:'Fat ratio is non-negotiable — leaner beef steams instead of crisping'},
+    {id:'i1',name:'Beef mince (80/20 fat)',amount:200,unit:'g',scales:'linear',notes:'Fat ratio is non-negotiable — leaner beef steams instead of crisping',substitutions:[{"ingredient":"Beef mince 70/30","notes":"Fattier — more flavour but more shrinkage. Classic smash burger territory.","quality":"good"},{"ingredient":"Beef mince 90/10","notes":"Too lean — the burger won't develop the crust and will taste dry. Avoid if possible.","quality":"compromise"}]},
     {id:'i2',name:'Burger buns (brioche)',amount:1,unit:'',scales:'linear'},
-    {id:'i3',name:'American cheese slices',amount:2,unit:'',scales:'linear'},
+    {id:'i3',name:'American cheese slices',amount:2,unit:'',scales:'linear',substitutions:[{"ingredient":"Gouda slices","notes":"Melts beautifully, slightly nuttier. Works very well.","quality":"good"},{"ingredient":"Cheddar slices","notes":"Stronger flavour, less melty. Still good but less classic.","quality":"compromise"}]},
     {id:'i4',name:'White onion, finely diced',amount:30,unit:'g',scales:'linear'},
     {id:'i5',name:'Dill pickles',amount:4,unit:'slices',scales:'linear'},
     {id:'i6',name:'Burger sauce (mayo + ketchup + mustard)',amount:2,unit:'tbsp',scales:'fixed'},
@@ -257,10 +257,10 @@ const RECIPES=[
   heroImg:'https://images.unsplash.com/photo-IJHleRLpROU?w=600&q=80',
   ingredients:[
     {id:'i1',name:'Spaghetti or rigatoni',amount:160,unit:'g',scales:'linear'},
-    {id:'i2',name:'Guanciale (or pancetta)',amount:100,unit:'g',scales:'linear'},
-    {id:'i3',name:'Egg yolks',amount:3,unit:'',scales:'linear'},
+    {id:'i2',name:'Guanciale (or pancetta)',amount:100,unit:'g',scales:'linear',substitutions:[{"ingredient":"Pancetta","notes":"Closest substitute — cured pork, slightly less fatty and intense but near-identical.","quality":"good"},{"ingredient":"Streaky bacon","notes":"Smoked flavour changes the dish noticeably. Blanch first to reduce smokiness if possible.","quality":"compromise"}]},
+    {id:'i3',name:'Egg yolks',amount:3,unit:'',scales:'linear',substitutions:[{"ingredient":"Whole eggs","notes":"Use 2 whole eggs instead of 4 yolks. Slightly less rich and creamy but still good.","quality":"compromise"}]},
     {id:'i4',name:'Whole egg',amount:1,unit:'',scales:'fixed'},
-    {id:'i5',name:'Pecorino Romano, finely grated',amount:60,unit:'g',scales:'linear'},
+    {id:'i5',name:'Pecorino Romano, finely grated',amount:60,unit:'g',scales:'linear',substitutions:[{"ingredient":"Parmigiano Reggiano","notes":"Milder and nuttier — use slightly more. Italians debate this endlessly; both are valid.","quality":"good"},{"ingredient":"Half pecorino, half parmesan","notes":"The best compromise if you can't find pecorino — keeps the saltiness balanced.","quality":"good"}]},
     {id:'i6',name:'Black pepper, freshly cracked',amount:1,unit:'tsp',scales:'fixed'},
     {id:'i7',name:'Salt (for pasta water)',amount:1,unit:'tbsp',scales:'fixed'},
   ],
@@ -358,15 +358,15 @@ const RECIPES=[
   heroColor:'#8B3A1A',
   heroImg:'https://images.unsplash.com/photo-GFe_mtZTOSY?w=600&q=80',
   ingredients:[
-    {id:'i1',name:'Whole chicken, jointed into 8 pieces',amount:1.6,unit:'kg',scales:'linear'},
+    {id:'i1',name:'Whole chicken, jointed into 8 pieces',amount:1.6,unit:'kg',scales:'linear',substitutions:[{"ingredient":"Chicken thighs (bone-in skin-on)","notes":"Easier to find and more forgiving — the skin crisps beautifully under the sumac rub.","quality":"good"},{"ingredient":"Chicken drumsticks","notes":"Similar fat content, slightly less even cooking. Works well.","quality":"good"}]},
     {id:'i2',name:'Yellow onions, thinly sliced',amount:1,unit:'kg',scales:'linear',notes:'The onions are half the dish — do not reduce them'},
-    {id:'i3',name:'Sumac',amount:5,unit:'tbsp',scales:'linear',notes:'Sumac is the defining flavour. Use a fresh, vivid-red one — stale sumac tastes of nothing'},
+    {id:'i3',name:'Sumac',amount:5,unit:'tbsp',scales:'linear',notes:'Sumac is the defining flavour. Use a fresh, vivid-red one — stale sumac tastes of nothing',substitutions:[{"ingredient":"Za'atar","notes":"More herbal and savoury — adds the sourness differently. Works beautifully.","quality":"good"},{"ingredient":"Lemon zest + mild paprika (1:1)","notes":"Recreates the tartness and colour but loses the deep berry note of sumac.","quality":"compromise"}]},
     {id:'i4',name:'Extra virgin olive oil',amount:120,unit:'ml',scales:'linear',notes:'Palestinian olive oil if you can find it'},
     {id:'i5',name:'Ground allspice',amount:1,unit:'tsp',scales:'fixed'},
     {id:'i6',name:'Ground cinnamon',amount:0.5,unit:'tsp',scales:'fixed'},
     {id:'i7',name:'Ground cardamom',amount:0.5,unit:'tsp',scales:'fixed'},
-    {id:'i8',name:'Flatbread or taboon (or thick pittas)',amount:4,unit:'large',scales:'linear',notes:'Taboon is traditional — the bread soaks up the onion and chicken juices underneath'},
-    {id:'i9',name:'Pine nuts, toasted',amount:60,unit:'g',scales:'linear'},
+    {id:'i8',name:'Flatbread or taboon (or thick pittas)',amount:4,unit:'large',scales:'linear',notes:'Taboon is traditional — the bread soaks up the onion and chicken juices underneath',substitutions:[{"ingredient":"Lebanese flatbread or pita","notes":"Slightly thinner and crispier, but absorbs the onion juice just fine.","quality":"good"},{"ingredient":"Sourdough flatbread","notes":"Sturdier with a slight tang — changes the feel but still delicious.","quality":"compromise"}]},
+    {id:'i9',name:'Pine nuts, toasted',amount:60,unit:'g',scales:'linear',substitutions:[{"ingredient":"Almonds, roughly chopped","notes":"Toast in a dry pan first. Different texture but adds the required crunch.","quality":"good"},{"ingredient":"Omit","notes":"The pine nuts add richness and crunch — the dish is still complete without them.","quality":"good"}]},
   ],
   steps:[
     {id:'s1',title:'Spice-rub and roast the chicken',content:'Mix half the sumac with allspice, cinnamon, cardamom, salt, and 3 tbsp olive oil. Rub all over chicken pieces. Roast at 200°C for 35–40 minutes until skin is deep golden and juices run clear.',timer:2100,why:'The spice rub forms a crust that carries sumac\'s tartness directly on the skin. The acid in sumac also slightly tenderises the surface proteins. Roasting at 200°C gets the skin crisp before the inside overcooks.'},
@@ -392,7 +392,7 @@ const RECIPES=[
   heroColor:'#8B4A1A',
   heroImg:'https://images.unsplash.com/photo-WHtVB-RiW2I?w=600&q=80',
   ingredients:[
-    {id:'i1',name:'Lamb mince (or beef/lamb mix)',amount:500,unit:'g',scales:'linear',notes:'Higher fat content = juicier kafta. Ask for 20% fat'},
+    {id:'i1',name:'Lamb mince (or beef/lamb mix)',amount:500,unit:'g',scales:'linear',notes:'Higher fat content = juicier kafta. Ask for 20% fat',substitutions:[{"ingredient":"Beef mince (80/20)","notes":"Slightly less rich but works well. Use the same ratio of fat for best results.","quality":"good"},{"ingredient":"Half lamb, half beef","notes":"Best of both — keeps the lamb flavour while reducing cost and intensity.","quality":"good"}]},
     {id:'i2',name:'Onion, very finely grated',amount:1,unit:'medium',scales:'linear',notes:'Grated, not chopped — the juice is what you want, not chunks'},
     {id:'i3',name:'Flat-leaf parsley, very finely chopped',amount:30,unit:'g',scales:'linear'},
     {id:'i4',name:'Ground allspice',amount:1,unit:'tsp',scales:'fixed'},
@@ -428,9 +428,9 @@ const RECIPES=[
   heroColor:'#C4A04A',
   heroImg:'https://images.unsplash.com/photo-n5I4Ix008-0?w=600&q=80',
   ingredients:[
-    {id:'i1',name:'Dried chickpeas',amount:250,unit:'g',scales:'linear',notes:'Tinned chickpeas make edible hummus. They do not make good hummus.'},
-    {id:'i2',name:'Good tahini (Palestinian or Lebanese)',amount:120,unit:'ml',scales:'linear',notes:'Brand matters enormously. Bitter or thin tahini ruins hummus. Taste it raw first — it should be nutty, not bitter.'},
-    {id:'i3',name:'Lemon juice, freshly squeezed',amount:60,unit:'ml',scales:'linear'},
+    {id:'i1',name:'Dried chickpeas',amount:250,unit:'g',scales:'linear',notes:'Tinned chickpeas make edible hummus. They do not make good hummus.',substitutions:[{"ingredient":"Tinned chickpeas","notes":"Saves 8 hours — use 2 tins (800g drained). Texture is slightly less silky but very close.","quality":"good"}]},
+    {id:'i2',name:'Good tahini (Palestinian or Lebanese)',amount:120,unit:'ml',scales:'linear',notes:'Brand matters enormously. Bitter or thin tahini ruins hummus. Taste it raw first — it should be nutty, not bitter.',substitutions:[{"ingredient":"Sunflower seed butter","notes":"Nut-free alternative — nuttier, slightly darker. Flavour change is noticeable.","quality":"compromise"},{"ingredient":"Extra olive oil","notes":"Lose the sesame depth but keep the creaminess. Add a pinch more salt to compensate.","quality":"compromise"}]},
+    {id:'i3',name:'Lemon juice, freshly squeezed',amount:60,unit:'ml',scales:'linear',substitutions:[{"ingredient":"White wine vinegar","notes":"Use half the amount. Lacks the brightness of lemon but adds acidity.","quality":"compromise"}]},
     {id:'i4',name:'Garlic cloves',amount:2,unit:'',scales:'fixed'},
     {id:'i5',name:'Ice-cold water',amount:60,unit:'ml',scales:'custom'},
     {id:'i6',name:'Bicarbonate of soda',amount:0.5,unit:'tsp',scales:'fixed',notes:'Added to the cooking water — it softens the chickpea skins and lets them blend ultra-smooth'},
@@ -471,10 +471,10 @@ const RECIPES=[
     {id:'i6',name:'Spring onions, sliced',amount:4,unit:'',scales:'linear'},
     {id:'i7',name:'Flat-leaf parsley',amount:20,unit:'g',scales:'linear'},
     {id:'i8',name:'Fresh mint leaves',amount:10,unit:'g',scales:'linear'},
-    {id:'i9',name:'Sumac',amount:2,unit:'tsp',scales:'fixed',notes:'This is the flavour of the dish — don\'t reduce it'},
+    {id:'i9',name:'Sumac',amount:2,unit:'tsp',scales:'fixed',notes:'This is the flavour of the dish — don\'t reduce it',substitutions:[{"ingredient":"Lemon zest + pinch of salt","notes":"Adds tartness but loses the distinctive sumac flavour.","quality":"compromise"},{"ingredient":"Za'atar","notes":"Different flavour profile but works well with the salad herbs.","quality":"good"}]},
     {id:'i10',name:'Lemon juice',amount:3,unit:'tbsp',scales:'fixed'},
     {id:'i11',name:'Extra virgin olive oil',amount:4,unit:'tbsp',scales:'fixed'},
-    {id:'i12',name:'Pomegranate molasses',amount:1,unit:'tsp',scales:'fixed',notes:'Optional but traditional — adds depth and sourness'},
+    {id:'i12',name:'Pomegranate molasses',amount:1,unit:'tsp',scales:'fixed',notes:'Optional but traditional — adds depth and sourness',substitutions:[{"ingredient":"Tamarind paste","notes":"Similar sweet-sour intensity — use the same amount.","quality":"good"},{"ingredient":"Lemon juice + 1 tsp honey","notes":"Much simpler. Loses the complexity but keeps the balance.","quality":"compromise"}]},
   ],
   steps:[
     {id:'s1',title:'Fry the bread until shatteringly crisp',content:'Tear pitta into rough pieces. Shallow-fry in olive oil over medium-high heat until deep golden and rigid. Drain on paper. Season with salt immediately.',timer:null,why:'The fried bread needs to stay crunchy even after dressing — this only works with stale pitta fried in enough oil at high enough heat. Baked croutons go soft faster. Season while hot because salt sticks to hot, oily surfaces.'},
@@ -670,12 +670,12 @@ const RECIPES=[
   heroImg:'https://images.unsplash.com/photo-ZjZJfpWQibs?w=600&q=80',
   ingredients:[
     {id:'i1',name:'Chicken thighs, sliced',amount:600,unit:'g',scales:'linear'},
-    {id:'i2',name:'Coconut milk (full-fat)',amount:400,unit:'ml',scales:'linear',notes:'Use full fat — light coconut milk breaks and looks watery'},
-    {id:'i3',name:'Green curry paste',amount:3,unit:'tbsp',scales:'fixed'},
+    {id:'i2',name:'Coconut milk (full-fat)',amount:400,unit:'ml',scales:'linear',notes:'Use full fat — light coconut milk breaks and looks watery',substitutions:[{"ingredient":"Coconut cream","notes":"Richer and thicker — dilute slightly with water or stock.","quality":"good"},{"ingredient":"Evaporated milk + 1 tsp coconut extract","notes":"Not the same but works in a pinch. Reduce by a third for richness.","quality":"compromise"}]},
+    {id:'i3',name:'Green curry paste',amount:3,unit:'tbsp',scales:'fixed',substitutions:[{"ingredient":"Red curry paste","notes":"Different colour and slightly hotter, but similar depth. Changes the dish name but not the technique.","quality":"good"}]},
     {id:'i4',name:'Thai aubergine or courgette',amount:200,unit:'g',scales:'linear'},
     {id:'i5',name:'Fish sauce',amount:2,unit:'tbsp',scales:'fixed'},
     {id:'i6',name:'Palm sugar or brown sugar',amount:1,unit:'tsp',scales:'fixed'},
-    {id:'i7',name:'Kaffir lime leaves',amount:4,unit:'',scales:'fixed'},
+    {id:'i7',name:'Kaffir lime leaves',amount:4,unit:'',scales:'fixed',substitutions:[{"ingredient":"Lime zest","notes":"Add zest of 1 lime. Loses the floral note but keeps the citrus brightness.","quality":"compromise"}]},
     {id:'i8',name:'Thai basil',amount:1,unit:'handful',scales:'fixed'},
     {id:'i9',name:'Neutral oil',amount:2,unit:'tbsp',scales:'fixed'},
   ],
@@ -707,9 +707,9 @@ const RECIPES=[
     {id:'i1',name:'Yellow onions, thinly sliced',amount:1.5,unit:'kg',scales:'linear',notes:'They cook down to a quarter of their volume — this amount is correct'},
     {id:'i2',name:'Unsalted butter',amount:60,unit:'g',scales:'fixed'},
     {id:'i3',name:'Olive oil',amount:2,unit:'tbsp',scales:'fixed'},
-    {id:'i4',name:'Dry white wine or vermouth',amount:150,unit:'ml',scales:'linear'},
+    {id:'i4',name:'Dry white wine or vermouth',amount:150,unit:'ml',scales:'linear',substitutions:[{"ingredient":"Dry vermouth","notes":"More aromatic but works very well. Use the same amount.","quality":"good"},{"ingredient":"Extra beef stock + splash of white wine vinegar","notes":"Loses the wine complexity but keeps the balance.","quality":"compromise"}]},
     {id:'i5',name:'Good beef stock',amount:1.2,unit:'L',scales:'linear'},
-    {id:'i6',name:'Gruyère, grated',amount:200,unit:'g',scales:'linear'},
+    {id:'i6',name:'Gruyère, grated',amount:200,unit:'g',scales:'linear',substitutions:[{"ingredient":"Comté","notes":"Very similar — slightly fruitier. Excellent substitute.","quality":"good"},{"ingredient":"Emmental","notes":"Milder and stringier when melted. Works but lacks the nuttiness.","quality":"compromise"},{"ingredient":"Jarlsberg","notes":"Widely available in Australia — nutty and melts well. A solid everyday choice.","quality":"good"}]},
     {id:'i7',name:'Sourdough bread, sliced',amount:4,unit:'thick slices',scales:'linear'},
     {id:'i8',name:'Fresh thyme',amount:4,unit:'sprigs',scales:'fixed'},
     {id:'i9',name:'Bay leaves',amount:2,unit:'',scales:'fixed'},
@@ -738,11 +738,11 @@ const RECIPES=[
   heroColor:'#C87020',
   heroImg:'https://images.unsplash.com/photo-q3b2-eyrKr4?w=600&q=80',
   ingredients:[
-    {id:'i1',name:'Flat rice noodles (5mm)',amount:160,unit:'g',scales:'linear'},
+    {id:'i1',name:'Flat rice noodles (5mm)',amount:160,unit:'g',scales:'linear',substitutions:[{"ingredient":"Glass noodles","notes":"Different texture — more transparent and springy. Still delicious.","quality":"good"}]},
     {id:'i2',name:'Prawns or chicken, sliced',amount:200,unit:'g',scales:'linear'},
     {id:'i3',name:'Eggs',amount:2,unit:'',scales:'linear'},
-    {id:'i4',name:'Tamarind paste',amount:3,unit:'tbsp',scales:'fixed',notes:'Ketchup is not a substitute — it changes the dish entirely'},
-    {id:'i5',name:'Fish sauce',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i4',name:'Tamarind paste',amount:3,unit:'tbsp',scales:'fixed',notes:'Ketchup is not a substitute — it changes the dish entirely',substitutions:[{"ingredient":"Lime juice + brown sugar (1:1)","notes":"Simpler but achieves the sweet-sour balance. Use slightly less.","quality":"good"},{"ingredient":"Rice wine vinegar + palm sugar","notes":"A good sub — vinegar provides the sour note, palm sugar the caramel depth.","quality":"good"}]},
+    {id:'i5',name:'Fish sauce',amount:2,unit:'tbsp',scales:'fixed',substitutions:[{"ingredient":"Soy sauce + few drops of lime juice","notes":"Loses the depth of fermented fish but keeps the salt-sour balance.","quality":"compromise"},{"ingredient":"Tamari (for GF)","notes":"Same as soy but gluten-free. Works well here.","quality":"good"}]},
     {id:'i6',name:'Palm sugar',amount:1,unit:'tbsp',scales:'fixed'},
     {id:'i7',name:'Bean sprouts',amount:80,unit:'g',scales:'linear'},
     {id:'i8',name:'Spring onions, sliced',amount:3,unit:'',scales:'linear'},
@@ -810,12 +810,12 @@ const RECIPES=[
   heroImg:'https://images.unsplash.com/photo-rAyCBQTH7ws?w=600&q=80',
   ingredients:[
     {id:'i1',name:'Ramen noodles, fresh or dried',amount:160,unit:'g',scales:'linear'},
-    {id:'i2',name:'Good chicken stock',amount:800,unit:'ml',scales:'linear'},
+    {id:'i2',name:'Good chicken stock',amount:800,unit:'ml',scales:'linear',substitutions:[{"ingredient":"Dashi stock","notes":"More traditional Japanese base — much lighter and cleaner than chicken stock.","quality":"good"},{"ingredient":"Vegetable stock + 1 tsp miso","notes":"Works for a lighter broth. Add soy to taste.","quality":"compromise"}]},
     {id:'i3',name:'Soy sauce (tare)',amount:3,unit:'tbsp',scales:'fixed'},
-    {id:'i4',name:'Mirin',amount:1,unit:'tbsp',scales:'fixed'},
+    {id:'i4',name:'Mirin',amount:1,unit:'tbsp',scales:'fixed',substitutions:[{"ingredient":"Dry sherry + pinch of sugar","notes":"Very close in flavour profile. Use the same amount.","quality":"good"},{"ingredient":"Rice wine vinegar + sugar (1:1)","notes":"Less sweet complexity but adds the acidity needed.","quality":"compromise"}]},
     {id:'i5',name:'Sesame oil',amount:1,unit:'tsp',scales:'fixed'},
     {id:'i6',name:'Eggs (for soft-boiled)',amount:2,unit:'',scales:'linear'},
-    {id:'i7',name:'Chashu pork belly (or roasted pork)',amount:100,unit:'g',scales:'linear'},
+    {id:'i7',name:'Chashu pork belly (or roasted pork)',amount:100,unit:'g',scales:'linear',substitutions:[{"ingredient":"Roasted chicken thigh","notes":"Completely different flavour but just as satisfying. Slice thin and lay on top.","quality":"good"},{"ingredient":"Soft-boiled egg only","notes":"A vegetarian-friendly bowl — the marinated eggs carry the protein load.","quality":"compromise"}]},
     {id:'i8',name:'Spring onions',amount:3,unit:'stalks',scales:'linear'},
     {id:'i9',name:'Nori sheets',amount:2,unit:'',scales:'linear'},
     {id:'i10',name:'Bamboo shoots',amount:40,unit:'g',scales:'linear'},
@@ -878,7 +878,7 @@ const RECIPES=[
   heroColor:'#C4843A',
   heroImg:'https://images.unsplash.com/photo-aq8v45EwCa0?w=600&q=80',
   ingredients:[
-    {id:'i1',name:'Red lentils',amount:250,unit:'g',scales:'linear'},
+    {id:'i1',name:'Red lentils',amount:250,unit:'g',scales:'linear',substitutions:[{"ingredient":"Yellow split peas","notes":"Takes longer to cook (40 min). Similar texture when done.","quality":"good"},{"ingredient":"Green lentils","notes":"Hold their shape more — different texture but same spice profile works.","quality":"compromise"}]},
     {id:'i2',name:'Onion, thinly sliced',amount:1,unit:'large',scales:'linear'},
     {id:'i3',name:'Tomatoes, chopped',amount:2,unit:'',scales:'linear'},
     {id:'i4',name:'Garlic cloves',amount:4,unit:'',scales:'linear'},
@@ -887,7 +887,7 @@ const RECIPES=[
     {id:'i7',name:'Cumin seeds',amount:1,unit:'tsp',scales:'fixed'},
     {id:'i8',name:'Mustard seeds',amount:1,unit:'tsp',scales:'fixed'},
     {id:'i9',name:'Dried red chillies',amount:2,unit:'',scales:'fixed'},
-    {id:'i10',name:'Ghee or clarified butter',amount:3,unit:'tbsp',scales:'fixed'},
+    {id:'i10',name:'Ghee or clarified butter',amount:3,unit:'tbsp',scales:'fixed',substitutions:[{"ingredient":"Unsalted butter","notes":"Less aromatic without the milk solids removed, but works well. Don't let it burn.","quality":"good"},{"ingredient":"Coconut oil","notes":"Adds a mild coconut fragrance. Neutral choice for dairy-free.","quality":"compromise"}]},
     {id:'i11',name:'Garam masala',amount:0.5,unit:'tsp',scales:'fixed'},
   ],
   steps:[
@@ -951,11 +951,11 @@ const RECIPES=[
     {id:'i6',name:'Ground coriander',amount:2,unit:'tsp',scales:'fixed'},
     {id:'i7',name:'Garam masala',amount:2,unit:'tsp',scales:'fixed'},
     {id:'i8',name:'Ground turmeric',amount:1,unit:'tsp',scales:'fixed'},
-    {id:'i9',name:'Kashmiri chilli powder',amount:2,unit:'tsp',scales:'fixed',notes:'Gives deep red colour without excessive heat — sweet paprika works if unavailable'},
+    {id:'i9',name:'Kashmiri chilli powder',amount:2,unit:'tsp',scales:'fixed',notes:'Gives deep red colour without excessive heat — sweet paprika works if unavailable',substitutions:[{"ingredient":"Mild paprika + cayenne (4:1)","notes":"Paprika gives the colour, cayenne gives the heat. Very close to the original.","quality":"good"}]},
     {id:'i10',name:'Unsalted butter',amount:60,unit:'g',scales:'fixed'},
     {id:'i11',name:'Brown onion, finely diced',amount:200,unit:'g',scales:'linear'},
-    {id:'i12',name:'Ripe tomatoes, roughly chopped',amount:600,unit:'g',scales:'linear'},
-    {id:'i13',name:'Pure cream',amount:150,unit:'ml',scales:'linear'},
+    {id:'i12',name:'Ripe tomatoes, roughly chopped',amount:600,unit:'g',scales:'linear',substitutions:[{"ingredient":"Tinned crushed tomatoes (400ml)","notes":"Very close — slightly more acidic. May need a pinch of sugar to balance.","quality":"good"},{"ingredient":"Passata (300ml)","notes":"Smooth and consistent. Reduces a little faster — adjust liquid accordingly.","quality":"good"}]},
+    {id:'i13',name:'Pure cream',amount:150,unit:'ml',scales:'linear',substitutions:[{"ingredient":"Coconut cream","notes":"Adds a mild coconut flavour — delicious but changes the dish character.","quality":"good"},{"ingredient":"Full-fat yoghurt","notes":"Add off the heat only — do not boil or it will split. Tangier result.","quality":"compromise"}]},
     {id:'i14',name:'Salt',amount:1.5,unit:'tsp',scales:'fixed'},
     {id:'i15',name:'Neutral oil',amount:2,unit:'tbsp',scales:'fixed'},
   ],
@@ -1271,10 +1271,10 @@ const RECIPES=[
     {id:'i3',name:'Carrot, fine dice',amount:1,unit:'medium',scales:'linear'},
     {id:'i4',name:'Celery stalk, fine dice',amount:1,unit:'stalk',scales:'linear'},
     {id:'i5',name:'Garlic cloves, minced',amount:3,unit:'cloves',scales:'fixed'},
-    {id:'i6',name:'Beef mince (80/20)',amount:400,unit:'g',scales:'linear'},
+    {id:'i6',name:'Beef mince (80/20)',amount:400,unit:'g',scales:'linear',substitutions:[{"ingredient":"Half beef, half pork mince","notes":"Traditional Bolognese uses a mix — richer and more complex.","quality":"good"},{"ingredient":"Lamb mince","notes":"Gamier flavour, pairs well with the red wine. A valid variation.","quality":"good"}]},
     {id:'i7',name:'Pork mince',amount:200,unit:'g',scales:'linear'},
     {id:'i8',name:'Whole milk',amount:200,unit:'ml',scales:'linear'},
-    {id:'i9',name:'Dry red wine',amount:200,unit:'ml',scales:'linear'},
+    {id:'i9',name:'Dry red wine',amount:200,unit:'ml',scales:'linear',substitutions:[{"ingredient":"Beef stock + 1 tsp red wine vinegar","notes":"Loses the depth wine adds but keeps the liquid balance. Simmer a little longer.","quality":"compromise"}]},
     {id:'i10',name:'Tinned whole tomatoes',amount:400,unit:'g',scales:'linear'},
     {id:'i11',name:'Beef stock',amount:300,unit:'ml',scales:'linear'},
     {id:'i12',name:'Bay leaves',amount:2,unit:'',scales:'fixed'},
@@ -1488,7 +1488,7 @@ const RECIPES=[
   ingredients:[
     {id:'i1',name:'Jasmine rice, rinsed',amount:400,unit:'g',scales:'linear'},
     {id:'i2',name:'Coconut milk, full-fat',amount:400,unit:'ml',scales:'linear'},
-    {id:'i3',name:'Pandan leaves, knotted',amount:3,unit:'',scales:'fixed'},
+    {id:'i3',name:'Pandan leaves, knotted',amount:3,unit:'',scales:'fixed',substitutions:[{"ingredient":"Few drops of pandan extract","notes":"Concentrated — use sparingly. Achieves the same floral note.","quality":"good"},{"ingredient":"Omit","notes":"The rice will taste like plain coconut rice — still delicious but missing the signature pandan fragrance.","quality":"compromise"}]},
     {id:'i4',name:'Lemongrass stalks, bruised',amount:2,unit:'',scales:'fixed'},
     {id:'i5',name:'Salt',amount:0.5,unit:'tsp',scales:'fixed'},
     {id:'i6',name:'Dried anchovies (ikan bilis), heads removed',amount:60,unit:'g',scales:'linear'},
@@ -1499,7 +1499,7 @@ const RECIPES=[
     {id:'i11',name:'Dried chillies, soaked and drained',amount:20,unit:'g',scales:'linear'},
     {id:'i12',name:'Red onion, roughly chopped',amount:1,unit:'large',scales:'linear'},
     {id:'i13',name:'Garlic cloves',amount:6,unit:'',scales:'fixed'},
-    {id:'i14',name:'Belacan (shrimp paste block)',amount:20,unit:'g',scales:'fixed'},
+    {id:'i14',name:'Belacan (shrimp paste block)',amount:20,unit:'g',scales:'fixed',substitutions:[{"ingredient":"Shrimp paste (Indonesian terasi)","notes":"Very similar fermented shrimp product — almost identical result.","quality":"good"},{"ingredient":"Fish sauce + extra salt","notes":"Loses the umami depth of fermented shrimp but adds the funky saltiness.","quality":"compromise"}]},
     {id:'i15',name:'Palm sugar, grated',amount:2,unit:'tbsp',scales:'fixed'},
     {id:'i16',name:'Tamarind paste',amount:2,unit:'tbsp',scales:'fixed'},
   ],
@@ -1925,16 +1925,22 @@ function useStorage(key,init){
 
 // ─── SUBSTITUTION API ─────────────────────────────────────────────────────────
 async function fetchSubstitution(recipe,ingredient){
-  const others=recipe.ingredients.filter(i=>i.id!==ingredient.id).map(i=>i.name).slice(0,12).join(', ');
-  const prompt=`You are an experienced cook. Someone is making "${recipe.title}" (${recipe.tagline}) but is missing: ${ingredient.amount} ${ingredient.unit||''} ${ingredient.name}. Other ingredients they have: ${others}. Respond ONLY with valid JSON, no markdown, no fences:\n{"severity":"minor"|"moderate"|"critical","impact":"one honest sentence about effect","substitutions":[{"name":"substitute","amount":number,"unit":"g/ml/tbsp/etc","note":"brief reason"}],"canSkip":true|false,"skipNote":"what to do if skipping, or empty"}`;
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-  });
-  const data=await res.json();
-  const text=data.content?.find(b=>b.type==='text')?.text||'{}';
-  return JSON.parse(text.replace(/```json|```/g,'').trim());
+  // Phase 5: use pre-baked substitutions on the ingredient object when available.
+  // The AI call below requires a backend proxy — it will fail from a browser context.
+  if(ingredient.substitutions&&ingredient.substitutions.length>0){
+    const subs=ingredient.substitutions;
+    const hasCompromise=subs.some(s=>s.quality==='compromise');
+    const allGood=subs.every(s=>s.quality==='good');
+    return{
+      severity: allGood?'minor':hasCompromise?'moderate':'minor',
+      impact: `${ingredient.name} has ${subs.length} verified swap${subs.length>1?'s':''}. Tap one to use it.`,
+      substitutions: subs.map(s=>({name:s.ingredient,amount:null,unit:'',note:s.notes,quality:s.quality})),
+      canSkip: ingredient.canSkip||false,
+      skipNote: ingredient.skipNote||'',
+    };
+  }
+  // No pre-baked data — inform the user clearly instead of spinning forever
+  throw new Error('No substitution data for this ingredient yet.');
 }
 
 // ─── STEP TIMER ──────────────────────────────────────────────────────────────
@@ -2028,8 +2034,12 @@ function SubstitutionSheet({recipe,ingredient,onClose,onApply}){
           </div>
           <button onClick={onClose} aria-label="Close" className="press w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{background:T.border}}><Icon name="x" size={16}/></button>
         </div>
-        {loading&&<div className="flex items-center gap-3 py-10 justify-center"><Icon name="loader" size={22} color={T.inkFaint}/><span className="serif-it" style={{color:T.inkFaint}}>Thinking through substitutes…</span></div>}
-        {err&&<div className="p-4 rounded-xl text-sm flex items-start gap-2" style={{background:T.paprika+'18',color:T.paprika}}><Icon name="alert" size={16} color={T.paprika}/><span>{err}</span></div>}
+        {loading&&<div className="flex items-center gap-3 py-10 justify-center"><Icon name="loader" size={22} color={T.inkFaint}/><span className="serif-it" style={{color:T.inkFaint}}>Looking up substitutes…</span></div>}
+        {err&&<div className="text-center py-10">
+          <div className="text-3xl mb-3">🔄</div>
+          <div className="serif font-bold text-[16px] mb-1">No swaps on file yet</div>
+          <div className="serif-it text-[13.5px] leading-relaxed" style={{color:T.inkFaint}}>Substitutions for this ingredient haven't been added yet. Check back after the next update.</div>
+        </div>}
         {result&&!loading&&(
           <div className="space-y-4 fade-in">
             <div className="flex items-center gap-2 p-3 rounded-xl" style={{background:(sev[result.severity]||sev.moderate).color+'18'}}>
@@ -2041,20 +2051,25 @@ function SubstitutionSheet({recipe,ingredient,onClose,onApply}){
             </div>
             {result.substitutions?.length>0&&(
               <div>
-                <div className="eyebrow mb-2">Substitutes</div>
+                <div className="eyebrow mb-2">Verified swaps</div>
                 <div className="space-y-2">
-                  {result.substitutions.map((s,i)=>(
-                    <button key={i} onClick={()=>onApply({...ingredient,name:s.name,amount:s.amount,unit:s.unit,subNote:s.note})} aria-label={`Use ${s.name} instead`} className="press w-full text-left p-3 rounded-xl flex items-center gap-3" style={{background:T.parchment,border:`1px solid ${T.border}`}}>
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{background:T.sage+'22'}}>
-                        <Icon name="swap" size={15} color={T.sage}/>
+                  {result.substitutions.map((s,i)=>{
+                    const isGood=s.quality==='good';
+                    return(
+                    <button key={i} onClick={()=>onApply({...ingredient,name:s.name,amount:s.amount||ingredient.amount,unit:s.unit||ingredient.unit,subNote:s.note})} aria-label={`Use ${s.name} instead`} className="press w-full text-left p-3.5 rounded-xl" style={{background:T.parchment,border:`1px solid ${T.border}`}}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{background:isGood?T.sage+'22':T.ochre+'22'}}>
+                          <Icon name="swap" size={14} color={isGood?T.sage:T.ochre}/>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="serif font-bold text-[15px] leading-tight">{s.name}</div>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full flex-shrink-0" style={{background:isGood?T.sage+'20':T.ochre+'20',color:isGood?T.sage:T.ochre}}>{isGood?'Good swap':'Compromise'}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="serif font-bold text-[15px] leading-tight">{s.name}</div>
-                        <div className="text-[12.5px] mt-0.5" style={{color:T.inkFaint}}><span className="font-bold num-tnum" style={{color:T.ink}}>{formatAmount(s.amount)}{s.unit?' '+s.unit:''}</span> <span className="serif-it">— {s.note}</span></div>
-                      </div>
-                      <Icon name="check" size={15} color={T.sage}/>
+                      <div className="text-[13px] leading-snug serif-it ml-11" style={{color:T.inkLight}}>{s.note}</div>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
