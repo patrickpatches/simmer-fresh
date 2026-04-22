@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Mise — Your Kitchen Companion</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;overscroll-behavior:none}
+body{font-family:'Manrope',system-ui,sans-serif;background:#F7F2EA;color:#1C1712}
+#root{min-height:100vh}
+input,textarea,button,select{font-family:inherit}
+.serif{font-family:'Fraunces',Georgia,serif}
+.lc1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.lc2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lc3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.scrollbar-hide::-webkit-scrollbar{display:none}
+.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slideUp .3s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.check-bounce{animation:checkBounce .2s cubic-bezier(.68,-.55,.27,1.55)}
+@keyframes checkBounce{0%{transform:scale(0.6)}100%{transform:scale(1)}}
+mark{background:#F5D77A;border-radius:2px;padding:0 2px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef,useCallback,useMemo}=React;
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+const T={
+  parchment:'#F7F2EA',
+  cream:'#FDF9F3',
+  ink:'#1C1712',
+  inkLight:'#4A3F35',
+  inkFaint:'#8C7B6E',
+  paprika:'#C4422A',
+  paprikaLight:'#E8604A',
+  ochre:'#D4900A',
+  sage:'#5A7A5A',
+  border:'#E8DDD0',
+  borderDark:'#C8B8A8',
+  cardBg:'#FDFAF6',
+  cookBg:'#1C1712',
+  cookText:'#F7F2EA',
+};
+
+// ─── LEFTOVER OPTIONS ─────────────────────────────────────────────────────────
+const LEFTOVER_OPTIONS=[
+  {id:'tonight',label:'Just tonight',desc:'Exact portions, nothing extra',extra:0},
+  {id:'lunch',label:'+ lunch tomorrow',desc:'Makes one extra portion',extra:1},
+  {id:'threedays',label:'Three days of meals',desc:'Triple the base recipe',extra:null,multiplier:3},
+  {id:'week',label:'Meal prep for the week',desc:'5× batch — freeze what you don\'t eat',extra:null,multiplier:5},
+];
+
+// ─── RECIPES ─────────────────────────────────────────────────────────────────
+const RECIPES=[
+{
+  id:'smash-burger',
+  title:'Smash Burger',
+  tagline:'The crispy-edged diner classic',
+  category:'beef',
+  time:20,
+  difficulty:'easy',
+  baseServings:2,
+  inspiration:'Andy Cooks',
+  sourceUrl:'https://www.youtube.com/@AndyCooks',
+  heroEmoji:'🍔',
+  heroColor:'#8B4513',
+  heroImg:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Beef mince (80/20 fat)',amount:200,unit:'g',scales:'linear',notes:'Fat ratio is non-negotiable — leaner beef steams instead of crisping'},
+    {id:'i2',name:'Burger buns (brioche)',amount:1,unit:'',scales:'linear'},
+    {id:'i3',name:'American cheese slices',amount:2,unit:'',scales:'linear'},
+    {id:'i4',name:'White onion, finely diced',amount:30,unit:'g',scales:'linear'},
+    {id:'i5',name:'Dill pickles',amount:4,unit:'slices',scales:'linear'},
+    {id:'i6',name:'Burger sauce (mayo + ketchup + mustard)',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i7',name:'Salt',amount:0.5,unit:'tsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Ball and season',content:'Divide the beef into 100g balls per patty — don\'t pack them tightly. Season only the outside with salt right before cooking. Salting early draws moisture and stops the crust forming.',timer:null,why:'Pre-salting denatures proteins and pulls water to the surface, which steams instead of browning. You want a dry surface hitting that hot iron.'},
+    {id:'s2',title:'Get the pan screaming',content:'Cast iron or heavy steel pan on highest heat for at least 3 minutes. No oil — the beef fat does the work. It should be starting to smoke.',timer:180,why:'Maillard browning needs metal above 180°C. A warm pan just steams the meat. Three minutes on max heat gets cast iron where it needs to be.'},
+    {id:'s3',title:'Smash hard and hold',content:'Place a ball on the pan, put a piece of baking paper on top, and press down with a flat spatula as hard as you can. Hold for 10 full seconds. The patty should be 1cm thin.',timer:10,why:'The smash maximises surface contact with hot metal. More contact = more Maillard = more crust. The paper stops the spatula sticking.'},
+    {id:'s4',title:'Cook and cheese',content:'Cook 90 seconds without touching — you want a deep brown crust forming. Flip once, immediately add the cheese slice. Cook 45 more seconds. The cheese melts from the residual heat.',timer:90,why:'Single flip. Moving the patty cools the surface and breaks the crust formation. Cheese goes on right after the flip so it has the full second side cook time to melt properly.'},
+    {id:'s5',title:'Toast the bun',content:'While the patty finishes, toast the bun cut-side down in the same pan. 30–45 seconds until golden. The beef fat left in the pan flavours it.',timer:30,why:'A toasted bun won\'t go soggy when sauces and steam hit it. The fat residue adds flavour that plain toasting misses.'},
+    {id:'s6',title:'Stack and serve',content:'Sauce on the bottom bun, pickles, onion, patty (cheese-side up), top bun. Eat immediately — smash burgers do not improve with waiting.',timer:null,why:'Order matters: sauce on bottom bun protects it from moisture. Onion under the patty gets slightly warmed by the meat. Eat within 2 minutes before the crust softens.'},
+  ],
+  tags:['beef','quick','crowd-pleaser'],
+},
+{
+  id:'chicken-adobo',
+  title:'Chicken Adobo',
+  tagline:'Filipino vinegar braise — deeply savoury',
+  category:'chicken',
+  time:50,
+  difficulty:'easy',
+  baseServings:4,
+  inspiration:'Anthony Bourdain / No Reservations',
+  sourceUrl:'https://www.youtube.com/@Parts-Unknown',
+  heroEmoji:'🍗',
+  heroColor:'#5C3317',
+  heroImg:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Chicken thighs, bone-in',amount:800,unit:'g',scales:'linear'},
+    {id:'i2',name:'White cane vinegar',amount:120,unit:'ml',scales:'linear',notes:'Filipino cane vinegar if you can find it — white wine vinegar works'},
+    {id:'i3',name:'Soy sauce',amount:80,unit:'ml',scales:'linear'},
+    {id:'i4',name:'Garlic cloves, crushed',amount:8,unit:'',scales:'linear'},
+    {id:'i5',name:'Bay leaves',amount:4,unit:'',scales:'fixed'},
+    {id:'i6',name:'Black peppercorns, whole',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Neutral oil',amount:1,unit:'tbsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Brown the chicken',content:'Heat oil in a wide pan over high heat. Brown chicken thighs skin-side down for 5 minutes without moving. They should release when the skin is properly crisp. Flip, 2 more minutes.',timer:300,why:'The browning creates complex flavour compounds (Maillard) that the braising liquid will carry throughout the dish. Skipping this makes adobo flat and grey.'},
+    {id:'s2',title:'Add everything and braise',content:'Add vinegar, soy sauce, garlic, bay leaves, and peppercorns. Bring to a boil, then reduce to a low simmer. Cover and cook 25 minutes.',timer:1500,why:'The acid in the vinegar breaks down collagen in the thighs to gelatin — that\'s what gives adobo its silky, clingy sauce. Low heat keeps the muscle fibres from seizing up.'},
+    {id:'s3',title:'Reduce the sauce',content:'Remove the lid, turn heat up to medium. Cook 10–15 minutes until the sauce reduces by half and turns glossy and mahogany-coloured.',timer:600,why:'Reducing concentrates the sugar and amino acids into a glaze. The colour change from light brown to mahogany is your signal — it\'s Maillard happening in the liquid.'},
+    {id:'s4',title:'Serve over rice',content:'Serve immediately over steamed white rice. The sauce is the point — make sure every plate gets a generous spoonful.',timer:null,why:null},
+  ],
+  tags:['chicken','asian','braise','meal-prep'],
+},
+{
+  id:'pasta-carbonara',
+  title:'Pasta Carbonara',
+  tagline:'The Roman original — no cream, ever',
+  category:'pasta',
+  time:25,
+  difficulty:'medium',
+  baseServings:2,
+  inspiration:'Gordon Ramsay',
+  sourceUrl:'https://www.youtube.com/@GordonRamsay',
+  heroEmoji:'🍝',
+  heroColor:'#C8963C',
+  heroImg:'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Spaghetti or rigatoni',amount:160,unit:'g',scales:'linear'},
+    {id:'i2',name:'Guanciale (or pancetta)',amount:100,unit:'g',scales:'linear'},
+    {id:'i3',name:'Egg yolks',amount:3,unit:'',scales:'linear'},
+    {id:'i4',name:'Whole egg',amount:1,unit:'',scales:'fixed'},
+    {id:'i5',name:'Pecorino Romano, finely grated',amount:60,unit:'g',scales:'linear'},
+    {id:'i6',name:'Black pepper, freshly cracked',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Salt (for pasta water)',amount:1,unit:'tbsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Mix the sauce off-heat',content:'Whisk yolks, whole egg, and pecorino into a thick paste. Add cracked pepper. This is your sauce — make it before anything else.',timer:null,why:'Cold eggs mixed with cold cheese form a stable emulsion. Mixing it warm causes the eggs to start cooking before they hit the pasta, and you\'ll get scrambled eggs instead of silk.'},
+    {id:'s2',title:'Render the guanciale',content:'Cook guanciale cubes in a cold, dry pan over medium heat. The fat renders slowly and the meat crisps without burning. Remove and leave the fat in the pan.',timer:480,why:'Starting cold renders the fat gradually — starting hot burns the outside before the inside renders. The rendered fat is your cooking medium for the whole dish.'},
+    {id:'s3',title:'Cook pasta in well-salted water',content:'Salt your pasta water until it tastes like the sea. Cook pasta 2 minutes short of package time — it finishes cooking in the sauce. Reserve 200ml of pasta water before draining.',timer:null,why:'Pasta water is starch and salt. It\'s the only liquid that can loosen carbonara sauce without breaking it. Plain water dilutes and ruins it.'},
+    {id:'s4',title:'Combine off heat — this is the critical step',content:'Add drained pasta to the guanciale pan. Take the pan completely off heat. Add egg mixture, toss constantly, adding pasta water a splash at a time until you have a creamy sauce that coats every strand. If it seizes, add more water.',timer:null,why:'Eggs scramble above 70°C. Off heat, the pasta\'s residual heat (around 65°C) is exactly right to cook the eggs without curdling. Adding water regulates the temperature and creates the emulsion. This is why carbonara has a reputation — the temperature window is narrow.'},
+    {id:'s5',title:'Serve immediately',content:'Plate immediately, top with extra pecorino and more black pepper. Carbonara does not wait — it thickens rapidly as it cools.',timer:null,why:null},
+  ],
+  tags:['pasta','italian','quick','eggs'],
+},
+{
+  id:'beef-stew',
+  title:'Classic Beef Stew',
+  tagline:'Low and slow, built for winter',
+  category:'beef',
+  time:180,
+  difficulty:'easy',
+  baseServings:4,
+  inspiration:'Jacques Pépin',
+  sourceUrl:'https://www.youtube.com/@jacquespepin',
+  heroEmoji:'🥘',
+  heroColor:'#6B3A2A',
+  heroImg:'https://images.unsplash.com/photo-1548943487-a2e4e43b4853?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Beef chuck, 4cm cubes',amount:700,unit:'g',scales:'linear'},
+    {id:'i2',name:'Carrots, cut in chunks',amount:300,unit:'g',scales:'linear'},
+    {id:'i3',name:'Potatoes, cut in chunks',amount:400,unit:'g',scales:'linear'},
+    {id:'i4',name:'Onion, roughly chopped',amount:200,unit:'g',scales:'linear'},
+    {id:'i5',name:'Tomato paste',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i6',name:'Red wine',amount:200,unit:'ml',scales:'linear'},
+    {id:'i7',name:'Beef stock',amount:500,unit:'ml',scales:'linear'},
+    {id:'i8',name:'Thyme sprigs',amount:4,unit:'',scales:'fixed'},
+    {id:'i9',name:'Bay leaves',amount:2,unit:'',scales:'fixed'},
+    {id:'i10',name:'Plain flour',amount:2,unit:'tbsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Season and sear in batches',content:'Season beef generously. Sear in hot oil in batches — never crowd the pan. Each piece needs 2 minutes undisturbed on each side until deeply browned. Set aside.',timer:null,why:'Crowding drops the pan temperature below 120°C and the meat steams instead of browns. Steam = grey, flavourless exterior. Batch searing keeps the pan hot.'},
+    {id:'s2',title:'Build the base',content:'In the same pot, soften onion 5 minutes. Add tomato paste, stir 2 minutes until it darkens. This is caramelising the paste — it loses its raw tin taste and becomes nutty.',timer:300,why:'Raw tomato paste tastes acidic and one-dimensional. Cooking it in fat triggers the Maillard reaction, converting the sugars and developing complex savoury notes.'},
+    {id:'s3',title:'Flour and deglaze',content:'Return the beef. Sprinkle flour over everything and stir to coat. Add wine, scraping up every browned bit from the bottom. Those bits are pure flavour.',timer:null,why:'The flour coats the meat in a thin layer that thickens the stew as it cooks. The fond (browned bits) contains concentrated Maillard compounds — deglazing recovers them.'},
+    {id:'s4',title:'Braise low and slow',content:'Add stock, thyme, bay leaves. Liquid should just cover the meat. Bring to a bare simmer — not a boil. Cover and cook 1.5 hours.',timer:5400,why:'Collagen in chuck converts to gelatin between 70–80°C over extended time — this is what makes stew silky. Boiling instead of simmering makes the meat tough and stringy.'},
+    {id:'s5',title:'Add veg and finish',content:'Add carrots and potatoes. Continue simmering, uncovered, 30–40 minutes until vegetables are tender and sauce has thickened.',timer:1800,why:'Vegetables added early turn to mush. Added in the last 30–40 minutes they cook through without disintegrating. Removing the lid lets steam escape and the sauce reduce and concentrate.'},
+  ],
+  tags:['beef','braise','winter','batch-cook'],
+},
+{
+  id:'roast-chicken',
+  title:'Perfect Roast Chicken',
+  tagline:'Crisp skin, juicy thighs, every time',
+  category:'chicken',
+  time:90,
+  difficulty:'easy',
+  baseServings:4,
+  inspiration:'Thomas Keller / Bouchon',
+  sourceUrl:'https://www.youtube.com/@thomaskeller',
+  heroEmoji:'🐔',
+  heroColor:'#B8721A',
+  heroImg:'https://images.unsplash.com/photo-1598103442097-8b74394b95c8?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Whole chicken',amount:1.8,unit:'kg',scales:'fixed',notes:'One chicken feeds 4 — buy a bigger bird for more people, not more chickens'},
+    {id:'i2',name:'Unsalted butter, softened',amount:60,unit:'g',scales:'fixed'},
+    {id:'i3',name:'Garlic cloves',amount:4,unit:'',scales:'fixed'},
+    {id:'i4',name:'Fresh thyme',amount:6,unit:'sprigs',scales:'fixed'},
+    {id:'i5',name:'Lemon',amount:1,unit:'',scales:'fixed'},
+    {id:'i6',name:'Flaky salt',amount:1,unit:'tbsp',scales:'fixed'},
+    {id:'i7',name:'Black pepper',amount:1,unit:'tsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Dry brine the day before',content:'Pat the chicken completely dry. Rub salt all over, including inside the cavity. Refrigerate uncovered overnight — at minimum 2 hours.',timer:null,why:'Dry brining draws moisture to the surface via osmosis, then the salt dissolves back in. The resulting brine penetrates the meat. The uncovered fridge also dries the skin — dry skin crisps, wet skin steams.'},
+    {id:'s2',title:'Bring to room temp and preheat',content:'Take chicken out of fridge 45 minutes before cooking. Preheat oven to 230°C (fan 210°C).',timer:2700,why:'Cold meat hitting a hot oven creates a large gradient — the outside overcooks before the inside is done. Room temp meat cooks more evenly. 230°C is high enough to blister the skin before reducing.'},
+    {id:'s3',title:'Butter under and over the skin',content:'Mix softened butter with crushed garlic and thyme leaves. Carefully separate the skin from the breast meat with your fingers and push butter under it. Rub remaining butter over the outside.',timer:null,why:'Butter under the skin bastes the breast meat directly as it melts. Butter on the outside browns the skin through the Maillard reaction. The breast is the first part to dry out — this solves that.'},
+    {id:'s4',title:'Roast high then reduce',content:'Place chicken breast-side up in a roasting pan. Roast at 230°C for 15 minutes, then reduce to 190°C. Continue for 50–60 minutes until the thigh juices run clear.',timer:900,why:'The initial high heat blisters and crisps the skin. Reducing heat prevents the skin burning before the interior is cooked. The breast-side-up position means the thighs — which take longer — face the heat from below and the reflected heat from the sides.'},
+    {id:'s5',title:'Rest properly',content:'Transfer to a board, loosely tent with foil. Rest 15 minutes before carving. This is not optional.',timer:900,why:'Muscle fibres that contracted during cooking relax during resting, and the juices redistribute evenly. Cutting early releases all those juices onto the board. 15 minutes for a whole chicken — 5 minutes is not enough.'},
+  ],
+  tags:['chicken','roast','sunday','classic'],
+},
+{
+  id:'musakhan',
+  title:'Musakhan',
+  tagline:'Palestinian roasted chicken with sumac and onions',
+  category:'levantine',
+  time:90,
+  difficulty:'medium',
+  baseServings:4,
+  inspiration:'Reem Kassis / The Palestinian Table',
+  sourceUrl:'https://www.youtube.com/@reemkassis',
+  heroEmoji:'🍗',
+  heroColor:'#8B3A1A',
+  heroImg:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Whole chicken, jointed into 8 pieces',amount:1.6,unit:'kg',scales:'linear'},
+    {id:'i2',name:'Yellow onions, thinly sliced',amount:1,unit:'kg',scales:'linear',notes:'The onions are half the dish — do not reduce them'},
+    {id:'i3',name:'Sumac',amount:5,unit:'tbsp',scales:'linear',notes:'Sumac is the defining flavour. Use a fresh, vivid-red one — stale sumac tastes of nothing'},
+    {id:'i4',name:'Extra virgin olive oil',amount:120,unit:'ml',scales:'linear',notes:'Palestinian olive oil if you can find it'},
+    {id:'i5',name:'Ground allspice',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i6',name:'Ground cinnamon',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Ground cardamom',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i8',name:'Flatbread or taboon (or thick pittas)',amount:4,unit:'large',scales:'linear',notes:'Taboon is traditional — the bread soaks up the onion and chicken juices underneath'},
+    {id:'i9',name:'Pine nuts, toasted',amount:60,unit:'g',scales:'linear'},
+  ],
+  steps:[
+    {id:'s1',title:'Spice-rub and roast the chicken',content:'Mix half the sumac with allspice, cinnamon, cardamom, salt, and 3 tbsp olive oil. Rub all over chicken pieces. Roast at 200°C for 35–40 minutes until skin is deep golden and juices run clear.',timer:2100,why:'The spice rub forms a crust that carries sumac\'s tartness directly on the skin. The acid in sumac also slightly tenderises the surface proteins. Roasting at 200°C gets the skin crisp before the inside overcooks.'},
+    {id:'s2',title:'Caramelise the onions with sumac',content:'While the chicken roasts, cook onions in remaining olive oil over medium-low heat for 30–35 minutes until deep golden and jammy. Add the remaining sumac, stir through. The onions should be sweet, sour, and slightly sticky.',timer:1800,why:'Slow-caramelised onions lose their harsh bite and develop sweetness through Maillard and caramelisation reactions. The sumac added at the end retains its bright tartness — adding it too early dulls it and loses the acid contrast.'},
+    {id:'s3',title:'Build on the bread',content:'Lay flatbreads on a baking tray. Spread the sumac onions generously over them. Place the roasted chicken pieces on top. Drizzle with the roasting pan juices.',timer:null,why:'The bread is not a side — it is structural. The onion-soaked, juice-drenched bread underneath the chicken is the best part of musakhan. It is meant to go soft and flavour-saturated, not stay crisp.'},
+    {id:'s4',title:'Final oven blast and finish',content:'Put the assembled dish back in the oven at 200°C for 8–10 minutes until the edges of the bread crisp and the chicken skin re-crisps. Scatter toasted pine nuts and serve immediately.',timer:480,why:'The second oven blast revives the chicken skin that softened on top of the moist onions. Pine nuts add texture contrast — toast them until golden-brown, not pale, or they taste of nothing.'},
+  ],
+  tags:['chicken','levantine','palestinian','slow'],
+},
+{
+  id:'kafta',
+  title:'Kafta Meshwi',
+  tagline:'Lebanese grilled spiced mince on skewers',
+  category:'levantine',
+  time:30,
+  difficulty:'easy',
+  baseServings:4,
+  inspiration:'Anissa Helou / Feast',
+  sourceUrl:'https://www.youtube.com/@anissahelou',
+  heroEmoji:'🥩',
+  heroColor:'#8B4A1A',
+  heroImg:'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Lamb mince (or beef/lamb mix)',amount:500,unit:'g',scales:'linear',notes:'Higher fat content = juicier kafta. Ask for 20% fat'},
+    {id:'i2',name:'Onion, very finely grated',amount:1,unit:'medium',scales:'linear',notes:'Grated, not chopped — the juice is what you want, not chunks'},
+    {id:'i3',name:'Flat-leaf parsley, very finely chopped',amount:30,unit:'g',scales:'linear'},
+    {id:'i4',name:'Ground allspice',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i5',name:'Ground cinnamon',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i6',name:'Ground cumin',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Chilli flakes',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i8',name:'Salt',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i9',name:'Flat pittas, to serve',amount:4,unit:'',scales:'linear'},
+    {id:'i10',name:'Sumac, for serving',amount:1,unit:'tsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Mix thoroughly with cold hands',content:'Combine mince, grated onion (squeeze out some juice first), parsley, and all spices. Mix aggressively with cold hands for 3–4 minutes until the mixture becomes slightly sticky and uniform.',timer:null,why:'The extended mixing develops the myosin proteins in the meat, which act like glue. This is what lets kafta hold its shape on a skewer over fire without falling apart. Under-mixed kafta crumbles. Cold hands prevent the fat from melting and going greasy.'},
+    {id:'s2',title:'Rest in the fridge',content:'Cover and refrigerate at least 30 minutes, up to overnight.',timer:1800,why:'Resting allows the salt to draw moisture from the onion into the meat, which then reabsorbs. The mixture firms up and the spices bloom into the fat. Kafta cooked straight after mixing is softer and harder to skewer.'},
+    {id:'s3',title:'Shape onto skewers',content:'Wet your hands. Take a handful of the mix (about 80–90g) and press firmly around a flat metal skewer, forming a flat sausage shape about 15cm long. Squeeze hard at the ends to seal.',timer:null,why:'Flat skewers grip the meat — round skewers spin and the kafta can rotate off. Wetting hands prevents sticking. The hard squeeze at the ends is critical: that\'s the join that breaks first over heat.'},
+    {id:'s4',title:'Grill hard and fast',content:'Grill over the highest heat possible — charcoal is traditional and makes a genuine difference. 3–4 minutes per side. You want char marks and juicy interior. Do not overcook lamb kafta.',timer:240,why:'Lamb fat renders fast and then burns. The window between perfectly charred and dried-out is narrow — under 8 minutes total at high heat. Low heat slowly grey-stews the outside instead of charring it.'},
+    {id:'s5',title:'Serve in flatbread with sumac onions',content:'Slide the kafta off the skewer into a warm pitta. Add thinly sliced raw onion tossed with sumac and a squeeze of lemon. Serve immediately.',timer:null,why:null},
+  ],
+  tags:['beef','levantine','lebanese','grill','quick'],
+},
+{
+  id:'hummus',
+  title:'Hummus from Scratch',
+  tagline:'Palestinian hummus — dried chickpeas only',
+  category:'levantine',
+  time:720,
+  difficulty:'easy',
+  baseServings:6,
+  inspiration:'Reem Kassis / The Palestinian Table',
+  sourceUrl:'https://www.youtube.com/@reemkassis',
+  heroEmoji:'🫘',
+  heroColor:'#C4A04A',
+  heroImg:'https://images.unsplash.com/photo-1577805947697-89e18249d767?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Dried chickpeas',amount:250,unit:'g',scales:'linear',notes:'Tinned chickpeas make edible hummus. They do not make good hummus.'},
+    {id:'i2',name:'Good tahini (Palestinian or Lebanese)',amount:120,unit:'ml',scales:'linear',notes:'Brand matters enormously. Bitter or thin tahini ruins hummus. Taste it raw first — it should be nutty, not bitter.'},
+    {id:'i3',name:'Lemon juice, freshly squeezed',amount:60,unit:'ml',scales:'linear'},
+    {id:'i4',name:'Garlic cloves',amount:2,unit:'',scales:'fixed'},
+    {id:'i5',name:'Ice-cold water',amount:60,unit:'ml',scales:'custom'},
+    {id:'i6',name:'Bicarbonate of soda',amount:0.5,unit:'tsp',scales:'fixed',notes:'Added to the cooking water — it softens the chickpea skins and lets them blend ultra-smooth'},
+    {id:'i7',name:'Salt',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i8',name:'Extra virgin olive oil, to serve',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i9',name:'Paprika and whole chickpeas, to garnish',amount:1,unit:'pinch',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Soak overnight',content:'Cover dried chickpeas with cold water — at least 3× their volume. Soak 12 hours minimum, 24 is better. They will roughly double in size.',timer:null,why:'Soaking rehydrates the chickpeas so they cook evenly. Unsoaked chickpeas have a hard, grainy centre even after long cooking. The soak water goes slightly acidic and breaks down oligosaccharides that cause gas — discard it.'},
+    {id:'s2',title:'Cook very soft with bicarbonate',content:'Drain and rinse. Cover with fresh cold water, add bicarbonate of soda. Bring to boil, skim foam. Simmer 1.5–2 hours until completely, utterly soft — they should crush between two fingers with almost no pressure.',timer:5400,why:'Bicarbonate of soda raises the pH of the cooking water. In alkaline conditions, pectin in the chickpea cell walls breaks down faster, resulting in a softer, creamier texture. Under-cooked chickpeas give you grainy hummus no matter how long you blend.'},
+    {id:'s3',title:'Blend tahini and lemon first',content:'In a food processor, blend tahini, lemon juice, and garlic for 1 minute until completely smooth and light-coloured. The mixture will seize and go thick — this is correct.',timer:60,why:'Blending tahini before adding chickpeas creates a stable emulsion base. The lemon acid causes the tahini proteins to reorganise into a smoother, fluffier texture. Adding chickpeas to unblended tahini gives a coarser result.'},
+    {id:'s4',title:'Add chickpeas and blend until completely smooth',content:'Drain chickpeas but save the cooking water. Add hot chickpeas to the tahini mixture. Blend 4–5 minutes straight. Add ice-cold water gradually to achieve a silky, dropping consistency. Season with salt.',timer:300,why:'Hot chickpeas blend smoother than cold ones — temperature helps break down the starch. The ice-cold water creates a thermal contrast that makes the emulsion fluffier (the same principle as cold butter in mantecatura). Blending 4–5 minutes isn\'t optional — 1–2 minutes produces gritty hummus.'},
+    {id:'s5',title:'Rest and serve warm',content:'Let the hummus rest 30 minutes before serving — flavours integrate. To serve, spread in a shallow bowl making a well in the centre, fill with olive oil, scatter chickpeas, sprinkle paprika.',timer:1800,why:'Freshly blended hummus tastes flat and slightly metallic. The rest allows the lemon, garlic, and tahini flavours to fully integrate. Hummus is at its best at room temperature or slightly warm — cold hummus is firm and mutes the flavour.'},
+  ],
+  tags:['levantine','palestinian','vegetarian','vegan'],
+},
+{
+  id:'fattoush',
+  title:'Fattoush',
+  tagline:'Lebanese crispy bread salad with sumac dressing',
+  category:'levantine',
+  time:20,
+  difficulty:'easy',
+  baseServings:4,
+  inspiration:'Anissa Helou / Lebanese Cuisine',
+  sourceUrl:'https://www.youtube.com/@anissahelou',
+  heroEmoji:'🥗',
+  heroColor:'#6B8C3A',
+  heroImg:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Stale pitta bread (2 days old)',amount:2,unit:'large',scales:'linear',notes:'Stale bread fries and stays crunchy. Fresh bread absorbs oil and goes soft immediately.'},
+    {id:'i2',name:'Romaine lettuce, roughly torn',amount:1,unit:'head',scales:'linear'},
+    {id:'i3',name:'Tomatoes, cut in wedges',amount:3,unit:'medium',scales:'linear'},
+    {id:'i4',name:'Cucumber, halved and sliced',amount:1,unit:'medium',scales:'linear'},
+    {id:'i5',name:'Radishes, thinly sliced',amount:6,unit:'',scales:'linear'},
+    {id:'i6',name:'Spring onions, sliced',amount:4,unit:'',scales:'linear'},
+    {id:'i7',name:'Flat-leaf parsley',amount:20,unit:'g',scales:'linear'},
+    {id:'i8',name:'Fresh mint leaves',amount:10,unit:'g',scales:'linear'},
+    {id:'i9',name:'Sumac',amount:2,unit:'tsp',scales:'fixed',notes:'This is the flavour of the dish — don\'t reduce it'},
+    {id:'i10',name:'Lemon juice',amount:3,unit:'tbsp',scales:'fixed'},
+    {id:'i11',name:'Extra virgin olive oil',amount:4,unit:'tbsp',scales:'fixed'},
+    {id:'i12',name:'Pomegranate molasses',amount:1,unit:'tsp',scales:'fixed',notes:'Optional but traditional — adds depth and sourness'},
+  ],
+  steps:[
+    {id:'s1',title:'Fry the bread until shatteringly crisp',content:'Tear pitta into rough pieces. Shallow-fry in olive oil over medium-high heat until deep golden and rigid. Drain on paper. Season with salt immediately.',timer:null,why:'The fried bread needs to stay crunchy even after dressing — this only works with stale pitta fried in enough oil at high enough heat. Baked croutons go soft faster. Season while hot because salt sticks to hot, oily surfaces.'},
+    {id:'s2',title:'Make the sumac dressing',content:'Whisk together lemon juice, olive oil, sumac, pomegranate molasses if using, and salt. Taste: it should be assertively sour and salty.',timer:null,why:'Sumac is water and fat-soluble — whisking it into both lemon juice and oil distributes it through the whole dressing. Fattoush dressing is intentionally sharp: it needs to cut through the oil-soaked bread.'},
+    {id:'s3',title:'Toss and serve immediately',content:'Combine all vegetables and herbs in a large bowl. Add the fried bread. Pour over the dressing and toss. Serve within 5 minutes — the bread should still have some crunch.',timer:null,why:'Fattoush is a race against the bread going soft. The acid in the dressing starts breaking down the crisp surfaces the moment it touches them. Dress and serve; do not let it sit.'},
+  ],
+  tags:['levantine','lebanese','vegetarian','salad','quick'],
+},
+{
+  id:'prawn-tacos-pineapple',
+  title:'Prawn Tacos with Pineapple Salsa',
+  tagline:'Spiced prawns, charred pineapple, chipotle crema',
+  category:'fish',
+  time:25,
+  difficulty:'easy',
+  baseServings:2,
+  inspiration:'Andy Cooks',
+  sourceUrl:'https://www.youtube.com/@AndyCooks',
+  heroEmoji:'🌮',
+  heroColor:'#C47820',
+  heroImg:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Raw tiger prawns, peeled and deveined',amount:300,unit:'g',scales:'linear'},
+    {id:'i2',name:'Small corn tortillas',amount:6,unit:'',scales:'linear'},
+    {id:'i3',name:'Ancho chilli powder',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i4',name:'Smoked paprika',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i5',name:'Ground cumin',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i6',name:'Garlic powder',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Fresh pineapple, cut into 1cm rings',amount:200,unit:'g',scales:'linear'},
+    {id:'i8',name:'Red onion, finely diced',amount:0.5,unit:'',scales:'linear'},
+    {id:'i9',name:'Coriander, chopped',amount:15,unit:'g',scales:'linear'},
+    {id:'i10',name:'Jalapeño, finely diced',amount:1,unit:'',scales:'fixed'},
+    {id:'i11',name:'Lime',amount:3,unit:'',scales:'linear'},
+    {id:'i12',name:'Chipotle in adobo',amount:2,unit:'tsp',scales:'fixed'},
+    {id:'i13',name:'Soured cream or crema',amount:4,unit:'tbsp',scales:'linear'},
+    {id:'i14',name:'Neutral oil',amount:2,unit:'tbsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Char the pineapple',content:'Slice pineapple into rings or planks. Cook in a dry pan over high heat, no oil, 2–3 minutes per side until charred and caramelised. Cool slightly, dice into small cubes.',timer:180,why:'Dry heat caramelises the pineapple\'s natural sugars (55g per 100ml in ripe pineapple) through direct Maillard reaction on the surface. The char adds slight bitterness that balances the sweetness. Oil would steam it instead of charring.'},
+    {id:'s2',title:'Make the pineapple salsa',content:'Combine charred pineapple, red onion, jalapeño, coriander, and the juice of 1 lime. Season. Taste — it should be sweet, sour, and have some heat.',timer:null,why:null},
+    {id:'s3',title:'Make chipotle crema',content:'Mix soured cream with chipotle in adobo, juice of half a lime, and a pinch of salt. Start with 1 tsp chipotle and add more to your heat preference.',timer:null,why:'Chipotle in adobo is smoked jalapeño in a vinegary tomato sauce. The smokiness is the point — it bridges the char on the pineapple and the spice on the prawns. Making it ahead lets the flavours integrate.'},
+    {id:'s4',title:'Season and cook the prawns fast',content:'Toss prawns in ancho chilli, paprika, cumin, garlic powder, salt, and olive oil. Cook in a screaming hot pan or griddle — 90 seconds maximum per side. They\'re done when they turn pink and curl into a C shape.',timer:90,why:'Prawns overcook almost instantly. The window between translucent (raw) and a C shape (perfect) and an O shape (overcooked rubber) is about 30 seconds. The pan needs to be scorching — a warm pan steams prawns grey instead of searing them.'},
+    {id:'s5',title:'Char the tortillas and build',content:'Char tortillas directly on a gas flame or dry hot pan, 20–30 seconds per side. Build: chipotle crema, 3–4 prawns, pineapple salsa, squeeze of lime.',timer:null,why:'Cold tortillas crack. Charring adds flavour from the corn and makes them pliable. Build in this order so the crema acts as a moisture barrier between the warm tortilla and the juicy salsa.'},
+  ],
+  tags:['fish','mexican','andy-cooks','quick'],
+},
+{
+  id:'sourdough-maintenance',
+  title:'Sourdough Starter — Maintenance Guide',
+  tagline:'Keep your starter alive and ready to bake',
+  category:'bread',
+  time:15,
+  difficulty:'easy',
+  baseServings:1,
+  inspiration:'Chad Robertson / Tartine Bakery',
+  sourceUrl:'https://www.youtube.com/@TartineBread',
+  heroEmoji:'🍞',
+  heroColor:'#8B6914',
+  heroImg:'https://images.unsplash.com/photo-1585478259715-1c195ae2b568?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Existing starter',amount:50,unit:'g',scales:'fixed',notes:'The "seed" — this is what you keep from each feeding'},
+    {id:'i2',name:'Strong white flour (or 50/50 white/wholemeal)',amount:50,unit:'g',scales:'fixed',notes:'Wholemeal contains more wild yeast and bacteria — feeds the culture better than white alone'},
+    {id:'i3',name:'Water (room temperature, unchlorinated)',amount:50,unit:'g',scales:'fixed',notes:'Tap water is fine if left out 30 minutes for chlorine to off-gas. Chlorine kills the bacteria you are trying to feed.'},
+  ],
+  steps:[
+    {id:'s1',title:'What a healthy starter looks like',content:'A healthy starter at peak activity is bubbly throughout — not just on top — and has roughly doubled in volume. It smells pleasantly sour and slightly yeasty, like yoghurt or beer. It should pass the float test: drop a small piece in water — it floats if full of gas. A healthy starter that has been refrigerated looks flat, smells more sharply acidic, and may have a grey liquid on top (hooch — just stir it in or pour it off, it\'s harmless alcohol).',timer:null,why:'The bubbles are CO2 produced by wild yeast fermenting the flour. Peak activity (maximum bubble volume) is the window when your starter has the most leavening power — this is when to use it for baking. Hooch is ethanol produced when yeast runs out of food — it means the starter is hungry but not dead.'},
+    {id:'s2',title:'Regular feeding (counter / daily baking)',content:'Discard all but 50g of your starter. Add 50g flour and 50g room-temperature water (1:1:1 ratio by weight). Stir vigorously — you want to incorporate air. Leave covered at room temperature. It will peak in 4–8 hours depending on temperature.',timer:null,why:'Discarding is not waste — it keeps the starter manageable in size and prevents acid build-up that would eventually suppress the yeast. The 1:1:1 ratio gives the culture enough food without overfeeding it, which dilutes the yeast population. Vigorous stirring oxygenates the culture, which yeast prefers in early fermentation.'},
+    {id:'s3',title:'Refrigerator maintenance (baking weekly)',content:'After feeding, let it sit at room temperature 2–4 hours until bubbly, then put it in the fridge. Feed once a week. To use from cold: take it out the night before, feed it, leave at room temperature overnight, use at peak the next morning.',timer:null,why:'Cold (4°C) dramatically slows fermentation — the culture stays dormant but alive. Weekly feeding is enough to keep the yeast population healthy. Taking it out 12 hours before baking gives it time to warm up and go through a full rise cycle so it has maximum strength when it goes into your dough.'},
+    {id:'s4',title:'Reviving a neglected starter',content:'If it has been in the fridge for months: pour off the hooch and any discoloured liquid. It may smell very sharp or like acetone. Feed daily for 3–5 days at room temperature, discarding before each feed, until it doubles consistently within 6–8 hours.',timer:null,why:'Long neglect allows acetic acid bacteria to dominate over yeast (bacteria tolerate acidity better than yeast). Repeated feedings restore the balance by introducing fresh food and removing accumulated acid. Doubling consistently within 6–8 hours is the signal that the yeast population is strong enough for baking.'},
+    {id:'s5',title:'Signs something is wrong',content:'Mould is the only true emergency — pink, orange, or fuzzy growth means discard the whole thing and start fresh. Black streaks or liquid are usually just over-fermentation. A consistently flat, non-rising starter after 5 days of daily feeding in a warm kitchen likely means the flour or water is inhibiting microbial activity — try bottled water and wholemeal flour.',timer:null,why:'Mould is a contaminant from the air and wins when acidity drops too low to protect the culture. Once mould is visible on the surface, it has almost certainly penetrated deeper — stirring it away does not fix it. Every other problem short of mould is recoverable with patience and consistent feeding.'},
+  ],
+  tags:['bread','technique','fermentation'],
+},
+{
+  id:'sourdough-loaf',
+  title:'Sourdough Country Loaf',
+  tagline:'Open crumb, blistered crust — 24-hour process',
+  category:'bread',
+  time:1440,
+  difficulty:'hard',
+  baseServings:8,
+  inspiration:'Chad Robertson / Tartine Bakery',
+  sourceUrl:'https://www.youtube.com/@TartineBread',
+  heroEmoji:'🍞',
+  heroColor:'#6B4A14',
+  heroImg:'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Bread flour (strong white)',amount:450,unit:'g',scales:'linear'},
+    {id:'i2',name:'Wholemeal or spelt flour',amount:50,unit:'g',scales:'linear',notes:'10% wholemeal adds flavour and enzymes — more than this starts making the crumb dense'},
+    {id:'i3',name:'Water (warm, 30°C)',amount:375,unit:'g',scales:'custom',notes:'This is 75% hydration — high but manageable for an open crumb. Drop to 70% (350g) for your first loaf.'},
+    {id:'i4',name:'Active sourdough starter (at peak)',amount:100,unit:'g',scales:'fixed',notes:'Must be at peak — bubbly, doubled, passes the float test. Cold starter = no rise.'},
+    {id:'i5',name:'Fine sea salt',amount:10,unit:'g',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Autolyse',content:'Mix flours and 350g of the water (hold back 25g). Stir until no dry flour remains — no kneading yet. Cover and rest 30–60 minutes.',timer:1800,why:'Autolyse lets the flour fully hydrate before adding starter and salt. During this rest, enzymes begin breaking down proteins and the gluten network starts forming on its own. Dough after autolyse is smoother and more extensible and develops better structure with less kneading.'},
+    {id:'s2',title:'Add starter and salt',content:'Add starter to the dough. Dissolve salt in the reserved 25g water, add that too. Squeeze the dough through your fingers until fully incorporated — it will feel slimy then come back together.',timer:null,why:'Salt is added after starter because salt inhibits yeast. Adding them separately prevents the salt from directly contacting the starter culture. The squeeze method distributes the starter throughout without deflating the gluten structure built during autolyse.'},
+    {id:'s3',title:'Bulk fermentation with stretch and folds',content:'Leave covered at room temperature (24–26°C ideal) for 4–5 hours total. In the first 2 hours: every 30 minutes, perform a set of stretch-and-folds (pull one side up and fold over, rotate 90°, repeat 4 times). That\'s 4 sets of folds. After that, leave undisturbed.',timer:14400,why:'Bulk fermentation is where most flavour development and structure building happens. Stretch-and-folds replace kneading — they align the gluten network without degassing it. The dough is ready when it has grown 50–75% in volume, feels airy and jiggly, and you can see bubbles on the sides of the container.'},
+    {id:'s4',title:'Shape and cold proof',content:'Gently turn dough onto an unfloured surface. Pre-shape into a rough ball, rest 20 minutes. Final shape: fold the edges in toward the centre, flip over, drag toward you on the unfloured surface to build tension. Place seam-side up in a floured banneton or bowl lined with a floured cloth. Refrigerate 10–16 hours (overnight).',timer:600,why:'Cold proofing slows fermentation and develops more complex acid flavour. It also firms up the dough so it holds its shape when scored and going into a hot oven. The tension built during shaping is what allows the loaf to spring dramatically in the oven — insufficient tension and it spreads flat.'},
+    {id:'s5',title:'Bake in a covered pot at maximum heat',content:'Preheat oven to 250°C (as hot as it goes) with a Dutch oven inside for 1 hour. Score the cold loaf with a sharp razor or lame. Put it straight from the fridge into the scorching Dutch oven. Cover and bake 20 minutes. Remove lid, bake 20–25 more minutes until deep mahogany.',timer:2400,why:'The covered Dutch oven traps steam released by the cold dough in the first 20 minutes. This steam keeps the crust supple enough to expand fully (oven spring). At 20 minutes, the crust has set — removing the lid now allows the Maillard reaction on the crust surface and the deep caramelisation that makes sourdough crust flavour. Internal temperature should hit 96°C. Rest 1 hour before cutting — the crumb continues cooking via carry-over heat.'},
+  ],
+  tags:['bread','sourdough','technique','advanced'],
+},
+{
+  id:'risotto',
+  title:'Mushroom Risotto',
+  tagline:'The slow stir pays off',
+  category:'vegetarian',
+  time:40,
+  difficulty:'medium',
+  baseServings:2,
+  inspiration:'Marcella Hazan',
+  sourceUrl:'https://www.youtube.com/@MarcellaCooking',
+  heroEmoji:'🍚',
+  heroColor:'#8B7355',
+  heroImg:'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Arborio rice',amount:160,unit:'g',scales:'linear'},
+    {id:'i2',name:'Mixed mushrooms, sliced',amount:300,unit:'g',scales:'linear'},
+    {id:'i3',name:'Dry white wine',amount:100,unit:'ml',scales:'linear'},
+    {id:'i4',name:'Vegetable stock, hot',amount:800,unit:'ml',scales:'custom',notes:'Add up to 200ml more if needed — exact amount varies with heat'},
+    {id:'i5',name:'Shallots, finely diced',amount:2,unit:'',scales:'linear'},
+    {id:'i6',name:'Garlic cloves',amount:2,unit:'',scales:'fixed'},
+    {id:'i7',name:'Parmesan, grated',amount:60,unit:'g',scales:'linear'},
+    {id:'i8',name:'Unsalted butter, cold',amount:40,unit:'g',scales:'linear'},
+    {id:'i9',name:'Olive oil',amount:2,unit:'tbsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Sauté mushrooms separately',content:'Sauté mushrooms in oil over high heat until golden — 5 minutes without stirring. Season. Set aside. Do this in the same pan you\'ll use for the risotto.',timer:300,why:'Mushrooms release water when heated. Crowding or stirring keeps them wet and they steam instead of browning. High heat and patience gives you golden, meaty mushrooms — not grey rubber.'},
+    {id:'s2',title:'Soften shallots in butter',content:'Reduce heat. Add butter, soften shallots and garlic 3–4 minutes until translucent. They should not colour.',timer:240,why:'Shallots cook faster than onions and have a milder, sweeter flavour for risotto. Translucent, not browned — browning adds bitterness that fights the delicate mushroom and wine notes.'},
+    {id:'s3',title:'Toast the rice',content:'Add rice, stir to coat in fat. Toast 2 minutes until the edges turn translucent. Then add wine — it will sizzle aggressively.',timer:120,why:'Toasting the rice seals the exterior of each grain in fat, slowing starch release. This is what creates the slow, controlled creaminess of proper risotto. Skip this and you get gluey porridge.'},
+    {id:'s4',title:'Add stock gradually',content:'Add hot stock one ladleful at a time, stirring frequently. Add the next ladle when the pan looks almost dry. Keep heat at a steady medium — active simmer, not a boil.',timer:null,why:'Gradual addition forces each grain to absorb liquid slowly, releasing surface starch incrementally. That starch is the "cream" of risotto — there is no cream in the recipe. Hot stock maintains temperature; cold stock stalls cooking.'},
+    {id:'s5',title:'Mantecatura — the final butter',content:'When rice is al dente (it should have a firm but not chalky centre — taste it), remove from heat. Add cold butter in pieces and stir vigorously for 1 minute. Add mushrooms back in.',timer:null,why:'Mantecatura means "creaming". Cold butter emulsifies into the hot starch, creating a glossy, rich finish. Hot butter separates. Off heat prevents further starch release, which would make it gluey.'},
+  ],
+  tags:['vegetarian','rice','italian','dinner-party'],
+},
+{
+  id:'fish-tacos',
+  title:'Baja Fish Tacos',
+  tagline:'Crispy, fresh, and done in 20 minutes',
+  category:'fish',
+  time:25,
+  difficulty:'easy',
+  baseServings:2,
+  inspiration:'Rick Bayless',
+  sourceUrl:'https://www.youtube.com/@rickbayless',
+  heroEmoji:'🌮',
+  heroColor:'#C87941',
+  heroImg:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'White fish fillets (cod/halibut)',amount:300,unit:'g',scales:'linear'},
+    {id:'i2',name:'Small corn tortillas',amount:4,unit:'',scales:'linear'},
+    {id:'i3',name:'Plain flour',amount:60,unit:'g',scales:'fixed'},
+    {id:'i4',name:'Cold beer (lager)',amount:100,unit:'ml',scales:'fixed'},
+    {id:'i5',name:'Red cabbage, shredded',amount:100,unit:'g',scales:'linear'},
+    {id:'i6',name:'Lime',amount:2,unit:'',scales:'linear'},
+    {id:'i7',name:'Crema or soured cream',amount:4,unit:'tbsp',scales:'linear'},
+    {id:'i8',name:'Chipotle in adobo, minced',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i9',name:'Neutral oil for frying',amount:500,unit:'ml',scales:'fixed'},
+    {id:'i10',name:'Coriander leaves',amount:1,unit:'handful',scales:'linear'},
+  ],
+  steps:[
+    {id:'s1',title:'Make the chipotle crema',content:'Mix crema or soured cream with minced chipotle. Squeeze in half a lime. Taste — it should be smoky, creamy, with a gentle heat.',timer:null,why:'Making the sauce first lets the flavours meld while you cook the fish. Chipotle needs a few minutes to bloom in the cream.'},
+    {id:'s2',title:'Make batter and prep cabbage',content:'Whisk flour with cold beer and a pinch of salt until just combined — lumps are fine. Toss cabbage with juice of half a lime and salt.',timer:null,why:'Cold beer creates carbonation that makes the batter light. Overmixing develops gluten and makes it tough. The cabbage acid-wilts slightly while you cook — intentional texture shift.'},
+    {id:'s3',title:'Fry the fish',content:'Heat oil to 180°C in a deep pan. Cut fish into strips, dip in batter, lower gently into oil. Cook 3–4 minutes until deep golden. Drain on paper.',timer:180,why:'180°C is the sweet spot — lower and the batter absorbs oil and goes greasy; higher and it browns before the fish cooks through. Use a thermometer. Sound also tells you: a steady active sizzle means correct temperature.'},
+    {id:'s4',title:'Warm tortillas and assemble',content:'Char tortillas directly on a gas flame or dry pan — 30 seconds per side. Stack fish, cabbage, crema, coriander, squeeze lime over the top.',timer:null,why:'Cold, raw tortillas taste of nothing and tear. Charring activates the corn flavour and makes them pliable enough to fold without cracking.'},
+  ],
+  tags:['fish','mexican','quick','weeknight'],
+},
+{
+  id:'thai-green-curry',
+  title:'Thai Green Curry',
+  tagline:'Aromatic, balanced, deeply fragrant',
+  category:'chicken',
+  time:35,
+  difficulty:'medium',
+  baseServings:4,
+  inspiration:'Andy Cooks',
+  sourceUrl:'https://www.youtube.com/@AndyCooks',
+  heroEmoji:'🍛',
+  heroColor:'#3D7A3D',
+  heroImg:'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Chicken thighs, sliced',amount:600,unit:'g',scales:'linear'},
+    {id:'i2',name:'Coconut milk (full-fat)',amount:400,unit:'ml',scales:'linear',notes:'Use full fat — light coconut milk breaks and looks watery'},
+    {id:'i3',name:'Green curry paste',amount:3,unit:'tbsp',scales:'fixed'},
+    {id:'i4',name:'Thai aubergine or courgette',amount:200,unit:'g',scales:'linear'},
+    {id:'i5',name:'Fish sauce',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i6',name:'Palm sugar or brown sugar',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Kaffir lime leaves',amount:4,unit:'',scales:'fixed'},
+    {id:'i8',name:'Thai basil',amount:1,unit:'handful',scales:'fixed'},
+    {id:'i9',name:'Neutral oil',amount:2,unit:'tbsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Fry the paste',content:'Heat oil in a wok over high heat. Add curry paste and stir fry 2 minutes until fragrant and separated — it will spit.',timer:120,why:'Frying the paste in oil cooks out the raw galangal and lemongrass notes and develops a caramelised base flavour. Adding it directly to liquid makes a flat, raw-tasting curry.'},
+    {id:'s2',title:'Add coconut cream first',content:'Add just the thick cream from the top of the can (don\'t shake it). Stir with the paste 2–3 minutes until the oil separates — "cracking" the coconut.',timer:180,why:'"Cracking" means the coconut cream\'s emulsion breaks and the fat separates. This fat then carries the fat-soluble flavour compounds from the paste throughout the dish. You\'ll see the oil visibly pool — this is correct.'},
+    {id:'s3',title:'Cook the chicken',content:'Add chicken, stir to coat in the paste-cream. Cook 3–4 minutes until sealed.',timer:240,why:null},
+    {id:'s4',title:'Add remaining coconut milk and simmer',content:'Pour in the rest of the coconut milk and the thin liquid from the can. Add kaffir lime leaves, fish sauce, sugar, vegetables. Simmer 12 minutes.',timer:720,why:'The balance of fish sauce (salt + umami), sugar (sweetness), and lime leaf (citrus-floral) is the holy trinity of Thai cooking. Taste and adjust — the exact amounts depend on your brand of paste and fish sauce.'},
+    {id:'s5',title:'Finish with basil',content:'Remove from heat. Stir in Thai basil leaves — they\'ll wilt from the residual heat. Serve with jasmine rice.',timer:null,why:'Thai basil loses its anise-clove aroma with prolonged heat. Adding off heat preserves the volatile compounds. Italian basil is a poor substitute — different flavour profile entirely.'},
+  ],
+  tags:['chicken','thai','asian','curry'],
+},
+{
+  id:'french-onion-soup',
+  title:'French Onion Soup',
+  tagline:'Three hours of patience, forty years of tradition',
+  category:'soup',
+  time:180,
+  difficulty:'medium',
+  baseServings:4,
+  inspiration:'Anthony Bourdain / Les Halles',
+  sourceUrl:'https://www.youtube.com/@Parts-Unknown',
+  heroEmoji:'🧅',
+  heroColor:'#8B5A2B',
+  heroImg:'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Yellow onions, thinly sliced',amount:1.5,unit:'kg',scales:'linear',notes:'They cook down to a quarter of their volume — this amount is correct'},
+    {id:'i2',name:'Unsalted butter',amount:60,unit:'g',scales:'fixed'},
+    {id:'i3',name:'Olive oil',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i4',name:'Dry white wine or vermouth',amount:150,unit:'ml',scales:'linear'},
+    {id:'i5',name:'Good beef stock',amount:1.2,unit:'L',scales:'linear'},
+    {id:'i6',name:'Gruyère, grated',amount:200,unit:'g',scales:'linear'},
+    {id:'i7',name:'Sourdough bread, sliced',amount:4,unit:'thick slices',scales:'linear'},
+    {id:'i8',name:'Fresh thyme',amount:4,unit:'sprigs',scales:'fixed'},
+    {id:'i9',name:'Bay leaves',amount:2,unit:'',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Caramelise — the long game',content:'Melt butter and oil in a heavy pot over medium-low heat. Add all the onions and salt lightly. Cook 60–75 minutes, stirring every 5–10 minutes, until deep amber-brown. If they stick, add a splash of water.',timer:3600,why:'True caramelisation requires the Maillard reaction and sugar caramelisation, which only happen when the water has fully evaporated from the onions and the temperature rises above 120°C. This takes a real 60 minutes on low heat — 20-minute versions are cheating and taste like it.'},
+    {id:'s2',title:'Deglaze and build the soup',content:'Add wine, scraping the bottom. Cook until evaporated. Add stock, thyme, bay leaves. Bring to a simmer, cook 30 minutes.',timer:1800,why:'Deglazing with wine recovers the fond (caramelised sugars stuck to the pot) — that\'s where half the flavour is. The subsequent simmer melds the stock with the onion base.'},
+    {id:'s3',title:'Toast the bread',content:'Toast sourdough slices until very firm — they need to stay rigid under the cheese and soup. Rub with a cut garlic clove while hot.',timer:null,why:'Soft bread sinks and disintegrates into the soup. Toast until dry and hard so it floats on top and stays there. The garlic rubbing penetrates the surface of hot bread in a way it never would on cold bread.'},
+    {id:'s4',title:'Grill and serve',content:'Ladle soup into oven-safe bowls. Float a bread slice. Cover generously with gruyère — it should overhang the bowl slightly. Grill under a hot broiler 3–5 minutes until bubbling and spotted black in places.',timer:300,why:'The slight charring on the cheese is flavour, not failure. Maillard on the cheese creates nutty, bitter notes that balance the sweet onion and rich stock. Pale melted gruyère is aesthetically wrong and flavourwise missed.'},
+  ],
+  tags:['soup','french','vegetarian-option','slow'],
+},
+{
+  id:'pad-thai',
+  title:'Pad Thai',
+  tagline:'The tamarind is non-negotiable',
+  category:'noodles',
+  time:20,
+  difficulty:'medium',
+  baseServings:2,
+  inspiration:'Andy Cooks',
+  sourceUrl:'https://www.youtube.com/@AndyCooks',
+  heroEmoji:'🍜',
+  heroColor:'#C87020',
+  heroImg:'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Flat rice noodles (5mm)',amount:160,unit:'g',scales:'linear'},
+    {id:'i2',name:'Prawns or chicken, sliced',amount:200,unit:'g',scales:'linear'},
+    {id:'i3',name:'Eggs',amount:2,unit:'',scales:'linear'},
+    {id:'i4',name:'Tamarind paste',amount:3,unit:'tbsp',scales:'fixed',notes:'Ketchup is not a substitute — it changes the dish entirely'},
+    {id:'i5',name:'Fish sauce',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i6',name:'Palm sugar',amount:1,unit:'tbsp',scales:'fixed'},
+    {id:'i7',name:'Bean sprouts',amount:80,unit:'g',scales:'linear'},
+    {id:'i8',name:'Spring onions, sliced',amount:3,unit:'',scales:'linear'},
+    {id:'i9',name:'Crushed peanuts',amount:40,unit:'g',scales:'linear'},
+    {id:'i10',name:'Tofu, firm, cubed',amount:100,unit:'g',scales:'linear'},
+  ],
+  steps:[
+    {id:'s1',title:'Soak noodles, mix sauce',content:'Soak noodles in cold water 20 minutes until pliable but not cooked. Mix tamarind, fish sauce, sugar — taste it. Should be sour, salty, subtly sweet in that order.',timer:1200,why:'Cold soak (not boiling) means the noodles still have structural integrity when they hit the wok. Boiled noodles finish as mush. The sauce ratio defines pad Thai — get it right off the heat where you can taste clearly.'},
+    {id:'s2',title:'High heat wok',content:'Wok on the highest flame you have for 3 minutes. Add oil — it should smoke immediately. This is the right temperature.',timer:180,why:'Wok hei — the smoky breath of the wok — only happens above 200°C on a dry wok. Restaurant woks run on industrial flames; home woks need maximum time to accumulate heat. A warm wok makes pad Thai soggy and grey.'},
+    {id:'s3',title:'Protein, then egg',content:'Add protein to the wok edge, cook 2 minutes. Push to the side. Crack eggs into the hot centre, scramble until almost set, then push to the side with the protein.',timer:120,why:'Cooking protein and egg separately in zones keeps both from overcooking while you deal with the noodles. Mixed too early and you end up with one overcooked, broken mess.'},
+    {id:'s4',title:'Noodles and sauce',content:'Add drained noodles, pour sauce over. Toss everything together using tongs. Cook 2 minutes — the sauce should evaporate and caramelise into the noodles.',timer:120,why:'Two minutes of high-heat contact lets the tamarind-sugar mixture caramelise onto the noodles. This creates the characteristic stickiness and complex flavour. Remove from heat the moment it looks slightly dry — residual heat finishes it.'},
+    {id:'s5',title:'Serve immediately',content:'Top with bean sprouts, spring onions, peanuts. Serve with lime wedge, extra fish sauce, sugar, and chilli flakes on the side for adjusting.',timer:null,why:'Pad Thai cools fast and goes sticky cold. Serve immediately. The condiment table is traditional — every diner adjusts their own bowl.'},
+  ],
+  tags:['noodles','thai','asian','quick'],
+},
+{
+  id:'braised-short-ribs',
+  title:'Red Wine Braised Short Ribs',
+  tagline:'Low and slow, fork-tender, restaurant result',
+  category:'beef',
+  time:210,
+  difficulty:'medium',
+  baseServings:4,
+  inspiration:'Gordon Ramsay',
+  sourceUrl:'https://www.youtube.com/@GordonRamsay',
+  heroEmoji:'🥩',
+  heroColor:'#7A1C1C',
+  heroImg:'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Beef short ribs, bone-in',amount:1.2,unit:'kg',scales:'linear'},
+    {id:'i2',name:'Red wine (Cabernet or Merlot)',amount:375,unit:'ml',scales:'linear'},
+    {id:'i3',name:'Beef stock',amount:500,unit:'ml',scales:'linear'},
+    {id:'i4',name:'Carrot, roughly chopped',amount:1,unit:'large',scales:'fixed'},
+    {id:'i5',name:'Celery stalks',amount:2,unit:'',scales:'fixed'},
+    {id:'i6',name:'Onion',amount:1,unit:'large',scales:'fixed'},
+    {id:'i7',name:'Tomato paste',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i8',name:'Garlic cloves',amount:5,unit:'',scales:'fixed'},
+    {id:'i9',name:'Fresh rosemary and thyme',amount:4,unit:'sprigs each',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Preheat and season',content:'Preheat oven to 160°C. Season ribs aggressively — they need more salt than you think. Let them sit 10 minutes.',timer:600,why:'Short ribs are thick cuts with a lot of collagen and fat. Heavy seasoning on the outside is needed because the interior is self-seasoning via osmosis only in the hours of braising.'},
+    {id:'s2',title:'Sear every side',content:'In a heavy oven-safe pan, sear ribs on all sides — including the ends — in batches, until very dark brown. Do not rush this.',timer:null,why:'Every surface that doesn\'t get browned is flavour left behind. Short ribs have six faces — sear all of them. The exterior Maillard compounds end up in the braising liquid and define the sauce.'},
+    {id:'s3',title:'Build aromatics, reduce wine',content:'Remove ribs, soften vegetables in the same pan. Add tomato paste, cook 2 minutes. Add wine and reduce by half — 8–10 minutes.',timer:480,why:'Reducing wine removes harsh alcohol notes and concentrates the flavour. Full bottle of wine added direct gives you a boozy, raw-wine sauce. Reduced wine gives depth without the sharpness.'},
+    {id:'s4',title:'Braise 3 hours',content:'Return ribs, add stock until liquid comes halfway up the ribs. Add herbs. Cover tightly and braise in oven at 160°C for 3 hours.',timer:10800,why:'160°C oven heat is even on all sides, unlike stovetop braising which hot-spots at the bottom. Three hours converts the collagen in short rib connective tissue to gelatin — that\'s what makes the meat fall apart and the sauce sticky.'},
+    {id:'s5',title:'Rest and reduce sauce',content:'Remove ribs, rest 15 minutes. Strain the braising liquid, skim fat, reduce in a pan over high heat to a glossy sauce.',timer:900,why:'Straining removes the now-exhausted vegetables. Skimming removes fat that would make the sauce greasy. Reducing concentrates into a glaze — pour it over the ribs and it should coat a spoon.'},
+  ],
+  tags:['beef','braise','dinner-party','slow'],
+},
+{
+  id:'ramen',
+  title:'Shoyu Ramen',
+  tagline:'Rich tonkotsu-style with proper tare',
+  category:'noodles',
+  time:30,
+  difficulty:'easy',
+  baseServings:2,
+  inspiration:'Ivan Orkin / Ivan Ramen',
+  sourceUrl:'https://www.youtube.com/@IvanRamen',
+  heroEmoji:'🍜',
+  heroColor:'#4A3520',
+  heroImg:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Ramen noodles, fresh or dried',amount:160,unit:'g',scales:'linear'},
+    {id:'i2',name:'Good chicken stock',amount:800,unit:'ml',scales:'linear'},
+    {id:'i3',name:'Soy sauce (tare)',amount:3,unit:'tbsp',scales:'fixed'},
+    {id:'i4',name:'Mirin',amount:1,unit:'tbsp',scales:'fixed'},
+    {id:'i5',name:'Sesame oil',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i6',name:'Eggs (for soft-boiled)',amount:2,unit:'',scales:'linear'},
+    {id:'i7',name:'Chashu pork belly (or roasted pork)',amount:100,unit:'g',scales:'linear'},
+    {id:'i8',name:'Spring onions',amount:3,unit:'stalks',scales:'linear'},
+    {id:'i9',name:'Nori sheets',amount:2,unit:'',scales:'linear'},
+    {id:'i10',name:'Bamboo shoots',amount:40,unit:'g',scales:'linear'},
+  ],
+  steps:[
+    {id:'s1',title:'Soft-boil the eggs',content:'Bring water to a rolling boil. Lower eggs in gently. Cook exactly 6.5 minutes. Transfer immediately to iced water for 5 minutes. Peel carefully.',timer:390,why:'6.5 minutes gives a fully set white with a just-jammy yolk — the ramen standard. Below 6 minutes is too runny, above 7 is too hard. The ice bath stops residual cooking immediately.'},
+    {id:'s2',title:'Make the tare',content:'Mix soy sauce and mirin in a small pan. Bring to a simmer 2 minutes to cook off the alcohol. This is your seasoning base.',timer:120,why:'Tare is ramen\'s seasoning concentrate. Making it separately means you can adjust the saltiness of each bowl individually by adding more or less — rather than trying to season 800ml of stock accurately.'},
+    {id:'s3',title:'Heat the broth',content:'Heat stock to a rolling boil. Add sesame oil. Taste — it should be rich but slightly under-seasoned (the tare finishes it).',timer:null,why:'The stock provides body; the tare provides the seasoning signature. Separating them is the Japanese technique that makes ramen adjustable. Pre-seasoning the stock makes every bowl identical — not necessarily wrong, but less flexible.'},
+    {id:'s4',title:'Cook noodles separately',content:'Cook noodles in a separate pan of unsalted water — not in the broth. Fresh: 1–2 minutes. Dried: follow package. Drain and rinse briefly.',timer:90,why:'Ramen noodles cook in unsalted water because the broth does all the seasoning. Cooking them in the broth clouds it and makes the bowl starchy. Rinsing removes excess surface starch.'},
+    {id:'s5',title:'Assemble properly',content:'Tare in the bowl first. Noodles. Hot broth ladled over. Then toppings in distinct sections: halved egg, pork, nori, spring onion, bamboo. Each topping should be visually distinct.',timer:null,why:'Adding tare first ensures it distributes through the broth as it\'s poured. Keeping toppings visually separate isn\'t just aesthetic — it lets you eat each element alone or in combination at your own pace.'},
+  ],
+  tags:['noodles','japanese','asian','comfort'],
+},
+{
+  id:'beef-wellington',
+  title:'Beef Wellington',
+  tagline:'The showstopper — done right',
+  category:'beef',
+  time:120,
+  difficulty:'hard',
+  baseServings:6,
+  inspiration:'Gordon Ramsay',
+  sourceUrl:'https://www.youtube.com/@GordonRamsay',
+  heroEmoji:'🥩',
+  heroColor:'#7A3A1A',
+  heroImg:'https://images.unsplash.com/photo-1551183053-bf91798d9cf3?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Beef fillet (centre cut)',amount:800,unit:'g',scales:'fixed',notes:'Centre cut only — consistent diameter means even cooking'},
+    {id:'i2',name:'Chestnut mushrooms',amount:500,unit:'g',scales:'fixed'},
+    {id:'i3',name:'Prosciutto/Parma ham slices',amount:8,unit:'slices',scales:'fixed'},
+    {id:'i4',name:'Puff pastry, all-butter',amount:500,unit:'g',scales:'fixed'},
+    {id:'i5',name:'Dijon mustard',amount:2,unit:'tbsp',scales:'fixed'},
+    {id:'i6',name:'Egg yolk for wash',amount:2,unit:'',scales:'fixed'},
+    {id:'i7',name:'English mustard powder',amount:0.5,unit:'tsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Sear the fillet',content:'Season heavily and sear in a screaming hot pan, all sides including ends, 1–2 minutes per side until brown all over. Allow to cool completely.',timer:null,why:'The sear creates a flavour crust and — critically — dries the surface so the pastry doesn\'t get a steam-soggy bottom. Cool completely before wrapping or the mushroom paste will cook and the prosciutto will be cooked before the pastry even goes in the oven.'},
+    {id:'s2',title:'Make the duxelles',content:'Blitz mushrooms until fine paste. Cook in a dry pan over medium heat, stirring, for 10–12 minutes until completely dry. Season. Cool.',timer:720,why:'Mushroom duxelles contains 90% water. Every drop must be evaporated before wrapping — if it isn\'t, the steam will make the pastry soggy. It\'s done when it looks like dark, dry, crumbly soil.'},
+    {id:'s3',title:'Wrap in prosciutto',content:'Lay prosciutto slices overlapping on cling film. Spread duxelles evenly. Brush fillet with Dijon. Roll the fillet in the prosciutto using the cling film to form a tight cylinder. Refrigerate 30 minutes.',timer:1800,why:'Prosciutto creates a moisture barrier between the duxelles and pastry. Dijon helps it adhere and adds subtle acidity. The cling film forms a tight cylindrical shape so the Wellington keeps its form.'},
+    {id:'s4',title:'Wrap in pastry',content:'Preheat oven to 220°C. Unwrap, roll in pastry, seal edges with egg wash. Brush all over with egg yolk. Score lightly. Chill 10 minutes.',timer:600,why:'A second chill after pastry wrapping helps the pastry hold its shape and means the butter in the pastry is cold when it hits the oven — cold butter = steam = flaky layers.'},
+    {id:'s5',title:'Bake to internal temp',content:'Bake at 220°C for 25–30 minutes until pastry is deep golden. Internal temperature: 52°C for rare, 55°C for medium-rare. Rest 10 minutes before cutting.',timer:1500,why:'Pastry colour is a guide; internal temperature is the truth. Use a probe thermometer. The beef carries over by about 3°C during the rest, so pull it slightly under target. Without resting, the juices run everywhere when cut.'},
+  ],
+  tags:['beef','showstopper','dinner-party','advanced'],
+},
+{
+  id:'dal',
+  title:'Tarka Dal',
+  tagline:'The spiced lentil dish that makes everything better',
+  category:'vegetarian',
+  time:40,
+  difficulty:'easy',
+  baseServings:4,
+  inspiration:'Madhur Jaffrey',
+  sourceUrl:'https://www.youtube.com/@MadhurJaffrey',
+  heroEmoji:'🫘',
+  heroColor:'#C4843A',
+  heroImg:'https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Red lentils',amount:250,unit:'g',scales:'linear'},
+    {id:'i2',name:'Onion, thinly sliced',amount:1,unit:'large',scales:'linear'},
+    {id:'i3',name:'Tomatoes, chopped',amount:2,unit:'',scales:'linear'},
+    {id:'i4',name:'Garlic cloves',amount:4,unit:'',scales:'linear'},
+    {id:'i5',name:'Fresh ginger, grated',amount:1,unit:'tbsp',scales:'fixed'},
+    {id:'i6',name:'Turmeric',amount:0.5,unit:'tsp',scales:'fixed'},
+    {id:'i7',name:'Cumin seeds',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i8',name:'Mustard seeds',amount:1,unit:'tsp',scales:'fixed'},
+    {id:'i9',name:'Dried red chillies',amount:2,unit:'',scales:'fixed'},
+    {id:'i10',name:'Ghee or clarified butter',amount:3,unit:'tbsp',scales:'fixed'},
+    {id:'i11',name:'Garam masala',amount:0.5,unit:'tsp',scales:'fixed'},
+  ],
+  steps:[
+    {id:'s1',title:'Cook the lentils',content:'Rinse lentils until water runs clear. Cover with cold water (3:1 ratio), add turmeric. Bring to boil, skim foam, simmer 20 minutes until completely soft. They should dissolve into a thick porridge.',timer:1200,why:'Red lentils have no outer husk so they disintegrate fully — this is correct and intended. The foam in the first minutes is starch — skim it for a cleaner dal. Turmeric goes in now because fat-soluble curcumin distributes better in the later tarka.'},
+    {id:'s2',title:'Make the tarka',content:'Heat ghee in a small pan until very hot. Add mustard seeds — wait for them to pop. Add cumin seeds, dried chillies, let them sizzle 30 seconds. Add sliced onion, cook until deeply golden-brown.',timer:null,why:'Tarka is the finishing oil — it\'s made separately and poured over the lentils at the end. The mustard seeds need hot oil to pop; they won\'t in warm oil. Each spice needs a few seconds to bloom its volatile aromatics into the fat.'},
+    {id:'s3',title:'Add garlic, ginger, tomato',content:'Add garlic and ginger to the tarka pan. Cook 2 minutes. Add tomatoes, cook until they break down into the oil — about 5 minutes.',timer:300,why:'Garlic and ginger added after the spices don\'t burn. The tomatoes must cook until their water fully evaporates and they\'re frying in the ghee — this concentrates flavour and removes the raw acidic edge.'},
+    {id:'s4',title:'Combine and finish',content:'Pour cooked lentils into the tarka pan (or vice versa). Add garam masala. Simmer together 5 minutes, season. The dal should coat a spoon but not be thick like cement.',timer:300,why:null},
+  ],
+  tags:['vegetarian','vegan','indian','batch-cook','cheap'],
+},
+{
+  id:'scrambled-eggs',
+  title:'Perfect Scrambled Eggs',
+  tagline:'Low and slow — 7 minutes of patience',
+  category:'eggs',
+  time:10,
+  difficulty:'easy',
+  baseServings:1,
+  inspiration:'Gordon Ramsay',
+  sourceUrl:'https://www.youtube.com/@GordonRamsay',
+  heroEmoji:'🥚',
+  heroColor:'#D4A93A',
+  heroImg:'https://images.unsplash.com/photo-1510693206972-df098062cb71?w=600&q=80',
+  ingredients:[
+    {id:'i1',name:'Eggs',amount:3,unit:'',scales:'linear'},
+    {id:'i2',name:'Unsalted butter',amount:15,unit:'g',scales:'linear'},
+    {id:'i3',name:'Crème fraîche',amount:1,unit:'tbsp',scales:'linear'},
+    {id:'i4',name:'Salt',amount:1,unit:'pinch',scales:'fixed'},
+    {id:'i5',name:'Chives, chopped',amount:1,unit:'tsp',scales:'linear'},
+  ],
+  steps:[
+    {id:'s1',title:'Cold eggs, cold pan, cold butter',content:'Crack eggs directly into a cold pan. Add all the butter. Do not whisk. Put on medium-low heat.',timer:null,why:'Starting cold means the eggs heat gradually and uniformly. Starting hot shocks them into large, rubbery curds. No whisking now — whisking incorporates air, which makes a fluffy omelette texture, not silky scrambled eggs.'},
+    {id:'s2',title:'Stir continuously, on and off heat',content:'Stir constantly with a silicone spatula, moving in figure-eights. Every 30 seconds, take the pan off the heat for 10 seconds, continue stirring. Do this for 4–5 minutes.',timer:300,why:'The on-off-heat technique keeps the pan temperature oscillating around 65–70°C — just above the egg protein coagulation point. This creates the slow, creamy, uniform texture. Above 80°C, proteins tighten into dry curds.'},
+    {id:'s3',title:'Salt and finish at the last second',content:'When eggs are 90% set — still slightly glossy and wet — remove from heat. Add crème fraîche, stir once. Season with salt. Serve immediately.',timer:null,why:'Salt draws water from proteins by osmosis. Added early, it makes the eggs watery. Added at the end, it seasons without affecting texture. The crème fraîche adds richness and stops the cooking instantly by cooling the mass. Residual heat finishes them perfectly.'},
+  ],
+  tags:['eggs','quick','breakfast','technique'],
+},
+];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function scaleAmount(ing, factor){
+  if(ing.scales==='fixed') return ing.amount;
+  if(ing.scales==='custom'){
+    // rice-to-water: softer curve
+    if(ing.name.toLowerCase().includes('stock')||ing.name.toLowerCase().includes('water')){
+      return +(ing.amount * Math.pow(factor,0.85)).toFixed(1);
+    }
+  }
+  return +(ing.amount * factor).toFixed(1);
+}
+function formatAmount(n){
+  if(n===Math.floor(n)) return String(n);
+  if(Math.abs(n-Math.round(n*2)/2)<0.01) return n%1===0?String(n):(Math.floor(n)+' ½');
+  return n.toFixed(1).replace(/\.0$/,'');
+}
+function fmtTime(mins){
+  if(mins<60) return `${mins}m`;
+  const h=Math.floor(mins/60),m=mins%60;
+  return m===0?`${h}h`:`${h}h ${m}m`;
+}
+function highlightText(text,query){
+  if(!query) return text;
+  const escaped=query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return text.replace(new RegExp(`(${escaped})`,'gi'),'<mark>$1</mark>');
+}
+function consolidateIngredients(meals){
+  // meals: [{recipe, servings, leftovers}]
+  const map={};
+  for(const {recipe,servings,leftoversKey}of meals){
+    const opt=LEFTOVER_OPTIONS.find(o=>o.id===leftoversKey)||LEFTOVER_OPTIONS[0];
+    let total;
+    if(opt.multiplier) total=opt.multiplier*recipe.baseServings;
+    else total=servings+(opt.extra||0);
+    const factor=total/recipe.baseServings;
+    for(const ing of recipe.ingredients){
+      const amt=scaleAmount(ing,factor);
+      const key=`${ing.name.toLowerCase()}__${ing.unit||''}`;
+      if(map[key]){
+        map[key].amount+=amt;
+        map[key].recipes.push(recipe.title);
+      } else {
+        map[key]={name:ing.name,amount:amt,unit:ing.unit||'',recipes:[recipe.title]};
+      }
+    }
+  }
+  return Object.values(map).sort((a,b)=>a.name.localeCompare(b.name));
+}
+
+// ─── ICONS ───────────────────────────────────────────────────────────────────
+function Icon({name,size=20,color='currentColor',strokeWidth=1.8}){
+  const s={width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth,strokeLinecap:'round',strokeLinejoin:'round'};
+  const icons={
+    home:<svg {...s}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    cart:<svg {...s}><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
+    plus:<svg {...s}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    back:<svg {...s}><polyline points="15 18 9 12 15 6"/></svg>,
+    heart:<svg {...s}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+    heartFill:<svg {...s} fill={color}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+    search:<svg {...s}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    clock:<svg {...s}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+    check:<svg {...s}><polyline points="20 6 9 17 4 12"/></svg>,
+    info:<svg {...s}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+    alert:<svg {...s}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+    x:<svg {...s}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    trash:<svg {...s}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+    edit:<svg {...s}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    star:<svg {...s}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+    starFill:<svg {...s} fill="#D4900A" stroke="#D4900A"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+    fire:<svg {...s}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>,
+    chevDown:<svg {...s}><polyline points="6 9 12 15 18 9"/></svg>,
+    chevUp:<svg {...s}><polyline points="18 15 12 9 6 15"/></svg>,
+    external:<svg {...s}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+    camera:<svg {...s}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+    loader:<svg {...s} className="animate-spin"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>,
+    swap:<svg {...s}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
+    tag:<svg {...s}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+    list:<svg {...s}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+  };
+  return icons[name]||<svg {...s}/>;
+}
+
+// ─── TIMER HOOK ───────────────────────────────────────────────────────────────
+function useTimer(seconds){
+  const[remaining,setRemaining]=useState(seconds);
+  const[running,setRunning]=useState(false);
+  const[done,setDone]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(running&&remaining>0){
+      ref.current=setInterval(()=>setRemaining(r=>{
+        if(r<=1){clearInterval(ref.current);setRunning(false);setDone(true);return 0;}
+        return r-1;
+      }),1000);
+    }
+    return()=>clearInterval(ref.current);
+  },[running]);
+  const toggle=()=>{if(!done)setRunning(r=>!r)};
+  const reset=()=>{clearInterval(ref.current);setRemaining(seconds);setRunning(false);setDone(false)};
+  const pct=1-(remaining/seconds);
+  const m=Math.floor(remaining/60),s=remaining%60;
+  const display=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return{remaining,running,done,toggle,reset,display,pct};
+}
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+function useStorage(key,init){
+  const[val,setVal]=useState(()=>{
+    try{const s=localStorage.getItem(key);return s?JSON.parse(s):init;}
+    catch{return init;}
+  });
+  const set=useCallback(v=>{
+    const next=typeof v==='function'?v(val):v;
+    setVal(next);
+    try{localStorage.setItem(key,JSON.stringify(next));}catch{}
+  },[key,val]);
+  return[val,set];
+}
+
+// ─── SUBSTITUTION API ─────────────────────────────────────────────────────────
+async function fetchSubstitution(recipe,ingredient){
+  const others=recipe.ingredients.filter(i=>i.id!==ingredient.id).map(i=>i.name).slice(0,12).join(', ');
+  const prompt=`You are an experienced cook. Someone is making "${recipe.title}" (${recipe.tagline}) but is missing: ${ingredient.amount} ${ingredient.unit||''} ${ingredient.name}. Other ingredients they have: ${others}. Respond ONLY with valid JSON, no markdown, no fences:\n{"severity":"minor"|"moderate"|"critical","impact":"one honest sentence about effect","substitutions":[{"name":"substitute","amount":number,"unit":"g/ml/tbsp/etc","note":"brief reason"}],"canSkip":true|false,"skipNote":"what to do if skipping, or empty"}`;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  const data=await res.json();
+  const text=data.content?.find(b=>b.type==='text')?.text||'{}';
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+// ─── STEP TIMER ──────────────────────────────────────────────────────────────
+function StepTimer({seconds}){
+  const{display,running,done,toggle,reset,pct}=useTimer(seconds);
+  const r=38,circ=2*Math.PI*r;
+  return(
+    <div className="flex items-center gap-3 mt-3 p-3 rounded-xl" style={{background:done?T.sage+'22':T.ochre+'18'}}>
+      <div className="relative flex-shrink-0" style={{width:52,height:52}}>
+        <svg width="52" height="52" style={{transform:'rotate(-90deg)'}}>
+          <circle cx="26" cy="26" r={r} fill="none" stroke={T.border} strokeWidth="3"/>
+          <circle cx="26" cy="26" r={r} fill="none" stroke={done?T.sage:T.ochre} strokeWidth="3"
+            strokeDasharray={circ} strokeDashoffset={circ*(1-pct)} style={{transition:'stroke-dashoffset 1s linear'}}/>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          {done?<Icon name="check" size={18} color={T.sage}/>:<Icon name="clock" size={14} color={T.ochre}/>}
+        </div>
+      </div>
+      <div className="flex-1">
+        <div className="font-bold text-sm" style={{color:done?T.sage:T.ochre}}>{done?'Done!':display}</div>
+        <div className="text-xs" style={{color:T.inkFaint}}>{Math.ceil(seconds/60)} min timer</div>
+      </div>
+      <div className="flex gap-2">
+        {!done&&<button onClick={toggle} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{background:running?T.border:T.ochre,color:running?T.ink:T.cream}}>{running?'Pause':'Start'}</button>}
+        <button onClick={reset} className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{background:T.border,color:T.ink}}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── RECIPE CARD ─────────────────────────────────────────────────────────────
+function RecipeCard({recipe,onTap,onPlan,planned,favorite,onFav,query}){
+  const[imgErr,setImgErr]=useState(false);
+  return(
+    <button onClick={()=>onTap(recipe)} className="fade-in text-left rounded-2xl overflow-hidden w-full" style={{background:T.cardBg,border:`1px solid ${T.border}`,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+      <div className="relative overflow-hidden" style={{height:160}}>
+        {!imgErr&&recipe.heroImg
+          ?<img src={recipe.heroImg} alt={recipe.title} className="w-full h-full object-cover" onError={()=>setImgErr(true)}/>
+          :<div className="w-full h-full flex items-center justify-center text-5xl" style={{background:`linear-gradient(135deg,${recipe.heroColor}88,${recipe.heroColor}44)`}}>{recipe.heroEmoji}</div>}
+        <div className="absolute inset-0" style={{background:'linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.6))'}}/>
+        <div className="absolute top-2 right-2 flex gap-1.5">
+          <button onClick={e=>{e.stopPropagation();onFav(recipe.id)}} className="w-8 h-8 rounded-full flex items-center justify-center" style={{background:'rgba(0,0,0,0.4)',backdropFilter:'blur(4px)'}}>
+            <Icon name={favorite?'heartFill':'heart'} size={15} color={favorite?T.paprika:T.cream}/>
+          </button>
+          <button onClick={e=>{e.stopPropagation();onPlan(recipe)}} className="h-8 px-2.5 rounded-full flex items-center gap-1.5 text-xs font-bold" style={{background:planned?T.sage+'DD':'rgba(0,0,0,0.4)',color:T.cream,backdropFilter:'blur(4px)'}}>
+            {planned?<Icon name="check" size={12} color={T.cream}/>:<Icon name="plus" size={12} color={T.cream}/>}
+            {planned?'In plan':'Plan'}
+          </button>
+        </div>
+        <div className="absolute bottom-2 left-3">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:T.paprika,color:T.cream}}>{recipe.inspiration}</span>
+        </div>
+      </div>
+      <div className="p-3">
+        <div className="serif font-bold text-base leading-tight lc1" dangerouslySetInnerHTML={{__html:highlightText(recipe.title,query)}}/>
+        <div className="text-xs mt-0.5 lc1" style={{color:T.inkFaint}}>{recipe.tagline}</div>
+        <div className="flex items-center gap-3 mt-2 text-xs" style={{color:T.inkFaint}}>
+          <span className="flex items-center gap-1"><Icon name="clock" size={12}/>{fmtTime(recipe.time)}</span>
+          <span className="capitalize">{recipe.difficulty}</span>
+          <span className="flex items-center gap-1"><Icon name="tag" size={12}/>{recipe.category}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ─── SUBSTITUTION SHEET ───────────────────────────────────────────────────────
+function SubstitutionSheet({recipe,ingredient,onClose,onApply}){
+  const[result,setResult]=useState(null);
+  const[loading,setLoading]=useState(true);
+  const[err,setErr]=useState(null);
+  useEffect(()=>{
+    fetchSubstitution(recipe,ingredient)
+      .then(r=>{setResult(r);setLoading(false);})
+      .catch(()=>{setErr('Could not reach AI — check your connection.');setLoading(false);});
+  },[]);
+  const sev={minor:{label:'Minor change',color:T.sage},moderate:{label:'Noticeable change',color:T.ochre},critical:{label:'Significantly different dish',color:T.paprika}};
+  return(
+    <div className="fixed inset-0 z-50 flex flex-col" style={{background:'rgba(0,0,0,0.5)'}}>
+      <div className="flex-1" onClick={onClose}/>
+      <div className="slide-up rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto" style={{background:T.cream}}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{color:T.inkFaint}}>Missing ingredient</div>
+            <div className="serif font-bold text-lg">{ingredient.name}</div>
+          </div>
+          <button onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center" style={{background:T.border}}><Icon name="x" size={16}/></button>
+        </div>
+        {loading&&<div className="flex items-center gap-3 py-8 justify-center"><Icon name="loader" size={24} color={T.inkFaint}/><span style={{color:T.inkFaint}}>Thinking…</span></div>}
+        {err&&<div className="p-4 rounded-xl text-sm" style={{background:T.paprika+'18',color:T.paprika}}>{err}</div>}
+        {result&&!loading&&(
+          <div className="space-y-4 fade-in">
+            <div className="flex items-center gap-2 p-3 rounded-xl" style={{background:(sev[result.severity]||sev.moderate).color+'18'}}>
+              <Icon name="alert" size={16} color={(sev[result.severity]||sev.moderate).color}/>
+              <div>
+                <div className="text-xs font-bold" style={{color:(sev[result.severity]||sev.moderate).color}}>{(sev[result.severity]||sev.moderate).label}</div>
+                <div className="text-sm mt-0.5" style={{color:T.ink}}>{result.impact}</div>
+              </div>
+            </div>
+            {result.substitutions?.length>0&&(
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{color:T.inkFaint}}>Substitutes</div>
+                <div className="space-y-2">
+                  {result.substitutions.map((s,i)=>(
+                    <button key={i} onClick={()=>onApply({...ingredient,name:s.name,amount:s.amount,unit:s.unit,subNote:s.note})} className="w-full text-left p-3 rounded-xl flex items-center gap-3" style={{background:T.parchment,border:`1px solid ${T.border}`}}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{background:T.sage+'22'}}>
+                        <Icon name="swap" size={14} color={T.sage}/>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm">{s.name}</div>
+                        <div className="text-xs" style={{color:T.inkFaint}}>{formatAmount(s.amount)} {s.unit} — {s.note}</div>
+                      </div>
+                      <Icon name="check" size={14} color={T.sage}/>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {result.canSkip&&(
+              <div className="p-3 rounded-xl text-sm" style={{background:T.border+'44'}}>
+                <div className="font-semibold text-sm mb-1">Can skip entirely</div>
+                <div style={{color:T.inkFaint}}>{result.skipNote||'Omit and continue.'}</div>
+                <button onClick={()=>onApply({...ingredient,skipped:true})} className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg" style={{background:T.border,color:T.ink}}>Skip this ingredient</button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── RECIPE DETAIL ────────────────────────────────────────────────────────────
+function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,setAdjustments}){
+  const[people,setPeople]=useState(recipe.baseServings);
+  const[leftover,setLeftover]=useState('tonight');
+  const[cooking,setCooking]=useState(false);
+  const[checkedIngs,setCheckedIngs]=useState({});
+  const[checkedSteps,setCheckedSteps]=useState({});
+  const[showSub,setShowSub]=useState(null);
+  const[expandedWhy,setExpandedWhy]=useState({});
+  const opt=LEFTOVER_OPTIONS.find(o=>o.id===leftover)||LEFTOVER_OPTIONS[0];
+  const totalPortions=opt.multiplier?opt.multiplier*recipe.baseServings:people+(opt.extra||0);
+  const factor=totalPortions/recipe.baseServings;
+  const adj=adjustments[recipe.id]||{};
+  const doneCount=Object.values(checkedSteps).filter(Boolean).length;
+  const totalSteps=recipe.steps.length;
+  function getIng(ing){
+    if(adj[ing.id]) return adj[ing.id];
+    return{...ing,amount:scaleAmount(ing,factor),displayAmount:formatAmount(scaleAmount(ing,factor))};
+  }
+  function applyAdj(sub){
+    setAdjustments(prev=>({...prev,[recipe.id]:{...prev[recipe.id],[showSub.id]:sub}}));
+    setShowSub(null);
+  }
+  return(
+    <div className="flex flex-col min-h-screen" style={{background:cooking?T.cookBg:T.parchment,color:cooking?T.cookText:T.ink,transition:'background 0.4s,color 0.4s'}}>
+      {/* Header */}
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3" style={{background:cooking?'rgba(28,23,18,0.95)':'rgba(247,242,234,0.95)',backdropFilter:'blur(8px)',borderBottom:`1px solid ${cooking?'rgba(255,255,255,0.08)':T.border}`}}>
+        <button onClick={onBack} className="w-10 h-10 rounded-full flex items-center justify-center" style={{background:cooking?'rgba(255,255,255,0.1)':T.border}}>
+          <Icon name="back" size={18} color={cooking?T.cream:T.ink}/>
+        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={()=>onFav(recipe.id)} className="w-10 h-10 rounded-full flex items-center justify-center" style={{background:cooking?'rgba(255,255,255,0.1)':T.border}}>
+            <Icon name={favorite?'heartFill':'heart'} size={17} color={favorite?T.paprika:cooking?T.cream:T.ink}/>
+          </button>
+          <button onClick={()=>setCooking(c=>!c)} className="h-10 px-4 rounded-full font-bold text-sm" style={{background:cooking?T.paprika:T.ink,color:T.cream}}>
+            {cooking?'Exit cook mode':'Start cooking'}
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto pb-32">
+        {/* Hero */}
+        <div className="relative overflow-hidden" style={{height:240}}>
+          {recipe.heroImg
+            ?<img src={recipe.heroImg} alt={recipe.title} className="w-full h-full object-cover"/>
+            :<div className="w-full h-full flex items-center justify-center text-7xl" style={{background:`linear-gradient(135deg,${recipe.heroColor}88,${recipe.heroColor}33)`}}>{recipe.heroEmoji}</div>}
+          <div className="absolute inset-0" style={{background:'linear-gradient(to bottom,transparent 30%,rgba(0,0,0,0.7))'}}/>
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="serif font-black text-2xl text-white leading-tight">{recipe.title}</div>
+            <div className="text-sm mt-1" style={{color:'rgba(255,255,255,0.8)'}}>{recipe.tagline}</div>
+          </div>
+        </div>
+        {/* Source */}
+        <div className="mx-4 mt-4 p-3 rounded-xl flex items-center justify-between" style={{background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink}}>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{color:T.inkFaint}}>Inspired by</div>
+            <div className="font-bold text-sm mt-0.5">{recipe.inspiration}</div>
+          </div>
+          <a href={recipe.sourceUrl} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg" style={{background:T.paprika,color:T.cream}}>
+            Watch <Icon name="external" size={12} color={T.cream}/>
+          </a>
+        </div>
+        {/* Meta */}
+        <div className="mx-4 mt-3 flex gap-2">
+          {[{icon:'clock',label:fmtTime(recipe.time)},{icon:'fire',label:recipe.difficulty},{icon:'star',label:`${recipe.baseServings} base`}].map(m=>(
+            <div key={m.label} className="flex-1 flex flex-col items-center gap-1 p-2.5 rounded-xl text-xs" style={{background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink}}>
+              <Icon name={m.icon} size={16} color={T.paprika}/>
+              <span className="font-semibold capitalize">{m.label}</span>
+            </div>
+          ))}
+        </div>
+        {/* Cook mode progress */}
+        {cooking&&doneCount>0&&(
+          <div className="mx-4 mt-4 p-3 rounded-xl" style={{background:'rgba(255,255,255,0.06)'}}>
+            <div className="flex items-center justify-between text-sm mb-2" style={{color:T.cookText}}>
+              <span className="font-semibold">Progress</span>
+              <span style={{color:T.ochre}}>{doneCount}/{totalSteps} steps</span>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{background:'rgba(255,255,255,0.1)'}}>
+              <div className="h-full rounded-full transition-all duration-500" style={{width:`${(doneCount/totalSteps)*100}%`,background:T.ochre}}/>
+            </div>
+          </div>
+        )}
+        {/* Scaling */}
+        <div className="mx-4 mt-4 p-4 rounded-2xl" style={{background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink}}>
+          <div className="font-bold text-sm mb-3">Scaling</div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-medium">People tonight</div>
+            <div className="flex items-center gap-3">
+              <button onClick={()=>setPeople(p=>Math.max(1,p-1))} className="w-9 h-9 rounded-full font-bold text-lg flex items-center justify-center" style={{background:T.border,color:T.ink}}>−</button>
+              <span className="font-black text-xl w-6 text-center">{people}</span>
+              <button onClick={()=>setPeople(p=>Math.min(20,p+1))} className="w-9 h-9 rounded-full font-bold text-lg flex items-center justify-center" style={{background:T.ink,color:T.cream}}>+</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {LEFTOVER_OPTIONS.map(o=>(
+              <button key={o.id} onClick={()=>setLeftover(o.id)} className="p-3 rounded-xl text-left transition-all" style={{background:leftover===o.id?T.paprika:T.parchment,color:leftover===o.id?T.cream:T.ink,border:`1px solid ${leftover===o.id?T.paprika:T.border}`}}>
+                <div className="font-bold text-xs leading-tight">{o.label}</div>
+                <div className="text-xs mt-0.5 opacity-75">{o.desc}</div>
+              </button>
+            ))}
+          </div>
+          {opt.extra!=null&&opt.extra>0&&(
+            <div className="mt-3 text-xs p-2 rounded-lg" style={{background:T.ochre+'18',color:T.ochre}}>Making for {people} + {opt.extra} extra portion{opt.extra>1?'s':''} = {totalPortions} total</div>
+          )}
+          {opt.multiplier&&(
+            <div className="mt-3 text-xs p-2 rounded-lg" style={{background:T.ochre+'18',color:T.ochre}}>{opt.multiplier}× batch = {totalPortions} portions</div>
+          )}
+        </div>
+        {/* Ingredients */}
+        <div className="mx-4 mt-4">
+          <div className="font-bold text-base mb-3" style={{color:cooking?T.cookText:T.ink}}>Ingredients</div>
+          <div className="space-y-1">
+            {recipe.ingredients.map(ing=>{
+              const d=getIng(ing);
+              const checked=cooking&&checkedIngs[ing.id];
+              return(
+                <div key={ing.id} className="flex items-start gap-3 p-3 rounded-xl transition-all" style={{background:checked?(T.sage+'33'):(cooking?'rgba(255,255,255,0.09)':T.cardBg),border:`1px solid ${checked?T.sage+'66':(cooking?'rgba(255,255,255,0.14)':T.border)}`,opacity:d.skipped?0.4:1}}>
+                  {cooking&&<button onClick={()=>setCheckedIngs(p=>({...p,[ing.id]:!p[ing.id]}))} className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:checked?T.sage:'rgba(255,255,255,0.15)',border:`1.5px solid ${checked?T.sage:'rgba(255,255,255,0.3)'}`}}>
+                    {checked&&<span className="check-bounce"><Icon name="check" size={11} color={T.cream}/></span>}
+                  </button>}
+                  <div className="flex-1 text-sm" style={{color:cooking?T.cookText:T.ink}}>
+                    <span className="font-bold">{formatAmount(d.amount)} {d.unit}</span>
+                    <span className="ml-1.5">{d.name}</span>
+                    {d.skipped&&<span className="ml-2 text-xs px-1.5 py-0.5 rounded" style={{background:'rgba(255,255,255,0.1)',color:'rgba(247,242,234,0.5)'}}>skipped</span>}
+                    {d.subNote&&<div className="text-xs mt-0.5" style={{color:T.sage}}>↳ {d.subNote}</div>}
+                    {d.notes&&!d.subNote&&<div className="text-xs mt-0.5" style={{color:cooking?'rgba(247,242,234,0.55)':T.inkFaint}}>{d.notes}</div>}
+                    {ing.scales==='fixed'&&factor>1.5&&<div className="text-xs mt-0.5" style={{color:T.ochre}}>Fixed quantity — doesn't scale</div>}
+                  </div>
+                  <button onClick={()=>setShowSub(ing)} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{background:cooking?'rgba(255,255,255,0.1)':T.border}} title="I don't have this">
+                    <Icon name="swap" size={13} color={cooking?'rgba(247,242,234,0.6)':T.inkFaint}/>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {/* Steps */}
+        <div className="mx-4 mt-6 mb-4">
+          <div className="font-bold text-base mb-3" style={{color:cooking?T.cookText:T.ink}}>Method</div>
+          <div className="space-y-3">
+            {recipe.steps.map((step,idx)=>{
+              const done=checkedSteps[step.id];
+              const expanded=expandedWhy[step.id];
+              return(
+                <div key={step.id} className="rounded-2xl overflow-hidden transition-all" style={{background:cooking?(done?'rgba(90,122,90,0.12)':'rgba(255,255,255,0.04)'):(done?T.sage+'18':T.cardBg),border:`1px solid ${done?T.sage+'44':cooking?'rgba(255,255,255,0.08)':T.border}`}}>
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <button onClick={()=>setCooking(true)||setCheckedSteps(p=>({...p,[step.id]:!p[step.id]}))} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs" style={{background:done?T.sage:cooking?'rgba(255,255,255,0.15)':T.border,color:done?T.cream:cooking?T.cream:T.ink,border:`1.5px solid ${done?T.sage:cooking?'rgba(255,255,255,0.2)':T.borderDark}`}}>
+                        {done?<span className="check-bounce"><Icon name="check" size={12} color={T.cream}/></span>:idx+1}
+                      </button>
+                      <div className="flex-1">
+                        <div className="font-bold text-sm mb-1" style={{color:cooking?T.cookText:T.ink}}>{step.title}</div>
+                        <div className="text-sm leading-relaxed" style={{color:cooking?'rgba(247,242,234,0.85)':T.inkLight}}>{step.content}</div>
+                        {step.timer&&<StepTimer seconds={step.timer}/>}
+                        {step.why&&(
+                          <button onClick={()=>setExpandedWhy(p=>({...p,[step.id]:!p[step.id]}))} className="flex items-center gap-1.5 mt-3 text-xs font-semibold" style={{color:cooking?'rgba(247,242,234,0.5)':T.inkFaint}}>
+                            <Icon name="info" size={13}/>
+                            Why? {expanded?<Icon name="chevUp" size={12}/>:<Icon name="chevDown" size={12}/>}
+                          </button>
+                        )}
+                        {step.why&&expanded&&(
+                          <div className="mt-2 p-3 rounded-xl text-xs leading-relaxed fade-in" style={{background:T.ochre+'14',color:cooking?T.ochre:T.inkLight}}>
+                            {step.why}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {/* Plan button */}
+        <div className="mx-4 mb-8">
+          <button onClick={()=>onPlan(recipe)} className="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2" style={{background:planned?T.sage:T.paprika,color:T.cream}}>
+            {planned?<><Icon name="check" size={18} color={T.cream}/>In your plan</>:<><Icon name="plus" size={18} color={T.cream}/>Add to plan</>}
+          </button>
+        </div>
+      </div>
+      {showSub&&<SubstitutionSheet recipe={recipe} ingredient={showSub} onClose={()=>setShowSub(null)} onApply={applyAdj}/>}
+    </div>
+  );
+}
+
+// ─── HOME ─────────────────────────────────────────────────────────────────────
+function Home({allRecipes,planned,favorites,onPlan,onFav,onOpen}){
+  const[q,setQ]=useState('');
+  const[cat,setCat]=useState('all');
+  const[showFavs,setShowFavs]=useState(false);
+  const cats=['all','beef','chicken','fish','pasta','noodles','eggs','vegetarian','levantine','bread','soup'];
+  const filtered=allRecipes.filter(r=>{
+    if(showFavs&&!favorites[r.id]) return false;
+    if(cat!=='all'&&r.category!==cat) return false;
+    if(q){
+      const s=q.toLowerCase();
+      return r.title.toLowerCase().includes(s)||r.tagline.toLowerCase().includes(s)||r.inspiration.toLowerCase().includes(s)||(r.tags||[]).some(t=>t.includes(s));
+    }
+    return true;
+  });
+  return(
+    <div className="flex flex-col min-h-screen" style={{background:T.parchment}}>
+      <div className="sticky top-0 z-10 px-4 pt-5 pb-3" style={{background:T.parchment,borderBottom:`1px solid ${T.border}`}}>
+        <div className="flex items-end justify-between mb-3">
+          <div>
+            <div className="serif font-black text-2xl leading-none" style={{color:T.ink}}>Mise</div>
+            <div className="text-xs mt-0.5 font-medium" style={{color:T.inkFaint}}>Your kitchen companion</div>
+          </div>
+          <button onClick={()=>setShowFavs(f=>!f)} className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold" style={{background:showFavs?T.paprika:T.border,color:showFavs?T.cream:T.ink}}>
+            <Icon name={showFavs?'heartFill':'heart'} size={13} color={showFavs?T.cream:T.ink}/>
+            Saved
+          </button>
+        </div>
+        <div className="relative mb-3">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2"><Icon name="search" size={16} color={T.inkFaint}/></div>
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search recipes, chefs, ingredients…" className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none" style={{background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink}}/>
+          {q&&<button onClick={()=>setQ('')} className="absolute right-3 top-1/2 -translate-y-1/2"><Icon name="x" size={14} color={T.inkFaint}/></button>}
+        </div>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          {cats.map(c=>(
+            <button key={c} onClick={()=>setCat(c)} className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold capitalize" style={{background:cat===c?T.ink:T.cardBg,color:cat===c?T.cream:T.ink,border:`1px solid ${cat===c?T.ink:T.border}`}}>{c}</button>
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 p-4">
+        {filtered.length===0?(
+          <div className="text-center py-16">
+            <div className="text-4xl mb-3">{showFavs?'💛':'🔍'}</div>
+            <div className="font-bold mb-1">{showFavs?'No saved recipes yet':'No results'}</div>
+            <div className="text-sm" style={{color:T.inkFaint}}>{showFavs?'Tap ♥ on a recipe card to save it':'Try a different search'}</div>
+          </div>
+        ):(
+          <div className="grid grid-cols-1 gap-4">
+            {filtered.map(r=>(
+              <RecipeCard key={r.id} recipe={r} query={q} onTap={onOpen} onPlan={onPlan} planned={!!planned.find(p=>p.id===r.id)} favorite={!!favorites[r.id]} onFav={onFav}/>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── PLAN & SHOP ──────────────────────────────────────────────────────────────
+function PlanAndShop({allRecipes,planned,onRemove,onOpen}){
+  const[tab,setTab]=useState('list');
+  const[checked,setChecked]=useState({});
+  const[servingsMap,setServingsMap]=useState(()=>Object.fromEntries(planned.map(p=>[p.id,p.baseServings])));
+  const[leftoversMap,setLeftoversMap]=useState(()=>Object.fromEntries(planned.map(p=>[p.id,'tonight'])));
+  useEffect(()=>{
+    setServingsMap(prev=>{
+      const next={...prev};
+      for(const p of planned) if(!(p.id in next)) next[p.id]=p.baseServings;
+      return next;
+    });
+    setLeftoversMap(prev=>{
+      const next={...prev};
+      for(const p of planned) if(!(p.id in next)) next[p.id]='tonight';
+      return next;
+    });
+  },[planned]);
+  const mealsForList=planned.map(r=>({recipe:r,servings:servingsMap[r.id]||r.baseServings,leftoversKey:leftoversMap[r.id]||'tonight'}));
+  const shoppingList=consolidateIngredients(mealsForList);
+  const toggleCheck=key=>setChecked(p=>({...p,[key]:!p[key]}));
+  const clearChecked=()=>setChecked({});
+  const checkedCount=Object.values(checked).filter(Boolean).length;
+  if(planned.length===0) return(
+    <div className="flex flex-col items-center justify-center min-h-screen px-8 text-center" style={{background:T.parchment}}>
+      <div className="text-5xl mb-4">🛒</div>
+      <div className="serif font-black text-xl mb-2">No meals planned yet</div>
+      <div className="text-sm" style={{color:T.inkFaint}}>Browse recipes and tap "Plan" to build your shopping list</div>
+    </div>
+  );
+  return(
+    <div className="flex flex-col min-h-screen" style={{background:T.parchment}}>
+      <div className="sticky top-0 z-10 px-4 pt-5 pb-0" style={{background:T.parchment,borderBottom:`1px solid ${T.border}`}}>
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <div className="serif font-black text-2xl leading-none">Plan & Shop</div>
+            <div className="text-xs mt-0.5 font-medium" style={{color:T.inkFaint}}>{planned.length} meal{planned.length!==1?'s':''} planned</div>
+          </div>
+          {tab==='list'&&checkedCount>0&&<button onClick={clearChecked} className="text-xs font-bold px-3 py-1.5 rounded-full" style={{background:T.border}}>Clear ticks ({checkedCount})</button>}
+        </div>
+        <div className="flex gap-1 mb-0">
+          {[['list','Shopping List'],['meals','Meals'],].map(([id,label])=>(
+            <button key={id} onClick={()=>setTab(id)} className="flex-1 py-2.5 text-sm font-bold rounded-t-xl transition-all" style={{background:tab===id?T.cardBg:T.parchment,color:tab===id?T.ink:T.inkFaint,borderBottom:`2px solid ${tab===id?T.paprika:'transparent'}`}}>{label}</button>
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {tab==='list'&&(
+          <div className="p-4">
+            {shoppingList.length===0?<div className="text-center py-12 text-sm" style={{color:T.inkFaint}}>Nothing to shop for yet</div>:(
+              <div className="space-y-1">
+                {shoppingList.map((item,i)=>{
+                  const key=`${item.name}__${item.unit}`;
+                  const done=checked[key];
+                  return(
+                    <button key={i} onClick={()=>toggleCheck(key)} className="w-full flex items-center gap-3 p-3.5 rounded-xl text-left" style={{background:done?T.sage+'18':T.cardBg,border:`1px solid ${done?T.sage+'44':T.border}`,opacity:done?0.5:1}}>
+                      <div className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0" style={{background:done?T.sage:T.border,border:`1.5px solid ${done?T.sage:T.borderDark}`}}>
+                        {done&&<span className="check-bounce"><Icon name="check" size={11} color={T.cream}/></span>}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-sm" style={{textDecoration:done?'line-through':'none'}}>{item.name}</span>
+                        <span className="ml-2 text-sm font-bold" style={{color:T.paprika}}>{formatAmount(item.amount)} {item.unit}</span>
+                        <div className="text-xs mt-0.5 lc1" style={{color:T.inkFaint}}>for: {item.recipes.join(', ')}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        {tab==='meals'&&(
+          <div className="p-4 space-y-3">
+            {planned.map(r=>{
+              const sv=servingsMap[r.id]||r.baseServings;
+              const lk=leftoversMap[r.id]||'tonight';
+              return(
+                <div key={r.id} className="rounded-2xl overflow-hidden" style={{background:T.cardBg,border:`1px solid ${T.border}`}}>
+                  <button onClick={()=>onOpen(r)} className="w-full flex items-center gap-3 p-3">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center text-2xl" style={{background:`linear-gradient(135deg,${r.heroColor}66,${r.heroColor}33)`}}>
+                      {r.heroImg?<img src={r.heroImg} className="w-full h-full object-cover" alt=""/>:r.heroEmoji}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-bold text-sm lc1">{r.title}</div>
+                      <div className="text-xs mt-0.5" style={{color:T.inkFaint}}>{r.inspiration} · {fmtTime(r.time)}</div>
+                    </div>
+                    <button onClick={e=>{e.stopPropagation();onRemove(r.id)}} className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{background:T.border}}>
+                      <Icon name="x" size={14} color={T.inkFaint}/>
+                    </button>
+                  </button>
+                  <div className="px-3 pb-3 border-t" style={{borderColor:T.border}}>
+                    <div className="flex items-center justify-between mt-3 mb-2">
+                      <span className="text-xs font-semibold">People</span>
+                      <div className="flex items-center gap-2">
+                        <button onClick={()=>setServingsMap(p=>({...p,[r.id]:Math.max(1,(p[r.id]||r.baseServings)-1)}))} className="w-7 h-7 rounded-full font-bold text-sm flex items-center justify-center" style={{background:T.border}}>−</button>
+                        <span className="font-black text-base w-5 text-center">{sv}</span>
+                        <button onClick={()=>setServingsMap(p=>({...p,[r.id]:Math.min(20,(p[r.id]||r.baseServings)+1)}))} className="w-7 h-7 rounded-full font-bold text-sm flex items-center justify-center" style={{background:T.ink,color:T.cream}}>+</button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {LEFTOVER_OPTIONS.map(o=>(
+                        <button key={o.id} onClick={()=>setLeftoversMap(p=>({...p,[r.id]:o.id}))} className="p-2 rounded-lg text-left text-xs" style={{background:lk===o.id?T.paprika:T.parchment,color:lk===o.id?T.cream:T.ink,border:`1px solid ${lk===o.id?T.paprika:T.border}`}}>
+                          <div className="font-bold">{o.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── ADD RECIPE ───────────────────────────────────────────────────────────────
+function AddRecipe({onSave}){
+  const[title,setTitle]=useState('');
+  const[tagline,setTagline]=useState('');
+  const[inspiration,setInspiration]=useState('');
+  const[sourceUrl,setSourceUrl]=useState('');
+  const[servings,setServings]=useState(4);
+  const[time,setTime]=useState(30);
+  const[diff,setDiff]=useState('easy');
+  const[cat,setCat]=useState('beef');
+  const[ings,setIngs]=useState([{id:'u1',name:'',amount:0,unit:'',scales:'linear',notes:''}]);
+  const[steps,setSteps]=useState([{id:'u1',title:'',content:'',timer:null,why:''}]);
+  const[saved,setSaved]=useState(false);
+  function addIng(){setIngs(i=>[...i,{id:'u'+Date.now(),name:'',amount:0,unit:'',scales:'linear',notes:''}]);}
+  function removeIng(id){setIngs(i=>i.filter(x=>x.id!==id));}
+  function updateIng(id,field,val){setIngs(i=>i.map(x=>x.id===id?{...x,[field]:val}:x));}
+  function addStep(){setSteps(s=>[...s,{id:'u'+Date.now(),title:'',content:'',timer:null,why:''}]);}
+  function removeStep(id){setSteps(s=>s.filter(x=>x.id!==id));}
+  function updateStep(id,field,val){setSteps(s=>s.map(x=>x.id===id?{...x,[field]:val}:x));}
+  function save(){
+    if(!title.trim()) return;
+    const cats=['beef','chicken','fish','pasta','noodles','eggs','vegetarian','soup','other'];
+    onSave({
+      id:'user-'+Date.now(),title:title.trim(),tagline:tagline.trim()||'My recipe',
+      category:cat,time,difficulty:diff,baseServings:servings,
+      inspiration:inspiration||'My own recipe',sourceUrl:sourceUrl||'',
+      heroEmoji:'🍽️',heroColor:'#8B7355',heroImg:null,
+      ingredients:ings.filter(i=>i.name.trim()),
+      steps:steps.filter(s=>s.content.trim()),tags:['personal'],
+    });
+    setSaved(true);
+    setTimeout(()=>setSaved(false),2000);
+    setTitle('');setTagline('');setIngs([{id:'u1',name:'',amount:0,unit:'',scales:'linear',notes:''}]);setSteps([{id:'u1',title:'',content:'',timer:null,why:''}]);
+  }
+  const inp="w-full px-3 py-2.5 rounded-xl text-sm outline-none";
+  const sty={background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink};
+  return(
+    <div className="flex flex-col min-h-screen" style={{background:T.parchment}}>
+      <div className="sticky top-0 z-10 px-4 pt-5 pb-3" style={{background:T.parchment,borderBottom:`1px solid ${T.border}`}}>
+        <div className="serif font-black text-2xl">Add your recipe</div>
+        <div className="text-xs mt-0.5 font-medium" style={{color:T.inkFaint}}>Same format as every other recipe. No second-class citizens.</div>
+      </div>
+      <div className="flex-1 p-4 space-y-5 pb-32 overflow-y-auto">
+        {/* Basic */}
+        <div className="space-y-2">
+          <div className="font-bold text-sm">The basics</div>
+          <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Recipe title *" className={inp} style={sty}/>
+          <input value={tagline} onChange={e=>setTagline(e.target.value)} placeholder="One-line description" className={inp} style={sty}/>
+          <input value={inspiration} onChange={e=>setInspiration(e.target.value)} placeholder="Where did this come from? (chef, person, book…)" className={inp} style={sty}/>
+          <input value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)} placeholder="Video or source URL (optional)" className={inp} style={sty}/>
+        </div>
+        {/* Meta */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1"><div className="text-xs font-semibold" style={{color:T.inkFaint}}>Serves</div>
+            <div className="flex items-center gap-2">
+              <button onClick={()=>setServings(s=>Math.max(1,s-1))} className="w-9 h-9 rounded-full font-bold" style={{background:T.border}}>−</button>
+              <span className="font-black text-xl text-center w-8">{servings}</span>
+              <button onClick={()=>setServings(s=>s+1)} className="w-9 h-9 rounded-full font-bold" style={{background:T.ink,color:T.cream}}>+</button>
+            </div>
+          </div>
+          <div className="space-y-1"><div className="text-xs font-semibold" style={{color:T.inkFaint}}>Time (mins)</div>
+            <input type="number" value={time} onChange={e=>setTime(+e.target.value)} className={inp} style={sty}/>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <div className="text-xs font-semibold mb-1" style={{color:T.inkFaint}}>Difficulty</div>
+            <select value={diff} onChange={e=>setDiff(e.target.value)} className={inp} style={sty}>
+              {['easy','medium','hard'].map(d=><option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="text-xs font-semibold mb-1" style={{color:T.inkFaint}}>Category</div>
+            <select value={cat} onChange={e=>setCat(e.target.value)} className={inp} style={sty}>
+              {['beef','chicken','fish','pasta','noodles','eggs','vegetarian','levantine','bread','soup','other'].map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+        {/* Ingredients */}
+        <div>
+          <div className="font-bold text-sm mb-2">Ingredients</div>
+          <div className="space-y-2">
+            {ings.map((ing,i)=>(
+              <div key={ing.id} className="p-3 rounded-xl space-y-2" style={{background:T.cardBg,border:`1px solid ${T.border}`}}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold" style={{color:T.inkFaint}}>Ingredient {i+1}</span>
+                  {ings.length>1&&<button onClick={()=>removeIng(ing.id)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{background:T.border}}><Icon name="x" size={12}/></button>}
+                </div>
+                <input value={ing.name} onChange={e=>updateIng(ing.id,'name',e.target.value)} placeholder="Name *" className={inp} style={sty}/>
+                <div className="flex gap-2">
+                  <input type="number" value={ing.amount||''} onChange={e=>updateIng(ing.id,'amount',+e.target.value)} placeholder="Amount" className={inp+" flex-1"} style={sty}/>
+                  <input value={ing.unit} onChange={e=>updateIng(ing.id,'unit',e.target.value)} placeholder="Unit (g, ml…)" className={inp+" flex-1"} style={sty}/>
+                </div>
+                <select value={ing.scales} onChange={e=>updateIng(ing.id,'scales',e.target.value)} className={inp} style={sty}>
+                  <option value="linear">Scales with portions</option>
+                  <option value="fixed">Fixed quantity</option>
+                  <option value="custom">Custom curve</option>
+                </select>
+                <input value={ing.notes} onChange={e=>updateIng(ing.id,'notes',e.target.value)} placeholder="Notes / substitution hint (optional)" className={inp} style={sty}/>
+              </div>
+            ))}
+          </div>
+          <button onClick={addIng} className="mt-2 w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{background:T.cardBg,border:`1px dashed ${T.borderDark}`,color:T.ink}}>
+            <Icon name="plus" size={14}/>Add ingredient
+          </button>
+        </div>
+        {/* Steps */}
+        <div>
+          <div className="font-bold text-sm mb-2">Steps</div>
+          <div className="space-y-2">
+            {steps.map((step,i)=>(
+              <div key={step.id} className="p-3 rounded-xl space-y-2" style={{background:T.cardBg,border:`1px solid ${T.border}`}}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold" style={{color:T.inkFaint}}>Step {i+1}</span>
+                  {steps.length>1&&<button onClick={()=>removeStep(step.id)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{background:T.border}}><Icon name="x" size={12}/></button>}
+                </div>
+                <input value={step.title} onChange={e=>updateStep(step.id,'title',e.target.value)} placeholder="Step title" className={inp} style={sty}/>
+                <textarea value={step.content} onChange={e=>updateStep(step.id,'content',e.target.value)} placeholder="What to do *" rows={3} className={inp+" resize-none"} style={sty}/>
+                <input type="number" value={step.timer||''} onChange={e=>updateStep(step.id,'timer',e.target.value?+e.target.value:null)} placeholder="Timer (seconds, optional)" className={inp} style={sty}/>
+                <textarea value={step.why} onChange={e=>updateStep(step.id,'why',e.target.value)} placeholder="Why? The underlying reason (optional but valuable)" rows={2} className={inp+" resize-none"} style={sty}/>
+              </div>
+            ))}
+          </div>
+          <button onClick={addStep} className="mt-2 w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{background:T.cardBg,border:`1px dashed ${T.borderDark}`,color:T.ink}}>
+            <Icon name="plus" size={14}/>Add step
+          </button>
+        </div>
+        {/* Save */}
+        <button onClick={save} disabled={!title.trim()} className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all" style={{background:saved?T.sage:title.trim()?T.paprika:T.border,color:T.cream,cursor:title.trim()?'pointer':'default'}}>
+          {saved?<><Icon name="check" size={18} color={T.cream}/>Recipe saved!</>:<><Icon name="plus" size={18} color={T.cream}/>Save recipe</>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App(){
+  const[view,setView]=useState('home');
+  const[activeRecipe,setActiveRecipe]=useState(null);
+  const[userRecipes,setUserRecipes]=useStorage('mise_user_recipes',[]);
+  const[planned,setPlanned]=useStorage('mise_planned',[]);
+  const[favorites,setFavorites]=useStorage('mise_favorites',{});
+  const[adjustments,setAdjustments]=useStorage('mise_adjustments',{});
+  const allRecipes=[...RECIPES,...userRecipes];
+  function openRecipe(r){setActiveRecipe(r);setView('detail');}
+  function plan(r){
+    setPlanned(p=>p.find(x=>x.id===r.id)?p.filter(x=>x.id!==r.id):[...p,r]);
+  }
+  function removePlan(id){setPlanned(p=>p.filter(x=>x.id!==id));}
+  function toggleFav(id){setFavorites(f=>({...f,[id]:!f[id]}));}
+  function saveUserRecipe(r){setUserRecipes(u=>[...u,r]);}
+  const planCount=planned.length;
+  if(view==='detail'&&activeRecipe) return(
+    <RecipeDetail
+      recipe={activeRecipe}
+      onBack={()=>setView('home')}
+      favorite={!!favorites[activeRecipe.id]}
+      onFav={toggleFav}
+      onPlan={plan}
+      planned={!!planned.find(p=>p.id===activeRecipe.id)}
+      adjustments={adjustments}
+      setAdjustments={setAdjustments}
+    />
+  );
+  return(
+    <div className="max-w-lg mx-auto">
+      <div className="relative" style={{minHeight:'100vh'}}>
+        <div className="pb-20">
+          {view==='home'&&<Home allRecipes={allRecipes} planned={planned} favorites={favorites} onPlan={plan} onFav={toggleFav} onOpen={openRecipe}/>}
+          {view==='shop'&&<PlanAndShop allRecipes={allRecipes} planned={planned} onRemove={removePlan} onOpen={openRecipe}/>}
+          {view==='add'&&<AddRecipe onSave={r=>{saveUserRecipe(r);setView('home');}}/>}
+        </div>
+        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 pb-4 pt-2 z-30" style={{background:'linear-gradient(to top,rgba(247,242,234,1) 60%,transparent)'}}>
+          <div className="flex gap-1 p-1.5 rounded-2xl" style={{background:T.ink,boxShadow:'0 8px 32px rgba(0,0,0,0.2)'}}>
+            {[['home','Kitchen','home'],['shop','Plan & Shop','cart'],['add','Add','plus']].map(([id,label,icon])=>(
+              <button key={id} onClick={()=>setView(id)} className="flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 relative" style={{background:view===id?T.paprika:'transparent',color:T.cream}}>
+                <Icon name={icon} size={16} color={T.cream}/>
+                <span className="text-xs font-bold">{label}</span>
+                {id==='shop'&&planCount>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-black flex items-center justify-center px-1" style={{background:T.ochre,color:T.ink}}>{planCount}</span>}
+              </button>
+            ))}
+          </div>
+        </nav>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
