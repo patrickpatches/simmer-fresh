@@ -172,6 +172,57 @@ function getAUFlag(name){
   return null;
 }
 
+// ─── PANTRY MATCHING ──────────────────────────────────────────────────────────
+const SYNONYMS={
+  'bell pepper':'capsicum','cilantro':'coriander','eggplant':'eggplant','aubergine':'eggplant',
+  'zucchini':'zucchini','courgette':'zucchini','scallion':'spring onion','green onion':'spring onion',
+  'shrimp':'prawn','shrimps':'prawn','ground beef':'beef mince','minced beef':'beef mince',
+  'heavy cream':'cream','double cream':'cream','thickened cream':'cream','crème fraîche':'sour cream',
+  'stock cube':'chicken stock','bouillon':'chicken stock','scallops':'scallop',
+  'spring onions':'spring onion','prawns':'prawn','tomatoes':'tomato','potatoes':'potato',
+  'eggs':'egg','lemons':'lemon','limes':'lime','mushrooms':'mushroom','onions':'onion',
+};
+
+const QUICK_STAPLES=[
+  {label:'🥚 Eggs',name:'eggs'},{label:'🧈 Butter',name:'butter'},
+  {label:'🫒 Olive oil',name:'olive oil'},{label:'🧄 Garlic',name:'garlic'},
+  {label:'🧅 Onion',name:'onion'},{label:'🍋 Lemon',name:'lemon'},
+  {label:'🥛 Milk',name:'milk'},{label:'🧀 Parmesan',name:'parmesan'},
+  {label:'🍅 Tomatoes',name:'tomatoes'},{label:'🫙 Salt',name:'salt'},
+  {label:'🌶 Pepper',name:'pepper'},{label:'🫙 Stock',name:'chicken stock'},
+  {label:'🥩 Chicken',name:'chicken breast'},{label:'🍖 Beef mince',name:'beef mince'},
+  {label:'🍚 Jasmine rice',name:'jasmine rice'},{label:'🍝 Pasta',name:'pasta'},
+  {label:'🥔 Potato',name:'potato'},{label:'🧈 Cream',name:'cream'},
+];
+
+function normIng(raw){
+  let n=(SYNONYMS[raw.toLowerCase()]||raw).toLowerCase();
+  return n
+    .replace(/\b(fresh|dried|ground|whole|raw|cooked|ripe|large|small|medium|finely|roughly|extra|virgin|pure|quality|good|day-old|toasted|sliced|diced|chopped|minced|shredded|grated|julienned|peeled|deseeded)\b/g,'')
+    .replace(/\(.*?\)/g,'').replace(/[^a-z\s]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function inPantry(ingName,pantry){
+  const ri=normIng(ingName);
+  if(!ri) return false;
+  return pantry.some(p=>{
+    const pi=normIng(p);
+    if(!pi||pi.length<2) return false;
+    if(ri===pi||ri.includes(pi)||pi.includes(ri)) return true;
+    const rw=ri.split(' ').filter(w=>w.length>3);
+    const pw=pi.split(' ').filter(w=>w.length>3);
+    return rw.some(w=>pi.includes(w))||pw.some(w=>ri.includes(w));
+  });
+}
+
+function scoreRecipe(recipe,pantry){
+  const core=recipe.ingredients.filter(i=>i.scales!=='fixed');
+  if(!core.length) return null;
+  const have=core.filter(i=>inPantry(i.name,pantry));
+  const missing=core.filter(i=>!inPantry(i.name,pantry));
+  return{score:have.length/core.length,have:have.length,missing:missing.map(i=>i.name),total:core.length};
+}
+
 // ─── RECIPES ─────────────────────────────────────────────────────────────────
 const RECIPES=[
 {
@@ -1883,6 +1934,8 @@ function Icon({name,size=20,color='currentColor',strokeWidth=1.8}){
     swap:<svg {...s}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
     tag:<svg {...s}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
     list:<svg {...s}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+    pantry:<svg {...s}><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="9" y1="8" x2="9" y2="14"/></svg>,
+    sparkle:<svg {...s} fill={color} stroke="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>,
   };
   return icons[name]||<svg {...s}/>;
 }
@@ -2786,6 +2839,277 @@ function AddRecipe({onSave}){
   );
 }
 
+// ─── PANTRY RECIPE CARD ───────────────────────────────────────────────────────
+function PantryRecipeCard({recipe,score,have,total,missing,onOpen}){
+  const isGood=missing.length===0;
+  const pct=Math.round(score*100);
+  const accent=isGood?T.sage:T.ochre;
+  return(
+    <button onClick={()=>onOpen(recipe)} className="press w-full text-left rounded-2xl overflow-hidden" style={{background:T.cardBg,border:`1px solid ${accent}44`}}>
+      <div className="flex items-stretch">
+        <div className="w-[84px] flex-shrink-0 relative img-skeleton" style={{minHeight:84}}>
+          {recipe.heroImg
+            ?<img src={recipe.heroImg} alt="" className="w-full object-cover" style={{height:84}}/>
+            :<div className="w-full flex items-center justify-center text-3xl" style={{height:84,background:`linear-gradient(135deg,${recipe.heroColor}55,${recipe.heroColor}22)`}}>{recipe.heroEmoji}</div>}
+          <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-black" style={{background:accent,color:'#fff'}}>{pct}%</div>
+        </div>
+        <div className="flex-1 p-3 min-w-0">
+          <div className="font-bold text-[14.5px] leading-tight lc1 mb-0.5">{recipe.title}</div>
+          <div className="text-[12.5px] lc2 leading-snug" style={{color:T.inkLight}}>{recipe.tagline}</div>
+          <div className="mt-2">
+            {isGood
+              ?<div className="flex items-center gap-1"><Icon name="check" size={11} color={T.sage}/><span className="text-[11px] font-bold" style={{color:T.sage}}>All ingredients in pantry</span></div>
+              :<div className="flex flex-wrap items-center gap-1">
+                <span className="text-[10.5px] font-black uppercase tracking-wide" style={{color:accent}}>Need: </span>
+                {missing.slice(0,3).map(m=><span key={m} className="text-[10.5px] px-1.5 py-0.5 rounded font-semibold" style={{background:accent+'18',color:accent}}>{m}</span>)}
+                {missing.length>3&&<span className="text-[10.5px]" style={{color:T.inkFaint}}>+{missing.length-3} more</span>}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ─── PANTRY ───────────────────────────────────────────────────────────────────
+function Pantry({allRecipes,onOpen}){
+  const[pantry,setPantry]=useStorage('sf_pantry',[]);
+  const[inputVal,setInputVal]=useState('');
+  const[apiKey,setApiKey]=useStorage('sf_apikey','');
+  const[showSettings,setShowSettings]=useState(false);
+  const[inventing,setInventing]=useState(false);
+  const[invented,setInvented]=useState(null);
+  const[inventError,setInventError]=useState(null);
+  const inputRef=useRef(null);
+
+  function addIngredient(raw){
+    const n=raw.replace(/,/g,'').trim().toLowerCase();
+    if(!n||pantry.includes(n)) return;
+    setPantry(p=>[...p,n]);
+  }
+  function removeIngredient(name){setPantry(p=>p.filter(i=>i!==name));}
+  function handleKey(e){
+    if((e.key===','||e.key==='Enter')&&inputVal.trim()){
+      e.preventDefault();addIngredient(inputVal);setInputVal('');
+    }else if(e.key==='Backspace'&&!inputVal&&pantry.length){
+      removeIngredient(pantry[pantry.length-1]);
+    }
+  }
+
+  const scored=useMemo(()=>{
+    if(!pantry.length) return[];
+    return allRecipes
+      .map(r=>{const s=scoreRecipe(r,pantry);return s?{recipe:r,...s}:null;})
+      .filter(Boolean)
+      .filter(s=>s.score>0||s.missing.length<=3)
+      .sort((a,b)=>b.score-a.score);
+  },[allRecipes,pantry]);
+
+  const canMake=scored.filter(s=>s.score>=0.8);
+  const almostThere=scored.filter(s=>s.score<0.8&&s.score>=0.35&&s.missing.length<=3);
+
+  async function invent(){
+    if(!apiKey.trim()){setShowSettings(true);inputRef.current&&inputRef.current.focus();return;}
+    setInventing(true);setInvented(null);setInventError(null);
+    const chefs=['Joshua Weissman','Andy Cooks','Gordon Ramsay'];
+    const chef=chefs[Math.floor(Math.random()*chefs.length)];
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'x-api-key':apiKey.trim(),'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({
+          model:'claude-haiku-4-5-20251001',max_tokens:1200,
+          messages:[{role:'user',content:`You are creating a recipe for an Australian cooking app in the style of ${chef}. The user has these ingredients: ${pantry.join(', ')}. Create a delicious whole-food recipe using primarily these ingredients. Rules: Australian English only (capsicum not bell pepper, coriander not cilantro, metric only). No preservatives or packaged seasoning mixes. Write steps in second-person present tense with a "why" for each. Respond ONLY with valid JSON: {"title":"...","tagline":"...","chef_style":"${chef}","ingredients":[{"amount":"...","unit":"...","name":"..."}],"steps":[{"title":"...","content":"...","why":"..."}]}`}]
+        })
+      });
+      if(!res.ok){const e=await res.json();throw new Error(e.error?.message||`API error ${res.status}`);}
+      const data=await res.json();
+      const match=data.content[0].text.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error('Could not parse recipe from response');
+      setInvented(JSON.parse(match[0]));
+    }catch(e){setInventError(e.message||'Something went wrong');}
+    finally{setInventing(false);}
+  }
+
+  const emptyState=!pantry.length;
+  const noMatches=pantry.length>0&&!canMake.length&&!almostThere.length;
+
+  return(
+    <div className="flex flex-col min-h-screen" style={{background:T.parchment}}>
+      {/* Header */}
+      <div className="sticky top-0 z-10" style={{background:'rgba(247,242,234,0.96)',backdropFilter:'blur(10px)',WebkitBackdropFilter:'blur(10px)',borderBottom:`1px solid ${T.border}`}}>
+        <div className="px-4 pt-5 pb-3">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="serif font-black text-[28px] leading-none tracking-[-0.025em]">Pantry</div>
+              <div className="serif-it text-[12.5px] mt-1" style={{color:T.inkLight}}>what can you cook right now?</div>
+            </div>
+            <button onClick={()=>setShowSettings(s=>!s)} aria-label="API key settings" className="press w-9 h-9 rounded-full flex items-center justify-center" style={{background:showSettings?T.ink:T.cardBg,border:`1px solid ${T.border}`}}>
+              <Icon name="edit" size={14} color={showSettings?T.cream:apiKey?T.sage:T.inkFaint}/>
+            </button>
+          </div>
+          {showSettings&&(
+            <div className="mb-3 p-3 rounded-xl fade-in" style={{background:T.cardBg,border:`1px solid ${T.border}`}}>
+              <div className="eyebrow mb-1.5">Anthropic API key — for AI recipe invention</div>
+              <input ref={inputRef} type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="sk-ant-api03-..." className="w-full px-3 py-2 rounded-lg text-[13px]" style={{background:T.parchment,border:`1px solid ${T.border}`,color:T.ink,fontFamily:'ui-monospace,monospace',outline:'none'}}/>
+              <div className="text-[10.5px] mt-1.5 leading-snug" style={{color:T.inkFaint}}>Stored locally on your device only. Production will use a server-side proxy — no key needed by end users.</div>
+            </div>
+          )}
+          {/* Tag input */}
+          <div
+            onClick={()=>{const el=document.getElementById('pantry-input');el&&el.focus();}}
+            className="px-3 py-2 rounded-2xl flex flex-wrap gap-1.5 items-center cursor-text"
+            style={{background:T.cardBg,border:`1.5px solid ${T.borderDark}`,minHeight:48}}
+          >
+            {pantry.map(p=>(
+              <span key={p} className="flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full text-[12.5px] font-semibold" style={{background:T.ink,color:T.cream}}>
+                {p}
+                <button onClick={e=>{e.stopPropagation();removeIngredient(p);}} aria-label={`Remove ${p}`} className="press w-5 h-5 rounded-full flex items-center justify-center" style={{background:'rgba(255,255,255,0.12)'}}>
+                  <Icon name="x" size={10} color="rgba(253,249,243,0.8)"/>
+                </button>
+              </span>
+            ))}
+            <input
+              id="pantry-input"
+              value={inputVal}
+              onChange={e=>setInputVal(e.target.value)}
+              onKeyDown={handleKey}
+              onBlur={()=>{if(inputVal.trim()){addIngredient(inputVal);setInputVal('');}}}
+              placeholder={pantry.length?'add more…':'type an ingredient, press Enter…'}
+              style={{flex:'1 1 120px',minWidth:80,background:'none',border:'none',outline:'none',fontSize:13,color:T.ink,fontFamily:'inherit',padding:'2px 0'}}
+              aria-label="Add ingredient"
+            />
+          </div>
+        </div>
+        {/* Quick add strip */}
+        <div className="px-4 pb-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            {QUICK_STAPLES.filter((s,i,arr)=>arr.findIndex(x=>x.name===s.name)===i&&!pantry.includes(s.name)).map(s=>(
+              <button key={s.name} onClick={()=>addIngredient(s.name)} className="press flex-shrink-0 px-2.5 py-1.5 rounded-full text-[12px] font-semibold whitespace-nowrap" style={{background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink}}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="flex-1 px-4 pt-4 pb-6">
+        {emptyState&&(
+          <div className="flex flex-col items-center justify-center py-14 fade-in text-center">
+            <div className="text-[48px] mb-3">🫙</div>
+            <div className="serif font-bold text-[20px] mb-2">What's in your kitchen?</div>
+            <div className="text-[13.5px] leading-relaxed max-w-[260px]" style={{color:T.inkFaint}}>Add ingredients above — we'll instantly show you what you can cook, and what you're one shop away from.</div>
+          </div>
+        )}
+
+        {noMatches&&(
+          <div className="flex flex-col items-center justify-center py-10 fade-in text-center">
+            <div className="text-[40px] mb-3">🤔</div>
+            <div className="serif font-bold text-[18px] mb-1">No matches yet</div>
+            <div className="text-[13px]" style={{color:T.inkFaint}}>Try adding a few more ingredients, or let AI invent something from what you have.</div>
+          </div>
+        )}
+
+        {canMake.length>0&&(
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-2.5">
+              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{background:T.sage}}/>
+              <span className="font-black text-[12px] uppercase tracking-wider" style={{color:T.sage}}>You can make these</span>
+              <span className="ml-auto text-[11px] font-bold num-tnum" style={{color:T.inkFaint}}>{canMake.length} recipe{canMake.length!==1?'s':''}</span>
+            </div>
+            <div className="space-y-2.5">
+              {canMake.map(s=><PantryRecipeCard key={s.recipe.id} {...s} onOpen={onOpen}/>)}
+            </div>
+          </div>
+        )}
+
+        {almostThere.length>0&&(
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-2.5">
+              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{background:T.ochre}}/>
+              <span className="font-black text-[12px] uppercase tracking-wider" style={{color:T.ochre}}>Almost there — grab 1–3 more</span>
+              <span className="ml-auto text-[11px] font-bold num-tnum" style={{color:T.inkFaint}}>{almostThere.length}</span>
+            </div>
+            <div className="space-y-2.5">
+              {almostThere.map(s=><PantryRecipeCard key={s.recipe.id} {...s} onOpen={onOpen}/>)}
+            </div>
+          </div>
+        )}
+
+        {/* AI invention section */}
+        {pantry.length>0&&(
+          <div className="mt-2">
+            <div className="p-4 rounded-2xl" style={{background:'linear-gradient(140deg,#1C1712 0%,#2D241E 100%)',border:'1px solid rgba(255,255,255,0.07)'}}>
+              <div className="flex items-start gap-3 mb-3.5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:T.paprika+'28',border:'1px solid rgba(196,66,42,0.2)'}}>
+                  <Icon name="sparkle" size={16} color={T.paprika}/>
+                </div>
+                <div>
+                  <div className="serif font-black text-[17px] leading-tight" style={{color:'#F7F2EA'}}>Invent me something</div>
+                  <div className="text-[12px] mt-0.5 leading-snug" style={{color:'rgba(247,242,234,0.45)'}}>Claude creates a whole-food recipe from exactly what you have</div>
+                </div>
+              </div>
+              <button onClick={invent} disabled={inventing} className="press w-full py-3.5 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2" style={{background:T.paprika,color:'#FDF9F3',opacity:inventing?0.75:1,boxShadow:'0 4px 16px rgba(196,66,42,0.3)'}}>
+                {inventing?<><Icon name="loader" size={16} color="#FDF9F3"/>Inventing your recipe…</>:<><Icon name="sparkle" size={15} color="#FDF9F3"/> Generate a recipe</>}
+              </button>
+              {!apiKey&&<div className="text-[10.5px] mt-2 text-center" style={{color:'rgba(247,242,234,0.3)'}}>Tap ✏️ above to add your Anthropic API key first</div>}
+              {inventError&&<div className="text-[12.5px] mt-2.5 p-3 rounded-xl" style={{background:'rgba(196,66,42,0.18)',color:'#E8604A',lineHeight:1.5}}>{inventError}</div>}
+            </div>
+
+            {invented&&(
+              <div className="mt-4 rounded-2xl overflow-hidden fade-in" style={{background:T.cardBg,border:`1px solid ${T.border}`}}>
+                {/* Hero */}
+                <div className="p-4 pb-3" style={{background:`linear-gradient(135deg,${T.sage}12,${T.ochre}08)`}}>
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full" style={{background:T.ochre+'22',color:T.ochre}}>✨ AI-generated</span>
+                    <span className="text-[10px] font-semibold" style={{color:T.inkFaint}}>in the style of {invented.chef_style}</span>
+                  </div>
+                  <div className="serif font-black text-[22px] leading-tight tracking-[-0.02em]" style={{color:T.ink}}>{invented.title}</div>
+                  {invented.tagline&&<div className="serif-it text-[14px] mt-1.5" style={{color:T.inkLight}}>{invented.tagline}</div>}
+                </div>
+                {/* Ingredients */}
+                <div className="px-4 py-3" style={{borderTop:`1px solid ${T.border}`}}>
+                  <div className="eyebrow mb-2">Ingredients</div>
+                  <div className="space-y-1.5">
+                    {(invented.ingredients||[]).map((ing,i)=>(
+                      <div key={i} className="flex items-baseline gap-2 text-[13.5px]">
+                        <span className="font-bold num-tnum flex-shrink-0" style={{color:T.ink}}>{ing.amount}{ing.unit?' '+ing.unit:''}</span>
+                        <span style={{color:T.inkLight}}>{ing.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Method */}
+                <div className="px-4 py-3" style={{borderTop:`1px solid ${T.border}`}}>
+                  <div className="eyebrow mb-2.5">Method</div>
+                  <div className="space-y-4">
+                    {(invented.steps||[]).map((step,i)=>(
+                      <div key={i} className="flex gap-3">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-[12px] serif mt-0.5" style={{background:T.parchment,border:`1.5px solid ${T.borderDark}`,color:T.ink}}>{i+1}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-[14px] mb-1 leading-snug">{step.title}</div>
+                          <div className="text-[13.5px] leading-relaxed" style={{color:T.inkLight}}>{step.content}</div>
+                          {step.why&&<div className="serif-it text-[12.5px] mt-1.5 leading-snug" style={{color:T.ochre}}>Because — {step.why}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Disclaimer */}
+                <div className="px-4 py-3" style={{borderTop:`1px solid ${T.border}`,background:T.parchment}}>
+                  <div className="text-[11px] leading-snug" style={{color:T.inkFaint}}>⚠️ AI-generated. Not tested, not attributed to any real chef's recipe. Cook with your own judgement — taste as you go.</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 function buzz(ms=10){try{navigator.vibrate&&navigator.vibrate(ms)}catch{}}
 
@@ -2819,13 +3143,14 @@ function App(){
       setAdjustments={setAdjustments}
     />
   );
-  const tabs=[['home','Kitchen','home'],['shop','Plan & Shop','cart'],['add','Add','plus']];
+  const tabs=[['home','Kitchen','home'],['pantry','Pantry','pantry'],['shop','Plan & Shop','cart'],['add','Add','plus']];
   const tabIdx=tabs.findIndex(t=>t[0]===view);
   return(
     <div className="max-w-lg mx-auto">
       <div className="relative" style={{minHeight:'100vh'}}>
         <div className="pb-nav">
           {view==='home'&&<Home allRecipes={allRecipes} planned={planned} favorites={favorites} onPlan={plan} onFav={toggleFav} onOpen={openRecipe}/>}
+          {view==='pantry'&&<Pantry allRecipes={allRecipes} onOpen={openRecipe}/>}
           {view==='shop'&&<PlanAndShop allRecipes={allRecipes} planned={planned} onRemove={removePlan} onOpen={openRecipe}/>}
           {view==='add'&&<AddRecipe onSave={r=>{saveUserRecipe(r);setView('home');}}/>}
         </div>
