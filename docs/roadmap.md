@@ -1,6 +1,6 @@
 # Simmer Fresh — Development Roadmap
 
-> Last updated: 2026-04-22. This is the working build plan. Update it as phases complete or priorities shift.
+> Last updated: 2026-04-22 (session 2). This is the working build plan. Update it as phases complete or priorities shift.
 
 ## Status legend
 - ⬜ Not started
@@ -14,9 +14,9 @@
 **Delivery:** GitHub Pages (patrickpatches account, no new accounts needed)  
 **Effort:** ~1–2 hours
 
-- ✅ mise.html prototype (22 recipes, core loop)
-- ⬜ Create GitHub repo `simmer-fresh` under patrickpatches
-- ⬜ Deploy mise.html to GitHub Pages → `patrickpatches.github.io/simmer-fresh`
+- ✅ simmer-fresh.html prototype (30 recipes, dual-axis categories, core loop)
+- ✅ Create GitHub repo `simmer-fresh` under patrickpatches
+- ✅ Deploy to GitHub Pages → `patrickpatches.github.io/simmer-fresh`
 - ⬜ Verify it loads and is usable on Android Chrome
 
 ---
@@ -25,10 +25,12 @@
 **Goal:** Every ingredient in every recipe has a `substitutions[]` array. This is the foundation for the shopping list, ingredient swaps, and the future pantry feature.  
 **Effort:** ~1 session
 
-- ⬜ Update Zod schema in `mobile/src/data/types.ts` to add `substitutions[]` per ingredient
-- ⬜ Add `categories[]` (cuisine + type) and `whole_food_verified: true` to recipe type
-- ⬜ Rewrite existing seed recipes to conform to new schema
-- ⬜ Validate schema passes Zod checks
+- ✅ Update Zod schema in `mobile/src/data/types.ts` — added `CuisineId`, `TypeId`, `SwapQuality`, `Substitution` types + `substitutions[]` on Ingredient
+- ✅ Added `categories` (cuisines + types dual-axis) and `whole_food_verified` to Recipe schema with refine validation
+- ✅ All 28 seed recipes updated with correct categories and `whole_food_verified: true`
+- ✅ Full substitution data on SMASH_BURGER (6 ingredients, 13 swaps), PASTA_CARBONARA (3 ingredients, 6 swaps), MUSAKHAN (3 ingredients, 7 swaps)
+- ✅ TypeScript check passes — 0 errors
+- ✅ Fixed pre-existing package.json truncation bug
 
 ---
 
@@ -38,20 +40,26 @@
 **Effort:** 2–3 sessions
 
 **Cuisine targets:**
-- ⬜ Levantine — musakhan, kafta, hummus, fattoush, kibbeh, shawarma (no Israeli labels)
-- ⬜ Indian — butter chicken (from scratch), dal tadka, biryani, saag paneer
-- ⬜ Malaysian — nasi lemak, laksa, char kway teow, rendang
-- ⬜ Japanese — ramen, teriyaki chicken, gyoza, miso soup (real miso)
-- ⬜ Thai — green curry, pad thai, tom yum, larb
-- ⬜ Italian — carbonara, risotto, bolognese, pizza dough
-- ⬜ American — smash burger, BBQ brisket, mac and cheese (from scratch)
-- ⬜ Australian — barramundi, lamingtons, pavlova, kangaroo (if appropriate)
+- ✅ Levantine — musakhan, kafta, hummus, fattoush, shawarma (no Israeli labels)
+- ✅ Indian — butter chicken (from scratch), saag paneer, dal (existing)
+- ✅ Malaysian — nasi lemak, curry laksa, char kway teow, beef rendang
+- 🔄 Japanese — ramen (existing), chicken katsu ✅, gyoza, miso soup ⬜
+- 🔄 Thai — green curry (existing), pad thai (existing), tom yum ✅, larb ⬜
+- 🔄 Italian — carbonara (existing), risotto (existing), bolognese (existing), pizza dough ⬜
+- 🔄 American — smash burger (existing), BBQ brisket ⬜, mac and cheese ⬜
+- ✅ Australian — barramundi, pavlova
 
 **Type targets:**
-- ⬜ Burgers — smash burger (existing), chicken burger, lamb burger
-- ⬜ Seafood — prawns, barramundi, salmon, fish tacos
-- ⬜ Chicken — roast chicken (existing), adobo (existing), katsu, shawarma
-- ⬜ Soups & Stews — beef stew (existing), french onion (existing), ramen (existing)
+- ✅ Burgers — smash burger (existing)
+- ✅ Seafood — prawns, barramundi, fish tacos (existing), curry laksa
+- ✅ Chicken — roast chicken (existing), adobo (existing), katsu, butter chicken
+- ✅ Soups & Stews — beef stew (existing), french onion (existing), ramen (existing), tom yum
+
+**Bug fixes completed this session:**
+- ✅ DB schema.ts — added `categories`, `whole_food_verified`, `substitutions` columns + SCHEMA_MIGRATIONS migration system
+- ✅ DB database.ts — updated RecipeRow/IngredientRow interfaces, rowToRecipe/rowToIngredient mappers, insertRecipe SQL, migration runner in initDatabase
+- ✅ pantry-helpers.ts — added Malaysian/Indian/Australian ingredient categorisation (belacan, galangal, lemongrass, kaffir lime, barramundi, lap cheong, etc.)
+- ✅ seed-recipes.ts — fixed Andy Cooks YouTube URL (@AndyCooks → @andy_cooks) across all 5 affected recipes
 
 ---
 
