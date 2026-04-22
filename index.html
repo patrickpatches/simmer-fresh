@@ -89,7 +89,7 @@ const T={
   border:'#E8DDD0',
   borderDark:'#C8B8A8',
   cardBg:'#FDFAF6',
-  cookBg:'#1C1712',
+  cookBg:'#000000',
   cookText:'#F7F2EA',
 };
 
@@ -1861,6 +1861,7 @@ function Icon({name,size=20,color='currentColor',strokeWidth=1.8}){
     cart:<svg {...s}><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
     plus:<svg {...s}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
     back:<svg {...s}><polyline points="15 18 9 12 15 6"/></svg>,
+    forward:<svg {...s}><polyline points="9 6 15 12 9 18"/></svg>,
     heart:<svg {...s}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
     heartFill:<svg {...s} fill={color}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
     search:<svg {...s}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
@@ -2092,10 +2093,22 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
   const[people,setPeople]=useState(recipe.baseServings);
   const[leftover,setLeftover]=useState('tonight');
   const[cooking,setCooking]=useState(false);
+  const[activeStep,setActiveStep]=useState(0);
   const[checkedIngs,setCheckedIngs]=useState({});
   const[checkedSteps,setCheckedSteps]=useState({});
   const[showSub,setShowSub]=useState(null);
   const[expandedWhy,setExpandedWhy]=useState({});
+  const wakeLockRef=useRef(null);
+  useEffect(()=>{
+    if(!cooking) return;
+    (async()=>{try{wakeLockRef.current=await navigator.wakeLock.request('screen');}catch(e){}})();
+    return()=>{if(wakeLockRef.current){wakeLockRef.current.release();wakeLockRef.current=null;}};
+  },[cooking]);
+  function startCooking(){
+    const fi=recipe.steps.findIndex(s=>!checkedSteps[s.id]);
+    setActiveStep(fi>=0?fi:0);
+    setCooking(true);
+  }
   const opt=LEFTOVER_OPTIONS.find(o=>o.id===leftover)||LEFTOVER_OPTIONS[0];
   const totalPortions=opt.multiplier?opt.multiplier*recipe.baseServings:people+(opt.extra||0);
   const factor=totalPortions/recipe.baseServings;
@@ -2112,8 +2125,108 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
   }
   const[heroLoaded,setHeroLoaded]=useState(false);
   const hasHero=!!recipe.heroImg;
+
+  // ─── COOK MODE OVERLAY ─────────────────────────────────────────────────────
+  if(cooking){
+    const step=recipe.steps[activeStep];
+    const isFirst=activeStep===0;
+    const isLast=activeStep===recipe.steps.length-1;
+    const expanded=expandedWhy[step.id];
+    const doneSoFar=Object.values(checkedSteps).filter(Boolean).length;
+    const pct=Math.round((doneSoFar/recipe.steps.length)*100);
+    function markAndAdvance(){
+      setCheckedSteps(p=>({...p,[step.id]:true}));
+      buzz();
+      if(!isLast) setActiveStep(s=>s+1);
+      else setCooking(false);
+    }
+    return(
+      <div style={{position:'fixed',inset:0,zIndex:50,background:'#000',color:'#F7F2EA',display:'flex',flexDirection:'column',fontFamily:"'Manrope',system-ui,sans-serif"}}>
+        {/* Progress bar */}
+        <div style={{height:3,background:'rgba(255,255,255,0.07)',flexShrink:0}}>
+          <div style={{height:'100%',background:T.paprika,width:pct+'%',transition:'width 0.5s ease'}}/>
+        </div>
+        {/* Top bar */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 20px',flexShrink:0}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'rgba(247,242,234,0.38)'}}>
+            Step {activeStep+1} <span style={{opacity:0.5}}>/ {recipe.steps.length}</span>
+          </div>
+          <button onClick={()=>setCooking(false)} style={{fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(247,242,234,0.4)',background:'none',border:'1px solid rgba(255,255,255,0.12)',borderRadius:20,padding:'6px 14px',cursor:'pointer'}}>
+            Exit
+          </button>
+        </div>
+        {/* Step content */}
+        <div style={{flex:1,overflowY:'auto',padding:'0 20px 16px',display:'flex',flexDirection:'column'}}>
+          {/* Big step number watermark */}
+          <div style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:96,fontWeight:900,lineHeight:1,color:'rgba(255,255,255,0.04)',marginBottom:-28,marginLeft:-4,letterSpacing:'-0.04em',userSelect:'none',flexShrink:0}}>
+            {activeStep+1}
+          </div>
+          {/* Title */}
+          <div style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:28,fontWeight:900,lineHeight:1.12,letterSpacing:'-0.02em',marginBottom:16,flexShrink:0}}>
+            {step.title}
+          </div>
+          {/* Body */}
+          <div style={{fontSize:17,lineHeight:1.78,color:'rgba(247,242,234,0.88)',flexShrink:0}}>
+            {step.content}
+          </div>
+          {/* Timer */}
+          {step.timer&&(
+            <div style={{marginTop:24,flexShrink:0}}>
+              <StepTimer seconds={step.timer}/>
+            </div>
+          )}
+          {/* Why / Chef's note */}
+          {step.why&&(
+            <div style={{marginTop:24,flexShrink:0}}>
+              <button
+                onClick={()=>setExpandedWhy(p=>({...p,[step.id]:!p[step.id]}))}
+                aria-expanded={expanded}
+                style={{display:'flex',alignItems:'center',gap:6,fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(247,242,234,0.38)',background:'none',border:'none',cursor:'pointer',padding:0}}
+              >
+                <Icon name="info" size={13} color="rgba(247,242,234,0.38)"/>
+                Chef's note
+                <span style={{transform:expanded?'rotate(180deg)':'none',transition:'transform 0.25s',display:'flex'}}>
+                  <Icon name="chevDown" size={12} color="rgba(247,242,234,0.38)"/>
+                </span>
+              </button>
+              {expanded&&(
+                <div className="fade-in" style={{marginTop:10,padding:'12px 14px',borderRadius:12,background:'rgba(212,144,10,0.14)',borderLeft:`2px solid ${T.ochre}`,fontSize:14,lineHeight:1.65}}>
+                  <span style={{fontFamily:"'Fraunces',Georgia,serif",fontStyle:'italic',color:T.ochre}}>Because — </span>
+                  <span style={{color:'rgba(247,242,234,0.82)'}}>{step.why}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* Bottom navigation */}
+        <div style={{flexShrink:0,padding:'12px 16px',paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))',borderTop:'1px solid rgba(255,255,255,0.07)',display:'flex',gap:10}}>
+          <button
+            onClick={()=>setActiveStep(s=>s-1)}
+            disabled={isFirst}
+            aria-label="Previous step"
+            className="press"
+            style={{width:52,height:52,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',background:isFirst?'rgba(255,255,255,0.03)':'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.08)',color:isFirst?'rgba(255,255,255,0.15)':'rgba(247,242,234,0.75)',cursor:isFirst?'default':'pointer',flexShrink:0,transition:'opacity 0.2s'}}
+          >
+            <Icon name="back" size={20} color={isFirst?'rgba(255,255,255,0.15)':'rgba(247,242,234,0.75)'}/>
+          </button>
+          <button
+            onClick={markAndAdvance}
+            aria-label={isLast?'Finish recipe':'Mark done and go to next step'}
+            className="press"
+            style={{flex:1,height:52,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontWeight:800,fontSize:15,letterSpacing:'-0.01em',background:T.paprika,color:'#FDF9F3',border:'none',cursor:'pointer',boxShadow:'0 4px 20px rgba(196,66,42,0.32)'}}
+          >
+            {isLast
+              ?<><Icon name="check" size={18} color="#FDF9F3"/> Finish</>
+              :<>Done <Icon name="forward" size={18} color="#FDF9F3"/></>
+            }
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return(
-    <div className="slide-right flex flex-col min-h-screen" style={{background:cooking?T.cookBg:T.parchment,color:cooking?T.cookText:T.ink,transition:'background 0.4s,color 0.4s'}}>
+    <div className="slide-right flex flex-col min-h-screen" style={{background:T.parchment,color:T.ink}}>
       {/* Header */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3" style={{background:cooking?'rgba(28,23,18,0.92)':'rgba(247,242,234,0.92)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',borderBottom:`1px solid ${cooking?'rgba(255,255,255,0.08)':T.border}`}}>
         <button onClick={onBack} aria-label="Back" className="press w-10 h-10 rounded-full flex items-center justify-center" style={{background:cooking?'rgba(255,255,255,0.1)':T.cardBg,border:`1px solid ${cooking?'rgba(255,255,255,0.12)':T.border}`}}>
@@ -2123,7 +2236,7 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
           <button onClick={()=>onFav(recipe.id)} aria-label={favorite?'Remove from saved':'Save recipe'} aria-pressed={favorite} className="press w-10 h-10 rounded-full flex items-center justify-center" style={{background:cooking?'rgba(255,255,255,0.1)':T.cardBg,border:`1px solid ${cooking?'rgba(255,255,255,0.12)':T.border}`}}>
             <Icon name={favorite?'heartFill':'heart'} size={17} color={favorite?T.paprika:cooking?T.cream:T.ink}/>
           </button>
-          <button onClick={()=>setCooking(c=>!c)} aria-pressed={cooking} className="press h-10 px-4 rounded-full font-bold text-sm" style={{background:cooking?T.paprika:T.ink,color:T.cream,boxShadow:'0 4px 14px rgba(28,23,18,0.22)'}}>
+          <button onClick={()=>{cooking?setCooking(false):startCooking();}} aria-pressed={cooking} className="press h-10 px-4 rounded-full font-bold text-sm" style={{background:cooking?T.paprika:T.ink,color:T.cream,boxShadow:'0 4px 14px rgba(28,23,18,0.22)'}}>
             {cooking?'Exit cook mode':'Start cooking'}
           </button>
         </div>
@@ -2160,18 +2273,6 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
             </div>
           ))}
         </div>
-        {/* Cook mode progress */}
-        {cooking&&doneCount>0&&(
-          <div className="mx-4 mt-4 p-3 rounded-xl" style={{background:'rgba(255,255,255,0.06)'}}>
-            <div className="flex items-center justify-between text-sm mb-2" style={{color:T.cookText}}>
-              <span className="font-semibold">Progress</span>
-              <span style={{color:T.ochre}}>{doneCount}/{totalSteps} steps</span>
-            </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{background:'rgba(255,255,255,0.1)'}}>
-              <div className="h-full rounded-full transition-all duration-500" style={{width:`${(doneCount/totalSteps)*100}%`,background:T.ochre}}/>
-            </div>
-          </div>
-        )}
         {/* Scaling */}
         <div className="mx-4 mt-4 p-4 rounded-2xl" style={{background:T.cardBg,border:`1px solid ${T.border}`,color:T.ink}}>
           <div className="eyebrow mb-3">How many?</div>
@@ -2235,8 +2336,8 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
         {/* Steps */}
         <div className="mx-4 mt-6 mb-4">
           <div className="flex items-baseline justify-between mb-3">
-            <div className="serif font-black text-[22px] tracking-[-0.015em]" style={{color:cooking?T.cookText:T.ink}}>Method</div>
-            {cooking&&<div className="text-[11px] uppercase tracking-wider font-bold num-tnum" style={{color:T.ochre}}>{doneCount}/{totalSteps}</div>}
+            <div className="serif font-black text-[22px] tracking-[-0.015em]" style={{color:T.ink}}>Method</div>
+            {doneCount>0&&<div className="text-[11px] uppercase tracking-wider font-bold num-tnum" style={{color:T.ochre}}>{doneCount}/{totalSteps} done</div>}
           </div>
           <div className="space-y-3">
             {recipe.steps.map((step,idx)=>{
@@ -2246,7 +2347,7 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
                 <div key={step.id} className="rounded-2xl overflow-hidden transition-all duration-300" style={{background:cooking?(done?'rgba(90,122,90,0.14)':'rgba(255,255,255,0.035)'):(done?T.sage+'14':T.cardBg),border:`1px solid ${done?T.sage+'44':cooking?'rgba(255,255,255,0.08)':T.border}`}}>
                   <div className="p-4">
                     <div className="flex items-start gap-3">
-                      <button onClick={()=>setCooking(true)||setCheckedSteps(p=>({...p,[step.id]:!p[step.id]}))} aria-label={done?`Untick step ${idx+1}`:`Complete step ${idx+1}`} aria-pressed={done} className="press w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm serif num-tnum" style={{background:done?T.sage:cooking?'rgba(255,255,255,0.12)':T.parchment,color:done?T.cream:cooking?T.cream:T.ink,border:`1.5px solid ${done?T.sage:cooking?'rgba(255,255,255,0.2)':T.borderDark}`}}>
+                      <button onClick={()=>setCheckedSteps(p=>({...p,[step.id]:!p[step.id]}))} aria-label={done?`Untick step ${idx+1}`:`Complete step ${idx+1}`} aria-pressed={done} className="press w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm serif num-tnum" style={{background:done?T.sage:T.parchment,color:done?T.cream:T.ink,border:`1.5px solid ${done?T.sage:T.borderDark}`}}>
                         {done?<span className="check-bounce"><Icon name="check" size={13} color={T.cream}/></span>:idx+1}
                       </button>
                       <div className="flex-1 min-w-0">
