@@ -189,11 +189,13 @@ Design doc: `docs/pantry-to-recipe.md`
 - Don't reintroduce voice input without Patrick explicitly asking.
 - Don't reintroduce knuckle-tap cook mode without Patrick explicitly asking.
 
-## Current status (updated 2026-04-22)
+## Current status (updated 2026-04-22, session 3)
 
 - **Target launch:** ~June 2026 (~8 weeks). Play Console verification is the long pole.
-- **Live prototype:** `mise.html` at project root — single-file React + Tailwind, 22 recipes, core loop working. Design reference.
-- **Expo scaffold:** `mobile/` — Expo SDK 54, TypeScript, expo-router, NativeWind, expo-sqlite. Needs to catch up to `mise.html` and incorporate all new feature decisions above.
+- **Live prototype:** `simmer-fresh.html` at project root — single-file React + Tailwind, **44 recipes**, core loop + dual-axis categories + Phase 4 shopping list. Deployed to GitHub Pages as `index.html`.
+- **Phase 3 ✅:** Recipe library expanded to 44 recipes. All cuisines represented. Attribution on every recipe.
+- **Phase 4 ✅:** Shopping list grouped by aisle (Produce/Meat & Seafood/Dairy & Eggs/Bakery/Pantry), Australian hard-to-find ingredient tips, Web Share API export with clipboard fallback.
+- **Expo scaffold:** `mobile/` — Expo SDK 54, TypeScript, expo-router, NativeWind, expo-sqlite. Needs to catch up to `simmer-fresh.html`.
 - **Archived:** `docs/archive/meal-master.html`
 - **ADRs:** `docs/adr/` — stack (001), delivery (002)
-- **Next priority:** Expand recipe library (Andy Cooks, Joshua Weissman, Ramsay), add substitutions data structure, build shopping list feature, deploy PWA to Cloudflare Pages.
+- **Next priority:** Phase 5 — substitutions UI (ingredient dropdown showing swap options inline). Then Phase 6 cook mode.
