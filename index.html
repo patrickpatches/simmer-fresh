@@ -155,6 +155,186 @@ const AU_HARD={
   'fish sauce':   'All major supermarkets — look for Tiparos or Squid brand',
 };
 
+// ─── SUBSTITUTION DATABASE ────────────────────────────────────────────────────
+// Covers common ingredients by keyword — supplements per-recipe substitutions[]
+const SUBS_DB={
+  // Proteins
+  'guanciale':[
+    {ingredient:'Pancetta',notes:'Same cure style, slightly milder. Available at delis and some supermarkets.',quality:'good'},
+    {ingredient:'Streaky bacon',notes:'Smokier flavour — works well but shifts the dish slightly. Widely available.',quality:'compromise'},
+  ],
+  'pancetta':[
+    {ingredient:'Streaky bacon',notes:'Smoked rather than cured — adds a smokier note but works well.',quality:'good'},
+    {ingredient:'Guanciale',notes:'Richer and fattier — actually more traditional in carbonara.',quality:'good'},
+  ],
+  'pork belly':[
+    {ingredient:'Pork shoulder',notes:'Leaner — add a splash of oil when rendering. Same slow-cook time.',quality:'good'},
+    {ingredient:'Thick-cut bacon',notes:'Pre-cured shortcut. Less collagen so the braise will be less silky.',quality:'compromise'},
+  ],
+  'barramundi':[
+    {ingredient:'Snapper',notes:'Very close texture and mild flavour. Best swap for any barramundi dish.',quality:'good'},
+    {ingredient:'Flathead',notes:'Slightly firmer. Holds up well to pan-frying.',quality:'good'},
+    {ingredient:'Bream',notes:'More delicate — handle gently. Good flavour match.',quality:'good'},
+    {ingredient:'Salmon',notes:'Oilier and richer. Changes the profile significantly but still delicious.',quality:'compromise'},
+  ],
+  'chicken thigh':[
+    {ingredient:'Chicken drumstick',notes:'Same dark meat, stays juicy. Add 5 min to cooking time.',quality:'good'},
+    {ingredient:'Chicken breast',notes:'Dries out faster — reduce heat and cooking time.',quality:'compromise'},
+  ],
+  'chicken breast':[
+    {ingredient:'Chicken thigh (boneless)',notes:'Juicier and more forgiving. Recommended over breast for most dishes.',quality:'good'},
+  ],
+  'lamb shoulder':[
+    {ingredient:'Lamb leg',notes:'Leaner — excellent flavour but less yielding fat. Reduce cooking time 20 min.',quality:'good'},
+    {ingredient:'Goat shoulder',notes:'Very similar fat distribution, slightly gamier. Cook the same way.',quality:'good'},
+  ],
+  'beef chuck':[
+    {ingredient:'Gravy beef',notes:'Similar collagen content — becomes just as silky when braised.',quality:'good'},
+    {ingredient:'Oyster blade',notes:'Well-marbled and rich. Excellent for slow braises.',quality:'good'},
+    {ingredient:'Brisket',notes:'Slightly fattier — needs longer cooking but results are exceptional.',quality:'good'},
+  ],
+  // Dairy
+  'pecorino':[
+    {ingredient:'Parmigiano Reggiano',notes:'Slightly less sharp and salty. Closest widely-available swap.',quality:'good'},
+    {ingredient:'Parmesan',notes:'Australian parmesan is a little milder — fine in most dishes.',quality:'good'},
+  ],
+  'gruyère':[
+    {ingredient:'Swiss cheese',notes:'Milder but melts the same way. Good for gratins.',quality:'good'},
+    {ingredient:'Comté',notes:'Nutty and complex — actually better than gruyère in many uses.',quality:'good'},
+    {ingredient:'Raclette',notes:'Excellent melting cheese. Very similar in a gratin.',quality:'good'},
+    {ingredient:'Emmental',notes:'Milder flavour, same excellent melting quality.',quality:'good'},
+  ],
+  'pure cream':[
+    {ingredient:'Thickened cream',notes:'Has added thickener — slightly different texture but works the same.',quality:'good'},
+    {ingredient:'Crème fraîche',notes:'Tangier and thicker. Won\'t split when boiled. Excellent swap.',quality:'good'},
+    {ingredient:'Coconut cream',notes:'Changes flavour to coconut — good in curries, avoid in French sauces.',quality:'compromise'},
+  ],
+  'full-fat yoghurt':[
+    {ingredient:'Sour cream',notes:'Richer and tangier. Use in the same quantity.',quality:'good'},
+    {ingredient:'Crème fraîche',notes:'Closest in fat content and tang. Excellent swap.',quality:'good'},
+  ],
+  'unsalted butter':[
+    {ingredient:'Salted butter',notes:'Reduce any added salt by half to compensate.',quality:'good'},
+    {ingredient:'Ghee',notes:'Higher smoke point and slightly nuttier. Works well for cooking.',quality:'good'},
+  ],
+  'mozzarella':[
+    {ingredient:'Bocconcini',notes:'Same cheese, smaller balls. Slice or tear the same way.',quality:'good'},
+    {ingredient:'Burrata',notes:'Creamier centre — even better fresh. More expensive.',quality:'good'},
+    {ingredient:'Provolone',notes:'Firmer and sharper. Melts beautifully on pizza.',quality:'compromise'},
+  ],
+  // Asian pantry
+  'fish sauce':[
+    {ingredient:'Light soy sauce + rice vinegar (4:1)',notes:'Soy gives umami, vinegar gives brine. Less funky but close.',quality:'compromise'},
+    {ingredient:'Tamari',notes:'Gluten-free option. Less complex — use 80% of quantity.',quality:'compromise'},
+  ],
+  'tamarind':[
+    {ingredient:'Lime juice + brown sugar (3:1)',notes:'Closest swap for sweet-sour balance. 1 tbsp lime per 1 tbsp tamarind.',quality:'compromise'},
+    {ingredient:'Rice wine vinegar + sugar',notes:'More acidic, less fruity. Works as a last resort.',quality:'compromise'},
+  ],
+  'miso':[
+    {ingredient:'Red miso',notes:'Stronger and saltier — use slightly less. Robust in stews.',quality:'good'},
+    {ingredient:'White miso',notes:'Milder and sweeter. Works in dressings and lighter broths.',quality:'good'},
+    {ingredient:'Barley miso',notes:'Earthier and slightly sweet. Very versatile.',quality:'good'},
+  ],
+  'oyster sauce':[
+    {ingredient:'Mushroom oyster sauce',notes:'Vegan alternative — same consistency and umami. Near-identical.',quality:'good'},
+    {ingredient:'Hoisin sauce',notes:'Sweeter and less briny. Use 80% of the quantity.',quality:'compromise'},
+  ],
+  'rice wine vinegar':[
+    {ingredient:'White wine vinegar',notes:'Slightly more acidic. Use 80% of the quantity.',quality:'good'},
+    {ingredient:'Apple cider vinegar',notes:'Mild apple note — works in dressings and marinades.',quality:'good'},
+  ],
+  'shaoxing':[
+    {ingredient:'Dry sherry',notes:'Closest readily available swap. Near-identical nutty note.',quality:'good'},
+    {ingredient:'Dry white wine',notes:'Lighter flavour but works well in stir-fries.',quality:'compromise'},
+  ],
+  'palm sugar':[
+    {ingredient:'Coconut sugar',notes:'Less sweet and more caramel — actually closer to palm sugar.',quality:'good'},
+    {ingredient:'Brown sugar',notes:'More refined but works in all the same places.',quality:'good'},
+    {ingredient:'Light muscovado',notes:'More molasses flavour. Lovely in marinades and curries.',quality:'good'},
+  ],
+  'galangal':[
+    {ingredient:'Fresh ginger',notes:'Spicier and sharper. Use 80% of quantity — dish will taste gingery not earthy.',quality:'compromise'},
+    {ingredient:'Galangal paste',notes:'In tubes at Asian grocers. 1 tsp paste per 1cm fresh.',quality:'good'},
+  ],
+  'kaffir lime':[
+    {ingredient:'Lime zest',notes:'1 tsp zest per 4 leaves. Loses the floral quality but keeps the citrus note.',quality:'compromise'},
+    {ingredient:'Dried kaffir lime leaves',notes:'Double the quantity and crush before adding. Available at Asian grocers.',quality:'good'},
+  ],
+  'lemongrass':[
+    {ingredient:'Lemongrass paste',notes:'1 tsp paste per stalk. In tubes in the supermarket herb fridge.',quality:'good'},
+    {ingredient:'Lemon zest',notes:'A quarter of the freshness — use as a last resort only.',quality:'compromise'},
+  ],
+  'pandan':[
+    {ingredient:'Pandan extract',notes:'1 tsp extract per 3 leaves. Available at Asian supermarkets.',quality:'good'},
+  ],
+  'thai basil':[
+    {ingredient:'Sweet basil',notes:'Loses the anise-clove note. Add at the very end for freshness.',quality:'compromise'},
+    {ingredient:'Vietnamese mint',notes:'Fresher and more peppery — actually a good match for Thai dishes.',quality:'good'},
+  ],
+  'ikan bilis':[
+    {ingredient:'Dried shrimp',notes:'Similar umami depth — available at Asian grocers. Use half the quantity.',quality:'good'},
+    {ingredient:'Bacon lardons',notes:'Renders crisply and adds pork-fat umami. Different flavour but works in rice dishes.',quality:'compromise'},
+  ],
+  'panko':[
+    {ingredient:'Crushed cornflakes',notes:'Surprisingly crispy and light. Use the same quantity.',quality:'good'},
+    {ingredient:'Regular breadcrumbs',notes:'Less airy — coating less crispy but still works.',quality:'compromise'},
+    {ingredient:'Crushed rice crackers',notes:'Very light, gluten-free option. Works especially well for chicken.',quality:'good'},
+  ],
+  'tonkatsu':[
+    {ingredient:'Hoisin + Worcestershire + soy (2:1:1)',notes:'Mix to taste — hits the sweet-savoury-tangy profile closely.',quality:'compromise'},
+    {ingredient:'Bulldog sauce',notes:'Japanese vegetable sauce — what tonkatsu sauce is based on. At Asian grocers.',quality:'good'},
+  ],
+  'belacan':[
+    {ingredient:'Fish sauce',notes:'2 tsp fish sauce per 1 tsp shrimp paste. Loses the concentrated paste quality.',quality:'compromise'},
+    {ingredient:'Dried shrimp (blended)',notes:'Blend dried shrimp into a paste — closer to belacan in texture.',quality:'good'},
+  ],
+  'dashi':[
+    {ingredient:'Chicken stock + soy sauce',notes:'Lighter but gives body. Add kombu if you have it.',quality:'compromise'},
+    {ingredient:'Kombu stock',notes:'Vegan option — steep dried kombu in warm water 30 min.',quality:'compromise'},
+  ],
+  'sumac':[
+    {ingredient:'Lemon zest + pinch of salt',notes:'Mimics the tartness without the colour or earthy depth.',quality:'compromise'},
+    {ingredient:'Za\'atar blend',notes:'Contains sumac — the other herbs add complexity.',quality:'compromise'},
+  ],
+  'tahini':[
+    {ingredient:'Sunflower seed butter',notes:'Very similar consistency and nutty flavour. Substitute 1:1.',quality:'good'},
+    {ingredient:'Almond butter',notes:'Richer and slightly sweeter. Use 80% of the quantity.',quality:'compromise'},
+  ],
+  'pomegranate molasses':[
+    {ingredient:'Balsamic vinegar + brown sugar (1:1), reduced',notes:'Cook together until syrupy — close to the tart-sweet depth.',quality:'compromise'},
+    {ingredient:'Grape molasses',notes:'At Middle Eastern grocers. Sweeter and less tart.',quality:'good'},
+  ],
+  // Baking & General
+  'double cream':[
+    {ingredient:'Thickened cream',notes:'Has added stabiliser — slightly different texture but works the same way.',quality:'good'},
+    {ingredient:'Mascarpone + milk (3:1)',notes:'Richer — use where texture matters less.',quality:'compromise'},
+  ],
+  'white wine':[
+    {ingredient:'Chicken stock + splash of lemon juice',notes:'Replaces the liquid and brightness without alcohol.',quality:'compromise'},
+    {ingredient:'Dry vermouth',notes:'More complex and aromatic than wine — excellent in pan sauces.',quality:'good'},
+    {ingredient:'Apple juice (dry)',notes:'Adds slight sweetness — works in braised dishes.',quality:'compromise'},
+  ],
+  'red wine':[
+    {ingredient:'Beef stock + splash of Worcestershire',notes:'Replaces the body. Loses the fruity complexity.',quality:'compromise'},
+    {ingredient:'Grape juice + splash of red wine vinegar',notes:'Gives colour and mild tannin. Works in braises.',quality:'compromise'},
+  ],
+};
+
+// Returns merged substitutions: recipe-specific subs first, then SUBS_DB matches
+function getSubstitutions(ing){
+  const own=ing.substitutions||[];
+  const name=(ing.name||'').toLowerCase();
+  for(const[key,val]of Object.entries(SUBS_DB)){
+    // Match if ingredient name contains the key or the key is contained in the name
+    if(name.includes(key)||name.split(/[\s,]+/).some(w=>key.startsWith(w)&&w.length>3)){
+      const extra=val.filter(s=>!own.find(e=>e.ingredient===s.ingredient));
+      return[...own,...extra];
+    }
+  }
+  return own;
+}
+
 function getAisle(name){
   const n=name.toLowerCase();
   if(/\b(onion|garlic|ginger|tomato|capsicum|chilli|lemon|lime|potato|carrot|celery|cucumber|spinach|kale|silverbeet|parsley|coriander|basil|thyme|rosemary|mint|dill|sage|spring onion|shallot|leek|mushroom|pumpkin|broccoli|cauliflower|lettuce|avocado|mango|pineapple|strawberr|passionfruit|kiwi|asparagus|bean sprout|galangal|lemongrass|kaffir|pandan|chive|broccolini|zucchini|eggplant|beetroot|cabbage|bok choy|pak choy|snow pea|sugar snap|corn|fennel|watercress|rocket|radicchio)\b/.test(n)) return 'produce';
@@ -2067,8 +2247,8 @@ function RecipeCard({recipe,onTap,onPlan,planned,favorite,onFav,query}){
 
 // ─── SUBSTITUTION SHEET ───────────────────────────────────────────────────────
 function SubstitutionSheet({recipe,ingredient,onClose,onApply}){
-  // No loading — swaps are pre-baked on the ingredient object, result is instant.
-  const subs=ingredient.substitutions||[];
+  // Merge recipe-specific subs with the SUBS_DB lookup (no API call, fully offline)
+  const subs=getSubstitutions(ingredient);
   const hasSubs=subs.length>0;
   return(
     <div className="fixed inset-0 z-50 flex flex-col fade-in" style={{background:'rgba(0,0,0,0.55)'}} role="dialog" aria-modal="true" aria-label={`Swap ${ingredient.name}`} onClick={onClose}>
@@ -2267,7 +2447,7 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
     );
   }
 
-  return(
+  return(<>
     <div className="slide-right flex flex-col min-h-screen" style={{background:T.parchment,color:T.ink}}>
       {/* Header */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3" style={{background:cooking?'rgba(28,23,18,0.92)':'rgba(247,242,234,0.92)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',borderBottom:`1px solid ${cooking?'rgba(255,255,255,0.08)':T.border}`}}>
@@ -2367,7 +2547,7 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
                     {d.notes&&!d.subNote&&<div className="serif-it text-[12.5px] mt-1" style={{color:cooking?'rgba(247,242,234,0.55)':T.inkFaint}}>{d.notes}</div>}
                     {ing.scales==='fixed'&&factor>1.5&&<div className="text-[11px] mt-1 font-semibold uppercase tracking-wider" style={{color:T.ochre}}>Fixed — doesn't scale</div>}
                   </div>
-                  {(()=>{const noSwaps=!ing.substitutions||ing.substitutions.length===0;return(
+                  {(()=>{const noSwaps=getSubstitutions(ing).length===0;return(
                   <button onClick={()=>setShowSub(ing)} aria-label={noSwaps?`No swaps on file for ${d.name}`:`Swap ${d.name}`} title={noSwaps?'No swaps on file yet':'Find a substitute'} className="press w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{background:cooking?'rgba(255,255,255,0.09)':T.border,opacity:noSwaps?0.28:1,cursor:noSwaps?'default':'pointer'}}>
                     <Icon name="swap" size={14} color={cooking?'rgba(247,242,234,0.65)':T.inkFaint}/>
                   </button>
@@ -2425,8 +2605,9 @@ function RecipeDetail({recipe,onBack,favorite,onFav,onPlan,planned,adjustments,s
           </button>
         </div>
       </div>
-      {showSub&&<SubstitutionSheet recipe={recipe} ingredient={showSub} onClose={()=>setShowSub(null)} onApply={applyAdj}/>}
     </div>
+    {showSub&&<SubstitutionSheet recipe={recipe} ingredient={showSub} onClose={()=>setShowSub(null)} onApply={applyAdj}/>}
+  </>
   );
 }
 
@@ -2555,6 +2736,8 @@ function PlanAndShop({allRecipes,planned,onRemove,onOpen}){
   const shoppingList=consolidateIngredients(mealsForList);
   const toggleCheck=key=>setChecked(p=>({...p,[key]:!p[key]}));
   const clearChecked=()=>setChecked({});
+  const[shopSwap,setShopSwap]=useState(null);
+  const[appliedSwaps,setAppliedSwaps]=useState({});
   const checkedCount=Object.values(checked).filter(Boolean).length;
   if(planned.length===0) return(
     <div className="flex flex-col items-center justify-center min-h-screen px-8 text-center fade-in" style={{background:T.parchment}}>
@@ -2563,7 +2746,7 @@ function PlanAndShop({allRecipes,planned,onRemove,onOpen}){
       <div className="serif-it text-[14px] max-w-xs leading-relaxed" style={{color:T.inkFaint}}>Browse recipes and tap Plan to build your week — your shopping list writes itself.</div>
     </div>
   );
-  return(
+  return(<>
     <div className="flex flex-col min-h-screen" style={{background:T.parchment}}>
       <div className="sticky top-0 z-10 px-4 pt-6 pb-0" style={{background:'rgba(247,242,234,0.92)',backdropFilter:'blur(10px)',WebkitBackdropFilter:'blur(10px)',borderBottom:`1px solid ${T.border}`}}>
         <div className="flex items-end justify-between mb-4">
@@ -2617,20 +2800,31 @@ function PlanAndShop({allRecipes,planned,onRemove,onOpen}){
                         {aisleItems.map((item,i)=>{
                           const key=`${item.name}__${item.unit}`;
                           const done=checked[key];
+                          const swapped=appliedSwaps[key];
+                          const displayName=swapped?swapped.name:item.name;
+                          const swapSubs=getSubstitutions({name:item.name,substitutions:[]});
+                          const noSwap=swapSubs.length===0;
                           return(
                             <div key={i}>
-                              <button onClick={()=>toggleCheck(key)} aria-pressed={done} aria-label={done?`Untick ${item.name}`:`Tick ${item.name}`} className="press w-full flex items-center gap-3 p-3.5 rounded-xl text-left transition-all duration-200" style={{background:done?T.sage+'18':T.cardBg,border:`1px solid ${done?T.sage+'44':T.border}`,opacity:done?0.55:1}}>
-                                <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{background:done?T.sage:'transparent',border:`1.5px solid ${done?T.sage:T.borderDark}`}}>
-                                  {done&&<span className="check-bounce"><Icon name="check" size={13} color={T.cream}/></span>}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-baseline gap-2 flex-wrap">
-                                    <span className="serif font-bold text-[15px] leading-tight" style={{textDecoration:done?'line-through':'none'}}>{item.name}</span>
-                                    <span className="text-[13px] font-bold num-tnum" style={{color:T.paprika}}>{formatAmount(item.amount)}{item.unit?' '+item.unit:''}</span>
+                              <div className="flex items-center gap-2">
+                                <button onClick={()=>toggleCheck(key)} aria-pressed={done} aria-label={done?`Untick ${displayName}`:`Tick ${displayName}`} className="press flex-1 flex items-center gap-3 p-3.5 rounded-xl text-left transition-all duration-200" style={{background:done?T.sage+'18':swapped?T.ochre+'14':T.cardBg,border:`1px solid ${done?T.sage+'44':swapped?T.ochre+'55':T.border}`,opacity:done?0.55:1}}>
+                                  <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{background:done?T.sage:'transparent',border:`1.5px solid ${done?T.sage:T.borderDark}`}}>
+                                    {done&&<span className="check-bounce"><Icon name="check" size={13} color={T.cream}/></span>}
                                   </div>
-                                  <div className="serif-it text-[11.5px] mt-0.5 lc1" style={{color:T.inkFaint}}>for {item.recipes.join(', ')}</div>
-                                </div>
-                              </button>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-baseline gap-2 flex-wrap">
+                                      <span className="serif font-bold text-[15px] leading-tight" style={{textDecoration:done?'line-through':'none',color:swapped?T.ochre:'inherit'}}>{displayName}</span>
+                                      {swapped&&<span className="text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{background:T.ochre+'22',color:T.ochre}}>swapped</span>}
+                                      <span className="text-[13px] font-bold num-tnum" style={{color:T.paprika}}>{formatAmount(item.amount)}{item.unit?' '+item.unit:''}</span>
+                                    </div>
+                                    <div className="serif-it text-[11.5px] mt-0.5 lc1" style={{color:T.inkFaint}}>for {item.recipes.join(', ')}</div>
+                                    {swapped&&<div className="text-[11.5px] mt-0.5 flex items-center gap-1" style={{color:T.ochre}}><Icon name="swap" size={10} color={T.ochre}/> instead of {item.name}</div>}
+                                  </div>
+                                </button>
+                                {!done&&<button onClick={()=>setShopSwap({name:item.name,substitutions:[],_key:key})} aria-label={noSwap?`No swaps for ${item.name}`:`Find a swap for ${item.name}`} title={noSwap?'No swaps on file yet':'Can\'t find it? Find a substitute'} className="press w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{background:T.border,opacity:noSwap?0.25:1}}>
+                                  <Icon name="swap" size={14} color={T.inkFaint}/>
+                                </button>}
+                              </div>
                               {item.auFlag&&!done&&(
                                 <div className="mx-1 mt-1 mb-0.5 px-3 py-2 rounded-lg text-[11.5px] leading-snug flex items-start gap-2" style={{background:T.ochre+'18',border:`1px solid ${T.ochre}44`,color:T.ochre}}>
                                   <span className="flex-shrink-0 mt-px">📍</span>
@@ -2691,6 +2885,12 @@ function PlanAndShop({allRecipes,planned,onRemove,onOpen}){
         )}
       </div>
     </div>
+    {shopSwap&&<SubstitutionSheet
+      ingredient={shopSwap}
+      onClose={()=>setShopSwap(null)}
+      onApply={applied=>{setAppliedSwaps(p=>({...p,[shopSwap._key]:applied}));setShopSwap(null);}}
+    />}
+  </>
   );
 }
 
