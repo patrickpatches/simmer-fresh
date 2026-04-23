@@ -220,6 +220,8 @@ export interface RecipeMatchResult {
   haveCount: number;
   totalCount: number;
   missingNames: string[];
+  /** Missing ingredients that could be covered by a pantry-available substitution. */
+  swapCoveredCount: number;
 }
 
 export function scoreRecipeAgainstPantry(
@@ -230,8 +232,8 @@ export function scoreRecipeAgainstPantry(
     .filter((p) => p.have_it)
     .map((p) => normalizeForMatch(p.name));
 
-  const isMatch = (recipeName: string): boolean => {
-    const norm = normalizeForMatch(recipeName);
+  const isMatch = (name: string): boolean => {
+    const norm = normalizeForMatch(name);
     return haveNorms.some((p) => {
       if (norm === p) return true;
       if (norm.length > 4 && p.length > 4 && (norm.includes(p) || p.includes(norm))) return true;
@@ -242,12 +244,16 @@ export function scoreRecipeAgainstPantry(
   };
 
   let matched = 0;
+  let swapCovered = 0;
   const missingNames: string[] = [];
 
   for (const ing of recipe.ingredients) {
     if (isMatch(ing.name)) {
       matched++;
     } else {
+      const subCovered =
+        (ing.substitutions ?? []).some((sub) => isMatch(sub.ingredient));
+      if (subCovered) swapCovered++;
       missingNames.push(cleanIngredientName(ing.name));
     }
   }
@@ -268,6 +274,7 @@ export function scoreRecipeAgainstPantry(
     haveCount: matched,
     totalCount: total,
     missingNames: missingNames.slice(0, 4),
+    swapCoveredCount: swapCovered,
   };
 }
 

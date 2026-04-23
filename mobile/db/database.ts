@@ -10,7 +10,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Recipe, Ingredient, Step } from '../src/data/types';
 import { SCHEMA_SQL, SCHEMA_MIGRATIONS, SCHEMA_VERSION } from './schema';
-import { seedDatabase } from './seed';
+import { seedDatabase, syncNewSeedRecipes, updateSubstitutions } from './seed';
 
 // ── Row types mirror the DB columns exactly ──────────────────────────────────
 
@@ -195,6 +195,12 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
       "INSERT INTO app_meta (key, value) VALUES ('seeded', '1')",
     );
   }
+
+  // Insert any seed recipes added after the initial install — safe every launch.
+  await syncNewSeedRecipes(db);
+
+  // Always sync substitution data from seed — idempotent UPDATE, no data loss.
+  await updateSubstitutions(db);
 }
 
 // ── Recipes ───────────────────────────────────────────────────────────────────
@@ -470,4 +476,67 @@ export async function deleteMealPlanEntry(
   id: string,
 ): Promise<void> {
   await db.runAsync('DELETE FROM meal_plan WHERE id = ?', [id]);
+}
+
+// ── Ingredient swaps ──────────────────────────────────────────────────────────
+
+export interface SwapRecord {
+  id: string;            // `{recipe_id}:{ingredient_id}`
+  recipe_id: string;
+  ingredient_id: string;
+  original_name: string;
+  swap_name: string;
+  quantity_note: string | null;
+}
+
+/** Load all active swaps for a specific recipe. Map key = ingredient_id. */
+export async function getSwapsForRecipe(
+  db: SQLiteDatabase,
+  recipeId: string,
+): Promise<Map<string, SwapRecord>> {
+  const rows = await db.getAllAsync<SwapRecord>(
+    'SELECT * FROM ingredient_swaps WHERE recipe_id = ?',
+    [recipeId],
+  );
+  const map = new Map<string, SwapRecord>();
+  for (const row of rows) map.set(row.ingredient_id, row);
+  return map;
+}
+
+/** Load ALL active swaps across all recipes. Map key = `{recipe_id}:{ingredient_id}`. */
+export async function getAllSwaps(
+  db: SQLiteDatabase,
+): Promise<Map<string, SwapRecord>> {
+  const rows = await db.getAllAsync<SwapRecord>('SELECT * FROM ingredient_swaps');
+  const map = new Map<string, SwapRecord>();
+  for (const row of rows) map.set(row.id, row);
+  return map;
+}
+
+/** Apply or update a swap for an ingredient in a recipe. */
+export async function setIngredientSwap(
+  db: SQLiteDatabase,
+  recipeId: string,
+  ingredientId: string,
+  originalName: string,
+  swapName: string,
+  quantityNote?: string,
+): Promise<void> {
+  const id = `${recipeId}:${ingredientId}`;
+  await db.runAsync(
+    `INSERT OR REPLACE INTO ingredient_swaps
+       (id, recipe_id, ingredient_id, original_name, swap_name, quantity_note)
+     VALUES (?,?,?,?,?,?)`,
+    [id, recipeId, ingredientId, originalName, swapName, quantityNote ?? null],
+  );
+}
+
+/** Remove a swap, reverting the ingredient to its original. */
+export async function clearIngredientSwap(
+  db: SQLiteDatabase,
+  recipeId: string,
+  ingredientId: string,
+): Promise<void> {
+  const id = `${recipeId}:${ingredientId}`;
+  await db.runAsync('DELETE FROM ingredient_swaps WHERE id = ?', [id]);
 }

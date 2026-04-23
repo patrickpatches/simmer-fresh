@@ -1,0 +1,13 @@
+# Lock files
+.~lock.*
+
+# Binary office files
+*.xlsx
+*.xls
+
+# Claude internal
+.claude/
+mobile/.claude/
+
+# Local working copy — index.html is the canonical deployed file
+simmer-fresh.html

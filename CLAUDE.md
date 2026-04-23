@@ -189,7 +189,7 @@ Design doc: `docs/pantry-to-recipe.md`
 - Don't reintroduce voice input without Patrick explicitly asking.
 - Don't reintroduce knuckle-tap cook mode without Patrick explicitly asking.
 
-## Current status (updated 2026-04-22, session 3)
+## Current status (updated 2026-04-22, session 5)
 
 - **Target launch:** ~June 2026 (~8 weeks). Play Console verification is the long pole.
 - **Live prototype:** `simmer-fresh.html` at project root — single-file React + Tailwind, **44 recipes**, core loop + dual-axis categories + Phase 4 shopping list. Deployed to GitHub Pages as `index.html`.
@@ -199,4 +199,8 @@ Design doc: `docs/pantry-to-recipe.md`
 - **Archived:** `docs/archive/meal-master.html`
 - **ADRs:** `docs/adr/` — stack (001), delivery (002)
 - **Phase 5 ✅:** Substitutions UI live. Tap the swap icon on any ingredient → bottom sheet shows pre-baked swaps with Good swap / Compromise badge. 35 substitutions across 10 recipes. Non-covered ingredients show an honest "no swaps on file yet" state.
-- **Next priority:** Phase 6 — cook mode (dark screen, wake lock, step-by-step full screen, why notes on tap).
+- **Phase 6 ✅:** Cook mode live. "Start cooking" enters a full-screen OLED overlay (#000000), one step at a time. Wake lock keeps screen on. navigator.vibrate(10) haptic on each "Done" tap. Step counter progress bar at top. 96px ghosted step number watermark. Chef's note expandable. ← Prev / Done → navigation. Auto-jumps to first incomplete step. "Finish" on last step exits cook mode.
+- **Phase 7 ✅:** Pantry feature live. New "Pantry" tab in bottom nav (recipe matching only — AI invention removed). Ingredient tag input (type + Enter = chip, Backspace removes last). Quick-add staple buttons (scrollable strip). SYNONYMS + normIng() + inPantry() + scoreRecipe() match against all 44 recipes — "Can make" (≥80% core ings) and "Almost there" (≥35%, ≤3 missing) sections with % badges and missing ingredient chips.
+- **UX fixes (session 5) ✅:** (1) Swap sheet is now compact + immediate — no scroll needed to see "No swaps on file yet"; (2) Swap button dims to 28% opacity for ingredients with zero substitutions, so users know before tapping; (3) Back button now returns to the tab you came from (Pantry or Kitchen), not always Kitchen; (4) Cook mode shows a step photo (192px, rounded) above step body when `stepImg` is set — live on smash burger s4+s6, carbonara s5, butter chicken s2+s6 (5 verified Unsplash free-licence photos).
+- **Session 6 ✅ — Swap sheet fix + SUBS_DB + shopping list swaps:** (1) Swap sheet positioning bug fixed — sheet was appearing at bottom of page content rather than viewport because `slide-right` CSS animation kept a transform on the container, breaking `position:fixed`. Fixed by rendering SubstitutionSheet outside the `slide-right` div using a React fragment. (2) `SUBS_DB` lookup table added — 60+ ingredient substitutions covering guanciale/pancetta/bacon, barramundi/snapper, gruyère/comté, fish sauce, tamarind, lemongrass, galangal, kaffir lime, miso, oyster sauce, panko, tonkatsu, shaoxing wine, palm sugar, pandan, belacan, dashi, sumac, tahini, pomegranate molasses, and more. `getSubstitutions(ing)` merges recipe-specific subs with SUBS_DB matches. (3) Shopping list swap button — each item in Plan & Shop now has a swap button on the right. Tapping opens SubstitutionSheet for that ingredient. Applying a swap updates the displayed ingredient name in the list with an "instead of" note and ochre highlight. Same sheet as recipe view, same SUBS_DB data.
+- **Next priority:** Play Store submission prep (depends on Play Console verification). Expand step photos as content task.

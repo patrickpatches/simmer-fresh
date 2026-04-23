@@ -13,7 +13,7 @@
  */
 
 /** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /**
  * Full schema for a fresh install.
@@ -103,6 +103,17 @@ export const SCHEMA_SQL: string[] = [
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
   )`,
+
+  `CREATE TABLE IF NOT EXISTS ingredient_swaps (
+    id            TEXT PRIMARY KEY,
+    recipe_id     TEXT NOT NULL,
+    ingredient_id TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    swap_name     TEXT NOT NULL,
+    quantity_note TEXT,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+  )`,
 ];
 
 /**
@@ -113,11 +124,24 @@ export const SCHEMA_SQL: string[] = [
  *
  * Version 1 = original schema (no explicit user_version set).
  * Version 2 = Phase 2 additions: categories, whole_food_verified, substitutions.
+ * Version 3 = ingredient_swaps table for persistent cross-screen swap state.
  */
 export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
   2: [
     `ALTER TABLE recipes ADD COLUMN categories TEXT`,
     `ALTER TABLE recipes ADD COLUMN whole_food_verified INTEGER`,
     `ALTER TABLE ingredients ADD COLUMN substitutions TEXT`,
+  ],
+  3: [
+    `CREATE TABLE IF NOT EXISTS ingredient_swaps (
+      id            TEXT PRIMARY KEY,
+      recipe_id     TEXT NOT NULL,
+      ingredient_id TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      swap_name     TEXT NOT NULL,
+      quantity_note TEXT,
+      created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    )`,
   ],
 };
