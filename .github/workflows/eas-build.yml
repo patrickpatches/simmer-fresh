@@ -46,6 +46,10 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: npx expo prebuild --platform android --clean --non-interactive
 
+      - name: Bundle JS into APK (makes it standalone — no dev server needed)
+        working-directory: mobile/android
+        run: echo "bundleInDebug=true" >> gradle.properties
+
       - name: Build Android Debug APK (no signing required)
         working-directory: mobile/android
         run: |
