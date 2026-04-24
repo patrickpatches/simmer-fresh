@@ -42,7 +42,9 @@ export type IconName =
   | 'pause'
   | 'trash'
   | 'check-circle'
-  | 'swap';
+  | 'swap'
+  | 'arrow-down'
+  | 'arrow-up';
 
 type Props = {
   name: IconName;
@@ -100,4 +102,6 @@ const PATHS: Record<IconName, React.ReactNode> = {
   'trash': <><Path d="M3 6h18" /><Path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><Path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>,
   'check-circle': <><Path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><Polyline points="22 4 12 14.01 9 11.01" /></>,
   'swap': <><Path d="M7 16V4m0 0L3 8m4-4 4 4" /><Path d="M17 8v12m0 0 4-4m-4 4-4-4" /></>,
+  'arrow-down': <><Path d="M12 5v14" /><Path d="m19 12-7 7-7-7" /></>,
+  'arrow-up': <><Path d="M12 19V5" /><Path d="m5 12 7-7 7 7" /></>,
 };

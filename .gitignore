@@ -11,3 +11,7 @@ mobile/.claude/
 
 # Local working copy — index.html is the canonical deployed file
 simmer-fresh.html
+
+# Generated native folders — EAS Build regenerates these server-side
+mobile/android/
+mobile/ios/

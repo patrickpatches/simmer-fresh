@@ -938,7 +938,7 @@ function ShoppingListSheet({
       }
       lines.push('');
     }
-    lines.push('Made with Hone — Recipes & Meal Planning');
+    lines.push('Made with Simmer Fresh');
     try {
       await Share.share({ message: lines.join('\n') });
     } catch {

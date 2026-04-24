@@ -1,7 +1,7 @@
 /**
  * Recipe Detail — the stage-1 cooking screen.
  *
- * Port of RecipeDetail from hone.html (prototype). Scope of this
+ * Port of RecipeDetail from simmer-fresh.html (prototype). Scope of this
  * v0.1 version:
  *   - Hero with attribution overlay, back + favourite top bar.
  *   - Live-scaling ingredient list using scaleIngredient + formatAmount.

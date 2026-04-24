@@ -1,4 +1,4 @@
-# Simmer Fresh — Development Roadmap
+# Hone — Development Roadmap
 
 > Last updated: 2026-04-22 (session 3). This is the working build plan. Update it as phases complete or priorities shift.
 
@@ -14,9 +14,9 @@
 **Delivery:** GitHub Pages (patrickpatches account, no new accounts needed)  
 **Effort:** ~1–2 hours
 
-- ✅ simmer-fresh.html prototype (30 recipes, dual-axis categories, core loop)
-- ✅ Create GitHub repo `simmer-fresh` under patrickpatches
-- ✅ Deploy to GitHub Pages → `patrickpatches.github.io/simmer-fresh`
+- ✅ hone.html prototype (30 recipes, dual-axis categories, core loop)
+- ✅ Create GitHub repo `hone` under patrickpatches
+- ✅ Deploy to GitHub Pages → `patrickpatches.github.io/hone`
 - ⬜ Verify it loads and is usable on Android Chrome
 
 ---
@@ -37,7 +37,7 @@
 ## Phase 3 — Recipe library expansion ✅
 **Goal:** 30–40 recipes across all category axes. Chef-attributed. Every ingredient has substitutions. No preservatives.  
 **Sources:** Andy Cooks, Joshua Weissman, Gordon Ramsay (inspired, attributed, linked)  
-**Completed:** 2026-04-22 (sessions 2–3). 44 recipes live in simmer-fresh.html.
+**Completed:** 2026-04-22 (sessions 2–3). 44 recipes live in hone.html.
 
 **Cuisine targets:**
 - ✅ Levantine — musakhan, kafta, hummus, fattoush, shawarma, lamb shawarma (no Israeli labels)
@@ -60,7 +60,7 @@
 
 ## Phase 4 — Shopping list feature ✅
 **Goal:** From any recipe (or multi-recipe plan), generate a grouped, checkable shopping list scaled to serving count.  
-**Completed:** 2026-04-22 (session 3) — in simmer-fresh.html prototype.
+**Completed:** 2026-04-22 (session 3) — in hone.html prototype.
 
 - ✅ Group by aisle: Produce / Meat & Seafood / Dairy & Eggs / Bakery / Pantry
 - ✅ Scale quantities to selected serving count (via leftover multiplier)

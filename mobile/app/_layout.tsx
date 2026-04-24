@@ -63,7 +63,7 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <SQLiteProvider databaseName="simmerfresh.db" onInit={initDatabase}>
+    <SQLiteProvider databaseName="hone.db" onInit={initDatabase}>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{

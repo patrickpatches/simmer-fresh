@@ -10,7 +10,7 @@
  *   - Modal not a portal/absolute overlay: simplest native approach, works
  *     inside both ScrollView and SectionList parents without z-index fights.
  *   - Haptic on every selection — this is a consequential action.
- *   - Quality badge colours follow the warm Simmer Fresh palette:
+ *   - Quality badge colours follow the warm Hone palette:
  *       perfect_swap → sage (calm green confirmation)
  *       great_swap   → ochre (warm, positive)
  *       good_swap / good → inkSoft (neutral, honest)
