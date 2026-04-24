@@ -15,3 +15,10 @@ simmer-fresh.html
 # Generated native folders — EAS Build regenerates these server-side
 mobile/android/
 mobile/ios/
+
+# Expo local cache — never needed in the build archive
+mobile/.expo/
+mobile/dist/
+mobile/.validate-tmp*/
+mobile/.validate-seed.js
+mobile/node_modules/
