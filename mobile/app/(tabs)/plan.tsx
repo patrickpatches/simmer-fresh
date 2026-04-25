@@ -470,8 +470,11 @@ export default function PlanTab() {
           >
             <Text style={{ fontSize: 20 }}>💡</Text>
             <Text style={{ flex: 1, fontFamily: fonts.sans, fontSize: 13, color: tokens.inkSoft, lineHeight: 20 }}>
-              Tap any day to plan a meal. Once you've planned the week, hit{' '}
-              <Text style={{ fontFamily: fonts.sansBold, color: tokens.ink }}>Shop</Text> to get a pantry-filtered shopping list — grouped by aisle, ready to use in store.
+              Browse{' '}
+              <Text style={{ fontFamily: fonts.sansBold, color: tokens.ink }}>Kitchen</Text>{' '}
+              and tap the <Text style={{ fontFamily: fonts.sansBold, color: tokens.paprika }}>+</Text> on any recipe to plan it. Or tap a day below to start from the calendar. Once a week is planned,{' '}
+              <Text style={{ fontFamily: fonts.sansBold, color: tokens.ink }}>Shop</Text>{' '}
+              gives you a pantry-filtered list, grouped by aisle.
             </Text>
           </View>
         )}

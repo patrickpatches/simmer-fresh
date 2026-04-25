@@ -420,39 +420,88 @@ function ListHeader({
         onSelect={(id) => setType(id === type ? null : id)}
       />
 
-      {/* Active filter summary + clear */}
+      {/* Active-filter chip rail. One × chip per applied filter so the
+          escape hatch is obvious, plus "Clear all" when more than one is on.
+          Coloured paprika fill (not subtle border-only) so it reads as an
+          action, not a label. */}
       {hasActiveFilter && (
-        <Pressable
-          onPress={onClearAll}
-          accessibilityRole="button"
-          accessibilityLabel="Clear all filters"
-          style={({ pressed }) => ({
-            marginTop: 12,
-            alignSelf: 'flex-start',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 5,
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 999,
-            backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
-            borderWidth: 1,
-            borderColor: tokens.line,
-          })}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingTop: 12 }}
         >
-          <Icon name="x" size={12} color={tokens.inkSoft} />
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 11,
-              color: tokens.inkSoft,
-            }}
-          >
-            Clear filters
-          </Text>
-        </Pressable>
+          {search.trim() !== '' && (
+            <FilterChip
+              label={`"${search.trim().slice(0, 20)}"`}
+              onClear={() => setSearch('')}
+            />
+          )}
+          {mood !== 'all' && (
+            <FilterChip
+              label={MOOD_CHIPS.find((c) => c.id === mood)?.label ?? mood}
+              onClear={() => setMood('all')}
+            />
+          )}
+          {cuisine && (
+            <FilterChip
+              label={CUISINES.find((c) => c.id === cuisine)?.label ?? cuisine}
+              onClear={() => setCuisine(null)}
+            />
+          )}
+          {type && (
+            <FilterChip
+              label={TYPES.find((t) => t.id === type)?.label ?? type}
+              onClear={() => setType(null)}
+            />
+          )}
+          {([search.trim() !== '', mood !== 'all', cuisine !== null, type !== null].filter(Boolean).length > 1) && (
+            <Pressable
+              onPress={onClearAll}
+              accessibilityRole="button"
+              accessibilityLabel="Clear all filters"
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 999,
+                backgroundColor: pressed ? tokens.inkSoft : tokens.ink,
+              })}
+            >
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.cream }}>
+                Clear all
+              </Text>
+            </Pressable>
+          )}
+        </ScrollView>
       )}
     </View>
+  );
+}
+
+// Single chip, paprika fill, × icon prefix. Tap clears just this filter.
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <Pressable
+      onPress={onClear}
+      accessibilityRole="button"
+      accessibilityLabel={`Clear ${label} filter`}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 999,
+        backgroundColor: pressed ? tokens.paprikaDeep : tokens.paprika,
+      })}
+    >
+      <Icon name="x" size={12} color={tokens.cream} />
+      <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.cream }}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 

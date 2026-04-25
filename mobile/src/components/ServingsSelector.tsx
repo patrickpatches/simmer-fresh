@@ -34,6 +34,14 @@ type Props = {
   leftoverKey: LeftoverModeId;
   setLeftoverKey: (k: LeftoverModeId) => void;
   baseServings: number;
+  /**
+   * Recipes with non-people yields ("tortillas", "loaf", "L of stock") set
+   * this. Adapts the header copy and hides leftover pills (which don't
+   * apply when the yield isn't a serving count).
+   */
+  yieldUnit?: string;
+  /** True for recipes whose yield doesn't scale (sourdough, stocks). */
+  fixedYield?: boolean;
 };
 
 export function ServingsSelector({
@@ -42,7 +50,16 @@ export function ServingsSelector({
   leftoverKey,
   setLeftoverKey,
   baseServings,
+  yieldUnit,
+  fixedYield,
 }: Props) {
+  const isYieldRecipe = !!yieldUnit;
+  // Header label — "How many tortillas" / "How many people" / "Yield"
+  const headerLabel = fixedYield
+    ? 'Yield'
+    : isYieldRecipe
+      ? `How many ${yieldUnit}`
+      : 'How many people';
   const option = leftoverById(leftoverKey);
   const totalPortions = totalPortionsFor(option, people, baseServings);
   const factor = totalPortions / baseServings;
@@ -95,7 +112,7 @@ export function ServingsSelector({
             color: tokens.muted,
           }}
         >
-          How many people
+          {headerLabel}
         </Text>
         <Text
           style={{

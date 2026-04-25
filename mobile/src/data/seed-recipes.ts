@@ -3273,6 +3273,7 @@ const FLOUR_TORTILLAS: Recipe = {
   title: 'Flour Tortillas',
   tagline: "Patrick's hand-rolled flour tortillas — paper-thin and impossibly soft",
   base_servings: 5,
+  yield_unit: 'tortillas',
   time_min: 90,
   difficulty: 'Intermediate',
   tags: ['mexican', 'bread', 'weekend', 'from-scratch'],

@@ -366,7 +366,7 @@ export default function RecipeDetailScreen() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                     setShowPlanSheet(true);
                   }}
-                  icon="calendar"
+                  icon="plus"
                 />
                 <CircleButton
                   accessibilityLabel={favorite ? 'Unfavourite' : 'Favourite'}
@@ -510,6 +510,8 @@ export default function RecipeDetailScreen() {
             leftoverKey={leftoverKey}
             setLeftoverKey={setLeftoverKey}
             baseServings={recipe.base_servings}
+            yieldUnit={recipe.yield_unit}
+            fixedYield={recipe.fixed_yield}
           />
         </View>
 

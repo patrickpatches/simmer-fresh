@@ -301,3 +301,16 @@ After diagnosing the OneDrive corruption (Edit tool unsafe in OneDrive folder), 
 - Build a fresh APK to test the new pantry UX, calendar buttons, and icon. (`expo prebuild --clean && ./gradlew assembleDebug` via the same GitHub Actions pipeline as session 11.)
 
 **Backlog state:** P0 pantry + P0 add-to-plan items are now CODE COMPLETE. Remaining open: P0 recipe data audit ("X or Y" ingredient names — 35 instances catalogued in seed-recipes.ts), P0 add-recipe form rewrite (paste-and-parse), P2 recipe yield model (needs ADR), P3 clear-filter chip rail.
+
+---
+
+## Session 13 (2026-04-25 evening) — UX wave 2: + sign, clear filter, yield types, plan-tab nudge, add-recipe paste mode
+
+Trigger: Patrick installed APK from session 12 build (run #10, hone-release.apk) and reported the same backlog items still present from his POV. Audit confirmed the session-12 fixes ARE in `b329bc4` on git HEAD, but Patrick had specific UX requests that went beyond what session 12 shipped:
+
+- "+" icon for Add-to-plan affordance — not the more subtle calendar icon
+- Clear filter button is too low contrast — promote to coloured chip rail
+- Recipe portions break for yield-by-count items (tortillas, dumplings, etc) and yield-by-loaf (sourdough)
+- Add-recipe form is too rigid — needs paste-and-parse mode
+
+Backup: `docs/archive/backup-2026-04-25-evening/` — pre-change snapshot.

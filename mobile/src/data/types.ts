@@ -236,6 +236,23 @@ export const Recipe = z.object({
   /** Short editorial note. NOT food-blog prose. */
   description: z.string().optional(),
   base_servings: z.number().int().positive(),
+
+  /**
+   * Yield unit for recipes that don't fit the "serves N people" model.
+   * If set, the servings stepper shows "How many {yield_unit}" instead of
+   * "How many people" — e.g. "How many tortillas". Leave undefined for
+   * standard meals.
+   * Examples: 'tortillas', 'cookies', 'dumplings', 'loaf', 'L of stock'.
+   */
+  yield_unit: z.string().optional(),
+
+  /**
+   * True for recipes whose yield doesn't scale linearly — sourdough loaves,
+   * stocks, ferments. Disables the stepper; user gets the recipe at base
+   * yield only. Default false.
+   */
+  fixed_yield: z.boolean().optional(),
+
   time_min: z.number().int().positive(),
   difficulty: DifficultyLevel,
   /** Freeform search keywords. Structured taxonomy lives in `categories`. */

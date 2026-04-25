@@ -155,7 +155,7 @@ export function RecipeCard({ recipe, onPress, favorite = false, onToggleFavorite
               justifyContent: 'center',
             }}
           >
-            <Icon name="calendar" size={17} color={tokens.cream} />
+            <Icon name="plus" size={20} color={tokens.cream} />
           </Pressable>
         ) : null}
 
