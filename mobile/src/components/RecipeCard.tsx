@@ -26,9 +26,12 @@ type Props = {
   onPress: (recipe: Recipe) => void;
   favorite?: boolean;
   onToggleFavorite?: (recipeId: string) => void;
+  /** Optional - if supplied, a calendar button appears on the hero next to
+   *  the favourite, opening Add-to-plan for this recipe. Parent owns sheet state. */
+  onAddToPlan?: (recipe: Recipe) => void;
 };
 
-export function RecipeCard({ recipe, onPress, favorite = false, onToggleFavorite }: Props) {
+export function RecipeCard({ recipe, onPress, favorite = false, onToggleFavorite, onAddToPlan }: Props) {
   const gradient = recipe.hero_fallback ?? ['#3D342C', '#8B7968', '#D9CEBB'];
 
   const handlePress = () => {
@@ -43,6 +46,12 @@ export function RecipeCard({ recipe, onPress, favorite = false, onToggleFavorite
     e.stopPropagation?.();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     onToggleFavorite?.(recipe.id);
+  };
+
+  const handleAddToPlan = (e: any) => {
+    e.stopPropagation?.();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onAddToPlan?.(recipe);
   };
 
   return (
@@ -125,6 +134,28 @@ export function RecipeCard({ recipe, onPress, favorite = false, onToggleFavorite
               color={favorite ? tokens.paprika : tokens.cream}
               fill={favorite ? tokens.paprika : 'none'}
             />
+          </Pressable>
+        ) : null}
+
+        {onAddToPlan ? (
+          <Pressable
+            onPress={handleAddToPlan}
+            accessibilityRole="button"
+            accessibilityLabel={`Add ${recipe.title} to meal plan`}
+            hitSlop={12}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: onToggleFavorite ? 56 : 12,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: 'rgba(26,22,18,0.45)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name="calendar" size={17} color={tokens.cream} />
           </Pressable>
         ) : null}
 

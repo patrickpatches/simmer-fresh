@@ -54,6 +54,7 @@ import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
 import { ServingsSelector } from '../../src/components/ServingsSelector';
 import { SwapSheet } from '../../src/components/SwapSheet';
+import { AddToPlanSheet } from '../../src/components/AddToPlanSheet';
 import {
   formatAmount,
   scaleIngredient,
@@ -112,6 +113,9 @@ export default function RecipeDetailScreen() {
   useEffect(() => {
     if (recipe) setPeople(recipe.base_servings);
   }, [recipe]);
+
+  // Add-to-plan sheet state.
+  const [showPlanSheet, setShowPlanSheet] = useState(false);
 
   // Cook Mode is an in-page toggle for v0.1.
   const [cooking, setCooking] = useState(false);
@@ -355,17 +359,27 @@ export default function RecipeDetailScreen() {
                 onPress={() => router.back()}
                 icon="arrow-left"
               />
-              <CircleButton
-                accessibilityLabel={favorite ? 'Unfavourite' : 'Favourite'}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                  toggleFavorite(db, recipe.id).catch(console.error);
-                  setFavorite((f) => !f);
-                }}
-                icon="heart"
-                iconColor={favorite ? tokens.paprika : tokens.ink}
-                iconFill={favorite ? tokens.paprika : 'none'}
-              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <CircleButton
+                  accessibilityLabel="Add to meal plan"
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                    setShowPlanSheet(true);
+                  }}
+                  icon="calendar"
+                />
+                <CircleButton
+                  accessibilityLabel={favorite ? 'Unfavourite' : 'Favourite'}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                    toggleFavorite(db, recipe.id).catch(console.error);
+                    setFavorite((f) => !f);
+                  }}
+                  icon="heart"
+                  iconColor={favorite ? tokens.paprika : tokens.ink}
+                  iconFill={favorite ? tokens.paprika : 'none'}
+                />
+              </View>
             </View>
           </View>
         ) : null}
@@ -906,6 +920,15 @@ export default function RecipeDetailScreen() {
           }}
         />
       )}
+
+      {/* Add-to-plan sheet */}
+      <AddToPlanSheet
+        visible={showPlanSheet}
+        recipeId={recipe.id}
+        recipeTitle={recipe.title}
+        defaultServings={people}
+        onClose={() => setShowPlanSheet(false)}
+      />
 
       {/* Sticky CTA */}
       <View

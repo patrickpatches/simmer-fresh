@@ -206,12 +206,99 @@ export function categorizeIngredient(name: string): PantryCategory {
   return 'Pantry Staples';
 }
 
+/**
+ * Synonym map - collapses surface-form variants (plurals, regional names,
+ * inline alternatives like "ghee or clarified butter") to a single canonical
+ * key, so the pantry doesn't show three rows for what's the same ingredient.
+ */
+const INGREDIENT_SYNONYMS: Record<string, string> = {
+  // Plurals (most common)
+  'yellow onions': 'yellow onion',
+  'red onions': 'red onion',
+  'brown onions': 'brown onion',
+  'spring onions': 'spring onion',
+  'shallots': 'shallot',
+  'tomatoes': 'tomato',
+  'cherry tomatoes': 'cherry tomato',
+  'roma tomatoes': 'roma tomato',
+  'potatoes': 'potato',
+  'sweet potatoes': 'sweet potato',
+  'carrots': 'carrot',
+  'mushrooms': 'mushroom',
+  'oyster mushrooms': 'oyster mushroom',
+  'shiitake mushrooms': 'shiitake mushroom',
+  'eggs': 'egg',
+  'chillies': 'chilli',
+  'chiles': 'chilli',
+  'chilis': 'chilli',
+  'red chillies': 'red chilli',
+  'green chillies': 'green chilli',
+  'limes': 'lime',
+  'lemons': 'lemon',
+  'oranges': 'orange',
+  'apples': 'apple',
+  'cucumbers': 'cucumber',
+  'lamb chops': 'lamb chop',
+  'pork chops': 'pork chop',
+  'bay leaves': 'bay leaf',
+  'curry leaves': 'curry leaf',
+  'kaffir lime leaves': 'kaffir lime leaf',
+  'makrut lime leaves': 'makrut lime leaf',
+  'pandan leaves': 'pandan leaf',
+  'mustard seeds': 'mustard seed',
+  'nigella seeds': 'nigella seed',
+  'cardamom pods': 'cardamom pod',
+  'cloves': 'clove',
+  'star anises': 'star anise',
+  'prawns': 'prawn',
+  'scallops': 'scallop',
+  'mussels': 'mussel',
+  'sausages': 'sausage',
+  'capsicums': 'capsicum',
+  // Regional aliases - pin to AU canonical (per CLAUDE.md)
+  'cilantro': 'coriander',
+  'cilantro leaves': 'coriander',
+  'fresh cilantro': 'coriander',
+  'green onion': 'spring onion',
+  'green onions': 'spring onion',
+  'scallion': 'spring onion',
+  'scallions': 'spring onion',
+  'bell pepper': 'capsicum',
+  'bell peppers': 'capsicum',
+  'red bell pepper': 'red capsicum',
+  'green bell pepper': 'green capsicum',
+  'aubergine': 'eggplant',
+  'aubergines': 'eggplant',
+  'zucchini': 'courgette',
+  'zucchinis': 'courgette',
+  'arugula': 'rocket',
+};
+
+/**
+ * Normalise an ingredient name to a canonical match key.
+ * Pipeline: clean -> lowercase -> drop descriptors -> strip " or X"
+ * suffix (compound names like "Ghee or clarified butter" canonicalize to
+ * the FIRST term) -> apply synonyms (plurals + regional aliases).
+ */
 export function normalizeForMatch(name: string): string {
-  return cleanIngredientName(name)
+  let s = cleanIngredientName(name)
     .toLowerCase()
     .replace(/\b(fresh|dried|ground|crushed|whole|extra|raw|cooked|ripe|young|old)\b/g, '')
+    .replace(/\s+or\s+.*$/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+  if (INGREDIENT_SYNONYMS[s]) return INGREDIENT_SYNONYMS[s];
+  // Last-token plural lookup - "sliced yellow onions" -> "yellow onion"
+  const tokens = s.split(' ');
+  if (tokens.length >= 2) {
+    const last = tokens[tokens.length - 1];
+    const lastSingular = INGREDIENT_SYNONYMS[last];
+    if (lastSingular) {
+      tokens[tokens.length - 1] = lastSingular;
+      return tokens.join(' ');
+    }
+  }
+  return s;
 }
 
 export interface RecipeMatchResult {

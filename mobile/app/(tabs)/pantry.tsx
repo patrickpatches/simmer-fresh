@@ -69,8 +69,8 @@ export default function PantryTab() {
   const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  // Single combined input - drives both filtering AND the inline "+ Add" suggestion.
   const [search, setSearch] = useState('');
-  const [addName, setAddName] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ── Load ────────────────────────────────────────────────────────────────────
@@ -135,8 +135,8 @@ export default function PantryTab() {
     [db],
   );
 
-  const handleAdd = async () => {
-    const name = addName.trim();
+  const handleAdd = async (rawName: string) => {
+    const name = rawName.trim();
     if (!name) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     const category = categorizeIngredient(name);
@@ -144,8 +144,19 @@ export default function PantryTab() {
     const newItem: PantryItem = { id, name, category, quantity: null, unit: null, have_it: true };
     await upsertPantryItem(db, newItem);
     setPantryItems((prev) => [...prev, newItem]);
-    setAddName('');
+    setSearch('');
   };
+
+  /** Plural- and synonym-aware match: typing "yellow onions" when "yellow onion"
+   *  exists will NOT prompt to add a duplicate. */
+  const queryMatchesExisting = useMemo(() => {
+    const q = search.trim();
+    if (!q) return true;
+    const qNorm = normalizeForMatch(q);
+    return pantryItems.some((p) => normalizeForMatch(p.name) === qNorm);
+  }, [search, pantryItems]);
+
+  const showAddSuggestion = search.trim().length > 0 && !queryMatchesExisting;
 
   const handleDeleteCustom = async (item: PantryItem) => {
     if (!item.id.startsWith('custom-')) return;
@@ -185,17 +196,23 @@ export default function PantryTab() {
         stickySectionHeadersEnabled={false}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <Header
-            haveCount={haveCount}
-            totalCount={pantryItems.length}
-            canMakeCount={canMakeCount}
-            search={search}
-            setSearch={setSearch}
-            addName={addName}
-            setAddName={setAddName}
-            onAdd={handleAdd}
-            onOpenSuggestions={() => setShowSuggestions(true)}
-          />
+          <>
+            <Header
+              haveCount={haveCount}
+              totalCount={pantryItems.length}
+              canMakeCount={canMakeCount}
+              search={search}
+              setSearch={setSearch}
+              onSubmit={() => showAddSuggestion && handleAdd(search)}
+              onOpenSuggestions={() => setShowSuggestions(true)}
+            />
+            {showAddSuggestion && (
+              <AddSuggestionRow
+                query={search.trim()}
+                onAdd={() => handleAdd(search)}
+              />
+            )}
+          </>
         }
         renderSectionHeader={({ section }) => (
           <SectionHeader title={section.title as string} />
@@ -238,9 +255,7 @@ function Header({
   canMakeCount,
   search,
   setSearch,
-  addName,
-  setAddName,
-  onAdd,
+  onSubmit,
   onOpenSuggestions,
 }: {
   haveCount: number;
@@ -248,9 +263,8 @@ function Header({
   canMakeCount: number;
   search: string;
   setSearch: (s: string) => void;
-  addName: string;
-  setAddName: (s: string) => void;
-  onAdd: () => void;
+  /** Pressed Enter - adds query to pantry if it doesn't match existing. */
+  onSubmit: () => void;
   onOpenSuggestions: () => void;
 }) {
   return (
@@ -311,7 +325,10 @@ function Header({
         <Icon name="arrow-right" size={16} color={tokens.cream} />
       </Pressable>
 
-      {/* Search bar */}
+      {/* Combined search-or-add bar.
+          One field, one place to type. As you type, the list filters; if the
+          query doesn't match anything, an "+ Add" row appears just below.
+          Pressing Enter adds it. Collapses two confusing inputs into one. */}
       <View
         style={{
           flexDirection: 'row',
@@ -323,14 +340,15 @@ function Header({
           paddingHorizontal: 14,
           paddingVertical: 11,
           gap: 10,
-          marginBottom: 14,
+          marginBottom: 8,
         }}
       >
         <Icon name="search" size={15} color={tokens.muted} />
         <TextInput
           value={search}
           onChangeText={setSearch}
-          placeholder="Search ingredients…"
+          onSubmitEditing={onSubmit}
+          placeholder="Search or add an ingredient…"
           placeholderTextColor={tokens.muted}
           style={{
             flex: 1,
@@ -339,82 +357,51 @@ function Header({
             color: tokens.ink,
             padding: 0,
           }}
-          returnKeyType="search"
-          accessibilityLabel="Search pantry ingredients"
+          returnKeyType="done"
+          accessibilityLabel="Search pantry, or type a new ingredient to add"
         />
         {search ? (
-          <Pressable onPress={() => setSearch('')} hitSlop={8} accessibilityLabel="Clear search">
+          <Pressable onPress={() => setSearch('')} hitSlop={8} accessibilityLabel="Clear">
             <Icon name="x" size={14} color={tokens.muted} />
           </Pressable>
         ) : null}
       </View>
-
-      {/* Quick-add row */}
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: 8,
-          marginBottom: 8,
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: tokens.cream,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: tokens.line,
-            paddingHorizontal: 14,
-            paddingVertical: 11,
-            gap: 10,
-          }}
-        >
-          <Icon name="plus" size={15} color={tokens.muted} />
-          <TextInput
-            value={addName}
-            onChangeText={setAddName}
-            placeholder="Add an ingredient…"
-            placeholderTextColor={tokens.muted}
-            style={{
-              flex: 1,
-              fontFamily: fonts.sans,
-              fontSize: 14,
-              color: tokens.ink,
-              padding: 0,
-            }}
-            returnKeyType="done"
-            onSubmitEditing={onAdd}
-            accessibilityLabel="New ingredient name"
-          />
-        </View>
-        <Pressable
-          onPress={onAdd}
-          disabled={!addName.trim()}
-          accessibilityRole="button"
-          accessibilityLabel="Add ingredient to pantry"
-          style={({ pressed }) => ({
-            borderRadius: 14,
-            backgroundColor:
-              !addName.trim() ? tokens.bgDeep : pressed ? tokens.paprikaDeep : tokens.paprika,
-            paddingHorizontal: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
-        >
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 13,
-              color: !addName.trim() ? tokens.muted : tokens.cream,
-            }}
-          >
-            Add
-          </Text>
-        </Pressable>
-      </View>
     </View>
+  );
+}
+
+// Pinned to the top of the list when the query doesn't match any pantry item.
+function AddSuggestionRow({ query, onAdd }: { query: string; onAdd: () => void }) {
+  return (
+    <Pressable
+      onPress={onAdd}
+      accessibilityRole="button"
+      accessibilityLabel={`Add ${query} to pantry`}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginHorizontal: 20,
+        marginTop: 4,
+        marginBottom: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: pressed ? tokens.paprikaDeep : tokens.paprika,
+        backgroundColor: pressed ? 'rgba(199,108,72,0.18)' : 'rgba(199,108,72,0.10)',
+      })}
+    >
+      <Icon name="plus-circle" size={18} color={tokens.paprika} />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontFamily: fonts.sansBold, fontSize: 14, color: tokens.paprika }}>
+          Add &ldquo;{query}&rdquo; to your pantry
+        </Text>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 2 }}>
+          We&apos;ll mark it as in stock so recipes can match against it.
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 

@@ -21,7 +21,7 @@
       "package": "com.patricknasr.hone",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#F5F0E8"
+        "backgroundColor": "#F9C43F"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,

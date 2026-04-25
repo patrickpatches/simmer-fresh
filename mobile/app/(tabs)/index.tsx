@@ -35,6 +35,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import type { Recipe } from '../../src/data/types';
 import { getAllRecipes, getFavoriteIds, toggleFavorite } from '../../db/database';
 import { RecipeCard } from '../../src/components/RecipeCard';
+import { AddToPlanSheet } from '../../src/components/AddToPlanSheet';
 import { Icon } from '../../src/components/Icon';
 import { tokens, fonts } from '../../src/theme/tokens';
 
@@ -91,6 +92,10 @@ export default function KitchenHome() {
   const [mood,        setMood]        = useState<MoodFilter>('all');
   const [cuisine,     setCuisine]     = useState<string | null>(null);
   const [type,        setType]        = useState<string | null>(null);
+
+  // Add-to-plan sheet state - one shared sheet across all cards.
+  // null = closed; otherwise the recipe currently being planned.
+  const [planTarget, setPlanTarget]   = useState<Recipe | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -228,11 +233,23 @@ export default function KitchenHome() {
             onPress={(r) => router.push(`/recipe/${r.id}`)}
             favorite={favoriteIds.has(item.id)}
             onToggleFavorite={handleToggleFavorite}
+            onAddToPlan={(r) => setPlanTarget(r)}
           />
         </View>
       )}
       ListEmptyComponent={
         <EmptyState hasFilter={hasActiveFilter} onClear={clearAll} />
+      }
+      ListFooterComponent={
+        planTarget ? (
+          <AddToPlanSheet
+            visible={planTarget !== null}
+            recipeId={planTarget.id}
+            recipeTitle={planTarget.title}
+            defaultServings={planTarget.base_servings}
+            onClose={() => setPlanTarget(null)}
+          />
+        ) : null
       }
     />
   );
