@@ -7,7 +7,43 @@ Until then we're in `0.x.y` and bump minor for each shipped APK.
 
 ## [Unreleased]
 
-Branch model and SQLite migration runner — deferred until needed.
+Branch model — deferred until ~2 weeks before Play Store launch.
+
+## [0.6.1] — 2026-04-26 — Plan & Shop multi-meal fix + Pantry display fix + contrast pass
+
+### Fixed
+- **Plan & Shop now allows multiple meals.** `setMealPlanEntry` was doing
+  `DELETE FROM meal_plan WHERE date = ?` before INSERT — a regression from
+  the calendar removal. Every new "today" add was wiping the previous one.
+  Switched to plain `INSERT OR REPLACE` keyed on `id` (each add is a unique
+  row).
+- **Same recipe added twice now shows twice** in the Meals view. The
+  `plannedRecipes` dedup-by-recipe-id was silently swallowing legitimate
+  second adds (batch-cooking, cooking the same thing twice in a week).
+- **Pantry chips visible after add.** SQLite stores booleans as 0/1; the
+  `myPantry = pantryItems.filter(p => p.have_it)` filter was failing
+  intermittently. Now coerced to `Boolean(p.have_it)`. The tag-cloud
+  container now also always renders with a placeholder when empty (so the
+  panel doesn't look broken).
+- **Recipe detail top-bar contrast.** `CircleButton` was 42×42 / 0.92 cream;
+  now 44×44 / 0.97 cream with a drop shadow + 20px icons. Visible on dark
+  food heroes (smash burger screenshot was the trigger).
+
+### Added
+- **Add ad-hoc ingredients to the shopping list** — "+ Add ingredient"
+  button at the top of the Plan & Shop / Shopping list tab. Opens a small
+  sheet for name + amount + unit. Persists to a new `shopping_extras`
+  SQLite table. Schema bumped to v4 with a migration for existing installs.
+- **Pantry quick-add: category grid** — Proteins / Produce / Dairy & Eggs /
+  Pantry / Sauces, wrapping flex layout. Replaces the single horizontal
+  scroll. Expanded staples list from 8 to ~20.
+- **`docs/SMOKE-TEST.md`** — pre-release manual checklist. Trigger: Patrick
+  caught five regressions in one APK install. Rule going forward: no
+  release notes without the checklist passing.
+
+### Changed
+- Pantry tag cloud is always rendered (with placeholder when empty), not
+  conditionally hidden — empty state is more discoverable.
 
 ## [0.6.0] — 2026-04-26 — Mona Lisa search
 
@@ -110,7 +146,8 @@ Branch model and SQLite migration runner — deferred until needed.
 
 Recipe library expanded from 0 to 45. Phase 1-7 complete: dual-axis category browse, recipe detail, ingredient substitutions, cook mode, pantry-to-recipe matching, shopping list, app rename Simmer Fresh → Hone, comprehensive polish pass. See CLAUDE.md for the full session-by-session log.
 
-[Unreleased]: https://github.com/patrickpatches/hone/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/patrickpatches/hone/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/patrickpatches/hone/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/patrickpatches/hone/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/patrickpatches/hone/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/patrickpatches/hone/compare/v0.3.0...v0.4.0

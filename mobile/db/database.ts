@@ -472,9 +472,11 @@ export async function setMealPlanEntry(
   db: SQLiteDatabase,
   entry: MealPlanEntry,
 ): Promise<void> {
-  await db.runAsync('DELETE FROM meal_plan WHERE date = ?', [entry.date]);
+  // Multiple meals per day are allowed; primary key is `id` (unique per add).
+  // Was: DELETE-then-INSERT keyed on date (broke when calendar was removed —
+  // every new add wiped the previous one). Now plain INSERT OR REPLACE on id.
   await db.runAsync(
-    'INSERT INTO meal_plan (id, date, recipe_id, servings) VALUES (?,?,?,?)',
+    'INSERT OR REPLACE INTO meal_plan (id, date, recipe_id, servings) VALUES (?,?,?,?)',
     [entry.id, entry.date, entry.recipe_id, entry.servings],
   );
 }
@@ -548,3 +550,32 @@ export async function clearIngredientSwap(
   const id = `${recipeId}:${ingredientId}`;
   await db.runAsync('DELETE FROM ingredient_swaps WHERE id = ?', [id]);
 }
+
+// ── Shopping extras (ad-hoc ingredients not tied to a recipe) ────────────────
+
+export interface ShoppingExtra {
+  id: string;
+  name: string;
+  amount: number;
+  unit: string;
+  category: string;
+  created_at: number;
+}
+
+export async function getShoppingExtras(db: SQLiteDatabase): Promise<ShoppingExtra[]> {
+  return db.getAllAsync<ShoppingExtra>(
+    'SELECT id, name, amount, unit, category, created_at FROM shopping_extras ORDER BY created_at DESC',
+  );
+}
+
+export async function addShoppingExtra(db: SQLiteDatabase, extra: ShoppingExtra): Promise<void> {
+  await db.runAsync(
+    'INSERT OR REPLACE INTO shopping_extras (id, name, amount, unit, category, created_at) VALUES (?,?,?,?,?,?)',
+    [extra.id, extra.name, extra.amount, extra.unit, extra.category, extra.created_at],
+  );
+}
+
+export async function deleteShoppingExtra(db: SQLiteDatabase, id: string): Promise<void> {
+  await db.runAsync('DELETE FROM shopping_extras WHERE id = ?', [id]);
+}
+

@@ -45,10 +45,15 @@ import {
   setIngredientSwap,
   clearIngredientSwap,
   getAllSwaps,
+  getShoppingExtras,
+  addShoppingExtra,
+  deleteShoppingExtra,
   type SwapRecord,
   type MealPlanEntry,
   type PantryItem,
+  type ShoppingExtra,
 } from '../../db/database';
+import { Modal, TextInput } from 'react-native';
 import type { Recipe, Substitution } from '../../src/data/types';
 import {
   categorizeIngredient,
@@ -93,19 +98,23 @@ export default function PlanAndShopTab() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [swaps, setSwaps] = useState<Map<string, SwapRecord>>(new Map());
   const [swapSheetItem, setSwapSheetItem] = useState<ShoppingItem | null>(null);
+  const [extras, setExtras] = useState<ShoppingExtra[]>([]);
+  const [showAddExtraSheet, setShowAddExtraSheet] = useState(false);
 
   // ── Load on mount + on focus ───────────────────────────────────────────────
   const load = useCallback(async () => {
-    const [r, p, e, s] = await Promise.all([
+    const [r, p, e, s, x] = await Promise.all([
       getAllRecipes(db),
       getPantryItems(db),
       getAllPlanEntries(db),
       getAllSwaps(db),
+      getShoppingExtras(db),
     ]);
     setAllRecipes(r);
     setPantryItems(p);
     setEntries(e);
     setSwaps(s);
+    setExtras(x);
     setLoading(false);
   }, [db]);
 
@@ -124,14 +133,15 @@ export default function PlanAndShopTab() {
   }, [allRecipes]);
 
   // Distinct recipes planned (one row per unique recipe even if added twice)
+  // Show every meal-plan entry as its own row. If the user added
+  // Smash Burger twice (once for tonight, once to batch-cook tomorrow),
+  // both instances appear and both contribute to the shopping list.
+  // The previous dedup-by-recipe-id silently swallowed legitimate adds.
   const plannedRecipes = useMemo<Array<{ entry: MealPlanEntry; recipe: Recipe }>>(() => {
-    const seen = new Set<string>();
     const out: Array<{ entry: MealPlanEntry; recipe: Recipe }> = [];
     for (const e of entries) {
       const r = recipeMap.get(e.recipe_id);
       if (!r) continue;
-      if (seen.has(r.id)) continue;
-      seen.add(r.id);
       out.push({ entry: e, recipe: r });
     }
     return out;
@@ -186,8 +196,23 @@ export default function PlanAndShopTab() {
         }
       }
     }
+    // Add user's ad-hoc shopping extras (ingredients not tied to a recipe)
+    for (const x of extras) {
+      const key = `extra:${x.id}`;
+      aggregated.set(key, {
+        id: `shop-extra-${x.id}`,
+        name: x.name,
+        amount: x.amount,
+        unit: x.unit,
+        category: x.category as PantryCategory,
+        fromRecipes: ['Added by you'],
+        recipeId: x.id, // reuse the field for delete-extra hook below
+        ingredientId: 'extra',
+        substitutions: [],
+      });
+    }
     return Array.from(aggregated.values());
-  }, [entries, recipeMap, pantryItems]);
+  }, [entries, recipeMap, pantryItems, extras]);
 
   const shoppingSections = useMemo<ShoppingSection[]>(() => {
     return SHOPPING_SECTION_ORDER.map((cat) => ({
@@ -372,6 +397,7 @@ export default function PlanAndShopTab() {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               setSwapSheetItem(item);
             }}
+            onAddExtra={() => setShowAddExtraSheet(true)}
           />
         ) : (
           // ── Meals list ───────────────────────────────────────────────────
@@ -412,6 +438,25 @@ export default function PlanAndShopTab() {
       </ScrollView>
 
       {/* Swap sheet */}
+      {/* Ad-hoc ingredient sheet — add an item not tied to any recipe */}
+      <AddExtraSheet
+        visible={showAddExtraSheet}
+        onClose={() => setShowAddExtraSheet(false)}
+        onSave={async (name, amount, unit) => {
+          const extra: ShoppingExtra = {
+            id: `extra-${Date.now()}`,
+            name: name.trim(),
+            amount: amount,
+            unit: unit.trim(),
+            category: 'Pantry Staples',
+            created_at: Date.now(),
+          };
+          await addShoppingExtra(db, extra).catch(console.error);
+          await load();
+          setShowAddExtraSheet(false);
+        }}
+      />
+
       {swapSheetItem && (
         <SwapSheet
           visible
@@ -447,6 +492,7 @@ function ShoppingListView({
   swaps,
   swapKey,
   onSwapPress,
+  onAddExtra,
 }: {
   sections: ShoppingSection[];
   checkedIds: Set<string>;
@@ -454,6 +500,7 @@ function ShoppingListView({
   swaps: Map<string, SwapRecord>;
   swapKey: (item: ShoppingItem) => string;
   onSwapPress: (item: ShoppingItem) => void;
+  onAddExtra: () => void;
 }) {
   if (sections.length === 0) {
     return (
@@ -471,9 +518,26 @@ function ShoppingListView({
   const total = sections.reduce((n, s) => n + s.data.length, 0);
   return (
     <View>
-      <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, marginBottom: 10 }}>
-        {total} item{total === 1 ? '' : 's'} · pantry items excluded
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted }}>
+          {total} item{total === 1 ? '' : 's'} · pantry items excluded
+        </Text>
+        <Pressable
+          onPress={onAddExtra}
+          accessibilityLabel="Add an ingredient to the shopping list"
+          style={({ pressed }) => ({
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            paddingHorizontal: 11, paddingVertical: 6,
+            borderRadius: 999,
+            backgroundColor: pressed ? tokens.paprikaDeep : tokens.paprika,
+          })}
+        >
+          <Icon name="plus" size={13} color={tokens.cream} />
+          <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.cream }}>
+            Add ingredient
+          </Text>
+        </Pressable>
+      </View>
       {sections.map((section) => (
         <View key={section.sectionKey} style={{ marginBottom: 18 }}>
           <Text
@@ -628,3 +692,153 @@ function MealRow({
     </Pressable>
   );
 }
+
+
+// ── Add-extra sheet (ad-hoc shopping items, not tied to any recipe) ──────────
+
+function AddExtraSheet({
+  visible,
+  onClose,
+  onSave,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (name: string, amount: number, unit: string) => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [unit, setUnit] = useState('');
+
+  const reset = () => { setName(''); setAmount(''); setUnit(''); };
+  const handleClose = () => { reset(); onClose(); };
+  const handleSave = () => {
+    if (!name.trim()) return;
+    onSave(name, parseFloat(amount) || 0, unit);
+    reset();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+      <Pressable
+        onPress={handleClose}
+        style={{ flex: 1, backgroundColor: 'rgba(26,22,18,0.45)' }}
+      />
+      <View
+        style={{
+          backgroundColor: tokens.bg,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 16,
+          paddingHorizontal: 20,
+        }}
+      >
+        <View
+          style={{
+            alignSelf: 'center',
+            width: 36, height: 4, borderRadius: 2,
+            backgroundColor: tokens.line,
+            marginBottom: 18,
+          }}
+        />
+        <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: tokens.paprika, marginBottom: 4 }}>
+          Add to shopping list
+        </Text>
+        <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink, marginBottom: 14 }}>
+          Pick up something else
+        </Text>
+
+        <Text style={fieldLabel}>What is it?</Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Toilet paper, paper towels, dishwashing tablets"
+          placeholderTextColor={tokens.muted}
+          autoCapitalize="sentences"
+          style={inputStyle}
+        />
+
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+          <View style={{ width: 100 }}>
+            <Text style={fieldLabel}>Amount</Text>
+            <TextInput
+              value={amount}
+              onChangeText={setAmount}
+              placeholder="1"
+              placeholderTextColor={tokens.muted}
+              keyboardType="decimal-pad"
+              style={inputStyle}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={fieldLabel}>Unit (optional)</Text>
+            <TextInput
+              value={unit}
+              onChangeText={setUnit}
+              placeholder="pack, kg, bottle…"
+              placeholderTextColor={tokens.muted}
+              autoCapitalize="none"
+              style={inputStyle}
+            />
+          </View>
+        </View>
+
+        <Pressable
+          onPress={handleSave}
+          disabled={!name.trim()}
+          style={({ pressed }) => ({
+            marginTop: 18,
+            paddingVertical: 14,
+            borderRadius: 14,
+            alignItems: 'center',
+            backgroundColor: !name.trim() ? tokens.bgDeep : pressed ? tokens.paprikaDeep : tokens.paprika,
+          })}
+        >
+          <Text style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 14,
+            color: !name.trim() ? tokens.muted : tokens.cream,
+          }}>
+            Add to list
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={handleClose}
+          style={({ pressed }) => ({
+            marginTop: 8,
+            paddingVertical: 12,
+            borderRadius: 14,
+            alignItems: 'center',
+            backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+          })}
+        >
+          <Text style={{ fontFamily: fonts.sansBold, fontSize: 13, color: tokens.inkSoft }}>
+            Cancel
+          </Text>
+        </Pressable>
+      </View>
+    </Modal>
+  );
+}
+
+const fieldLabel = {
+  fontFamily: fonts.sansBold,
+  fontSize: 10,
+  letterSpacing: 1.2,
+  textTransform: 'uppercase' as const,
+  color: tokens.muted,
+  marginBottom: 6,
+};
+
+const inputStyle = {
+  backgroundColor: tokens.cream,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: tokens.line,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  fontFamily: fonts.sans,
+  fontSize: 14,
+  color: tokens.ink,
+};

@@ -1048,19 +1048,24 @@ function CircleButton({
       accessibilityLabel={accessibilityLabel}
       hitSlop={8}
       style={({ pressed }) => ({
-        width: 42,
-        height: 42,
-        borderRadius: 21,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: pressed
-          ? 'rgba(250,246,238,0.75)'
-          : 'rgba(250,246,238,0.92)',
+          ? 'rgba(250,246,238,0.85)'
+          : 'rgba(250,246,238,0.97)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
+        shadowRadius: 4,
+        elevation: 3,
       })}
     >
       <Icon
         name={icon}
-        size={18}
+        size={20}
         color={iconColor ?? tokens.ink}
         fill={iconFill ?? 'none'}
       />

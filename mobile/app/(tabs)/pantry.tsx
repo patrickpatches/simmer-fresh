@@ -56,14 +56,34 @@ import {
 
 // Common quick-add staples shown as chips when not already in pantry
 const QUICK_ADD_STAPLES: { name: string; emoji: string; category: PantryCategory }[] = [
-  { name: 'Parmesan',         emoji: '🧀', category: 'Dairy & Eggs' },
-  { name: 'Stock',            emoji: '🫙', category: 'Pantry Staples' },
-  { name: 'Chicken',          emoji: '🍗', category: 'Proteins' },
-  { name: 'Beef mince',       emoji: '🥩', category: 'Proteins' },
-  { name: 'Coconut milk',     emoji: '🥥', category: 'Dairy & Eggs' },
-  { name: 'Soy sauce',        emoji: '🫙', category: 'Condiments & Sauces' },
-  { name: 'Pasta',            emoji: '🍝', category: 'Pantry Staples' },
-  { name: 'Bread',            emoji: '🍞', category: 'Pantry Staples' },
+  // Proteins
+  { name: 'Chicken',     emoji: '🍗', category: 'Proteins' },
+  { name: 'Beef mince',  emoji: '🥩', category: 'Proteins' },
+  { name: 'Eggs',        emoji: '🥚', category: 'Dairy & Eggs' },
+  { name: 'Bacon',       emoji: '🥓', category: 'Proteins' },
+  // Produce
+  { name: 'Yellow onion',emoji: '🧅', category: 'Produce' },
+  { name: 'Garlic',      emoji: '🧄', category: 'Produce' },
+  { name: 'Tomatoes',    emoji: '🍅', category: 'Produce' },
+  { name: 'Lemon',       emoji: '🍋', category: 'Produce' },
+  { name: 'Carrots',     emoji: '🥕', category: 'Produce' },
+  { name: 'Capsicum',    emoji: '🫑', category: 'Produce' },
+  // Dairy & eggs
+  { name: 'Milk',        emoji: '🥛', category: 'Dairy & Eggs' },
+  { name: 'Butter',      emoji: '🧈', category: 'Dairy & Eggs' },
+  { name: 'Parmesan',    emoji: '🧀', category: 'Dairy & Eggs' },
+  { name: 'Coconut milk',emoji: '🥥', category: 'Dairy & Eggs' },
+  // Pantry staples
+  { name: 'Pasta',       emoji: '🍝', category: 'Pantry Staples' },
+  { name: 'Bread',       emoji: '🍞', category: 'Pantry Staples' },
+  { name: 'Rice',        emoji: '🍚', category: 'Pantry Staples' },
+  { name: 'Olive oil',   emoji: '🫒', category: 'Pantry Staples' },
+  { name: 'Salt',        emoji: '🧂', category: 'Spices & Seasonings' },
+  { name: 'Stock',       emoji: '🫙', category: 'Pantry Staples' },
+  // Sauces
+  { name: 'Soy sauce',   emoji: '🫙', category: 'Condiments & Sauces' },
+  { name: 'Tomato paste',emoji: '🥫', category: 'Condiments & Sauces' },
+  { name: 'Honey',       emoji: '🍯', category: 'Condiments & Sauces' },
 ];
 
 export default function PantryTab() {
@@ -103,9 +123,12 @@ export default function PantryTab() {
     return () => { cancelled = true; };
   }, [db]);
 
-  // Items the user actually has (have_it === true)
+  // Items the user actually has. SQLite stores booleans as 0/1, so we
+  // coerce to a boolean here — `p.have_it` was failing the truthiness
+  // check intermittently when items had been round-tripped through the DB
+  // (returning as numbers rather than the JS boolean we set on insert).
   const myPantry = useMemo(
-    () => pantryItems.filter((p) => p.have_it),
+    () => pantryItems.filter((p) => Boolean(p.have_it)),
     [pantryItems],
   );
 
@@ -245,14 +268,21 @@ export default function PantryTab() {
             marginBottom: 12,
           }}
         >
-          {/* Tag cloud */}
-          {filteredPantry.length > 0 && (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-              {filteredPantry.map((item) => (
+          {/* Tag cloud — always visible so the user can see items they've added.
+              Placeholder text if empty so the panel doesn't feel broken. */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: filteredPantry.length > 0 ? 10 : 0 }}>
+            {filteredPantry.length > 0 ? (
+              filteredPantry.map((item) => (
                 <PantryChip key={item.id} item={item} onRemove={() => handleRemove(item)} />
-              ))}
-            </View>
-          )}
+              ))
+            ) : (
+              !search && (
+                <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, paddingVertical: 4 }}>
+                  Tap a chip below or type below to add what you have.
+                </Text>
+              )
+            )}
+          </View>
           {/* Search/add input */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
             <Icon name="search" size={14} color={tokens.muted} />
@@ -299,38 +329,55 @@ export default function PantryTab() {
           )}
         </View>
 
-        {/* Quick-add staples chips */}
+        {/* Quick-add staples organised by category — wrapping grid, not a
+            horizontal scroll. Mirrors the Kitchen tab's category-row pattern
+            so the visual grammar is consistent across screens. */}
         {quickAddChips.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
-            style={{ marginBottom: 16 }}
-          >
-            {quickAddChips.map((s) => (
-              <Pressable
-                key={s.name}
-                onPress={() => handleQuickAdd(s)}
-                accessibilityLabel={`Add ${s.name} to pantry`}
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 999,
-                  backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
-                  borderWidth: 1,
-                  borderColor: tokens.line,
-                })}
-              >
-                <Text style={{ fontSize: 14 }}>{s.emoji}</Text>
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ink }}>
-                  {s.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+          <View style={{ marginBottom: 16, gap: 14 }}>
+            {(['Proteins', 'Produce', 'Dairy & Eggs', 'Pantry Staples', 'Condiments & Sauces'] as PantryCategory[]).map((cat) => {
+              const inCat = quickAddChips.filter((s) => s.category === cat);
+              if (inCat.length === 0) return null;
+              return (
+                <View key={cat}>
+                  <Text style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                    color: tokens.muted,
+                    marginBottom: 8,
+                  }}>
+                    {cat}
+                  </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {inCat.map((s) => (
+                      <Pressable
+                        key={s.name}
+                        onPress={() => handleQuickAdd(s)}
+                        accessibilityLabel={`Add ${s.name} to pantry`}
+                        style={({ pressed }) => ({
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 999,
+                          backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+                          borderWidth: 1,
+                          borderColor: tokens.line,
+                        })}
+                      >
+                        <Text style={{ fontSize: 14 }}>{s.emoji}</Text>
+                        <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ink }}>
+                          {s.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
         )}
 
         {/* Match sections */}

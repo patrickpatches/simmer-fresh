@@ -13,7 +13,7 @@
  */
 
 /** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /**
  * Full schema for a fresh install.
@@ -93,7 +93,16 @@ export const SCHEMA_SQL: string[] = [
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
   )`,
 
-  `CREATE TABLE IF NOT EXISTS favorites (
+  `CREATE TABLE IF NOT EXISTS shopping_extras (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    amount      REAL NOT NULL DEFAULT 0,
+    unit        TEXT NOT NULL DEFAULT '',
+    category    TEXT NOT NULL DEFAULT 'Pantry Staples',
+    created_at  INTEGER NOT NULL
+  )`,
+
+    `CREATE TABLE IF NOT EXISTS favorites (
     recipe_id  TEXT PRIMARY KEY,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
@@ -142,6 +151,16 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
       quantity_note TEXT,
       created_at    TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    )`,
+  ],
+  4: [
+    `CREATE TABLE IF NOT EXISTS shopping_extras (
+      id          TEXT PRIMARY KEY,
+      name        TEXT NOT NULL,
+      amount      REAL NOT NULL DEFAULT 0,
+      unit        TEXT NOT NULL DEFAULT '',
+      category    TEXT NOT NULL DEFAULT 'Pantry Staples',
+      created_at  INTEGER NOT NULL
     )`,
   ],
 };
