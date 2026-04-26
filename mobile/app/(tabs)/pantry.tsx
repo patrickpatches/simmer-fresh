@@ -43,6 +43,7 @@ import {
   type PantryItem,
 } from '../../db/database';
 import type { Recipe } from '../../src/data/types';
+import { SearchOverlay } from '../../src/components/SearchOverlay';
 import {
   PANTRY_CATEGORIES,
   CATEGORY_EMOJI,
@@ -95,6 +96,7 @@ export default function PantryTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [groupByAisle, setGroupByAisle] = useState(false);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,13 +157,16 @@ export default function PantryTab() {
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleRemove = useCallback(async (item: PantryItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    if (item.id.startsWith('custom-')) {
-      await deletePantryItem(db, item.id);
-      setPantryItems((prev) => prev.filter((p) => p.id !== item.id));
-    } else {
-      const updated = { ...item, have_it: false };
-      await upsertPantryItem(db, updated);
-      setPantryItems((prev) => prev.map((p) => (p.id === item.id ? updated : p)));
+    try {
+      if (item.id.startsWith('custom-')) {
+        await deletePantryItem(db, item.id);
+      } else {
+        await upsertPantryItem(db, { ...item, have_it: false });
+      }
+      const fresh = await getPantryItems(db);
+      setPantryItems(fresh);
+    } catch (e) {
+      console.warn('[pantry] remove failed', e);
     }
   }, [db]);
 
@@ -170,23 +175,31 @@ export default function PantryTab() {
     if (!name) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     const norm = normalizeForMatch(name);
-    // Find existing by normalised match
     const existing = pantryItems.find((p) => normalizeForMatch(p.name) === norm);
-    if (existing) {
-      const updated = { ...existing, have_it: true };
-      await upsertPantryItem(db, updated);
-      setPantryItems((prev) => prev.map((p) => (p.id === existing.id ? updated : p)));
-    } else {
-      const item: PantryItem = {
-        id: 'custom-' + Date.now(),
-        name,
-        category: categorizeIngredient(name),
-        quantity: null,
-        unit: null,
-        have_it: true,
-      };
+    const item: PantryItem = existing
+      ? { ...existing, have_it: true }
+      : {
+          id: 'custom-' + Date.now(),
+          name,
+          category: categorizeIngredient(name),
+          quantity: null,
+          unit: null,
+          have_it: true,
+        };
+    try {
       await upsertPantryItem(db, item);
-      setPantryItems((prev) => [...prev, item]);
+    } catch (e) {
+      console.warn('[pantry] upsert failed', e);
+      return;
+    }
+    // Re-read from DB rather than trusting in-memory state. Solves the
+    // intermittent 'item disappears after add' bug where SQLite's bool
+    // serialization, useEffect race, or state diff was dropping the new row.
+    try {
+      const fresh = await getPantryItems(db);
+      setPantryItems(fresh);
+    } catch (e) {
+      console.warn('[pantry] re-read failed', e);
     }
     setSearch('');
   }, [db, pantryItems]);
@@ -232,17 +245,34 @@ export default function PantryTab() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Text
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 28,
-            color: tokens.ink,
-            lineHeight: 32,
-            marginBottom: 4,
-          }}
-        >
-          Pantry
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 28,
+              color: tokens.ink,
+              lineHeight: 32,
+            }}
+          >
+            Pantry
+          </Text>
+          <Pressable
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setSearchOverlayOpen(true);
+            }}
+            accessibilityLabel="Open search"
+            hitSlop={10}
+            style={({ pressed }) => ({
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+              borderWidth: 1, borderColor: tokens.line,
+              alignItems: 'center', justifyContent: 'center',
+            })}
+          >
+            <Icon name="search" size={18} color={tokens.ink} />
+          </Pressable>
+        </View>
         <Text
           style={{
             fontFamily: fonts.displayItalic,
@@ -417,6 +447,12 @@ export default function PantryTab() {
           </View>
         )}
       </ScrollView>
+      <SearchOverlay
+        visible={searchOverlayOpen}
+        onClose={() => setSearchOverlayOpen(false)}
+        recipes={allRecipes}
+        pantryItems={pantryItems}
+      />
     </KeyboardAvoidingView>
   );
 }

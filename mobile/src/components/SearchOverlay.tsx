@@ -219,16 +219,19 @@ export function SearchOverlay({ visible, onClose, recipes, pantryItems }: Props)
     const q = query.trim().toLowerCase();
     if (!q) return { recipes: [], ingredients: [], chefs: [], tags: [] };
 
-    // Recipes
+    // Recipes — defensive: user-added recipes can be missing tagline,
+    // tags, categories, or have null ingredients. Wrap each pass so one
+    // bad row doesn't crash the whole search.
     const recipeResults: RecipeResult[] = [];
     for (const r of recipes) {
-      const title = r.title.toLowerCase();
-      const tag = r.tagline.toLowerCase();
+      try {
+      const title = (r.title ?? '').toLowerCase();
+      const tag = (r.tagline ?? '').toLowerCase();
       const chef = (r.source?.chef ?? '').toLowerCase();
-      const tags = (r.tags ?? []).map((t) => t.toLowerCase());
-      const cuisines = (r.categories?.cuisines ?? []).map((c) => c.toLowerCase());
-      const types = (r.categories?.types ?? []).map((t) => t.toLowerCase());
-      const ingNames = r.ingredients.map((i) => normalizeForMatch(i.name));
+      const tags = (r.tags ?? []).map((t) => (t ?? '').toLowerCase());
+      const cuisines = (r.categories?.cuisines ?? []).map((c) => (c ?? '').toLowerCase());
+      const types = (r.categories?.types ?? []).map((t) => (t ?? '').toLowerCase());
+      const ingNames = (r.ingredients ?? []).map((i) => normalizeForMatch(i?.name ?? ''));
 
       let score = 0;
       let matchOn: RecipeResult['matchOn'] = 'tag';
@@ -245,6 +248,9 @@ export function SearchOverlay({ visible, onClose, recipes, pantryItems }: Props)
         const ready = pantryReadyIds.has(r.id);
         if (ready) score += 50; // pantry boost
         recipeResults.push({ kind: 'recipe', recipe: r, matchOn, pantryReady: ready, score });
+      }
+      } catch (e) {
+        console.warn('[search] skipping bad recipe', r?.id, e);
       }
     }
     recipeResults.sort((a, b) => b.score - a.score);

@@ -39,6 +39,7 @@ import { SearchOverlay } from '../../src/components/SearchOverlay';
 import { RecipeCard } from '../../src/components/RecipeCard';
 import { AddToPlanSheet } from '../../src/components/AddToPlanSheet';
 import { Icon } from '../../src/components/Icon';
+import Constants from 'expo-constants';
 import { tokens, fonts } from '../../src/theme/tokens';
 
 // ── Taxonomy ──────────────────────────────────────────────────────────────────
@@ -371,10 +372,16 @@ function ListHeader({
         )}
       </Pressable>
 
-      {/* Recipe count — quiet line under the search */}
-      <Text style={{ marginTop: 8, fontFamily: fonts.sans, fontSize: 12, color: tokens.muted }}>
-        {recipeCount} recipes · chef-inspired, honestly adapted
-      </Text>
+      {/* Recipe count + version under search. Version shown so Patrick can
+          verify which APK is installed without guessing from Downloads. */}
+      <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, flex: 1 }}>
+          {recipeCount} recipes · chef-inspired, honestly adapted
+        </Text>
+        <Text style={{ fontFamily: fonts.sansBold, fontSize: 10, color: tokens.muted, letterSpacing: 0.6 }}>
+          v{Constants.expoConfig?.version ?? '?'}
+        </Text>
+      </View>
 
       {/* Mood chips */}
       <ScrollView

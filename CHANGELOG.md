@@ -7,7 +7,33 @@ Until then we're in `0.x.y` and bump minor for each shipped APK.
 
 ## [Unreleased]
 
-Branch model — deferred until ~2 weeks before Play Store launch.
+- EAS Update setup (over-the-air JS updates) — approved, scheduled for its
+  own session since it touches the native shell.
+
+## [0.6.2] — 2026-04-26 — Pantry persistence + search crash + visible version
+
+### Fixed
+- **Pantry items disappearing after add.** handleAddByName + handleRemove
+  now re-read from SQLite via getPantryItems(db) after every mutation.
+  Solves the bug at the root: no more stale closure, bool serialization, or
+  useEffect race possibilities can drop the item. Both paths wrapped in
+  try/catch with console.warn diagnostics.
+- **Search crashes from Kitchen.** SearchOverlay was non-defensive about
+  user-added recipes with null tagline / tags / categories. Each recipe
+  iteration now in try/catch with null-safe field access; one bad row no
+  longer brings down the screen.
+
+### Added
+- **Search button on Pantry tab.** Same SearchOverlay opened from a
+  magnifier in the Pantry header. Searches the whole recipe library, not
+  just pantry items.
+- **In-app version label.** v0.6.2 visible at the bottom of the Kitchen
+  header. Patrick can verify the installed APK at a glance — solves the
+  'did you actually upload it' confusion when multiple hone-release.apk
+  files pile up in Downloads.
+
+### Process
+- Build #21+ uses versioned artifact names: hone-v0.6.2-build21.apk.
 
 ## [0.6.1] — 2026-04-26 — Plan & Shop multi-meal fix + Pantry display fix + contrast pass
 
@@ -146,7 +172,8 @@ Branch model — deferred until ~2 weeks before Play Store launch.
 
 Recipe library expanded from 0 to 45. Phase 1-7 complete: dual-axis category browse, recipe detail, ingredient substitutions, cook mode, pantry-to-recipe matching, shopping list, app rename Simmer Fresh → Hone, comprehensive polish pass. See CLAUDE.md for the full session-by-session log.
 
-[Unreleased]: https://github.com/patrickpatches/hone/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/patrickpatches/hone/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/patrickpatches/hone/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/patrickpatches/hone/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/patrickpatches/hone/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/patrickpatches/hone/compare/v0.4.0...v0.5.0
