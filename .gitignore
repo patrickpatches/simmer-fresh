@@ -1,24 +1,48 @@
-# Lock files
+# OS
+.DS_Store
+Thumbs.db
 .~lock.*
 
-# Binary office files
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Node
+node_modules/
+.npm
+npm-debug.log*
+
+# Expo / RN build output
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/ios/build/
+mobile/ios/Pods/
+mobile/*.apk
+mobile/*.aab
+
+# Native
+*.jks
+*.keystore
+!mobile/android/app/debug.keystore
+
+# Claude Code transient state — should never be committed
+mobile/.claude/worktrees/
+mobile/.validate-tmp*/
+mobile/.validate-seed.js
+
+# ATO / financial — local only
 *.xlsx
 *.xls
 
-# Claude internal
-.claude/
-mobile/.claude/
+# Test artefacts
+coverage/
+*.lcov
 
-# Local working copy — index.html is the canonical deployed file
-simmer-fresh.html
-
-# Generated native folders — EAS Build regenerates these server-side
-mobile/android/
-mobile/ios/
-
-# Expo local cache — never needed in the build archive
-mobile/.expo/
-mobile/dist/
-mobile/.validate-tmp*/
-mobile/.validate-seed.js
-mobile/node_modules/
+# Misc
+.env*
+!.env.example
