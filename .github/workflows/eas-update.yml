@@ -1,0 +1,72 @@
+# Pushes a JavaScript-only update to Expo's CDN. APK on Patrick's phone
+# polls this CDN on launch and fetches new bundles silently. Skips a
+# full Android rebuild — saves 22 minutes per iteration.
+#
+# Triggered by:
+#   - any push to main that touches files inside mobile/ (excluding the
+#     android/ and ios/ native shells, which require a full rebuild)
+#   - manual via workflow_dispatch
+#
+# What it does NOT do: native dependency changes (new Expo modules, new
+# Gradle config). Those still require a full APK build via eas-build.yml.
+
+name: EAS Update (over-the-air JS push)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '!mobile/android/**'
+      - '!mobile/ios/**'
+      - '!mobile/.expo/**'
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Update message (shown in Expo dashboard + the device log)'
+        required: false
+        default: ''
+
+jobs:
+  update:
+    name: Push JS update to preview channel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Set up EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Compute update message
+        id: msg
+        env:
+          DISPATCH_MSG: ${{ github.event.inputs.message }}
+        run: |
+          if [ -n "$DISPATCH_MSG" ]; then
+            MSG="$DISPATCH_MSG"
+          else
+            MSG=$(git log -1 --pretty=%s)
+          fi
+          # Truncate to 200 chars so it fits in Expo's UI
+          MSG="${MSG:0:200}"
+          echo "msg=$MSG" >> $GITHUB_OUTPUT
+          echo "Update message: $MSG"
+
+      - name: Push update to preview branch
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas update --branch preview --message "${{ steps.msg.outputs.msg }}" --non-interactive

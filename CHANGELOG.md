@@ -7,8 +7,31 @@ Until then we're in `0.x.y` and bump minor for each shipped APK.
 
 ## [Unreleased]
 
-- EAS Update setup (over-the-air JS updates) — approved, scheduled for its
-  own session since it touches the native shell.
+— nothing pending —
+
+## [0.7.0] — 2026-04-26 — Over-the-air JS updates (EAS Update)
+
+### Added
+- **`expo-updates` integrated** (~29.0.16, the SDK 54 compatible version).
+- **`app.json` configured for OTA**: updates URL points at our EAS project,
+  `runtimeVersion: "1.0.0"` (manually bumped only when native deps change),
+  `checkAutomatically: ON_LOAD`, `fallbackToCacheTimeout: 5000` (5s grace).
+- **New workflow `.github/workflows/eas-update.yml`**: triggers on any push
+  to `main` that touches `mobile/` outside the native shells, plus
+  manual `workflow_dispatch`. Runs `eas update --branch preview` so the
+  bundle hits Expo's CDN within ~30 seconds of a push.
+
+### How it works for testing
+Once the v0.7.0 APK is installed on Patrick's phone:
+1. I push a JS change.
+2. The eas-update workflow runs, compiles a JS bundle, uploads to Expo CDN.
+3. Patrick opens Hone — `expo-updates` fires off a check on launch.
+4. New bundle downloads silently in background (~1-3 MB).
+5. On next app open, the new code runs.
+
+Effectively zero-touch from his side. APKs are only needed when native
+deps change (new Expo modules, Gradle config) — bumped via
+`runtimeVersion`.
 
 ## [0.6.2] — 2026-04-26 — Pantry persistence + search crash + visible version
 
@@ -172,7 +195,8 @@ Until then we're in `0.x.y` and bump minor for each shipped APK.
 
 Recipe library expanded from 0 to 45. Phase 1-7 complete: dual-axis category browse, recipe detail, ingredient substitutions, cook mode, pantry-to-recipe matching, shopping list, app rename Simmer Fresh → Hone, comprehensive polish pass. See CLAUDE.md for the full session-by-session log.
 
-[Unreleased]: https://github.com/patrickpatches/hone/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/patrickpatches/hone/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/patrickpatches/hone/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/patrickpatches/hone/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/patrickpatches/hone/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/patrickpatches/hone/compare/v0.5.0...v0.6.0
