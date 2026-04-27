@@ -2,7 +2,7 @@
  * Root layout.
  *
  * Responsibilities:
- *   - Load the bundled fonts (Fraunces for display, Manrope for body) before
+ *   - Load the bundled fonts (Lora for display, Inter for body) before
  *     anything renders. We keep the splash screen up until fonts are ready so
  *     the first frame doesn't flash system fonts.
  *   - Set the background colour at the OS level (expo-system-ui) so the status
@@ -23,16 +23,16 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SystemUI from 'expo-system-ui';
 import { SQLiteProvider } from 'expo-sqlite';
+import { useFonts } from 'expo-font';
 import {
-  Fraunces_600SemiBold_Italic,
-  Fraunces_700Bold,
-  useFonts as useFraunces,
-} from '@expo-google-fonts/fraunces';
+  Lora_500Medium_Italic,
+  Lora_700Bold,
+} from '@expo-google-fonts/lora';
 import {
-  Manrope_500Medium,
-  Manrope_700Bold,
-  Manrope_800ExtraBold,
-} from '@expo-google-fonts/manrope';
+  Inter_500Medium,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from '@expo-google-fonts/inter';
 import { tokens } from '../src/theme/tokens';
 import { initDatabase } from '../db/database';
 
@@ -42,12 +42,12 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 SystemUI.setBackgroundColorAsync(tokens.bg).catch(() => {});
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFraunces({
-    Fraunces_700Bold,
-    Fraunces_600SemiBold_Italic,
-    Manrope_500Medium,
-    Manrope_700Bold,
-    Manrope_800ExtraBold,
+  const [fontsLoaded, fontError] = useFonts({
+    Lora_700Bold,
+    Lora_500Medium_Italic,
+    Inter_500Medium,
+    Inter_700Bold,
+    Inter_800ExtraBold,
   });
 
   useEffect(() => {

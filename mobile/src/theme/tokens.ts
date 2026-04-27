@@ -2,8 +2,8 @@
  * Design tokens — Studio Kitchen pastel palette.
  *
  * Warm linen backgrounds, dusty terracotta primary, muted sage for positive
- * states. Everything is hand-picked to feel editorial and calm — not clinical
- * or aggressive.
+ * states. Text colours are tuned for WCAG AA contrast on the warm linen bg
+ * (muted was bumped from #9B8E85, which only hit ~2.8:1, to #6E635A at ~5.0:1).
  *
  * Single source of truth. Never hardcode colours in components.
  */
@@ -15,10 +15,11 @@ export const tokens = {
   cream:   '#FFFFFF',   // card faces, inputs
   cardBg:  '#FFFFFF',
 
-  // Ink — text and structural
-  ink:     '#1D1917',   // near-black warm
-  inkSoft: '#4D4540',   // secondary text
-  muted:   '#9B8E85',   // hints, captions, placeholders
+  // Ink — text and structural. Warmed slightly toward espresso so it sits
+  // better on the linen bg without reading as cold near-black.
+  ink:     '#1F1814',   // primary text  — ~16:1 on bg
+  inkSoft: '#544337',   // secondary text — ~9.2:1 on bg
+  muted:   '#6E635A',   // captions, hints, placeholders — ~5.0:1 on bg (AA)
 
   // Primary — dusty terracotta
   primary:      '#D4845A',
@@ -42,13 +43,18 @@ export const tokens = {
 /**
  * Font family tokens.
  * Must match exactly what _layout.tsx loads via useFonts.
+ *
+ * Lora (display) + Inter (body): warm humanist serif paired with the most
+ * legible UI sans-serif available. Inter handles small body sizes far
+ * better than Manrope; Lora gives recipe titles and section headers a
+ * book-like, editorial feel without Fraunces's heavier display flourishes.
  */
 export const fonts = {
-  display:      'Fraunces_700Bold',
-  displayItalic:'Fraunces_600SemiBold_Italic',
-  sans:         'Manrope_500Medium',
-  sansBold:     'Manrope_700Bold',
-  sansXBold:    'Manrope_800ExtraBold',
+  display:      'Lora_700Bold',
+  displayItalic:'Lora_500Medium_Italic',
+  sans:         'Inter_500Medium',
+  sansBold:     'Inter_700Bold',
+  sansXBold:    'Inter_800ExtraBold',
 } as const;
 
 export type TokenName = keyof typeof tokens;
