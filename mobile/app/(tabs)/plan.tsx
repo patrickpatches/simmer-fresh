@@ -1,21 +1,22 @@
 /**
- * Plan & Shop — simple recipe plan toggle + shopping list.
+ * Plan & Shop — planned meals + live shopping list in one screen.
  *
- * hone.html parity: recipes are either planned or not. No calendar,
- * no date picker. Plan = a set of recipes you want to cook this week.
- * Shopping list aggregates all planned recipes, subtracts pantry,
- * groups by store aisle.
+ * The shopping list is always visible and auto-updates when meals are
+ * added or removed — no "generate" button, no modal. Adding a recipe
+ * to the plan immediately populates the list with its ingredients,
+ * scaled to the chosen servings and minus anything already in the pantry.
  *
- * The plan toggle lives on both this screen (remove) and on the
- * recipe detail screen (add). Both write through togglePlannedRecipe().
+ * Layout:
+ *   1. "The Plan" header + compact meal cards (servings stepper inline)
+ *   2. "Shopping List" section label + progress
+ *   3. Add custom item input
+ *   4. Ingredients grouped by aisle (rendered inline, no SectionList nesting)
  */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
-  Modal,
   Pressable,
-  SectionList,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -45,7 +46,7 @@ import {
 } from '../../src/data/pantry-helpers';
 import type { PantryCategory } from '../../src/data/pantry-helpers';
 
-// ── Shopping types ────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ShopItem {
   id: string;
@@ -53,8 +54,13 @@ interface ShopItem {
   amount: number;
   unit: string;
   category: PantryCategory;
+  recipeIds: string[];   // which planned recipes contributed this item
 }
-type ShopSection = { title: string; sectionKey: PantryCategory; data: ShopItem[] };
+
+interface CustomShopItem {
+  id: string;
+  name: string;
+}
 
 function fmtAmt(n: number): string {
   if (n <= 0) return '';
@@ -62,113 +68,44 @@ function fmtAmt(n: number): string {
   return r % 1 === 0 ? String(Math.round(r)) : String(r);
 }
 
-// ── Custom item TextInput for shopping list ───────────────────────────────────
-
-function CustomItemInput({ onAdd }: { onAdd: (name: string) => void }) {
-  const [val, setVal] = useState('');
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 20,
-        marginTop: 16,
-        gap: 8,
-      }}
-    >
-      <View
-        style={{
-          flex: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: tokens.cream,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: tokens.lineDark,
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          gap: 8,
-        }}
-      >
-        <Icon name="plus" size={14} color={tokens.muted} />
-        <TextInput
-          value={val}
-          onChangeText={setVal}
-          placeholder="Add item to list…"
-          placeholderTextColor={tokens.muted}
-          style={{
-            flex: 1,
-            fontFamily: fonts.sans,
-            fontSize: 14,
-            color: tokens.ink,
-            padding: 0,
-          }}
-          returnKeyType="done"
-          onSubmitEditing={() => {
-            if (val.trim()) { onAdd(val.trim()); setVal(''); }
-          }}
-        />
-        {val.trim() ? (
-          <Pressable
-            onPress={() => { onAdd(val.trim()); setVal(''); }}
-            style={{
-              backgroundColor: tokens.primary,
-              borderRadius: 10,
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-            }}
-          >
-            <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FFF' }}>
-              Add
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function PlanTab() {
-  const db = useSQLiteContext();
+  const db     = useSQLiteContext();
   const insets = useSafeAreaInsets();
 
-  const [allRecipes, setAllRecipes]     = useState<Recipe[]>([]);
-  const [pantryItems, setPantryItems]   = useState<PantryItem[]>([]);
-  const [planEntries, setPlanEntries]   = useState<MealPlanEntry[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [showShopping, setShowShopping] = useState(false);
-  const [shopItems, setShopItems]       = useState<ShopItem[]>([]);
-  const [customItems, setCustomItems]   = useState<string[]>([]);
-  const [checkedIds, setCheckedIds]     = useState<Set<string>>(new Set());
+  const [allRecipes,   setAllRecipes]   = useState<Recipe[]>([]);
+  const [pantryItems,  setPantryItems]  = useState<PantryItem[]>([]);
+  const [planEntries,  setPlanEntries]  = useState<MealPlanEntry[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [checkedIds,   setCheckedIds]   = useState<Set<string>>(new Set());
+  const [customItems,  setCustomItems]  = useState<CustomShopItem[]>([]);
+  const [addVal,       setAddVal]       = useState('');
 
-  // Initial load
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const [recipes, pantry, entries] = await Promise.all([
-        getAllRecipes(db),
-        getPantryItems(db),
-        getPlannedEntries(db),
-      ]);
-      if (!cancelled) {
-        setAllRecipes(recipes);
-        setPantryItems(pantry);
-        setPlanEntries(entries);
-        setLoading(false);
-      }
-    }
-    load().catch(console.error);
-    return () => { cancelled = true; };
-  }, [db]);
+  // ── Load ───────────────────────────────────────────────────────────────────
 
-  // Refresh plan when tab gains focus (recipe detail may have toggled)
   useFocusEffect(
     useCallback(() => {
-      getPlannedEntries(db).then(setPlanEntries).catch(console.error);
+      let cancelled = false;
+      async function load() {
+        const [recipes, pantry, entries] = await Promise.all([
+          getAllRecipes(db),
+          getPantryItems(db),
+          getPlannedEntries(db),
+        ]);
+        if (!cancelled) {
+          setAllRecipes(recipes);
+          setPantryItems(pantry);
+          setPlanEntries(entries);
+          setLoading(false);
+        }
+      }
+      load().catch(console.error);
+      return () => { cancelled = true; };
     }, [db]),
   );
+
+  // ── Derived data ───────────────────────────────────────────────────────────
 
   const recipeMap = useMemo(() => {
     const m = new Map<string, Recipe>();
@@ -176,14 +113,74 @@ export default function PlanTab() {
     return m;
   }, [allRecipes]);
 
-  // Remove from plan
+  const plannedRecipes = useMemo(() =>
+    planEntries
+      .map((e) => ({ entry: e, recipe: recipeMap.get(e.recipe_id) }))
+      .filter((x): x is { entry: MealPlanEntry; recipe: Recipe } => !!x.recipe),
+    [planEntries, recipeMap],
+  );
+
+  // Build shopping list — auto, always live
+  const shopSections = useMemo(() => {
+    const haveNorms = new Set(
+      pantryItems.filter((p) => p.have_it).map((p) => normalizeForMatch(p.name)),
+    );
+    const inPantry = (name: string): boolean => {
+      const norm = normalizeForMatch(name);
+      for (const p of haveNorms) {
+        if (norm === p) return true;
+        if (norm.length > 4 && p.length > 4 && (norm.includes(p) || p.includes(norm)))
+          return true;
+      }
+      return false;
+    };
+
+    const aggregated = new Map<string, ShopItem>();
+    for (const { entry, recipe } of plannedRecipes) {
+      const scale = entry.servings / recipe.base_servings;
+      for (const ing of recipe.ingredients) {
+        if (inPantry(ing.name)) continue;
+        const clean = cleanIngredientName(ing.name);
+        const key   = normalizeForMatch(ing.name);
+        const scaledAmt = ing.amount * scale;
+        if (aggregated.has(key)) {
+          const ex = aggregated.get(key)!;
+          if (ex.unit === ing.unit) ex.amount += scaledAmt;
+          if (!ex.recipeIds.includes(entry.recipe_id)) ex.recipeIds.push(entry.recipe_id);
+        } else {
+          aggregated.set(key, {
+            id: `shop-${key.replace(/\s+/g, '-')}`,
+            name: clean,
+            amount: scaledAmt,
+            unit: ing.unit,
+            category: categorizeIngredient(clean),
+            recipeIds: [entry.recipe_id],
+          });
+        }
+      }
+    }
+
+    const allItems = Array.from(aggregated.values());
+    return SHOPPING_SECTION_ORDER
+      .map((cat) => ({
+        key: cat,
+        title: SHOPPING_SECTION_LABEL[cat],
+        items: allItems.filter((i) => i.category === cat),
+      }))
+      .filter((s) => s.items.length > 0);
+  }, [plannedRecipes, pantryItems]);
+
+  const totalShopItems  = shopSections.reduce((n, s) => n + s.items.length, 0) + customItems.length;
+  const checkedCount    = checkedIds.size;
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
   const handleRemove = async (recipeId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     await removePlannedRecipe(db, recipeId);
     setPlanEntries((prev) => prev.filter((e) => e.recipe_id !== recipeId));
   };
 
-  // Update servings
   const handleServings = async (recipeId: string, delta: number) => {
     const entry = planEntries.find((e) => e.recipe_id === recipeId);
     if (!entry) return;
@@ -196,54 +193,24 @@ export default function PlanTab() {
     );
   };
 
-  // Build shopping list
-  const handleGenerateShopping = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-
-    const haveNorms = new Set(
-      pantryItems.filter((p) => p.have_it).map((p) => normalizeForMatch(p.name)),
-    );
-
-    const inPantry = (name: string): boolean => {
-      const norm = normalizeForMatch(name);
-      for (const p of haveNorms) {
-        if (norm === p) return true;
-        if (norm.length > 4 && p.length > 4 && (norm.includes(p) || p.includes(norm)))
-          return true;
-      }
-      return false;
-    };
-
-    const aggregated = new Map<string, ShopItem>();
-    for (const entry of planEntries) {
-      const recipe = recipeMap.get(entry.recipe_id);
-      if (!recipe) continue;
-      const scale = entry.servings / recipe.base_servings;
-      for (const ing of recipe.ingredients) {
-        if (inPantry(ing.name)) continue;
-        const clean = cleanIngredientName(ing.name);
-        const key   = normalizeForMatch(ing.name);
-        const scaledAmt = ing.amount * scale;
-        if (aggregated.has(key)) {
-          const ex = aggregated.get(key)!;
-          if (ex.unit === ing.unit) ex.amount += scaledAmt;
-        } else {
-          aggregated.set(key, {
-            id: `shop-${key.replace(/\s+/g, '-')}`,
-            name: clean,
-            amount: scaledAmt,
-            unit: ing.unit,
-            category: categorizeIngredient(clean),
-          });
-        }
-      }
-    }
-
-    setShopItems(Array.from(aggregated.values()));
-    setCheckedIds(new Set());
-    setCustomItems([]);
-    setShowShopping(true);
+  const toggleCheck = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   };
+
+  const addCustomItem = (name: string) => {
+    if (!name.trim()) return;
+    setCustomItems((prev) => [
+      ...prev,
+      { id: `custom-${Date.now()}`, name: name.trim() },
+    ]);
+  };
+
+  // ── Loading ────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -253,295 +220,56 @@ export default function PlanTab() {
     );
   }
 
-  const plannedRecipes = planEntries
-    .map((e) => ({ entry: e, recipe: recipeMap.get(e.recipe_id) }))
-    .filter((x): x is { entry: MealPlanEntry; recipe: Recipe } => !!x.recipe);
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <View style={{ flex: 1, backgroundColor: tokens.bg }}>
-      <FlatList
-        data={plannedRecipes}
-        keyExtractor={(x) => x.entry.recipe_id}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          paddingTop: insets.top + 20,
-          paddingHorizontal: 20,
-          paddingBottom: 160,
-        }}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={{ marginBottom: 20 }}>
-            {/* Kicker */}
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 11,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                color: tokens.primary,
-                marginBottom: 4,
-              }}
-            >
-              This week
-            </Text>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: tokens.bg }}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* ── HEADER ── */}
+      <View style={{ paddingTop: insets.top + 20, paddingHorizontal: 20, marginBottom: 4 }}>
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            color: tokens.primary,
+            marginBottom: 2,
+          }}
+        >
+          This week
+        </Text>
+        <Text style={{ fontFamily: fonts.display, fontSize: 36, lineHeight: 42, color: tokens.ink }}>
+          The Plan
+        </Text>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: tokens.muted, marginTop: 2 }}>
+          {plannedRecipes.length === 0
+            ? 'Add recipes below to build your shopping list'
+            : `${plannedRecipes.length} meal${plannedRecipes.length !== 1 ? 's' : ''} · ${totalShopItems} item${totalShopItems !== 1 ? 's' : ''} to buy`}
+        </Text>
+      </View>
 
-            {/* Headline */}
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 4 }}>
-              <Text
-                style={{
-                  flex: 1,
-                  fontFamily: fonts.display,
-                  fontSize: 36,
-                  lineHeight: 40,
-                  color: tokens.ink,
-                }}
-              >
-                Meal Plan
-              </Text>
-              {plannedRecipes.length > 0 && (
-                <Pressable
-                  onPress={handleGenerateShopping}
-                  accessibilityRole="button"
-                  accessibilityLabel="Build shopping list"
-                  style={({ pressed }) => ({
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 6,
-                    backgroundColor: pressed ? tokens.inkSoft : tokens.ink,
-                    borderRadius: 999,
-                    paddingHorizontal: 14,
-                    paddingVertical: 9,
-                    marginBottom: 4,
-                  })}
-                >
-                  <Icon name="cart" size={14} color="#FFF" />
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FFF' }}>
-                    Shop
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 12,
-                color: tokens.muted,
-              }}
-            >
-              {plannedRecipes.length === 0
-                ? 'No recipes planned yet — tap + Plan on any recipe'
-                : `${plannedRecipes.length} recipe${plannedRecipes.length !== 1 ? 's' : ''} planned`}
-            </Text>
-          </View>
-        }
-        renderItem={({ item: { entry, recipe } }) => (
-          <View
+      {/* ── PLANNED MEALS ── */}
+      <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+        {plannedRecipes.length === 0 ? (
+          <Pressable
+            onPress={() => router.push('/')}
             style={{
               backgroundColor: tokens.cream,
-              borderRadius: 20,
+              borderRadius: 18,
               borderWidth: 1,
               borderColor: tokens.lineDark,
-              marginBottom: 12,
-              overflow: 'hidden',
-              shadowColor: tokens.ink,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
-            {/* Recipe row */}
-            <Pressable
-              onPress={() => router.push(`/recipe/${recipe.id}`)}
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                gap: 12,
-                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-              })}
-            >
-              {/* Colour swatch / emoji */}
-              {recipe.emoji ? (
-                <Text style={{ fontSize: 32 }}>{recipe.emoji}</Text>
-              ) : (
-                <View
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    backgroundColor: recipe.hero_fallback?.[0] ?? tokens.primaryLight,
-                  }}
-                />
-              )}
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: fonts.display,
-                    fontSize: 16,
-                    color: tokens.ink,
-                    lineHeight: 20,
-                  }}
-                  numberOfLines={2}
-                >
-                  {recipe.title}
-                </Text>
-                {recipe.source ? (
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 11,
-                      color: tokens.primary,
-                      marginTop: 2,
-                    }}
-                  >
-                    {recipe.source.chef}
-                  </Text>
-                ) : null}
-              </View>
-              {/* Remove */}
-              <Pressable
-                onPress={() => handleRemove(entry.recipe_id)}
-                hitSlop={10}
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${recipe.title} from plan`}
-                style={({ pressed }) => ({
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                })}
-              >
-                <Icon name="x" size={16} color={tokens.muted} />
-              </Pressable>
-            </Pressable>
-
-            {/* Servings row */}
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 16,
-                paddingBottom: 14,
-                gap: 10,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 10,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  color: tokens.muted,
-                  flex: 1,
-                }}
-              >
-                Servings
-              </Text>
-              {/* Stepper */}
-              <Pressable
-                onPress={() => handleServings(entry.recipe_id, -1)}
-                hitSlop={8}
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 17,
-                  borderWidth: 1.5,
-                  borderColor: entry.servings <= 1 ? tokens.line : tokens.primary,
-                  backgroundColor: 'transparent',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: entry.servings <= 1 ? 0.35 : 1,
-                }}
-              >
-                <Icon
-                  name="minus"
-                  size={14}
-                  color={entry.servings <= 1 ? tokens.muted : tokens.primary}
-                />
-              </Pressable>
-              <Text
-                style={{
-                  fontFamily: fonts.display,
-                  fontSize: 22,
-                  color: tokens.ink,
-                  minWidth: 28,
-                  textAlign: 'center',
-                  fontVariant: ['tabular-nums'],
-                }}
-              >
-                {entry.servings}
-              </Text>
-              <Pressable
-                onPress={() => handleServings(entry.recipe_id, 1)}
-                hitSlop={8}
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 17,
-                  borderWidth: 1.5,
-                  borderColor: entry.servings >= 20 ? tokens.line : tokens.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: entry.servings >= 20 ? 0.35 : 1,
-                }}
-              >
-                <Icon
-                  name="plus"
-                  size={14}
-                  color={entry.servings >= 20 ? tokens.muted : tokens.primary}
-                />
-              </Pressable>
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 12,
-                  color: tokens.muted,
-                }}
-              >
-                people
-              </Text>
-              {recipe.time_min ? (
-                <Text
-                  style={{
-                    fontFamily: fonts.sans,
-                    fontSize: 11,
-                    color: tokens.muted,
-                    marginLeft: 'auto',
-                  }}
-                >
-                  {recipe.time_min} min
-                </Text>
-              ) : null}
-            </View>
-          </View>
-        )}
-        ListEmptyComponent={
-          <View
-            style={{
-              marginTop: 8,
               padding: 20,
-              backgroundColor: tokens.cream,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: tokens.lineDark,
               alignItems: 'center',
               gap: 8,
             }}
           >
-            <Text style={{ fontSize: 36 }}>📋</Text>
-            <Text
-              style={{
-                fontFamily: fonts.display,
-                fontSize: 18,
-                color: tokens.ink,
-                textAlign: 'center',
-              }}
-            >
+            <Text style={{ fontSize: 32 }}>🥗</Text>
+            <Text style={{ fontFamily: fonts.display, fontSize: 17, color: tokens.ink }}>
               Nothing planned yet
             </Text>
             <Text
@@ -553,270 +281,501 @@ export default function PlanTab() {
                 lineHeight: 18,
               }}
             >
-              Open any recipe and tap{' '}
-              <Text style={{ fontFamily: fonts.sansBold, color: tokens.primary }}>
-                + Plan
-              </Text>{' '}
-              to add it here
+              Open a recipe and tap{' '}
+              <Text style={{ fontFamily: fonts.sansBold, color: tokens.primary }}>+</Text>
+              {' '}to add it here
             </Text>
+            <View
+              style={{
+                marginTop: 4,
+                backgroundColor: tokens.primary,
+                borderRadius: 999,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+              }}
+            >
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 13, color: '#FFF' }}>
+                Browse recipes
+              </Text>
+            </View>
+          </Pressable>
+        ) : (
+          <View style={{ gap: 10 }}>
+            {plannedRecipes.map(({ entry, recipe }) => (
+              <MealCard
+                key={entry.recipe_id}
+                recipe={recipe}
+                servings={entry.servings}
+                onRemove={() => handleRemove(entry.recipe_id)}
+                onServingsChange={(delta) => handleServings(entry.recipe_id, delta)}
+              />
+            ))}
+            {/* Browse more */}
+            <Pressable
+              onPress={() => router.push('/')}
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                paddingVertical: 12,
+                borderRadius: 14,
+                borderWidth: 1.5,
+                borderColor: tokens.line,
+                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+              })}
+            >
+              <Icon name="plus" size={14} color={tokens.inkSoft} />
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 13, color: tokens.inkSoft }}>
+                Add another recipe
+              </Text>
+            </Pressable>
           </View>
-        }
-      />
+        )}
+      </View>
 
-      {/* Floating shop CTA */}
-      {plannedRecipes.length > 0 && (
+      {/* ── SHOPPING LIST ── */}
+      <View style={{ marginTop: 28 }}>
+        {/* Section header */}
         <View
           style={{
-            position: 'absolute',
-            left: 20,
-            right: 20,
-            bottom: insets.bottom + 90,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderTopWidth: 1,
+            borderTopColor: tokens.line,
+            backgroundColor: tokens.bg,
           }}
         >
-          <Pressable
-            onPress={handleGenerateShopping}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
-              borderRadius: 18,
-              paddingVertical: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              shadowColor: tokens.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              elevation: 8,
-            })}
-          >
-            <Icon name="cart" size={18} color="#FFF" />
-            <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF' }}>
-              Build Shopping List · {plannedRecipes.length} meal{plannedRecipes.length !== 1 ? 's' : ''}
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* Shopping list modal */}
-      <Modal
-        visible={showShopping}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowShopping(false)}
-      >
-        <ShoppingListSheet
-          items={shopItems}
-          customItems={customItems}
-          checkedIds={checkedIds}
-          onToggle={(id) => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-            setCheckedIds((prev) => {
-              const next = new Set(prev);
-              next.has(id) ? next.delete(id) : next.add(id);
-              return next;
-            });
-          }}
-          onAddCustom={(name) => setCustomItems((prev) => [...prev, name])}
-          onClose={() => setShowShopping(false)}
-        />
-      </Modal>
-    </View>
-  );
-}
-
-// ── Shopping list sheet ───────────────────────────────────────────────────────
-
-function ShoppingListSheet({
-  items,
-  customItems,
-  checkedIds,
-  onToggle,
-  onAddCustom,
-  onClose,
-}: {
-  items: ShopItem[];
-  customItems: string[];
-  checkedIds: Set<string>;
-  onToggle: (id: string) => void;
-  onAddCustom: (name: string) => void;
-  onClose: () => void;
-}) {
-  const insets = useSafeAreaInsets();
-  const checkedCount = checkedIds.size;
-  const totalCount = items.length + customItems.length;
-
-  const sections = useMemo<ShopSection[]>(() => {
-    return SHOPPING_SECTION_ORDER.map((cat) => ({
-      title: SHOPPING_SECTION_LABEL[cat],
-      sectionKey: cat,
-      data: items.filter((i) => i.category === cat),
-    })).filter((s) => s.data.length > 0);
-  }, [items]);
-
-  return (
-    <View style={{ flex: 1, backgroundColor: tokens.bg, paddingTop: insets.top + 8 }}>
-      {/* Header */}
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: tokens.line,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: fonts.display, fontSize: 28, color: tokens.ink }}>
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 11,
+                letterSpacing: 2,
+                textTransform: 'uppercase',
+                color: tokens.inkSoft,
+              }}
+            >
               Shopping List
             </Text>
-            <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, marginTop: 3 }}>
-              {totalCount} items · pantry items excluded
-            </Text>
-            {checkedCount > 0 && (
-              <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.sage, marginTop: 2 }}>
-                {checkedCount} of {totalCount} grabbed ✓
+            {totalShopItems > 0 && (
+              <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, marginTop: 2 }}>
+                {checkedCount > 0
+                  ? `${checkedCount} of ${totalShopItems} grabbed ✓`
+                  : `${totalShopItems} items · pantry excluded`}
               </Text>
             )}
           </View>
-          <Pressable
-            onPress={onClose}
-            hitSlop={12}
+          {checkedCount > 0 && (
+            <Pressable
+              onPress={() => setCheckedIds(new Set())}
+              hitSlop={10}
+              style={({ pressed }) => ({
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 999,
+                backgroundColor: pressed ? tokens.bgDeep : tokens.line,
+              })}
+            >
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.inkSoft }}>
+                Clear ticks
+              </Text>
+            </Pressable>
+          )}
+        </View>
+
+        {/* Add custom item */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: 20,
+            marginBottom: 12,
+            gap: 8,
+          }}
+        >
+          <View
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: tokens.bgDeep,
+              flex: 1,
+              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
+              backgroundColor: tokens.cream,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+              paddingHorizontal: 14,
+              paddingVertical: 11,
+              gap: 8,
             }}
           >
-            <Icon name="x" size={16} color={tokens.ink} />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* BUG-003 FIX: custom item input built here where keyboard works */}
-      <CustomItemInput onAdd={onAddCustom} />
-
-      {items.length === 0 && customItems.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-          <Text style={{ fontSize: 36, marginBottom: 12 }}>🎉</Text>
-          <Text style={{ fontFamily: fonts.display, fontSize: 20, color: tokens.ink, marginBottom: 8 }}>
-            Your pantry covers everything
-          </Text>
-          <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: tokens.muted, textAlign: 'center' }}>
-            Nothing extra to buy for this plan.
-          </Text>
-        </View>
-      ) : (
-        <SectionList
-          sections={[
-            ...sections,
-            ...(customItems.length > 0
-              ? [{
-                  title: 'Added by you',
-                  sectionKey: 'Pantry Staples' as PantryCategory,
-                  data: customItems.map((name, i) => ({
-                    id: `custom-${i}`,
-                    name,
-                    amount: 0,
-                    unit: '',
-                    category: 'Pantry Staples' as PantryCategory,
-                  })),
-                }]
-              : []),
-          ]}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingTop: 12, paddingBottom: insets.bottom + 24 }}
-          showsVerticalScrollIndicator={false}
-          stickySectionHeadersEnabled
-          keyboardShouldPersistTaps="handled"
-          renderSectionHeader={({ section }) => (
-            <View
+            <Icon name="plus" size={14} color={tokens.muted} />
+            <TextInput
+              value={addVal}
+              onChangeText={setAddVal}
+              placeholder="Add item to list…"
+              placeholderTextColor={tokens.muted}
               style={{
-                backgroundColor: tokens.bgDeep,
-                paddingHorizontal: 20,
-                paddingVertical: 9,
+                flex: 1,
+                fontFamily: fonts.sans,
+                fontSize: 14,
+                color: tokens.ink,
+                padding: 0,
               }}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 11,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  color: tokens.inkSoft,
-                }}
-              >
-                {section.title}
-              </Text>
-            </View>
-          )}
-          renderItem={({ item, index, section }) => {
-            const checked = checkedIds.has(item.id);
-            const isLast = index === section.data.length - 1;
-            const amtStr = fmtAmt(item.amount);
-            return (
+              returnKeyType="done"
+              onSubmitEditing={() => {
+                if (addVal.trim()) { addCustomItem(addVal); setAddVal(''); }
+              }}
+            />
+            {addVal.trim() ? (
               <Pressable
-                onPress={() => onToggle(item.id)}
+                onPress={() => { addCustomItem(addVal); setAddVal(''); }}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: tokens.cream,
-                  paddingHorizontal: 20,
-                  paddingVertical: 14,
-                  gap: 14,
-                  minHeight: 56,
-                  borderBottomWidth: isLast ? 0 : 1,
-                  borderBottomColor: tokens.line,
+                  backgroundColor: tokens.primary,
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
                 }}
               >
-                <View
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 7,
-                    borderWidth: 2,
-                    borderColor: checked ? tokens.sage : tokens.line,
-                    backgroundColor: checked ? tokens.sage : 'transparent',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  {checked && <Icon name="check" size={14} color="#FFF" />}
-                </View>
-                <Text
-                  style={{
-                    flex: 1,
-                    fontFamily: fonts.sans,
-                    fontSize: 15,
-                    color: checked ? tokens.muted : tokens.ink,
-                    textDecorationLine: checked ? 'line-through' : 'none',
-                  }}
-                >
-                  {amtStr && item.unit ? (
-                    <Text>
-                      <Text style={{ fontFamily: fonts.sansBold }}>
-                        {amtStr} {item.unit}
-                      </Text>
-                      {' '}{item.name}
-                    </Text>
-                  ) : amtStr ? (
-                    <Text>
-                      <Text style={{ fontFamily: fonts.sansBold }}>{amtStr}</Text>
-                      {' '}{item.name}
-                    </Text>
-                  ) : (
-                    item.name
-                  )}
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FFF' }}>
+                  Add
                 </Text>
               </Pressable>
-            );
+            ) : null}
+          </View>
+        </View>
+
+        {/* Empty shopping list state */}
+        {totalShopItems === 0 && plannedRecipes.length > 0 && (
+          <View style={{ paddingHorizontal: 20, paddingVertical: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 28, marginBottom: 8 }}>🎉</Text>
+            <Text style={{ fontFamily: fonts.display, fontSize: 16, color: tokens.ink, marginBottom: 4 }}>
+              Your pantry covers everything
+            </Text>
+            <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, textAlign: 'center' }}>
+              Nothing extra to buy for this plan.
+            </Text>
+          </View>
+        )}
+
+        {/* Custom items (user-added, no category) */}
+        {customItems.length > 0 && (
+          <AisleSection title="Added by you">
+            {customItems.map((item) => (
+              <ShopRow
+                key={item.id}
+                id={item.id}
+                label={item.name}
+                checked={checkedIds.has(item.id)}
+                onToggle={() => toggleCheck(item.id)}
+              />
+            ))}
+          </AisleSection>
+        )}
+
+        {/* Ingredient sections by aisle */}
+        {shopSections.map((section) => (
+          <AisleSection key={section.key} title={section.title}>
+            {section.items.map((item) => {
+              const amtStr  = fmtAmt(item.amount);
+              const checked = checkedIds.has(item.id);
+              const label   = amtStr && item.unit
+                ? `${amtStr} ${item.unit}  ${item.name}`
+                : amtStr
+                  ? `${amtStr}  ${item.name}`
+                  : item.name;
+              return (
+                <ShopRow
+                  key={item.id}
+                  id={item.id}
+                  label={label}
+                  boldPrefix={amtStr ? (item.unit ? `${amtStr} ${item.unit}` : amtStr) : undefined}
+                  plainSuffix={item.name}
+                  checked={checked}
+                  onToggle={() => toggleCheck(item.id)}
+                />
+              );
+            })}
+          </AisleSection>
+        ))}
+
+        {/* Placeholder when no meals added yet */}
+        {plannedRecipes.length === 0 && customItems.length === 0 && (
+          <View style={{ paddingHorizontal: 20, paddingVertical: 16 }}>
+            <View
+              style={{
+                backgroundColor: tokens.cream,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: tokens.line,
+                padding: 16,
+                gap: 6,
+              }}
+            >
+              {['Produce', 'Meat & Seafood', 'Pantry Staples'].map((cat) => (
+                <View
+                  key={cat}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, opacity: 0.35 }}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 6,
+                      borderWidth: 1.5,
+                      borderColor: tokens.line,
+                    }}
+                  />
+                  <View
+                    style={{
+                      height: 10,
+                      width: 120 + Math.random() * 60,
+                      borderRadius: 5,
+                      backgroundColor: tokens.line,
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+// ── Meal card ─────────────────────────────────────────────────────────────────
+
+function MealCard({
+  recipe,
+  servings,
+  onRemove,
+  onServingsChange,
+}: {
+  recipe: Recipe;
+  servings: number;
+  onRemove: () => void;
+  onServingsChange: (delta: number) => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => router.push(`/recipe/${recipe.id}`)}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: tokens.lineDark,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 14,
+        paddingRight: 10,
+        paddingVertical: 12,
+        gap: 12,
+        shadowColor: tokens.ink,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+      })}
+    >
+      {/* Colour swatch / emoji */}
+      {recipe.emoji ? (
+        <Text style={{ fontSize: 28 }}>{recipe.emoji}</Text>
+      ) : (
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            backgroundColor: recipe.hero_fallback?.[0] ?? tokens.primaryLight,
           }}
         />
       )}
+
+      {/* Title */}
+      <View style={{ flex: 1 }}>
+        <Text
+          style={{ fontFamily: fonts.display, fontSize: 15, color: tokens.ink, lineHeight: 19 }}
+          numberOfLines={2}
+        >
+          {recipe.title}
+        </Text>
+        {recipe.source ? (
+          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 1 }}>
+            {recipe.source.chef}
+          </Text>
+        ) : null}
+      </View>
+
+      {/* Compact servings stepper */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Pressable
+          onPress={(e) => { e.stopPropagation?.(); onServingsChange(-1); }}
+          hitSlop={8}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            borderWidth: 1.5,
+            borderColor: servings <= 1 ? tokens.line : tokens.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: servings <= 1 ? 0.35 : 1,
+          }}
+        >
+          <Icon name="minus" size={12} color={servings <= 1 ? tokens.muted : tokens.primary} />
+        </Pressable>
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 14,
+            color: tokens.ink,
+            minWidth: 20,
+            textAlign: 'center',
+          }}
+        >
+          {servings}
+        </Text>
+        <Pressable
+          onPress={(e) => { e.stopPropagation?.(); onServingsChange(1); }}
+          hitSlop={8}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            borderWidth: 1.5,
+            borderColor: servings >= 20 ? tokens.line : tokens.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: servings >= 20 ? 0.35 : 1,
+          }}
+        >
+          <Icon name="plus" size={12} color={servings >= 20 ? tokens.muted : tokens.primary} />
+        </Pressable>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginLeft: 2 }}>
+          pax
+        </Text>
+      </View>
+
+      {/* Remove */}
+      <Pressable
+        onPress={(e) => { e.stopPropagation?.(); onRemove(); }}
+        hitSlop={8}
+        style={({ pressed }) => ({
+          width: 30,
+          height: 30,
+          borderRadius: 15,
+          backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+          alignItems: 'center',
+          justifyContent: 'center',
+        })}
+      >
+        <Icon name="x" size={14} color={tokens.muted} />
+      </Pressable>
+    </Pressable>
+  );
+}
+
+// ── Aisle section wrapper ─────────────────────────────────────────────────────
+
+function AisleSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={{ marginBottom: 4 }}>
+      <View
+        style={{
+          backgroundColor: tokens.bgDeep,
+          paddingHorizontal: 20,
+          paddingVertical: 8,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 10,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            color: tokens.inkSoft,
+          }}
+        >
+          {title}
+        </Text>
+      </View>
+      <View style={{ backgroundColor: tokens.cream }}>
+        {children}
+      </View>
     </View>
   );
 }
+
+// ── Single shopping row ───────────────────────────────────────────────────────
+
+function ShopRow({
+  id,
+  label,
+  boldPrefix,
+  plainSuffix,
+  checked,
+  onToggle,
+}: {
+  id: string;
+  label: string;
+  boldPrefix?: string;
+  plainSuffix?: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        gap: 14,
+        minHeight: 52,
+        backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.line,
+      })}
+    >
+      <View
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 6,
+          borderWidth: 2,
+          borderColor: checked ? tokens.sage : tokens.line,
+          backgroundColor: checked ? tokens.sage : 'transparent',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {checked && <Icon name="check" size={13} color="#FFF" />}
+      </View>
+
+      <Text
+        style={{
+          flex: 1,
+          fontFamily: fonts.sans,
+          fontSize: 15,
+          lineHeight: 20,
+          color: checked ? tokens.muted : tokens.ink,
+          textDecorationLine: checked ? 'line-through' : 'none',
+        }}
+      >
+        {boldPrefix ? (
+          <>
+            <Text style={{ fontFamily: fonts.sansBold }}>{boldPrefix}</Text>
+            {'  '}{plainSuffix}
+          </>
+        ) : label}
+      </Text>
+    </Pressable>
+  );
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

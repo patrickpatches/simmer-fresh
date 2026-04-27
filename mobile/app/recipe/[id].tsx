@@ -246,6 +246,23 @@ export default function RecipeDetailScreen() {
             >
               {recipe.title}
             </Text>
+            {/* Plan toggle */}
+            <Pressable
+              onPress={handleTogglePlan}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={isPlanned ? 'Remove from plan' : 'Add to plan'}
+              style={({ pressed }) => ({
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: isPlanned ? tokens.sageLight : (pressed ? tokens.bgDeep : 'transparent'),
+                alignItems: 'center',
+                justifyContent: 'center',
+              })}
+            >
+              <Icon name={isPlanned ? 'check' : 'plus'} size={20} color={isPlanned ? tokens.sage : tokens.ink} />
+            </Pressable>
             {/* Favourite */}
             <Pressable
               onPress={() => {
@@ -665,14 +682,14 @@ export default function RecipeDetailScreen() {
             style={({ pressed }) => ({
               paddingVertical: 16,
               borderRadius: 18,
-              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+              backgroundColor: pressed ? tokens.inkSoft : tokens.ink,
               alignItems: 'center',
               flexDirection: 'row',
               justifyContent: 'center',
               gap: 8,
             })}
           >
-            <Icon name="chef" size={18} color="#FFF" />
+            <Icon name="chef" size={18} color={tokens.primary} />
             <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF', letterSpacing: 0.2 }}>
               I'm cooking this now
             </Text>
@@ -774,34 +791,3 @@ function Callout({
         style={{
           fontFamily: fonts.sansBold,
           fontSize: 9,
-          letterSpacing: 1.5,
-          textTransform: 'uppercase',
-          color: accent,
-          marginBottom: 3,
-        }}
-      >
-        {label}
-      </Text>
-      <Text
-        style={{
-          fontFamily: italic ? fonts.displayItalic : fonts.sans,
-          fontStyle: italic ? 'italic' : 'normal',
-          fontSize: 13,
-          lineHeight: 18,
-          color: tokens.inkSoft,
-        }}
-      >
-        {text}
-      </Text>
-    </View>
-  );
-}
-
-function formatTimer(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  const m = Math.round(seconds / 60);
-  if (m < 60) return `${m} min`;
-  const h = Math.floor(m / 60);
-  const rem = m % 60;
-  return rem === 0 ? `${h} h` : `${h} h ${rem} min`;
-}

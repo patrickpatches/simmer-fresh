@@ -16,6 +16,8 @@ jobs:
   build:
     name: Build Android APK
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,8 +56,6 @@ jobs:
         run: npx expo prebuild --platform android --clean --non-interactive
 
       - name: Generate CI signing keystore
-        # Release builds require signing. We generate a throwaway keystore on
-        # the fly — this is only for sideload testing, NOT the Play Store key.
         run: |
           keytool -genkey -v \
             -keystore /tmp/ci-release.jks \
@@ -68,8 +68,6 @@ jobs:
             -dname "CN=Hone CI, OU=CI, O=Hone, L=Sydney, ST=NSW, C=AU"
 
       - name: Build standalone release APK
-        # Release builds ALWAYS embed the JS bundle — no Metro server needed.
-        # We sign with the CI keystore so Android accepts the install.
         working-directory: mobile/android
         run: |
           set -o pipefail
@@ -120,3 +118,4 @@ jobs:
           name: gradle-failure-log
           path: /tmp/gradle-output.txt
           retention-days: 7
+
