@@ -81,6 +81,7 @@ export default function PlanTab() {
   const [checkedIds,   setCheckedIds]   = useState<Set<string>>(new Set());
   const [customItems,  setCustomItems]  = useState<CustomShopItem[]>([]);
   const [addVal,       setAddVal]       = useState('');
+  const [addFocused,   setAddFocused]   = useState(false);
 
   // ── Load ───────────────────────────────────────────────────────────────────
 
@@ -335,17 +336,15 @@ export default function PlanTab() {
       </View>
 
       {/* ── SHOPPING LIST ── */}
-      <View style={{ marginTop: 28 }}>
-        {/* Section header */}
+      <View style={{ marginTop: 32 }}>
+        {/* Section heading — display-font with primary kicker */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             paddingHorizontal: 20,
-            paddingVertical: 12,
-            borderTopWidth: 1,
-            borderTopColor: tokens.line,
-            backgroundColor: tokens.bg,
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            marginBottom: 14,
           }}
         >
           <View style={{ flex: 1 }}>
@@ -355,16 +354,20 @@ export default function PlanTab() {
                 fontSize: 11,
                 letterSpacing: 2,
                 textTransform: 'uppercase',
-                color: tokens.inkSoft,
+                color: tokens.primary,
+                marginBottom: 4,
               }}
             >
+              Aisle by aisle
+            </Text>
+            <Text style={{ fontFamily: fonts.display, fontSize: 26, lineHeight: 30, color: tokens.ink }}>
               Shopping List
             </Text>
             {totalShopItems > 0 && (
-              <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, marginTop: 2 }}>
+              <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, marginTop: 4 }}>
                 {checkedCount > 0
-                  ? `${checkedCount} of ${totalShopItems} grabbed ✓`
-                  : `${totalShopItems} items · pantry excluded`}
+                  ? `${checkedCount} of ${totalShopItems} ticked off`
+                  : `${totalShopItems} ${totalShopItems === 1 ? 'item' : 'items'} · pantry excluded`}
               </Text>
             )}
           </View>
@@ -386,40 +389,49 @@ export default function PlanTab() {
           )}
         </View>
 
-        {/* Add custom item */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginHorizontal: 20,
-            marginBottom: 12,
-            gap: 8,
-          }}
-        >
+        {/* Add custom item — premium pill input */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 18 }}>
           <View
             style={{
-              flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: tokens.cream,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: tokens.lineDark,
-              paddingHorizontal: 14,
-              paddingVertical: 11,
-              gap: 8,
+              borderRadius: 18,
+              borderWidth: 1.5,
+              borderColor: addFocused ? tokens.primary : tokens.lineDark,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              gap: 12,
+              shadowColor: tokens.ink,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: addFocused ? 0.08 : 0.04,
+              shadowRadius: 6,
+              elevation: addFocused ? 2 : 1,
             }}
           >
-            <Icon name="plus" size={14} color={tokens.muted} />
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                backgroundColor: tokens.primaryLight,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="plus" size={16} color={tokens.primary} />
+            </View>
             <TextInput
               value={addVal}
               onChangeText={setAddVal}
-              placeholder="Add item to list…"
+              onFocus={() => setAddFocused(true)}
+              onBlur={() => setAddFocused(false)}
+              placeholder="Add an extra item…"
               placeholderTextColor={tokens.muted}
               style={{
                 flex: 1,
                 fontFamily: fonts.sans,
-                fontSize: 14,
+                fontSize: 15,
                 color: tokens.ink,
                 padding: 0,
               }}
@@ -431,14 +443,14 @@ export default function PlanTab() {
             {addVal.trim() ? (
               <Pressable
                 onPress={() => { addCustomItem(addVal); setAddVal(''); }}
-                style={{
-                  backgroundColor: tokens.primary,
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                }}
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+                  borderRadius: 12,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                })}
               >
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FFF' }}>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 13, color: '#FFF', letterSpacing: 0.2 }}>
                   Add
                 </Text>
               </Pressable>
@@ -461,14 +473,14 @@ export default function PlanTab() {
 
         {/* Custom items (user-added, no category) */}
         {customItems.length > 0 && (
-          <AisleSection title="Added by you">
-            {customItems.map((item) => (
+          <AisleSection title="Added by you" count={customItems.length}>
+            {customItems.map((item, idx) => (
               <ShopRow
                 key={item.id}
-                id={item.id}
                 label={item.name}
                 checked={checkedIds.has(item.id)}
                 onToggle={() => toggleCheck(item.id)}
+                isLast={idx === customItems.length - 1}
               />
             ))}
           </AisleSection>
@@ -476,24 +488,19 @@ export default function PlanTab() {
 
         {/* Ingredient sections by aisle */}
         {shopSections.map((section) => (
-          <AisleSection key={section.key} title={section.title}>
-            {section.items.map((item) => {
+          <AisleSection key={section.key} title={section.title} count={section.items.length}>
+            {section.items.map((item, idx) => {
               const amtStr  = fmtAmt(item.amount);
               const checked = checkedIds.has(item.id);
-              const label   = amtStr && item.unit
-                ? `${amtStr} ${item.unit}  ${item.name}`
-                : amtStr
-                  ? `${amtStr}  ${item.name}`
-                  : item.name;
+              const qty     = amtStr ? (item.unit ? `${amtStr} ${item.unit}` : amtStr) : undefined;
               return (
                 <ShopRow
                   key={item.id}
-                  id={item.id}
-                  label={label}
-                  boldPrefix={amtStr ? (item.unit ? `${amtStr} ${item.unit}` : amtStr) : undefined}
-                  plainSuffix={item.name}
+                  qty={qty}
+                  label={item.name}
                   checked={checked}
                   onToggle={() => toggleCheck(item.id)}
+                  isLast={idx === section.items.length - 1}
                 />
               );
             })}
@@ -506,32 +513,40 @@ export default function PlanTab() {
             <View
               style={{
                 backgroundColor: tokens.cream,
-                borderRadius: 14,
+                borderRadius: 16,
                 borderWidth: 1,
                 borderColor: tokens.line,
-                padding: 16,
-                gap: 6,
+                padding: 18,
+                gap: 10,
               }}
             >
               {['Produce', 'Meat & Seafood', 'Pantry Staples'].map((cat) => (
                 <View
                   key={cat}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, opacity: 0.35 }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 14, opacity: 0.32 }}
                 >
                   <View
                     style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 6,
-                      borderWidth: 1.5,
+                      width: 26,
+                      height: 26,
+                      borderRadius: 9,
+                      borderWidth: 2,
                       borderColor: tokens.line,
                     }}
                   />
                   <View
                     style={{
-                      height: 10,
-                      width: 120 + Math.random() * 60,
-                      borderRadius: 5,
+                      height: 11,
+                      width: 50,
+                      borderRadius: 4,
+                      backgroundColor: tokens.line,
+                    }}
+                  />
+                  <View
+                    style={{
+                      height: 11,
+                      flex: 1,
+                      borderRadius: 4,
                       backgroundColor: tokens.line,
                     }}
                   />
@@ -678,30 +693,87 @@ function MealCard({
 }
 
 // ── Aisle section wrapper ─────────────────────────────────────────────────────
+// Title is set in display serif (Lora), with a coloured accent bar on the
+// left and a count chip on the right. Items live inside a bordered cream
+// card so the whole aisle reads as a single object.
 
-function AisleSection({ title, children }: { title: string; children: React.ReactNode }) {
+function AisleSection({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
+}) {
   return (
-    <View style={{ marginBottom: 4 }}>
+    <View style={{ marginBottom: 22 }}>
+      {/* Heading */}
       <View
         style={{
-          backgroundColor: tokens.bgDeep,
           paddingHorizontal: 20,
-          paddingVertical: 8,
+          marginBottom: 10,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
         }}
       >
+        <View
+          style={{
+            width: 3,
+            height: 22,
+            backgroundColor: tokens.primary,
+            borderRadius: 2,
+          }}
+        />
         <Text
           style={{
-            fontFamily: fonts.sansBold,
-            fontSize: 10,
-            letterSpacing: 1.5,
-            textTransform: 'uppercase',
-            color: tokens.inkSoft,
+            flex: 1,
+            fontFamily: fonts.display,
+            fontSize: 19,
+            color: tokens.ink,
+            letterSpacing: 0.1,
           }}
         >
           {title}
         </Text>
+        <View
+          style={{
+            paddingHorizontal: 10,
+            paddingVertical: 3,
+            borderRadius: 999,
+            backgroundColor: tokens.bgDeep,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: fonts.sansBold,
+              fontSize: 11,
+              color: tokens.muted,
+              letterSpacing: 0.4,
+            }}
+          >
+            {count}
+          </Text>
+        </View>
       </View>
-      <View style={{ backgroundColor: tokens.cream }}>
+
+      {/* Card body */}
+      <View
+        style={{
+          marginHorizontal: 20,
+          backgroundColor: tokens.cream,
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: tokens.line,
+          overflow: 'hidden',
+          shadowColor: tokens.ink,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.04,
+          shadowRadius: 6,
+          elevation: 1,
+        }}
+      >
         {children}
       </View>
     </View>
@@ -709,21 +781,23 @@ function AisleSection({ title, children }: { title: string; children: React.Reac
 }
 
 // ── Single shopping row ───────────────────────────────────────────────────────
+// Layout (left → right):
+//   [checkbox]  [qty column, optional]  [name, fills remaining width]
+// On check: rounded checkbox fills with sage, name + qty fade to muted with
+// a strikethrough — feels conclusive without being shouty.
 
 function ShopRow({
-  id,
+  qty,
   label,
-  boldPrefix,
-  plainSuffix,
   checked,
   onToggle,
+  isLast,
 }: {
-  id: string;
+  qty?: string;
   label: string;
-  boldPrefix?: string;
-  plainSuffix?: string;
   checked: boolean;
   onToggle: () => void;
+  isLast?: boolean;
 }) {
   return (
     <Pressable
@@ -733,31 +807,50 @@ function ShopRow({
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
         gap: 14,
-        minHeight: 52,
-        backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
-        borderBottomWidth: 1,
+        minHeight: 60,
+        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+        borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: tokens.line,
       })}
     >
+      {/* Rounded-square checkbox */}
       <View
         style={{
-          width: 24,
-          height: 24,
-          borderRadius: 6,
+          width: 26,
+          height: 26,
+          borderRadius: 9,
           borderWidth: 2,
-          borderColor: checked ? tokens.sage : tokens.line,
+          borderColor: checked ? tokens.sage : tokens.lineDark,
           backgroundColor: checked ? tokens.sage : 'transparent',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
         }}
       >
-        {checked && <Icon name="check" size={13} color="#FFF" />}
+        {checked && <Icon name="check" size={14} color="#FFF" />}
       </View>
 
+      {/* Quantity column — display font, primary tint, fixed min-width
+          so names line up across the aisle. */}
+      {qty ? (
+        <View style={{ minWidth: 56 }}>
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 15,
+              color: checked ? tokens.muted : tokens.primary,
+              textDecorationLine: checked ? 'line-through' : 'none',
+            }}
+          >
+            {qty}
+          </Text>
+        </View>
+      ) : null}
+
+      {/* Item name */}
       <Text
         style={{
           flex: 1,
@@ -768,12 +861,7 @@ function ShopRow({
           textDecorationLine: checked ? 'line-through' : 'none',
         }}
       >
-        {boldPrefix ? (
-          <>
-            <Text style={{ fontFamily: fonts.sansBold }}>{boldPrefix}</Text>
-            {'  '}{plainSuffix}
-          </>
-        ) : label}
+        {label}
       </Text>
     </Pressable>
   );

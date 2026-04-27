@@ -661,65 +661,98 @@ export default function RecipeDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* ── STICKY CTA (absolute, clears scroll content) ── */}
-      <View
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          paddingHorizontal: 20,
-          paddingTop: 12,
-          paddingBottom: insets.bottom + 14,
-          backgroundColor: `${tokens.bg}F5`,
-          borderTopWidth: 1,
-          borderTopColor: tokens.line,
-        }}
-      >
-        {!cooking ? (
+      {/* ── FLOATING START-COOKING PILL ──
+          Centered, pill-shaped, paprika-tint primary. Stays visible
+          as the user scrolls through ingredients & steps. The
+          bottom-140 padding on the ScrollView keeps content from
+          being trapped under it. */}
+      {!cooking ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: insets.bottom + 18,
+            alignItems: 'center',
+          }}
+        >
           <Pressable
             onPress={toggleCooking}
+            accessibilityRole="button"
+            accessibilityLabel="Start cooking"
             style={({ pressed }) => ({
-              paddingVertical: 16,
-              borderRadius: 18,
-              backgroundColor: pressed ? tokens.inkSoft : tokens.ink,
-              alignItems: 'center',
               flexDirection: 'row',
-              justifyContent: 'center',
-              gap: 8,
+              alignItems: 'center',
+              gap: 10,
+              paddingVertical: 16,
+              paddingHorizontal: 32,
+              borderRadius: 999,
+              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+              shadowColor: tokens.ink,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.18,
+              shadowRadius: 14,
+              elevation: 6,
             })}
           >
-            <Icon name="chef" size={18} color={tokens.primary} />
-            <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF', letterSpacing: 0.2 }}>
-              I'm cooking this now
+            <Icon name="chef" size={18} color="#FFF" />
+            <Text
+              style={{
+                fontFamily: fonts.sansXBold,
+                fontSize: 15,
+                color: '#FFF',
+                letterSpacing: 0.3,
+              }}
+            >
+              Start Cooking
             </Text>
           </Pressable>
-        ) : progress === 1 ? (
+        </View>
+      ) : progress === 1 ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: insets.bottom + 18,
+            alignItems: 'center',
+          }}
+        >
           <Pressable
             onPress={toggleCooking}
+            accessibilityRole="button"
+            accessibilityLabel="Finish cooking"
             style={({ pressed }) => ({
-              paddingVertical: 16,
-              borderRadius: 18,
-              backgroundColor: pressed ? tokens.sageDeep : tokens.sage,
-              alignItems: 'center',
               flexDirection: 'row',
-              justifyContent: 'center',
-              gap: 8,
+              alignItems: 'center',
+              gap: 10,
+              paddingVertical: 16,
+              paddingHorizontal: 32,
+              borderRadius: 999,
+              backgroundColor: pressed ? tokens.sageDeep : tokens.sage,
+              shadowColor: tokens.ink,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.18,
+              shadowRadius: 14,
+              elevation: 6,
             })}
           >
             <Icon name="check" size={18} color="#FFF" />
-            <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF' }}>
+            <Text
+              style={{
+                fontFamily: fonts.sansXBold,
+                fontSize: 15,
+                color: '#FFF',
+                letterSpacing: 0.3,
+              }}
+            >
               Done — eat well
             </Text>
           </Pressable>
-        ) : (
-          <View style={{ paddingVertical: 10, alignItems: 'center' }}>
-            <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, textAlign: 'center' }}>
-              Screen stays on while you cook. Tap the step number to tick it off.
-            </Text>
-          </View>
-        )}
-      </View>
+        </View>
+      ) : null}
     </View>
   );
 }
