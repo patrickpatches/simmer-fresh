@@ -1,20 +1,9 @@
 /**
- * ServingsSelector — the control that determines how the Ingredients list
- * below it is scaled.
+ * ServingsSelector — controls how the ingredients list is scaled.
  *
- * Design decisions:
- *   - Stepper stays in the bottom-half of the screen (Fitts's Law on a
- *     one-handed phone grip). The parent decides vertical placement; the
- *     component itself is just a compact row.
- *   - The three leftover modes sit as pill chips rather than a dropdown
- *     (native <select> on web + Picker on RN is ugly and forces a modal;
- *     three visible pills cost 30-ish pixels and remove a tap.)
- *   - The hint text changes per mode — it teaches the user what each mode
- *     actually means the first time they tap it, then becomes ignorable.
- *
- * Why not store this in global state? Because the selection is meaningful
- * only in the Recipe Detail context. The Plan screen has its own per-
- * recipe entries that carry their own `people` + `leftoverKey`.
+ * Stepper + leftover mode pills. Lives in the bottom half so thumbs
+ * reach it one-handed. Haptic on every tap — confirms the action
+ * without eyes needing to leave the pan.
  */
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -34,14 +23,6 @@ type Props = {
   leftoverKey: LeftoverModeId;
   setLeftoverKey: (k: LeftoverModeId) => void;
   baseServings: number;
-  /**
-   * Recipes with non-people yields ("tortillas", "loaf", "L of stock") set
-   * this. Adapts the header copy and hides leftover pills (which don't
-   * apply when the yield isn't a serving count).
-   */
-  yieldUnit?: string;
-  /** True for recipes whose yield doesn't scale (sourdough, stocks). */
-  fixedYield?: boolean;
 };
 
 export function ServingsSelector({
@@ -50,26 +31,16 @@ export function ServingsSelector({
   leftoverKey,
   setLeftoverKey,
   baseServings,
-  yieldUnit,
-  fixedYield,
 }: Props) {
-  const isYieldRecipe = !!yieldUnit;
-  // Header label — "How many tortillas" / "How many people" / "Yield"
-  // yieldUnit is stored singular; pluralize for the header so it reads naturally.
-  const headerLabel = fixedYield
-    ? 'Yield'
-    : isYieldRecipe
-      ? `How many ${pluralizeUnit(yieldUnit!, 2)}`
-      : 'How many people';
   const option = leftoverById(leftoverKey);
   const totalPortions = totalPortionsFor(option, people, baseServings);
   const factor = totalPortions / baseServings;
   const scaledBadge =
     factor === 1
-      ? 'At author’s proportions'
+      ? 'At original proportions'
       : factor > 1
-        ? `Scaled up ${factor.toFixed(factor < 2 ? 1 : 0)}×`
-        : `Scaled down ${factor.toFixed(1)}×`;
+        ? `Scaled ${factor.toFixed(factor < 2 ? 1 : 0)}× up`
+        : `Scaled ${factor.toFixed(1)}× down`;
 
   const step = (delta: number) => {
     const next = Math.max(1, Math.min(20, people + delta));
@@ -91,17 +62,22 @@ export function ServingsSelector({
         backgroundColor: tokens.cream,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: tokens.line,
-        padding: 16,
+        borderColor: tokens.lineDark,
+        padding: 18,
+        shadowColor: tokens.ink,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
       }}
     >
-      {/* Header row — label + scaling badge */}
+      {/* Header */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 12,
+          marginBottom: 14,
         }}
       >
         <Text
@@ -113,30 +89,29 @@ export function ServingsSelector({
             color: tokens.muted,
           }}
         >
-          {headerLabel}
+          How many people
         </Text>
         <Text
           style={{
             fontFamily: fonts.sans,
             fontSize: 11,
-            color: factor === 1 ? tokens.sage : tokens.paprika,
+            color: factor === 1 ? tokens.sage : tokens.primary,
           }}
         >
           {scaledBadge}
         </Text>
       </View>
 
-      {/* Stepper row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <StepperButton dir="minus" disabled={people <= 1} onPress={() => step(-1)} />
+      {/* Stepper */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+        <StepperBtn dir="minus" disabled={people <= 1} onPress={() => step(-1)} />
         <View style={{ alignItems: 'center', minWidth: 80 }}>
           <Text
             style={{
               fontFamily: fonts.display,
-              fontSize: 42,
-              lineHeight: 48,
+              fontSize: 44,
+              lineHeight: 50,
               color: tokens.ink,
-              // tabular numbers so the glyph doesn't shift as count changes
               fontVariant: ['tabular-nums'],
             }}
           >
@@ -153,9 +128,9 @@ export function ServingsSelector({
             {people === 1 ? 'person' : 'people'}
           </Text>
         </View>
-        <StepperButton dir="plus" disabled={people >= 20} onPress={() => step(1)} />
+        <StepperBtn dir="plus" disabled={people >= 20} onPress={() => step(1)} />
 
-        {/* Right-hand total portions */}
+        {/* Makes count */}
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
           <Text
             style={{
@@ -171,29 +146,21 @@ export function ServingsSelector({
           <Text
             style={{
               fontFamily: fonts.display,
-              fontSize: 22,
+              fontSize: 24,
               color: tokens.ink,
               fontVariant: ['tabular-nums'],
             }}
           >
             {totalPortions}
           </Text>
-          <Text
-            style={{
-              fontFamily: fonts.sans,
-              fontSize: 10,
-              color: tokens.muted,
-            }}
-          >
-            {isYieldRecipe ? pluralizeUnit(yieldUnit!, totalPortions) : 'portions'}
+          <Text style={{ fontFamily: fonts.sans, fontSize: 10, color: tokens.muted }}>
+            portions
           </Text>
         </View>
       </View>
 
-      {/* Mode pills + hint — only for serving-style recipes. "Cook for tomorrow's
-          lunch" doesn't make sense when the unit is "12 tortillas". */}
-      {!isYieldRecipe && (<>
-      <View style={{ flexDirection: 'row', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+      {/* Mode pills */}
+      <View style={{ flexDirection: 'row', gap: 6, marginTop: 18, flexWrap: 'wrap' }}>
         {LEFTOVER_OPTIONS.map((opt) => {
           const active = opt.id === leftoverKey;
           return (
@@ -204,19 +171,19 @@ export function ServingsSelector({
               accessibilityState={{ selected: active }}
               accessibilityLabel={opt.label}
               style={{
-                paddingHorizontal: 12,
+                paddingHorizontal: 13,
                 paddingVertical: 8,
                 borderRadius: 999,
-                backgroundColor: active ? tokens.ink : 'transparent',
+                backgroundColor: active ? tokens.primary : 'transparent',
                 borderWidth: 1.5,
-                borderColor: active ? tokens.ink : tokens.line,
+                borderColor: active ? tokens.primary : tokens.line,
               }}
             >
               <Text
                 style={{
                   fontFamily: fonts.sansBold,
                   fontSize: 11,
-                  color: active ? tokens.cream : tokens.inkSoft,
+                  color: active ? '#FFF' : tokens.inkSoft,
                 }}
               >
                 {opt.label}
@@ -226,7 +193,7 @@ export function ServingsSelector({
         })}
       </View>
 
-      {/* Mode hint — teaches on first interaction, ignorable after */}
+      {/* Mode hint */}
       <Text
         style={{
           fontFamily: fonts.sans,
@@ -238,13 +205,11 @@ export function ServingsSelector({
       >
         {option.hint}
       </Text>
-      </>
-      )}
     </View>
   );
 }
 
-function StepperButton({
+function StepperBtn({
   dir,
   onPress,
   disabled,
@@ -261,36 +226,22 @@ function StepperButton({
       accessibilityLabel={dir === 'plus' ? 'Add a person' : 'Remove a person'}
       hitSlop={8}
       style={({ pressed }) => ({
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 46,
+        height: 46,
+        borderRadius: 23,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: disabled
           ? tokens.bgDeep
           : pressed
-            ? tokens.bgDeep
+            ? tokens.primaryLight
             : tokens.bg,
         borderWidth: 1.5,
-        borderColor: disabled ? tokens.line : tokens.ink,
+        borderColor: disabled ? tokens.line : tokens.primary,
         opacity: disabled ? 0.4 : 1,
       })}
     >
-      <Icon name={dir} size={18} color={tokens.ink} />
+      <Icon name={dir} size={18} color={disabled ? tokens.muted : tokens.primary} />
     </Pressable>
   );
-}
-
-
-function pluralizeUnit(word: string, count: number): string {
-  if (count === 1) return word;
-  if (word === 'loaf') return 'loaves';
-  if (word === 'wolf') return 'wolves';
-  if (word === 'leaf') return 'leaves';
-  if (word === 'starter feed') return 'starter feeds';
-  if (word.endsWith('y') && !/[aeiou]/.test(word[word.length - 2] ?? '')) {
-    return word.slice(0, -1) + 'ies';
-  }
-  if (/(s|x|z|sh|ch)$/.test(word)) return word + 'es';
-  return word + 's';
 }

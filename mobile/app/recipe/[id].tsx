@@ -1,30 +1,15 @@
 /**
- * Recipe Detail — matches hone.html RecipeDetail exactly.
+ * Recipe Detail — the full recipe view with cook mode.
  *
- * BUG-001 FIX (permanent):
- *   Sticky header bar sits ABOVE the hero image — buttons are never
- *   overlaid on the photo. Back button and heart always readable on the
- *   parchment/cardBg header background. No rgba transparency issues.
+ * BUG-001 FIX: Sticky header is a separate View ABOVE the ScrollView,
+ * not inside it. This prevents the header floating over the hero.
  *
- * Layout (matches hone.html):
- *   ┌─────────────────────────────────────┐
- *   │  ← (circle)   ♡ (circle)  Start ▶  │  sticky parchment header
- *   ├─────────────────────────────────────┤
- *   │  [  260px hero image               ]│
- *   │  [  Recipe Title (Fraunces)        ]│  title/tagline overlay at bottom
- *   │  [  Italic tagline                 ]│
- *   ├─────────────────────────────────────┤
- *   │  Inspired by card  │  Watch button  │
- *   │  ────────────────────────────────── │
- *   │  ⏱ Time  🔥 Skill  👤 Serves       │
- *   │  Scaling + leftover selector        │
- *   │  Ingredients list                   │
- *   │  Steps list                         │
- *   └─────────────────────────────────────┘
+ * BUG-002 FIX: scrollView has keyboardShouldPersistTaps handled.
  *
- * Cook mode: full-screen black overlay (same as hone.html).
+ * Studio Kitchen palette throughout. Plan toggle is a simple
+ * bookmark-style button — no calendar, no date picker.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,27 +21,22 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import { useSQLiteContext } from 'expo-sqlite';
 
-import type { Recipe, Substitution } from '../../src/data/types';
+import type { Recipe } from '../../src/data/types';
 import {
   getRecipeById,
   getFavoriteIds,
   toggleFavorite,
-  getSwapsForRecipe,
-  setIngredientSwap,
-  clearIngredientSwap,
   getPlannedRecipeIds,
   togglePlannedRecipe,
-  type SwapRecord,
 } from '../../db/database';
 import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
 import { ServingsSelector } from '../../src/components/ServingsSelector';
-import { SwapSheet } from '../../src/components/SwapSheet';
 import {
   formatAmount,
   scaleIngredient,
@@ -65,312 +45,47 @@ import {
   type LeftoverModeId,
 } from '../../src/data/scale';
 
-const LEFTOVER_OPTIONS = [
-  { id: 'tonight',   label: 'Just tonight',         desc: 'Exact portions, nothing extra',       extra: 0       },
-  { id: 'lunch',     label: '+ lunch tomorrow',      desc: 'Makes one extra portion',             extra: 1       },
-  { id: 'threedays', label: 'Three days of meals',   desc: 'Triple the base recipe',              multiplier: 3  },
-  { id: 'week',      label: 'Meal prep for the week',desc: '5× batch — freeze what you don\'t eat', multiplier: 5 },
-] as const;
-
-function fmtTime(mins: number) {
-  if (mins < 60) return `${mins}m`;
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m ? `${h}h ${m}m` : `${h}h`;
-}
-
-// ── Cook mode overlay ─────────────────────────────────────────────────────────
-
-function CookMode({
-  recipe,
-  stepsDone,
-  onTickStep,
-  onExit,
-}: {
-  recipe: Recipe;
-  stepsDone: Record<string, boolean>;
-  onTickStep: (id: string) => void;
-  onExit: () => void;
-}) {
-  const insets = useSafeAreaInsets();
-  const doneSoFar = Object.values(stepsDone).filter(Boolean).length;
-  const totalSteps = recipe.steps.length;
-  const pct = Math.round((doneSoFar / totalSteps) * 100);
-
-  // Auto-advance to first incomplete step
-  const firstIncomplete = recipe.steps.findIndex((s) => !stepsDone[s.id]);
-  const [activeStep, setActiveStep] = useState(firstIncomplete >= 0 ? firstIncomplete : 0);
-
-  const step = recipe.steps[activeStep];
-  const isLast = activeStep === totalSteps - 1;
-
-  function markAndAdvance() {
-    onTickStep(step.id);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    if (!isLast) setActiveStep((s) => s + 1);
-    else onExit();
-  }
-
-  return (
-    <View style={{ flex: 1, backgroundColor: '#000000' }}>
-      {/* Progress bar */}
-      <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.07)' }}>
-        <View style={{ height: 4, width: `${pct}%`, backgroundColor: tokens.paprika }} />
-      </View>
-
-      {/* Top bar */}
-      <View
-        style={{
-          paddingTop: insets.top + 8,
-          paddingHorizontal: 20,
-          paddingBottom: 14,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <View>
-          <Text
-            style={{
-              fontFamily: fonts.displayItalic ?? fonts.display,
-              fontSize: 10,
-              letterSpacing: 1.2,
-              textTransform: 'uppercase',
-              color: 'rgba(247,242,234,0.28)',
-              marginBottom: 2,
-            }}
-          >
-            {recipe.title}
-          </Text>
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 11,
-              letterSpacing: 1.2,
-              textTransform: 'uppercase',
-              color: 'rgba(247,242,234,0.38)',
-            }}
-          >
-            Step {activeStep + 1}
-            <Text style={{ opacity: 0.5 }}> / {totalSteps}</Text>
-          </Text>
-        </View>
-        <Pressable
-          onPress={onExit}
-          style={{
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.12)',
-            borderRadius: 20,
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 11,
-              letterSpacing: 1,
-              textTransform: 'uppercase',
-              color: 'rgba(247,242,234,0.4)',
-            }}
-          >
-            Exit
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* Step content */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Ghost step number */}
-        <Text
-          style={{
-            fontFamily: fonts.displayBold,
-            fontSize: 96,
-            lineHeight: 96,
-            color: 'rgba(255,255,255,0.04)',
-            marginBottom: -24,
-            marginLeft: -4,
-            letterSpacing: -4,
-          }}
-          selectable={false}
-        >
-          {activeStep + 1}
-        </Text>
-
-        {/* Step title */}
-        <Text
-          style={{
-            fontFamily: fonts.displayBold,
-            fontSize: 28,
-            lineHeight: 33,
-            letterSpacing: -0.5,
-            color: tokens.cream,
-            marginBottom: step.photo_url ? 12 : 16,
-          }}
-        >
-          {step.title}
-        </Text>
-
-        {/* Step photo */}
-        {step.photo_url && (
-          <View
-            style={{
-              borderRadius: 14,
-              overflow: 'hidden',
-              height: 192,
-              marginBottom: 18,
-            }}
-          >
-            <Image
-              source={{ uri: step.photo_url }}
-              style={{ width: '100%', height: '100%', opacity: 0.88 }}
-              contentFit="cover"
-            />
-          </View>
-        )}
-
-        {/* Step body */}
-        <Text
-          style={{
-            fontFamily: fonts.sans,
-            fontSize: 18,
-            lineHeight: 32,
-            color: 'rgba(247,242,234,0.88)',
-          }}
-        >
-          {step.content}
-        </Text>
-
-        {/* Chef's why note */}
-        {step.why_note && (
-          <View
-            style={{
-              marginTop: 20,
-              padding: 14,
-              backgroundColor: 'rgba(255,255,255,0.05)',
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.08)',
-            }}
-          >
-            <Text style={{ fontFamily: fonts.sansBold, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(247,242,234,0.28)', marginBottom: 6 }}>
-              Why
-            </Text>
-            <Text style={{ fontFamily: fonts.displayItalic ?? fonts.display, fontSize: 14, lineHeight: 22, color: 'rgba(247,242,234,0.6)' }}>
-              {step.why_note}
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-
-      {/* Navigation buttons */}
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingBottom: Math.max(insets.bottom + 16, 32),
-          paddingTop: 16,
-          flexDirection: 'row',
-          gap: 12,
-        }}
-      >
-        {activeStep > 0 && (
-          <Pressable
-            onPress={() => setActiveStep((s) => s - 1)}
-            style={({ pressed }) => ({
-              height: 56,
-              flex: 1,
-              borderRadius: 16,
-              backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.07)',
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.12)',
-              alignItems: 'center',
-              justifyContent: 'center',
-            })}
-          >
-            <Text style={{ fontFamily: fonts.sansBold, fontSize: 15, color: 'rgba(247,242,234,0.7)' }}>
-              ← Prev
-            </Text>
-          </Pressable>
-        )}
-        <Pressable
-          onPress={markAndAdvance}
-          style={({ pressed }) => ({
-            height: 56,
-            flex: 2,
-            borderRadius: 16,
-            backgroundColor: pressed ? tokens.paprikaDeep : tokens.paprika,
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
-        >
-          <Text style={{ fontFamily: fonts.sansBold, fontSize: 16, color: '#FDF9F3' }}>
-            {isLast ? 'Finish 🎉' : 'Done →'}
-          </Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-// ── Main screen ───────────────────────────────────────────────────────────────
-
 export default function RecipeDetailScreen() {
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [recipe, setRecipe] = useState<Recipe | null | undefined>(undefined);
+  const [recipe, setRecipe]     = useState<Recipe | null | undefined>(undefined);
   const [favorite, setFavorite] = useState(false);
+  const [isPlanned, setIsPlanned] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [r, favs] = await Promise.all([
+      const [r, favs, planned] = await Promise.all([
         getRecipeById(db, id ?? ''),
         getFavoriteIds(db),
+        getPlannedRecipeIds(db),
       ]);
       if (!cancelled) {
         setRecipe(r);
         setFavorite(favs.has(id ?? ''));
+        setIsPlanned(planned.has(id ?? ''));
       }
     }
     load().catch(console.error);
     return () => { cancelled = true; };
   }, [db, id]);
 
-  const [swaps, setSwaps] = useState<Map<string, SwapRecord>>(new Map());
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!id) return;
-      getSwapsForRecipe(db, id).then(setSwaps).catch(console.error);
-    }, [db, id]),
-  );
-
-  const [swapSheet, setSwapSheet] = useState<{
-    ingredientId: string;
-    ingredientName: string;
-    substitutions: Substitution[];
-    activeSwapName?: string;
-  } | null>(null);
-
-  const [people, setPeople] = useState<number>(2);
+  // Sync default servings once recipe loads
+  const [people, setPeople]         = useState<number>(2);
   const [leftoverKey, setLeftoverKey] = useState<LeftoverModeId>('tonight');
 
   useEffect(() => {
     if (recipe) setPeople(recipe.base_servings);
   }, [recipe]);
 
-  const [isPlanned, setIsPlanned] = useState(false);
-  const [cooking, setCooking] = useState(false);
-  const [stepsDone, setStepsDone] = useState<Record<string, boolean>>({});
-  const [ingTicked, setIngTicked] = useState<Record<string, boolean>>({});
-  const [expandedWhy, setExpandedWhy] = useState<Record<string, boolean>>({});
+  // Cook mode
+  const [cooking, setCooking]       = useState(false);
+  const [stepsDone, setStepsDone]   = useState<Record<string, boolean>>({});
+  const [ingTicked, setIngTicked]   = useState<Record<string, boolean>>({});
 
+  // Wake lock while cooking
   useEffect(() => {
     const tag = 'cook-mode';
     if (cooking) {
@@ -380,43 +95,12 @@ export default function RecipeDetailScreen() {
     return undefined;
   }, [cooking]);
 
-  const handleToggleFavorite = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    try {
-      await toggleFavorite(db, recipe!.id);
-      setFavorite((f) => !f);
-    } catch (err) {
-      console.error('toggleFavorite error:', err);
-    }
-  };
-
-  const handleTogglePlan = async () => {
-    if (!recipe) return;
-    Haptics.selectionAsync().catch(() => {});
-    try {
-      await togglePlannedRecipe(db, recipe.id, recipe.base_servings);
-      setIsPlanned((p) => !p);
-    } catch (err) {
-      console.error('togglePlan error:', err);
-    }
-  };
-
-  const tickStep = (stepId: string) => {
-    setStepsDone((prev) => ({ ...prev, [stepId]: !prev[stepId] }));
-  };
-
-  const openSource = () => {
-    const url = recipe?.source?.video_url;
-    if (!url) return;
-    Linking.openURL(url).catch(() => Alert.alert('Could not open link', url));
-  };
-
-  // ── Loading / error states ────────────────────────────────────────────────
+  // ── Loading states ──────────────────────────────────────────────────────────
 
   if (recipe === undefined) {
     return (
       <View style={{ flex: 1, backgroundColor: tokens.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={tokens.paprika} />
+        <ActivityIndicator color={tokens.primary} />
       </View>
     );
   }
@@ -425,579 +109,699 @@ export default function RecipeDetailScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: tokens.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
         <Text style={{ fontSize: 40, marginBottom: 8 }}>🤔</Text>
-        <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink, marginBottom: 8 }}>Recipe not found</Text>
+        <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink, marginBottom: 8 }}>
+          Recipe not found
+        </Text>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: tokens.muted, textAlign: 'center', marginBottom: 20 }}>
+          It may have been removed or never existed.
+        </Text>
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
-            paddingHorizontal: 20, paddingVertical: 12,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
             borderRadius: 999,
-            backgroundColor: pressed ? tokens.paprikaDeep : tokens.paprika,
+            backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
           })}
         >
-          <Text style={{ fontFamily: fonts.sansBold, color: '#FDF9F3', fontSize: 13 }}>Back to Kitchen</Text>
+          <Text style={{ fontFamily: fonts.sansBold, color: '#FFF', fontSize: 14 }}>
+            Back to Kitchen
+          </Text>
         </Pressable>
       </View>
     );
   }
 
-  const option = leftoverById(leftoverKey);
-  const totalPortions = totalPortionsFor(option, people, recipe.base_servings);
-  const scaleFactor = totalPortions / recipe.base_servings;
+  // ── Derived ─────────────────────────────────────────────────────────────────
 
-  const attribution = recipe.generated_by_claude
+  const option       = leftoverById(leftoverKey);
+  const totalPortions = totalPortionsFor(option, people, recipe.base_servings);
+  const stepsDoneCount = Object.values(stepsDone).filter(Boolean).length;
+  const progress     = cooking ? stepsDoneCount / recipe.steps.length : 0;
+  const gradient     = recipe.hero_fallback ?? ['#3D342C', '#8B7968', '#D9CEBB'];
+  const attribution  = recipe.generated_by_claude
     ? 'Invented from your pantry'
     : recipe.source
-    ? `Inspired by ${recipe.source.chef}`
-    : recipe.user_added
-    ? 'Your own recipe'
-    : '';
+      ? `Inspired by ${recipe.source.chef}`
+      : recipe.user_added
+        ? 'Your recipe'
+        : '';
 
-  // ── Cook mode — full screen black overlay ─────────────────────────────────
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
-  if (cooking) {
-    return (
-      <CookMode
-        recipe={recipe}
-        stepsDone={stepsDone}
-        onTickStep={tickStep}
-        onExit={() => { setCooking(false); setStepsDone({}); setIngTicked({}); }}
-      />
-    );
-  }
+  const toggleCooking = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    setCooking((c) => !c);
+    if (cooking) { setStepsDone({}); setIngTicked({}); }
+  };
 
-  // ── Browse mode ───────────────────────────────────────────────────────────
+  const tickStep = (stepId: string) => {
+    if (!cooking) return;
+    Haptics.selectionAsync().catch(() => {});
+    setStepsDone((prev) => ({ ...prev, [stepId]: !prev[stepId] }));
+  };
+
+  const tickIngredient = (ingId: string) => {
+    if (!cooking) return;
+    Haptics.selectionAsync().catch(() => {});
+    setIngTicked((prev) => ({ ...prev, [ingId]: !prev[ingId] }));
+  };
+
+  const handleTogglePlan = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    const nowPlanned = await togglePlannedRecipe(db, recipe.id, recipe.base_servings);
+    setIsPlanned(nowPlanned);
+  };
+
+  const openSource = () => {
+    const url = recipe.source?.video_url;
+    if (!url) return;
+    Linking.openURL(url).catch(() => { Alert.alert('Could not open link', url); });
+  };
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <View style={{ flex: 1, backgroundColor: tokens.bg }}>
-      {/* ── Sticky header bar (hone.html pattern) ────────────────────────── */}
-      {/* BUG-001 FIX: buttons in header, never over the hero photo */}
+
+      {/* ── STICKY HEADER (above ScrollView, not inside it) ── */}
       <View
         style={{
           paddingTop: insets.top,
-          backgroundColor: 'rgba(247,242,234,0.96)',
-          borderBottomWidth: 1,
+          backgroundColor: cooking ? tokens.ink : tokens.bg,
+          borderBottomWidth: cooking ? 0 : 1,
           borderBottomColor: tokens.line,
         }}
       >
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          {/* Back */}
-          <Pressable
-            onPress={() => router.back()}
-            accessibilityLabel="Back"
-            style={({ pressed }) => ({
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: pressed ? tokens.bgDeep : tokens.cardBg,
-              borderWidth: 1,
-              borderColor: tokens.line,
-              alignItems: 'center',
-              justifyContent: 'center',
-            })}
-          >
-            <Icon name="arrow-left" size={18} color={tokens.ink} />
-          </Pressable>
-
-          {/* Right: Heart + Start Cooking */}
-          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-            <Pressable
-              onPress={handleToggleFavorite}
-              accessibilityLabel={favorite ? 'Remove from saved' : 'Save recipe'}
-              style={({ pressed }) => ({
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: pressed ? tokens.bgDeep : tokens.cardBg,
-                borderWidth: 1,
-                borderColor: tokens.line,
-                alignItems: 'center',
-                justifyContent: 'center',
-              })}
-            >
-              <Icon
-                name="heart"
-                size={17}
-                color={favorite ? tokens.paprika : tokens.ink}
-                fill={favorite}
-              />
-            </Pressable>
-
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-                setCooking(true);
-              }}
-              style={({ pressed }) => ({
-                height: 40,
-                paddingHorizontal: 16,
-                borderRadius: 20,
-                backgroundColor: pressed ? '#333' : tokens.ink,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: tokens.ink,
-                shadowOpacity: 0.22,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 3 },
-                elevation: 5,
-              })}
-            >
-              <Text style={{ fontFamily: fonts.sansBold, fontSize: 14, color: '#FDF9F3' }}>
-                Start cooking
+        {cooking ? (
+          /* Cook mode bar */
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, letterSpacing: 1.5, color: tokens.cream, textTransform: 'uppercase' }}>
+                <Text style={{ color: tokens.ochre }}>Cooking</Text> · {stepsDoneCount}/{recipe.steps.length} steps
               </Text>
-            </Pressable>
+              <Pressable onPress={toggleCooking} hitSlop={8}>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.ochre }}>End session</Text>
+              </Pressable>
+            </View>
+            {/* Progress bar */}
+            <View style={{ height: 3, backgroundColor: tokens.inkSoft, borderRadius: 2 }}>
+              <View
+                style={{
+                  height: 3,
+                  width: `${progress * 100}%`,
+                  backgroundColor: tokens.primary,
+                  borderRadius: 2,
+                }}
+              />
+            </View>
           </View>
-        </View>
-      </View>
-
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
-        {/* ── Hero — 260px, title + tagline overlay at bottom ───────────── */}
-        <View style={{ height: 260, position: 'relative' }}>
-          {recipe.hero_url ? (
-            <Image
-              source={{ uri: recipe.hero_url }}
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-              transition={300}
-            />
-          ) : (
-            <View
-              style={{
-                flex: 1,
+        ) : (
+          /* Normal back bar */
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}>
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+              style={({ pressed }) => ({
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: recipe.hero_color ?? tokens.bgDeep,
-              }}
+              })}
             >
-              <Text style={{ fontSize: 72 }}>{recipe.emoji ?? '🍽️'}</Text>
-            </View>
-          )}
-
-          {/* Dark scrim at hero bottom — keeps title/tagline readable */}
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 110,
-              backgroundColor: 'rgba(0,0,0,0.60)',
-            }}
-            pointerEvents="none"
-          />
-
-          {/* Title + tagline at bottom of hero */}
-          <View style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
+              <Icon name="arrow-left" size={20} color={tokens.ink} />
+            </Pressable>
             <Text
               style={{
-                fontFamily: fonts.displayBold,
-                fontSize: 32,
-                lineHeight: 34,
-                letterSpacing: -0.6,
-                color: '#FFFFFF',
+                flex: 1,
+                fontFamily: fonts.display,
+                fontSize: 16,
+                color: tokens.ink,
               }}
+              numberOfLines={1}
             >
+              {recipe.title}
+            </Text>
+            {/* Favourite */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                toggleFavorite(db, recipe.id).catch(console.error);
+                setFavorite((f) => !f);
+              }}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={favorite ? 'Unfavourite' : 'Favourite'}
+              style={({ pressed }) => ({
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center',
+              })}
+            >
+              <Icon name="heart" size={20} color={favorite ? tokens.primary : tokens.ink} fill={favorite ? tokens.primary : 'none'} />
+            </Pressable>
+          </View>
+        )}
+      </View>
+
+      {/* ── SCROLLABLE CONTENT ── */}
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 140 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Hero — hidden in cook mode */}
+        {!cooking && (
+          <View style={{ height: 260 }}>
+            {recipe.hero_url ? (
+              <Image
+                source={{ uri: recipe.hero_url }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
+                transition={250}
+              />
+            ) : (
+              <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, backgroundColor: gradient[0] }} />
+                <View style={{ flex: 1, backgroundColor: gradient[1] }} />
+                <View style={{ flex: 1, backgroundColor: gradient[2] }} />
+                {recipe.emoji ? (
+                  <Text style={{ position: 'absolute', bottom: 20, right: 20, fontSize: 72, opacity: 0.9 }}>
+                    {recipe.emoji}
+                  </Text>
+                ) : null}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Title card */}
+        <View style={{ paddingHorizontal: 20, marginTop: cooking ? 16 : -24 }}>
+          <View
+            style={{
+              backgroundColor: tokens.cream,
+              borderRadius: 24,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+              shadowColor: tokens.ink,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.07,
+              shadowRadius: 10,
+              elevation: 4,
+            }}
+          >
+            {attribution ? (
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                  color: tokens.primary,
+                  marginBottom: 6,
+                }}
+              >
+                {attribution}
+              </Text>
+            ) : null}
+
+            <Text style={{ fontFamily: fonts.display, fontSize: 28, lineHeight: 33, color: tokens.ink }}>
               {recipe.title}
             </Text>
             <Text
               style={{
-                fontFamily: fonts.displayItalic ?? fonts.display,
+                fontFamily: fonts.displayItalic,
+                fontStyle: 'italic',
                 fontSize: 15,
+                lineHeight: 20,
+                color: tokens.inkSoft,
                 marginTop: 6,
-                color: 'rgba(255,255,255,0.88)',
               }}
             >
               {recipe.tagline}
             </Text>
+
+            {/* Meta row */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, marginTop: 14 }}>
+              <MetaPill icon="clock" label={`${recipe.time_min} min`} />
+              <MetaPill icon="flame" label={recipe.difficulty} />
+            </View>
+
+            {/* Description */}
+            {recipe.description ? (
+              <View
+                style={{
+                  backgroundColor: tokens.bgDeep,
+                  borderRadius: 14,
+                  padding: 12,
+                  marginTop: 14,
+                }}
+              >
+                <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: tokens.inkSoft }}>
+                  <Text style={{ fontFamily: fonts.sansBold, color: tokens.ink }}>A note: </Text>
+                  {recipe.description}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Watch link */}
+            {recipe.source?.video_url ? (
+              <Pressable
+                onPress={openSource}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14 }}
+              >
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.primary }}>
+                  Watch the original
+                </Text>
+                <Icon name="external" size={12} color={tokens.primary} />
+              </Pressable>
+            ) : null}
+
+            {/* Plan toggle — full width, inside card */}
+            <Pressable
+              onPress={handleTogglePlan}
+              accessibilityRole="button"
+              accessibilityLabel={isPlanned ? 'Remove from plan' : 'Add to plan'}
+              style={({ pressed }) => ({
+                marginTop: 16,
+                paddingVertical: 12,
+                borderRadius: 14,
+                backgroundColor: isPlanned
+                  ? (pressed ? tokens.sageDeep : tokens.sage)
+                  : (pressed ? tokens.primaryLight : 'transparent'),
+                borderWidth: 1.5,
+                borderColor: isPlanned ? tokens.sage : tokens.primary,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              })}
+            >
+              <Icon
+                name={isPlanned ? 'check' : 'plus'}
+                size={16}
+                color={isPlanned ? '#FFF' : tokens.primary}
+              />
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 13,
+                  color: isPlanned ? '#FFF' : tokens.primary,
+                }}
+              >
+                {isPlanned ? 'In your plan ✓' : '+ Plan this recipe'}
+              </Text>
+            </Pressable>
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: 16 }}>
-          {/* ── Source card ────────────────────────────────────────────────── */}
-          {attribution ? (
-            <View
-              style={{
-                marginTop: 16,
-                padding: 14,
-                borderRadius: 20,
-                backgroundColor: tokens.cardBg,
-                borderWidth: 1,
-                borderColor: tokens.line,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <View style={{ flex: 1, marginRight: 12 }}>
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 9.5, letterSpacing: 1.2, textTransform: 'uppercase', color: tokens.muted, marginBottom: 4 }}>
-                  Inspired by
-                </Text>
-                <Text style={{ fontFamily: fonts.display, fontSize: 15, lineHeight: 19, color: tokens.ink }} numberOfLines={1}>
-                  {recipe.source?.chef ?? attribution}
-                </Text>
-              </View>
-              {recipe.source?.video_url ? (
-                <Pressable
-                  onPress={openSource}
-                  style={({ pressed }) => ({
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 5,
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 10,
-                    backgroundColor: pressed ? tokens.paprikaDeep : tokens.paprika,
-                  })}
-                >
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FDF9F3' }}>Watch</Text>
-                  <Icon name="external-link" size={12} color="#FDF9F3" />
-                </Pressable>
-              ) : (
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: tokens.muted }}>
-                  Original
-                </Text>
-              )}
-            </View>
-          ) : null}
+        {/* Servings selector */}
+        <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+          <ServingsSelector
+            people={people}
+            setPeople={setPeople}
+            leftoverKey={leftoverKey}
+            setLeftoverKey={setLeftoverKey}
+            baseServings={recipe.base_servings}
+          />
+        </View>
 
-          {/* ── Meta row ───────────────────────────────────────────────────── */}
+        {/* Ingredients */}
+        <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+          <SectionHeader title="Ingredients" hint={cooking ? 'Tap to tick off' : undefined} />
           <View
             style={{
-              marginTop: 12,
-              borderRadius: 20,
-              backgroundColor: tokens.cardBg,
+              backgroundColor: tokens.cream,
+              borderRadius: 18,
               borderWidth: 1,
-              borderColor: tokens.line,
-              flexDirection: 'row',
+              borderColor: tokens.lineDark,
               overflow: 'hidden',
+              shadowColor: tokens.ink,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 4,
+              elevation: 2,
             }}
           >
-            {[
-              { icon: 'clock',   label: fmtTime(recipe.time_min), sub: 'time'    },
-              { icon: 'fire',    label: recipe.difficulty,         sub: 'skill'   },
-              { icon: 'people',  label: `${recipe.base_servings}`, sub: 'serves'  },
-            ].map((m, i) => (
-              <View
-                key={m.sub}
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  borderLeftWidth: i > 0 ? 1 : 0,
-                  borderLeftColor: tokens.line,
-                  gap: 2,
-                }}
-              >
-                <Icon name={m.icon} size={15} color={tokens.paprika} />
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 14, color: tokens.ink, textTransform: 'capitalize', marginTop: 3 }}>
-                  {m.label}
-                </Text>
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 9.5, letterSpacing: 0.8, textTransform: 'uppercase', color: tokens.muted }}>
-                  {m.sub}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          {/* ── Scaling / leftovers ─────────────────────────────────────────── */}
-          <View
-            style={{
-              marginTop: 16,
-              padding: 16,
-              borderRadius: 20,
-              backgroundColor: tokens.cardBg,
-              borderWidth: 1,
-              borderColor: tokens.line,
-            }}
-          >
-            <Text style={{ fontFamily: fonts.sansBold, fontSize: 9.5, letterSpacing: 1.2, textTransform: 'uppercase', color: tokens.muted, marginBottom: 12 }}>
-              How many?
-            </Text>
-            {/* People counter */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <Text style={{ fontFamily: fonts.displayItalic ?? fonts.display, fontSize: 15, color: tokens.inkSoft }}>
-                People tonight
-              </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-                <Pressable
-                  onPress={() => setPeople((p) => Math.max(1, p - 1))}
-                  accessibilityLabel="Fewer people"
-                  style={({ pressed }) => ({
-                    width: 40, height: 40, borderRadius: 20,
-                    backgroundColor: pressed ? tokens.lineDark : tokens.line,
-                    alignItems: 'center', justifyContent: 'center',
-                  })}
-                >
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 20, color: tokens.ink }}>−</Text>
-                </Pressable>
-                <Text style={{ fontFamily: fonts.displayBold, fontSize: 24, color: tokens.ink, width: 28, textAlign: 'center' }}>
-                  {people}
-                </Text>
-                <Pressable
-                  onPress={() => setPeople((p) => Math.min(20, p + 1))}
-                  accessibilityLabel="More people"
-                  style={({ pressed }) => ({
-                    width: 40, height: 40, borderRadius: 20,
-                    backgroundColor: pressed ? '#333' : tokens.ink,
-                    alignItems: 'center', justifyContent: 'center',
-                  })}
-                >
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 20, color: '#FDF9F3' }}>+</Text>
-                </Pressable>
-              </View>
-            </View>
-            {/* Leftover options — 2-col grid */}
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {LEFTOVER_OPTIONS.map((lo) => {
-                const active = leftoverKey === lo.id;
-                return (
-                  <Pressable
-                    key={lo.id}
-                    onPress={() => setLeftoverKey(lo.id as LeftoverModeId)}
-                    style={({ pressed }) => ({
-                      width: '47%',
-                      padding: 12,
-                      borderRadius: 14,
-                      backgroundColor: active
-                        ? tokens.paprika
-                        : pressed ? tokens.bgDeep : tokens.bg,
-                      borderWidth: 1,
-                      borderColor: active ? tokens.paprika : tokens.line,
-                    })}
-                  >
-                    <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, lineHeight: 16, color: active ? '#FDF9F3' : tokens.ink }}>
-                      {lo.label}
-                    </Text>
-                    <Text style={{ fontFamily: fonts.sans, fontSize: 11, marginTop: 3, color: active ? 'rgba(253,249,243,0.8)' : tokens.muted, lineHeight: 15 }}>
-                      {lo.desc}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* ── Ingredients ────────────────────────────────────────────────── */}
-          <View style={{ marginTop: 24 }}>
-            <Text style={{ fontFamily: fonts.displayBold, fontSize: 22, color: tokens.ink, marginBottom: 14 }}>
-              Ingredients
-            </Text>
-            {recipe.ingredients.map((ing) => {
-              const swap = swaps.get(ing.id);
-              const displayName = swap?.swap_name ?? ing.name;
-              const scaled = scaleIngredient(ing, scaleFactor);
-              const displayAmount = formatAmount(scaled.amount);
-              const ticked = ingTicked[ing.id] ?? false;
-
+            {recipe.ingredients.map((ing, idx) => {
+              const checked    = !!ingTicked[ing.id];
+              const amount     = scaleIngredient(ing, totalPortions, recipe.base_servings);
+              const showUnit   = ing.unit && ing.unit !== 'to taste' && ing.unit !== 'as needed';
+              const inlineUnit = ing.unit === 'to taste' || ing.unit === 'as needed';
               return (
-                <View
+                <Pressable
                   key={ing.id}
+                  onPress={() => tickIngredient(ing.id)}
+                  disabled={!cooking}
                   style={{
                     flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: 11,
-                    borderBottomWidth: 1,
+                    alignItems: 'flex-start',
+                    gap: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 13,
+                    borderBottomWidth: idx < recipe.ingredients.length - 1 ? 1 : 0,
                     borderBottomColor: tokens.line,
-                    gap: 10,
-                    opacity: ticked ? 0.4 : 1,
                   }}
                 >
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 14,
-                      color: tokens.paprika,
-                      minWidth: 52,
-                      textAlign: 'right',
-                    }}
-                  >
-                    {displayAmount ? `${displayAmount}${scaled.unit ? ' ' + scaled.unit : ''}` : '—'}
-                  </Text>
-                  <Text style={{ flex: 1, fontFamily: fonts.sansMedium, fontSize: 14, color: tokens.ink }}>
-                    {displayName}
-                    {ing.notes ? (
-                      <Text style={{ fontFamily: fonts.sans, color: tokens.muted, fontSize: 12 }}>
-                        {' '}({ing.notes})
+                  {cooking ? (
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 7,
+                        borderWidth: 1.5,
+                        borderColor: checked ? tokens.sage : tokens.muted,
+                        backgroundColor: checked ? tokens.sage : 'transparent',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginTop: 2,
+                      }}
+                    >
+                      {checked && <Icon name="check" size={13} color="#FFF" />}
+                    </View>
+                  ) : null}
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.sans,
+                        fontSize: 14,
+                        lineHeight: 20,
+                        color: checked ? tokens.muted : tokens.ink,
+                        textDecorationLine: checked ? 'line-through' : 'none',
+                      }}
+                    >
+                      {!inlineUnit ? (
+                        <>
+                          <Text style={{ fontFamily: fonts.sansBold, fontVariant: ['tabular-nums'], color: checked ? tokens.muted : tokens.ink }}>
+                            {formatAmount(amount)}
+                          </Text>
+                          {showUnit ? <Text style={{ fontFamily: fonts.sansBold }}> {ing.unit}</Text> : null}
+                          <Text> {ing.name}</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Text>{ing.name}</Text>
+                          <Text style={{ fontFamily: fonts.displayItalic, fontStyle: 'italic', color: tokens.muted }}>
+                            {' — '}{ing.unit}
+                          </Text>
+                        </>
+                      )}
+                    </Text>
+                    {ing.prep ? (
+                      <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 2 }}>
+                        {ing.prep}
                       </Text>
                     ) : null}
-                  </Text>
-                  {/* Swap button */}
-                  <Pressable
-                    onPress={() =>
-                      setSwapSheet({
-                        ingredientId: ing.id,
-                        ingredientName: ing.name,
-                        substitutions: ing.substitutions ?? [],
-                        activeSwapName: swap?.swap_name,
-                      })
-                    }
-                    style={{
-                      padding: 6,
-                      opacity: (ing.substitutions?.length ?? 0) > 0 ? 1 : 0.25,
-                    }}
-                    accessibilityLabel={`Swap ${ing.name}`}
-                  >
-                    <Icon name="swap-horiz" size={18} color={tokens.ochre} />
-                  </Pressable>
-                </View>
+                  </View>
+                </Pressable>
               );
             })}
           </View>
+        </View>
 
-          {/* ── Steps ──────────────────────────────────────────────────────── */}
-          <View style={{ marginTop: 28 }}>
-            <Text style={{ fontFamily: fonts.displayBold, fontSize: 22, color: tokens.ink, marginBottom: 14 }}>
-              Method
-            </Text>
+        {/* Method */}
+        <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+          <SectionHeader title="Method" hint={cooking ? 'Tap the number to mark done' : undefined} />
+          <View style={{ gap: 12 }}>
             {recipe.steps.map((step, idx) => {
-              const done = stepsDone[step.id] ?? false;
-              const whyExpanded = expandedWhy[step.id] ?? false;
-
+              const done = !!stepsDone[step.id];
               return (
                 <View
                   key={step.id}
                   style={{
-                    marginBottom: 20,
-                    padding: 16,
+                    backgroundColor: tokens.cream,
                     borderRadius: 18,
-                    backgroundColor: tokens.cardBg,
                     borderWidth: 1,
-                    borderColor: done ? tokens.sage + '44' : tokens.line,
+                    borderColor: tokens.lineDark,
+                    padding: 16,
+                    opacity: done ? 0.55 : 1,
+                    shadowColor: tokens.ink,
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.04,
+                    shadowRadius: 4,
+                    elevation: 1,
                   }}
                 >
-                  {/* Step photo */}
-                  {step.photo_url && (
-                    <View style={{ borderRadius: 12, overflow: 'hidden', height: 180, marginBottom: 14 }}>
-                      <Image
-                        source={{ uri: step.photo_url }}
-                        style={{ width: '100%', height: '100%' }}
-                        contentFit="cover"
-                      />
-                    </View>
-                  )}
-
-                  {/* Step header */}
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
-                    <View
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <Pressable
+                      onPress={() => tickStep(step.id)}
+                      disabled={!cooking}
                       style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 14,
+                        width: 34,
+                        height: 34,
+                        borderRadius: 17,
                         backgroundColor: done ? tokens.sage : tokens.ink,
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        marginTop: 1,
                       }}
                     >
-                      <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FDF9F3' }}>
-                        {idx + 1}
-                      </Text>
-                    </View>
-                    <Text style={{ flex: 1, fontFamily: fonts.display, fontSize: 17, lineHeight: 22, color: tokens.ink }}>
-                      {step.title}
-                    </Text>
-                  </View>
-
-                  <Text style={{ fontFamily: fonts.sans, fontSize: 15, lineHeight: 24, color: tokens.inkSoft, marginLeft: 40 }}>
-                    {step.content}
-                  </Text>
-
-                  {/* Chef's why note */}
-                  {step.why_note && (
-                    <Pressable
-                      onPress={() => setExpandedWhy((p) => ({ ...p, [step.id]: !p[step.id] }))}
-                      style={{ marginTop: 12, marginLeft: 40 }}
-                    >
-                      <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, letterSpacing: 0.6, color: tokens.ochre }}>
-                        {whyExpanded ? 'Hide chef\'s note ▲' : 'Chef\'s note ▼'}
-                      </Text>
-                      {whyExpanded && (
-                        <Text style={{ fontFamily: fonts.displayItalic ?? fonts.display, fontSize: 13, lineHeight: 20, color: tokens.muted, marginTop: 6 }}>
-                          {step.why_note}
+                      {done ? (
+                        <Icon name="check" size={15} color="#FFF" />
+                      ) : (
+                        <Text style={{ fontFamily: fonts.display, fontSize: 16, color: '#FFF' }}>
+                          {idx + 1}
                         </Text>
                       )}
                     </Pressable>
-                  )}
+
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: fonts.sansBold,
+                          fontSize: 15,
+                          color: tokens.ink,
+                          textDecorationLine: done ? 'line-through' : 'none',
+                          marginBottom: 5,
+                        }}
+                      >
+                        {step.title}
+                      </Text>
+                      <Text style={{ fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: tokens.inkSoft }}>
+                        {step.content}
+                      </Text>
+
+                      {step.stage_note ? (
+                        <Callout label="Look for" accent={tokens.primary} italic text={step.stage_note} />
+                      ) : null}
+                      {step.why_note ? (
+                        <Callout label="Why" accent={tokens.sage} text={step.why_note} />
+                      ) : null}
+                      {step.lookahead ? (
+                        <Callout label="Heads-up" accent={tokens.ochre} text={step.lookahead} />
+                      ) : null}
+
+                      {step.timer_seconds && cooking ? (
+                        <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Icon name="clock" size={12} color={tokens.muted} />
+                          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+                            Rough timer: {formatTimer(step.timer_seconds)}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
                 </View>
               );
             })}
           </View>
 
-          {/* ── Add to plan — matches hone.html exactly ──────────────────── */}
-          <Pressable
-            onPress={handleTogglePlan}
-            style={({ pressed }) => ({
-              marginTop: 28,
-              marginBottom: 8,
-              paddingVertical: 16,
-              borderRadius: 16,
-              backgroundColor: isPlanned ? tokens.sage : tokens.paprika,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              opacity: pressed ? 0.88 : 1,
-              shadowColor: isPlanned ? tokens.sage : tokens.paprika,
-              shadowOpacity: 0.28,
-              shadowRadius: 12,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 4,
-            })}
-          >
-            <Icon
-              name={isPlanned ? 'check' : 'plus'}
-              size={18}
-              color="#FDF9F3"
-            />
-            <Text
+          {/* Leftover note */}
+          {recipe.leftover_mode ? (
+            <View
               style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 16,
-                color: '#FDF9F3',
-                letterSpacing: -0.2,
+                marginTop: 16,
+                padding: 14,
+                borderRadius: 14,
+                backgroundColor: tokens.bgDeep,
               }}
             >
-              {isPlanned ? 'In your plan' : 'Add to plan'}
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 10,
+                  letterSpacing: 1.5,
+                  textTransform: 'uppercase',
+                  color: tokens.ochre,
+                  marginBottom: 4,
+                }}
+              >
+                Designed for leftovers
+              </Text>
+              <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: tokens.inkSoft }}>
+                {recipe.leftover_mode.note}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
 
-      {/* Modals */}
-      {swapSheet && (
-        <SwapSheet
-          ingredientId={swapSheet.ingredientId}
-          ingredientName={swapSheet.ingredientName}
-          substitutions={swapSheet.substitutions}
-          activeSwapName={swapSheet.activeSwapName}
-          onApply={async (name, notes) => {
-            if (!id) return;
-            await setIngredientSwap(db, id, swapSheet.ingredientId, name, notes);
-            const updated = await getSwapsForRecipe(db, id);
-            setSwaps(updated);
-            setSwapSheet(null);
-          }}
-          onClear={async () => {
-            if (!id) return;
-            await clearIngredientSwap(db, id, swapSheet.ingredientId);
-            const updated = await getSwapsForRecipe(db, id);
-            setSwaps(updated);
-            setSwapSheet(null);
-          }}
-          onClose={() => setSwapSheet(null)}
-        />
-      )}
-
-
+      {/* ── STICKY CTA (absolute, clears scroll content) ── */}
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          paddingHorizontal: 20,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 14,
+          backgroundColor: `${tokens.bg}F5`,
+          borderTopWidth: 1,
+          borderTopColor: tokens.line,
+        }}
+      >
+        {!cooking ? (
+          <Pressable
+            onPress={toggleCooking}
+            style={({ pressed }) => ({
+              paddingVertical: 16,
+              borderRadius: 18,
+              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 8,
+            })}
+          >
+            <Icon name="chef" size={18} color="#FFF" />
+            <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF', letterSpacing: 0.2 }}>
+              I'm cooking this now
+            </Text>
+          </Pressable>
+        ) : progress === 1 ? (
+          <Pressable
+            onPress={toggleCooking}
+            style={({ pressed }) => ({
+              paddingVertical: 16,
+              borderRadius: 18,
+              backgroundColor: pressed ? tokens.sageDeep : tokens.sage,
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 8,
+            })}
+          >
+            <Icon name="check" size={18} color="#FFF" />
+            <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF' }}>
+              Done — eat well
+            </Text>
+          </Pressable>
+        ) : (
+          <View style={{ paddingVertical: 10, alignItems: 'center' }}>
+            <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, textAlign: 'center' }}>
+              Screen stays on while you cook. Tap the step number to tick it off.
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
   );
+}
+
+// ── Small pieces ──────────────────────────────────────────────────────────────
+
+function MetaPill({
+  icon,
+  label,
+}: {
+  icon: React.ComponentProps<typeof Icon>['name'];
+  label: string;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <Icon name={icon} size={14} color={tokens.inkSoft} />
+      <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.inkSoft }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function SectionHeader({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+      }}
+    >
+      <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink }}>
+        {title}
+      </Text>
+      {hint ? (
+        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+          {hint}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+function Callout({
+  label,
+  text,
+  accent,
+  italic,
+}: {
+  label: string;
+  text: string;
+  accent: string;
+  italic?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        marginTop: 10,
+        padding: 10,
+        borderRadius: 12,
+        backgroundColor: tokens.bgDeep,
+        borderLeftWidth: 3,
+        borderLeftColor: accent,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: fonts.sansBold,
+          fontSize: 9,
+          letterSpacing: 1.5,
+          textTransform: 'uppercase',
+          color: accent,
+          marginBottom: 3,
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontFamily: italic ? fonts.displayItalic : fonts.sans,
+          fontStyle: italic ? 'italic' : 'normal',
+          fontSize: 13,
+          lineHeight: 18,
+          color: tokens.inkSoft,
+        }}
+      >
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function formatTimer(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.round(seconds / 60);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  return rem === 0 ? `${h} h` : `${h} h ${rem} min`;
 }

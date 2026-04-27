@@ -9,8 +9,8 @@
  */
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Recipe, Ingredient, Step } from '../src/data/types';
-import { SCHEMA_SQL, SCHEMA_MIGRATIONS, SCHEMA_VERSION } from './schema';
-import { seedDatabase, syncNewSeedRecipes, updateSubstitutions } from './seed';
+import { SCHEMA_SQL } from './schema';
+import { seedDatabase } from './seed';
 
 // ── Row types mirror the DB columns exactly ──────────────────────────────────
 
@@ -33,8 +33,6 @@ interface RecipeRow {
   generated_by_claude: number;
   leftover_extra_servings: number | null;
   leftover_note: string | null;
-  categories: string | null;
-  whole_food_verified: number | null;
 }
 
 interface IngredientRow {
@@ -48,7 +46,6 @@ interface IngredientRow {
   cap: number | null;
   prep: string | null;
   curve: string | null;
-  substitutions: string | null;
 }
 
 interface StepRow {
@@ -77,9 +74,6 @@ function rowToIngredient(row: IngredientRow): Ingredient {
     cap: row.cap ?? undefined,
     prep: row.prep ?? undefined,
     curve: row.curve ? (JSON.parse(row.curve) as Record<string, number>) : undefined,
-    substitutions: row.substitutions
-      ? (JSON.parse(row.substitutions) as Ingredient['substitutions'])
-      : undefined,
   };
 }
 
@@ -134,12 +128,6 @@ function rowToRecipe(
       row.leftover_extra_servings != null
         ? { extra_servings: row.leftover_extra_servings, note: row.leftover_note ?? '' }
         : undefined,
-    categories: row.categories
-      ? (JSON.parse(row.categories) as Recipe['categories'])
-      : undefined,
-    whole_food_verified: row.whole_food_verified != null
-      ? Boolean(row.whole_food_verified)
-      : undefined,
   };
 }
 
@@ -149,43 +137,10 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA journal_mode = WAL;');
   await db.execAsync('PRAGMA foreign_keys = ON;');
 
-  // Create all tables (IF NOT EXISTS — safe to run on every launch)
   for (const sql of SCHEMA_SQL) {
     await db.execAsync(sql);
   }
 
-  // Run any pending migrations for existing installs.
-  // user_version = 0 means the DB existed before we introduced migrations (v1 schema).
-  const versionRow = await db.getFirstAsync<{ user_version: number }>(
-    'PRAGMA user_version',
-  );
-  const currentVersion = versionRow?.user_version ?? 0;
-
-  if (currentVersion < SCHEMA_VERSION) {
-    const versionsToRun = Object.keys(SCHEMA_MIGRATIONS)
-      .map(Number)
-      .filter((v) => v > currentVersion)
-      .sort((a, b) => a - b);
-
-    for (const version of versionsToRun) {
-      const statements = SCHEMA_MIGRATIONS[version]!;
-      for (const sql of statements) {
-        // ALTER TABLE may fail if the column already exists (e.g. fresh install
-        // where SCHEMA_SQL already added it). Catch and continue.
-        try {
-          await db.execAsync(sql);
-        } catch {
-          // Column already exists — safe to ignore
-        }
-      }
-    }
-
-    // Set user_version to target. SQLite doesn't allow ? binding in PRAGMA,
-    // so we interpolate directly (SCHEMA_VERSION is a compile-time constant).
-    await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
-  }
-
-  // Seed on first run
   const meta = await db.getFirstAsync<{ value: string }>(
     "SELECT value FROM app_meta WHERE key = 'seeded'",
   );
@@ -195,12 +150,6 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
       "INSERT INTO app_meta (key, value) VALUES ('seeded', '1')",
     );
   }
-
-  // Insert any seed recipes added after the initial install — safe every launch.
-  await syncNewSeedRecipes(db);
-
-  // Always sync substitution data from seed — idempotent UPDATE, no data loss.
-  await updateSubstitutions(db);
 }
 
 // ── Recipes ───────────────────────────────────────────────────────────────────
@@ -275,9 +224,8 @@ export async function insertRecipe(
     `INSERT OR REPLACE INTO recipes (
       id, title, tagline, description, base_servings, time_min, difficulty,
       tags, source_chef, source_video_url, source_notes, hero_url, hero_fallback,
-      emoji, user_added, generated_by_claude, leftover_extra_servings, leftover_note,
-      categories, whole_food_verified
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      emoji, user_added, generated_by_claude, leftover_extra_servings, leftover_note
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       recipe.id,
       recipe.title,
@@ -297,8 +245,6 @@ export async function insertRecipe(
       recipe.generated_by_claude ? 1 : 0,
       recipe.leftover_mode?.extra_servings ?? null,
       recipe.leftover_mode?.note ?? null,
-      recipe.categories ? JSON.stringify(recipe.categories) : null,
-      recipe.whole_food_verified != null ? (recipe.whole_food_verified ? 1 : 0) : null,
     ],
   );
 
@@ -306,8 +252,8 @@ export async function insertRecipe(
     const ing = recipe.ingredients[i]!;
     await db.runAsync(
       `INSERT OR REPLACE INTO ingredients
-        (id, recipe_id, sort_order, name, amount, unit, scales, cap, prep, curve, substitutions)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+        (id, recipe_id, sort_order, name, amount, unit, scales, cap, prep, curve)
+       VALUES (?,?,?,?,?,?,?,?,?,?)`,
       [
         ing.id,
         recipe.id,
@@ -319,7 +265,6 @@ export async function insertRecipe(
         ing.cap ?? null,
         ing.prep ?? null,
         ing.curve ? JSON.stringify(ing.curve) : null,
-        ing.substitutions ? JSON.stringify(ing.substitutions) : null,
       ],
     );
   }
@@ -432,6 +377,65 @@ export async function deletePantryItem(
   await db.runAsync('DELETE FROM pantry_items WHERE id = ?', [id]);
 }
 
+// ── Plan toggle (simple on/off, no dates) ────────────────────────────────────
+// Uses meal_plan with sentinel date='planned' and id=recipe_id for 1:1 mapping.
+
+export async function getPlannedRecipeIds(
+  db: SQLiteDatabase,
+): Promise<Set<string>> {
+  const rows = await db.getAllAsync<{ recipe_id: string }>(
+    "SELECT recipe_id FROM meal_plan WHERE date = 'planned'",
+  );
+  return new Set(rows.map((r) => r.recipe_id));
+}
+
+export async function togglePlannedRecipe(
+  db: SQLiteDatabase,
+  recipeId: string,
+  baseServings: number,
+): Promise<boolean> {
+  const existing = await db.getFirstAsync<{ id: string }>(
+    "SELECT id FROM meal_plan WHERE id = ? AND date = 'planned'",
+    [recipeId],
+  );
+  if (existing) {
+    await db.runAsync('DELETE FROM meal_plan WHERE id = ?', [recipeId]);
+    return false; // now unplanned
+  } else {
+    await db.runAsync(
+      "INSERT OR REPLACE INTO meal_plan (id, date, recipe_id, servings) VALUES (?, 'planned', ?, ?)",
+      [recipeId, recipeId, baseServings],
+    );
+    return true; // now planned
+  }
+}
+
+export async function getPlannedEntries(
+  db: SQLiteDatabase,
+): Promise<MealPlanEntry[]> {
+  return db.getAllAsync<MealPlanEntry>(
+    "SELECT * FROM meal_plan WHERE date = 'planned' ORDER BY rowid",
+  );
+}
+
+export async function updatePlannedServings(
+  db: SQLiteDatabase,
+  recipeId: string,
+  servings: number,
+): Promise<void> {
+  await db.runAsync(
+    "UPDATE meal_plan SET servings = ? WHERE id = ? AND date = 'planned'",
+    [servings, recipeId],
+  );
+}
+
+export async function removePlannedRecipe(
+  db: SQLiteDatabase,
+  recipeId: string,
+): Promise<void> {
+  await db.runAsync('DELETE FROM meal_plan WHERE id = ?', [recipeId]);
+}
+
 // ── Meal Plan ─────────────────────────────────────────────────────────────────
 
 export interface MealPlanEntry {
@@ -460,23 +464,13 @@ export async function getAllMealPlan(
   );
 }
 
-export async function getAllPlanEntries(
-  db: SQLiteDatabase,
-): Promise<MealPlanEntry[]> {
-  return db.getAllAsync<MealPlanEntry>(
-    `SELECT id, date, recipe_id, servings FROM meal_plan ORDER BY rowid DESC`
-  );
-}
-
 export async function setMealPlanEntry(
   db: SQLiteDatabase,
   entry: MealPlanEntry,
 ): Promise<void> {
-  // Multiple meals per day are allowed; primary key is `id` (unique per add).
-  // Was: DELETE-then-INSERT keyed on date (broke when calendar was removed —
-  // every new add wiped the previous one). Now plain INSERT OR REPLACE on id.
+  await db.runAsync('DELETE FROM meal_plan WHERE date = ?', [entry.date]);
   await db.runAsync(
-    'INSERT OR REPLACE INTO meal_plan (id, date, recipe_id, servings) VALUES (?,?,?,?)',
+    'INSERT INTO meal_plan (id, date, recipe_id, servings) VALUES (?,?,?,?)',
     [entry.id, entry.date, entry.recipe_id, entry.servings],
   );
 }
@@ -487,149 +481,4 @@ export async function deleteMealPlanEntry(
 ): Promise<void> {
   await db.runAsync('DELETE FROM meal_plan WHERE id = ?', [id]);
 }
-
-// ── Ingredient swaps ──────────────────────────────────────────────────────────
-
-export interface SwapRecord {
-  id: string;            // `{recipe_id}:{ingredient_id}`
-  recipe_id: string;
-  ingredient_id: string;
-  original_name: string;
-  swap_name: string;
-  quantity_note: string | null;
-}
-
-/** Load all active swaps for a specific recipe. Map key = ingredient_id. */
-export async function getSwapsForRecipe(
-  db: SQLiteDatabase,
-  recipeId: string,
-): Promise<Map<string, SwapRecord>> {
-  const rows = await db.getAllAsync<SwapRecord>(
-    'SELECT * FROM ingredient_swaps WHERE recipe_id = ?',
-    [recipeId],
-  );
-  const map = new Map<string, SwapRecord>();
-  for (const row of rows) map.set(row.ingredient_id, row);
-  return map;
-}
-
-/** Load ALL active swaps across all recipes. Map key = `{recipe_id}:{ingredient_id}`. */
-export async function getAllSwaps(
-  db: SQLiteDatabase,
-): Promise<Map<string, SwapRecord>> {
-  const rows = await db.getAllAsync<SwapRecord>('SELECT * FROM ingredient_swaps');
-  const map = new Map<string, SwapRecord>();
-  for (const row of rows) map.set(row.id, row);
-  return map;
-}
-
-/** Apply or update a swap for an ingredient in a recipe. */
-export async function setIngredientSwap(
-  db: SQLiteDatabase,
-  recipeId: string,
-  ingredientId: string,
-  originalName: string,
-  swapName: string,
-  quantityNote?: string,
-): Promise<void> {
-  const id = `${recipeId}:${ingredientId}`;
-  await db.runAsync(
-    `INSERT OR REPLACE INTO ingredient_swaps
-       (id, recipe_id, ingredient_id, original_name, swap_name, quantity_note)
-     VALUES (?,?,?,?,?,?)`,
-    [id, recipeId, ingredientId, originalName, swapName, quantityNote ?? null],
-  );
-}
-
-/** Remove a swap, reverting the ingredient to its original. */
-export async function clearIngredientSwap(
-  db: SQLiteDatabase,
-  recipeId: string,
-  ingredientId: string,
-): Promise<void> {
-  const id = `${recipeId}:${ingredientId}`;
-  await db.runAsync('DELETE FROM ingredient_swaps WHERE id = ?', [id]);
-}
-
-// ── Shopping extras (ad-hoc ingredients not tied to a recipe) ────────────────
-
-export interface ShoppingExtra {
-  id: string;
-  name: string;
-  amount: number;
-  unit: string;
-  category: string;
-  created_at: number;
-}
-
-export async function getShoppingExtras(db: SQLiteDatabase): Promise<ShoppingExtra[]> {
-  return db.getAllAsync<ShoppingExtra>(
-    'SELECT id, name, amount, unit, category, created_at FROM shopping_extras ORDER BY created_at DESC',
-  );
-}
-
-export async function addShoppingExtra(db: SQLiteDatabase, extra: ShoppingExtra): Promise<void> {
-  await db.runAsync(
-    'INSERT OR REPLACE INTO shopping_extras (id, name, amount, unit, category, created_at) VALUES (?,?,?,?,?,?)',
-    [extra.id, extra.name, extra.amount, extra.unit, extra.category, extra.created_at],
-  );
-}
-
-export async function deleteShoppingExtra(db: SQLiteDatabase, id: string): Promise<void> {
-  await db.runAsync('DELETE FROM shopping_extras WHERE id = ?', [id]);
-}
-
-
-
-// ── Simple plan toggle (hone.html style) ─────────────────────────────────────
-// Uses meal_plan table with id = recipe_id and date = 'planned' so there's
-// no calendar/date concept — just "in plan" or not.
-
-export async function getPlannedRecipeIds(db: SQLiteDatabase): Promise<string[]> {
-  const rows = await db.getAllAsync<{ id: string }>(
-    "SELECT id FROM meal_plan WHERE date = 'planned'",
-  );
-  return rows.map((r) => r.id);
-}
-
-export async function togglePlannedRecipe(
-  db: SQLiteDatabase,
-  recipeId: string,
-  baseServings: number,
-): Promise<boolean> {
-  const existing = await db.getFirstAsync<{ id: string }>(
-    "SELECT id FROM meal_plan WHERE id = ? AND date = 'planned'",
-    [recipeId],
-  );
-  if (existing) {
-    await db.runAsync("DELETE FROM meal_plan WHERE id = ? AND date = 'planned'", [recipeId]);
-    return false; // removed from plan
-  } else {
-    await db.runAsync(
-      'INSERT OR REPLACE INTO meal_plan (id, date, recipe_id, servings) VALUES (?, ?, ?, ?)',
-      [recipeId, 'planned', recipeId, baseServings],
-    );
-    return true; // added to plan
-  }
-}
-
-export async function removePlannedRecipe(db: SQLiteDatabase, recipeId: string): Promise<void> {
-  await db.runAsync("DELETE FROM meal_plan WHERE id = ? AND date = 'planned'", [recipeId]);
-}
-
-export async function getPlannedRecipes(db: SQLiteDatabase): Promise<{ recipe_id: string; servings: number }[]> {
-  return db.getAllAsync<{ recipe_id: string; servings: number }>(
-    "SELECT recipe_id, servings FROM meal_plan WHERE date = 'planned' ORDER BY rowid ASC",
-  );
-}
-
-export async function updatePlannedServings(
-  db: SQLiteDatabase,
-  recipeId: string,
-  servings: number,
-): Promise<void> {
-  await db.runAsync(
-    "UPDATE meal_plan SET servings = ? WHERE id = ? AND date = 'planned'",
-    [servings, recipeId],
-  );
-}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    

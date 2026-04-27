@@ -1,20 +1,14 @@
 /**
  * SwapSheet — bottom sheet for selecting an ingredient substitution.
  *
- * Renders as a React Native Modal (slide-up animation). Shows:
- *   - Current / original ingredient at the top
- *   - Each substitution option with quality badge + reason line
- *   - "Back to original" row when a swap is already active
+ * Modal slide-up. Shows current ingredient, swap options with quality
+ * badges, and a "back to original" row when a swap is already active.
  *
- * Design decisions:
- *   - Modal not a portal/absolute overlay: simplest native approach, works
- *     inside both ScrollView and SectionList parents without z-index fights.
- *   - Haptic on every selection — this is a consequential action.
- *   - Quality badge colours follow the warm Hone palette:
- *       perfect_swap → sage (calm green confirmation)
- *       great_swap   → ochre (warm, positive)
- *       good_swap / good → inkSoft (neutral, honest)
- *       compromise   → warn (amber, honest caution)
+ * Quality badge colours follow the Studio Kitchen palette:
+ *   perfect_swap → sage  (calm green)
+ *   great_swap   → ochre (warm positive)
+ *   good_swap    → bgDeep / inkSoft (neutral)
+ *   compromise   → ochreDeep (honest caution, not alarming red)
  */
 
 import React from 'react';
@@ -27,20 +21,27 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-
-import type { Substitution, SwapQuality } from '../data/types';
 import { tokens, fonts } from '../theme/tokens';
 import { Icon } from './Icon';
 
-// ── Public types ──────────────────────────────────────────────────────────────
+// ── Types (defined locally — not yet in types.ts) ─────────────────────────────
+
+export type SwapQuality = 'perfect_swap' | 'great_swap' | 'good_swap' | 'good' | 'compromise';
+
+export interface Substitution {
+  ingredient: string;
+  quality: SwapQuality;
+  changes: string;
+  quantity_note?: string;
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface SwapSheetProps {
   visible: boolean;
   ingredientName: string;
   substitutions: Substitution[];
-  /** Name of the currently active swap, if any — to highlight it. */
   activeSwapName?: string;
-  /** Called with the chosen substitution, or null to revert to original. */
   onSelect: (sub: Substitution | null) => void;
   onClose: () => void;
 }
@@ -50,14 +51,14 @@ export interface SwapSheetProps {
 function badgeConfig(quality: SwapQuality): { label: string; bg: string; text: string } {
   switch (quality) {
     case 'perfect_swap':
-      return { label: 'Perfect', bg: tokens.sage, text: tokens.cream };
+      return { label: 'Perfect', bg: tokens.sage, text: '#FFF' };
     case 'great_swap':
       return { label: 'Great swap', bg: tokens.ochre, text: tokens.ink };
     case 'good_swap':
     case 'good':
       return { label: 'Good swap', bg: tokens.bgDeep, text: tokens.inkSoft };
     case 'compromise':
-      return { label: 'Tradeoff', bg: '#F5E6C8', text: tokens.warn };
+      return { label: 'Tradeoff', bg: '#F5E6C8', text: tokens.ochreDeep };
   }
 }
 
@@ -91,10 +92,10 @@ export function SwapSheet({
     >
       {/* Dim backdrop */}
       <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(26,22,18,0.45)' }}
+        style={{ flex: 1, backgroundColor: 'rgba(29,25,23,0.48)' }}
         onPress={onClose}
       >
-        {/* Sheet panel — stops backdrop press from propagating through */}
+        {/* Sheet panel */}
         <Pressable
           style={{
             position: 'absolute',
@@ -108,21 +109,14 @@ export function SwapSheet({
             maxHeight: '80%',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: 0.12,
+            shadowOpacity: 0.1,
             shadowRadius: 20,
             elevation: 24,
           }}
-          // Prevent backdrop tap from bleeding through the sheet
           onPress={() => {}}
         >
           {/* Handle */}
-          <View
-            style={{
-              alignItems: 'center',
-              paddingTop: 12,
-              paddingBottom: 4,
-            }}
-          >
+          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
             <View
               style={{
                 width: 36,
@@ -152,7 +146,7 @@ export function SwapSheet({
                   fontSize: 10,
                   letterSpacing: 1.5,
                   textTransform: 'uppercase',
-                  color: tokens.paprika,
+                  color: tokens.primary,
                   marginBottom: 4,
                 }}
               >
@@ -200,12 +194,11 @@ export function SwapSheet({
             </Pressable>
           </View>
 
-          {/* Options list */}
+          {/* Options */}
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
           >
-            {/* Revert to original — only shown when a swap is active */}
             {isSwapped && (
               <SwapOption
                 name={ingredientName}
@@ -217,7 +210,6 @@ export function SwapSheet({
               />
             )}
 
-            {/* Substitution options */}
             {substitutions.map((sub, idx) => {
               const badge = badgeConfig(sub.quality);
               const isActive = sub.ingredient === activeSwapName;
@@ -236,10 +228,24 @@ export function SwapSheet({
 
             {substitutions.length === 0 && !isSwapped && (
               <View style={{ padding: 24, alignItems: 'center' }}>
-                <Text style={{ fontFamily: fonts.display, fontSize: 18, color: tokens.muted, marginBottom: 8 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.display,
+                    fontSize: 18,
+                    color: tokens.muted,
+                    marginBottom: 8,
+                  }}
+                >
                   No swaps on file yet
                 </Text>
-                <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: tokens.muted, textAlign: 'center' }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 13,
+                    color: tokens.muted,
+                    textAlign: 'center',
+                  }}
+                >
                   We haven't researched substitutions for this ingredient yet.
                 </Text>
               </View>
@@ -281,7 +287,7 @@ function SwapOption({
         paddingHorizontal: 20,
         paddingVertical: 14,
         backgroundColor: isActive
-          ? 'rgba(91,107,71,0.08)'
+          ? tokens.sageLight
           : pressed
             ? tokens.bgDeep
             : 'transparent',
@@ -303,10 +309,10 @@ function SwapOption({
           flexShrink: 0,
         }}
       >
-        {isActive && <Icon name="check" size={10} color={tokens.cream} />}
+        {isActive && <Icon name="check" size={10} color="#FFF" />}
       </View>
 
-      {/* Text block */}
+      {/* Text */}
       <View style={{ flex: 1, gap: 4 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Text
@@ -319,7 +325,6 @@ function SwapOption({
           >
             {name}
           </Text>
-          {/* Quality badge */}
           <View
             style={{
               backgroundColor: qualityBadge.bg,

@@ -1,590 +1,822 @@
 /**
- * Plan & Shop — matches hone.html PlanAndShop exactly.
+ * Plan & Shop — simple recipe plan toggle + shopping list.
  *
- * Simple list of planned recipes (no calendar, no date picker).
- * Each recipe card has: title, servings +/-, leftover mode picker, remove button.
- * Shopping list below: grouped by aisle, check-off items, Share button.
- * Custom item input for BUG-003.
+ * hone.html parity: recipes are either planned or not. No calendar,
+ * no date picker. Plan = a set of recipes you want to cook this week.
+ * Shopping list aggregates all planned recipes, subtracts pantry,
+ * groups by store aisle.
  *
- * Matches hone.html behaviour:
- *   - plan() is a toggle — add/remove with one tap
- *   - No date, no calendar, no week view
- *   - Shopping list auto-generated from planned recipes
+ * The plan toggle lives on both this screen (remove) and on the
+ * recipe detail screen (add). Both write through togglePlannedRecipe().
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
+  Modal,
   Pressable,
-  ScrollView,
-  Share,
+  SectionList,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Haptics from 'expo-haptics';
 
 import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
 import {
-  getPlannedRecipes,
+  getAllRecipes,
+  getPantryItems,
+  getPlannedEntries,
   removePlannedRecipe,
   updatePlannedServings,
-  getRecipeById,
-  getPantryItems,
-  getShoppingExtras,
-  addShoppingExtra,
-  deleteShoppingExtra,
-  type ShoppingExtra,
 } from '../../db/database';
+import type { MealPlanEntry, PantryItem } from '../../db/database';
 import type { Recipe } from '../../src/data/types';
 import {
   categorizeIngredient,
   cleanIngredientName,
+  normalizeForMatch,
   SHOPPING_SECTION_LABEL,
   SHOPPING_SECTION_ORDER,
 } from '../../src/data/pantry-helpers';
-import { scaleIngredient, totalPortionsFor, type LeftoverModeId } from '../../src/data/scale';
+import type { PantryCategory } from '../../src/data/pantry-helpers';
 
-// ── Leftover modes — exactly as hone.html ─────────────────────────────────────
-
-const LEFTOVER_OPTIONS: Array<{
-  id: LeftoverModeId;
-  label: string;
-  desc: string;
-}> = [
-  { id: 'tonight',   label: 'Just tonight',          desc: 'Exact portions' },
-  { id: 'lunch',     label: '+ lunch tomorrow',       desc: 'One extra portion' },
-  { id: 'threedays', label: 'Three days of meals',    desc: 'Triple the recipe' },
-  { id: 'week',      label: 'Meal prep for the week', desc: '5× batch' },
-];
-
-// ── Shopping list helpers ─────────────────────────────────────────────────────
-
-function formatAmt(amount: number, unit: string): string {
-  if (!amount) return unit;
-  const n = amount % 1 === 0 ? amount.toString() : amount.toFixed(1).replace(/\.0$/, '');
-  return unit ? `${n}${unit}` : n;
-}
+// ── Shopping types ────────────────────────────────────────────────────────────
 
 interface ShopItem {
-  key: string;
+  id: string;
   name: string;
   amount: number;
   unit: string;
-  section: string;
-  extra?: boolean;
+  category: PantryCategory;
+}
+type ShopSection = { title: string; sectionKey: PantryCategory; data: ShopItem[] };
+
+function fmtAmt(n: number): string {
+  if (n <= 0) return '';
+  const r = Math.round(n * 10) / 10;
+  return r % 1 === 0 ? String(Math.round(r)) : String(r);
 }
 
-function buildShoppingList(
-  plannedWithRecipes: Array<{ recipe: Recipe; servings: number; leftover: LeftoverModeId }>,
-  pantryNames: Set<string>,
-): Record<string, ShopItem[]> {
-  const merged: Record<string, ShopItem> = {};
+// ── Custom item TextInput for shopping list ───────────────────────────────────
 
-  for (const { recipe, servings, leftover } of plannedWithRecipes) {
-    const totalPortions = totalPortionsFor(servings, leftover);
-    for (const ing of recipe.ingredients) {
-      const scaled = scaleIngredient(ing, recipe.base_servings, totalPortions);
-      const clean = cleanIngredientName(scaled.name);
-      const normKey = clean.toLowerCase().replace(/\s+/g, ' ').trim();
-
-      if (pantryNames.has(normKey)) continue;
-
-      const section = categorizeIngredient(clean);
-      if (merged[normKey]) {
-        if (merged[normKey].unit === scaled.unit) {
-          merged[normKey].amount += scaled.amount;
-        }
-      } else {
-        merged[normKey] = {
-          key: normKey,
-          name: clean,
-          amount: scaled.amount,
-          unit: scaled.unit ?? '',
-          section,
-        };
-      }
-    }
-  }
-
-  const grouped: Record<string, ShopItem[]> = {};
-  for (const item of Object.values(merged)) {
-    if (!grouped[item.section]) grouped[item.section] = [];
-    grouped[item.section].push(item);
-  }
-  return grouped;
+function CustomItemInput({ onAdd }: { onAdd: (name: string) => void }) {
+  const [val, setVal] = useState('');
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 20,
+        marginTop: 16,
+        gap: 8,
+      }}
+    >
+      <View
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: tokens.cream,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: tokens.lineDark,
+          paddingHorizontal: 14,
+          paddingVertical: 12,
+          gap: 8,
+        }}
+      >
+        <Icon name="plus" size={14} color={tokens.muted} />
+        <TextInput
+          value={val}
+          onChangeText={setVal}
+          placeholder="Add item to list…"
+          placeholderTextColor={tokens.muted}
+          style={{
+            flex: 1,
+            fontFamily: fonts.sans,
+            fontSize: 14,
+            color: tokens.ink,
+            padding: 0,
+          }}
+          returnKeyType="done"
+          onSubmitEditing={() => {
+            if (val.trim()) { onAdd(val.trim()); setVal(''); }
+          }}
+        />
+        {val.trim() ? (
+          <Pressable
+            onPress={() => { onAdd(val.trim()); setVal(''); }}
+            style={{
+              backgroundColor: tokens.primary,
+              borderRadius: 10,
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+            }}
+          >
+            <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FFF' }}>
+              Add
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
 }
 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
-export default function PlanAndShopScreen() {
+export default function PlanTab() {
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
 
-  type PlannedEntry = {
-    recipe: Recipe;
-    servings: number;
-    leftover: LeftoverModeId;
-  };
+  const [allRecipes, setAllRecipes]     = useState<Recipe[]>([]);
+  const [pantryItems, setPantryItems]   = useState<PantryItem[]>([]);
+  const [planEntries, setPlanEntries]   = useState<MealPlanEntry[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [showShopping, setShowShopping] = useState(false);
+  const [shopItems, setShopItems]       = useState<ShopItem[]>([]);
+  const [customItems, setCustomItems]   = useState<string[]>([]);
+  const [checkedIds, setCheckedIds]     = useState<Set<string>>(new Set());
 
-  const [planned, setPlanned] = useState<PlannedEntry[]>([]);
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const [extraItems, setExtraItems] = useState<ShoppingExtra[]>([]);
-  const [newItem, setNewItem] = useState('');
-  const [pantryNames, setPantryNames] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-
-  const loadData = useCallback(async () => {
-    const [entries, pantry, extras] = await Promise.all([
-      getPlannedRecipes(db),
-      getPantryItems(db),
-      getShoppingExtras(db),
-    ]);
-
-    const pNames = new Set<string>(
-      pantry
-        .filter((p) => p.have_it)
-        .map((p) => p.name.toLowerCase().trim()),
-    );
-    setPantryNames(pNames);
-    setExtraItems(extras);
-
-    const withRecipes: PlannedEntry[] = [];
-    for (const e of entries) {
-      const recipe = await getRecipeById(db, e.recipe_id);
-      if (recipe) {
-        withRecipes.push({ recipe, servings: e.servings, leftover: 'tonight' });
+  // Initial load
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const [recipes, pantry, entries] = await Promise.all([
+        getAllRecipes(db),
+        getPantryItems(db),
+        getPlannedEntries(db),
+      ]);
+      if (!cancelled) {
+        setAllRecipes(recipes);
+        setPantryItems(pantry);
+        setPlanEntries(entries);
+        setLoading(false);
       }
     }
-    setPlanned(withRecipes);
-    setLoading(false);
+    load().catch(console.error);
+    return () => { cancelled = true; };
   }, [db]);
 
-  useEffect(() => { loadData(); }, [loadData]);
-
+  // Refresh plan when tab gains focus (recipe detail may have toggled)
   useFocusEffect(
-    useCallback(() => { loadData(); }, [loadData]),
+    useCallback(() => {
+      getPlannedEntries(db).then(setPlanEntries).catch(console.error);
+    }, [db]),
   );
 
+  const recipeMap = useMemo(() => {
+    const m = new Map<string, Recipe>();
+    for (const r of allRecipes) m.set(r.id, r);
+    return m;
+  }, [allRecipes]);
+
+  // Remove from plan
   const handleRemove = async (recipeId: string) => {
-    Haptics.selectionAsync().catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     await removePlannedRecipe(db, recipeId);
-    setPlanned((p) => p.filter((e) => e.recipe.id !== recipeId));
+    setPlanEntries((prev) => prev.filter((e) => e.recipe_id !== recipeId));
   };
 
+  // Update servings
   const handleServings = async (recipeId: string, delta: number) => {
+    const entry = planEntries.find((e) => e.recipe_id === recipeId);
+    if (!entry) return;
+    const next = Math.max(1, Math.min(20, entry.servings + delta));
+    if (next === entry.servings) return;
     Haptics.selectionAsync().catch(() => {});
-    setPlanned((prev) =>
-      prev.map((e) => {
-        if (e.recipe.id !== recipeId) return e;
-        const next = Math.max(1, e.servings + delta);
-        updatePlannedServings(db, recipeId, next).catch(console.error);
-        return { ...e, servings: next };
-      }),
+    await updatePlannedServings(db, recipeId, next);
+    setPlanEntries((prev) =>
+      prev.map((e) => (e.recipe_id === recipeId ? { ...e, servings: next } : e)),
     );
   };
 
-  const handleLeftover = (recipeId: string, leftover: LeftoverModeId) => {
-    Haptics.selectionAsync().catch(() => {});
-    setPlanned((prev) =>
-      prev.map((e) => (e.recipe.id === recipeId ? { ...e, leftover } : e)),
+  // Build shopping list
+  const handleGenerateShopping = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+
+    const haveNorms = new Set(
+      pantryItems.filter((p) => p.have_it).map((p) => normalizeForMatch(p.name)),
     );
-  };
 
-  const toggleCheck = (key: string) => {
-    setCheckedItems((s) => {
-      const next = new Set(s);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
-
-  const handleAddExtra = async () => {
-    const name = newItem.trim();
-    if (!name) return;
-    Haptics.selectionAsync().catch(() => {});
-    const extra: ShoppingExtra = {
-      id: `extra_${Date.now()}`,
-      name,
-      amount: 0,
-      unit: '',
-      category: 'Pantry Staples',
-      created_at: Date.now(),
+    const inPantry = (name: string): boolean => {
+      const norm = normalizeForMatch(name);
+      for (const p of haveNorms) {
+        if (norm === p) return true;
+        if (norm.length > 4 && p.length > 4 && (norm.includes(p) || p.includes(norm)))
+          return true;
+      }
+      return false;
     };
-    await addShoppingExtra(db, extra);
-    setExtraItems((e) => [...e, extra]);
-    setNewItem('');
-  };
 
-  const handleRemoveExtra = async (id: string) => {
-    await deleteShoppingExtra(db, id);
-    setExtraItems((e) => e.filter((x) => x.id !== id));
-  };
-
-  const handleShare = async () => {
-    if (planned.length === 0) return;
-    const grouped = buildShoppingList(planned, pantryNames);
-    const sections = SHOPPING_SECTION_ORDER.filter((s) => grouped[s]);
-    let text = '🛒 Shopping List (Hone)\n';
-    for (const sec of sections) {
-      text += `\n${SHOPPING_SECTION_LABEL[sec] ?? sec}\n`;
-      for (const item of grouped[sec]) {
-        const qty = formatAmt(item.amount, item.unit);
-        text += `  • ${item.name}${qty ? ` — ${qty}` : ''}\n`;
+    const aggregated = new Map<string, ShopItem>();
+    for (const entry of planEntries) {
+      const recipe = recipeMap.get(entry.recipe_id);
+      if (!recipe) continue;
+      const scale = entry.servings / recipe.base_servings;
+      for (const ing of recipe.ingredients) {
+        if (inPantry(ing.name)) continue;
+        const clean = cleanIngredientName(ing.name);
+        const key   = normalizeForMatch(ing.name);
+        const scaledAmt = ing.amount * scale;
+        if (aggregated.has(key)) {
+          const ex = aggregated.get(key)!;
+          if (ex.unit === ing.unit) ex.amount += scaledAmt;
+        } else {
+          aggregated.set(key, {
+            id: `shop-${key.replace(/\s+/g, '-')}`,
+            name: clean,
+            amount: scaledAmt,
+            unit: ing.unit,
+            category: categorizeIngredient(clean),
+          });
+        }
       }
     }
-    if (extraItems.length) {
-      text += '\nExtras\n';
-      for (const e of extraItems) text += `  • ${e.name}\n`;
-    }
-    try {
-      await Share.share({ message: text });
-    } catch { /* silent */ }
+
+    setShopItems(Array.from(aggregated.values()));
+    setCheckedIds(new Set());
+    setCustomItems([]);
+    setShowShopping(true);
   };
 
-  // ── Empty state ──────────────────────────────────────────────────────────────
-
-  if (!loading && planned.length === 0) {
+  if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: tokens.bg }}>
-        <View
-          style={{
-            paddingTop: insets.top + 12,
-            paddingHorizontal: 16,
-            paddingBottom: 12,
-            borderBottomWidth: 1,
-            borderBottomColor: tokens.line,
-          }}
-        >
-          <Text style={{ fontFamily: fonts.display, fontSize: 28, color: tokens.ink, letterSpacing: -0.5 }}>
-            Plan & Shop
-          </Text>
-          <Text style={{ fontFamily: fonts.displayItalic, fontSize: 14, color: tokens.muted, marginTop: 2 }}>
-            0 meals on the go
-          </Text>
-        </View>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
-          <Text style={{ fontSize: 48, marginBottom: 16 }}>🛒</Text>
-          <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink, textAlign: 'center', marginBottom: 8 }}>
-            No meals planned yet
-          </Text>
-          <Text style={{ fontFamily: fonts.displayItalic, fontSize: 14, color: tokens.muted, textAlign: 'center', lineHeight: 22 }}>
-            Browse recipes and tap Plan to build your week — your shopping list writes itself.
-          </Text>
-          <Pressable
-            onPress={() => router.push('/')}
-            style={{ marginTop: 24, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, backgroundColor: tokens.paprika }}
-          >
-            <Text style={{ fontFamily: fonts.sansBold, fontSize: 14, color: '#FDF9F3' }}>Browse recipes</Text>
-          </Pressable>
-        </View>
+      <View style={{ flex: 1, backgroundColor: tokens.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={tokens.primary} />
       </View>
     );
   }
 
-  const grouped = buildShoppingList(planned, pantryNames);
-  const sections = SHOPPING_SECTION_ORDER.filter((s) => grouped[s]);
-  const totalShopItems = Object.values(grouped).reduce((n, a) => n + a.length, 0) + extraItems.length;
-
-  // ── Full plan ────────────────────────────────────────────────────────────────
+  const plannedRecipes = planEntries
+    .map((e) => ({ entry: e, recipe: recipeMap.get(e.recipe_id) }))
+    .filter((x): x is { entry: MealPlanEntry; recipe: Recipe } => !!x.recipe);
 
   return (
     <View style={{ flex: 1, backgroundColor: tokens.bg }}>
-      {/* Header */}
-      <View
-        style={{
-          paddingTop: insets.top + 12,
-          paddingHorizontal: 16,
-          paddingBottom: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: tokens.line,
-          flexDirection: 'row',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-        }}
-      >
-        <View>
-          <Text style={{ fontFamily: fonts.display, fontSize: 28, color: tokens.ink, letterSpacing: -0.5 }}>
-            Plan & Shop
-          </Text>
-          <Text style={{ fontFamily: fonts.displayItalic, fontSize: 14, color: tokens.muted, marginTop: 2 }}>
-            {planned.length} meal{planned.length !== 1 ? 's' : ''} on the go
-          </Text>
-        </View>
-        {totalShopItems > 0 && (
-          <Pressable
-            onPress={handleShare}
-            style={({ pressed }) => ({
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 999,
-              backgroundColor: tokens.paprika,
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Icon name="share" size={14} color="#FDF9F3" />
-            <Text style={{ fontFamily: fonts.sansBold, fontSize: 13, color: '#FDF9F3' }}>Share list</Text>
-          </Pressable>
-        )}
-      </View>
-
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+      <FlatList
+        data={plannedRecipes}
+        keyExtractor={(x) => x.entry.recipe_id}
         keyboardShouldPersistTaps="handled"
-      >
-        {/* Planned recipe cards */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 12 }}>
-          {planned.map((entry) => (
-            <View
-              key={entry.recipe.id}
+        contentContainerStyle={{
+          paddingTop: insets.top + 20,
+          paddingHorizontal: 20,
+          paddingBottom: 160,
+        }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={{ marginBottom: 20 }}>
+            {/* Kicker */}
+            <Text
               style={{
-                backgroundColor: tokens.cardBg,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: tokens.line,
-                padding: 14,
+                fontFamily: fonts.sansBold,
+                fontSize: 11,
+                letterSpacing: 2,
+                textTransform: 'uppercase',
+                color: tokens.primary,
+                marginBottom: 4,
               }}
             >
-              {/* Title row */}
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <Pressable
-                  onPress={() => router.push(`/recipe/${entry.recipe.id}`)}
-                  style={{ flex: 1, marginRight: 8 }}
-                >
-                  <Text style={{ fontFamily: fonts.display, fontSize: 17, color: tokens.ink, letterSpacing: -0.2 }}>
-                    {entry.recipe.title}
-                  </Text>
-                  <Text style={{ fontFamily: fonts.displayItalic, fontSize: 13, color: tokens.muted, marginTop: 2 }}>
-                    {entry.recipe.tagline}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => handleRemove(entry.recipe.id)}
-                  style={({ pressed }) => ({
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: tokens.bgDeep,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <Icon name="x" size={14} color={tokens.inkSoft} />
-                </Pressable>
-              </View>
-
-              {/* Servings row */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 12 }}>
-                <Text style={{ fontFamily: fonts.sansMedium, fontSize: 13, color: tokens.inkSoft }}>Serves</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
-                  <Pressable
-                    onPress={() => handleServings(entry.recipe.id, -1)}
-                    style={({ pressed }) => ({
-                      width: 32, height: 32, borderRadius: 8,
-                      backgroundColor: pressed ? tokens.bgDeep : tokens.bg,
-                      borderWidth: 1, borderColor: tokens.line,
-                      alignItems: 'center', justifyContent: 'center',
-                    })}
-                  >
-                    <Icon name="minus" size={12} color={tokens.ink} />
-                  </Pressable>
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 16, color: tokens.ink, minWidth: 32, textAlign: 'center' }}>
-                    {entry.servings}
-                  </Text>
-                  <Pressable
-                    onPress={() => handleServings(entry.recipe.id, +1)}
-                    style={({ pressed }) => ({
-                      width: 32, height: 32, borderRadius: 8,
-                      backgroundColor: pressed ? tokens.bgDeep : tokens.bg,
-                      borderWidth: 1, borderColor: tokens.line,
-                      alignItems: 'center', justifyContent: 'center',
-                    })}
-                  >
-                    <Icon name="plus" size={12} color={tokens.ink} />
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* Leftover options — 2×2 grid matching hone.html */}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-                {LEFTOVER_OPTIONS.map((opt) => {
-                  const active = entry.leftover === opt.id;
-                  return (
-                    <Pressable
-                      key={opt.id}
-                      onPress={() => handleLeftover(entry.recipe.id, opt.id)}
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        minWidth: '45%',
-                        paddingHorizontal: 10,
-                        paddingVertical: 8,
-                        borderRadius: 10,
-                        borderWidth: 1.5,
-                        borderColor: active ? tokens.paprika : tokens.line,
-                        backgroundColor: active ? tokens.paprikaLight : tokens.bg,
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                    >
-                      <Text style={{
-                        fontFamily: fonts.sansBold,
-                        fontSize: 11,
-                        color: active ? tokens.paprika : tokens.inkSoft,
-                        marginBottom: 1,
-                      }}>
-                        {opt.label}
-                      </Text>
-                      <Text style={{
-                        fontFamily: fonts.sans,
-                        fontSize: 10,
-                        color: active ? tokens.paprika : tokens.muted,
-                      }}>
-                        {opt.desc}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
-        </View>
-
-        {/* Shopping list */}
-        {totalShopItems > 0 && (
-          <View style={{ marginTop: 24, paddingHorizontal: 16 }}>
-            <Text style={{ fontFamily: fonts.displayBold, fontSize: 22, color: tokens.ink, marginBottom: 14 }}>
-              Shopping list
+              This week
             </Text>
 
-            {sections.map((sec) => (
-              <View key={sec} style={{ marginBottom: 20 }}>
-                <Text style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 11,
-                  color: tokens.muted,
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.8,
-                  marginBottom: 8,
-                }}>
-                  {SHOPPING_SECTION_LABEL[sec] ?? sec}
-                </Text>
-                {grouped[sec].map((item) => {
-                  const checked = checkedItems.has(item.key);
-                  return (
-                    <Pressable
-                      key={item.key}
-                      onPress={() => { Haptics.selectionAsync().catch(() => {}); toggleCheck(item.key); }}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingVertical: 10,
-                        borderBottomWidth: 1,
-                        borderBottomColor: tokens.line,
-                        gap: 12,
-                      }}
-                    >
-                      {/* Checkbox */}
-                      <View style={{
-                        width: 22, height: 22, borderRadius: 6,
-                        borderWidth: 1.5,
-                        borderColor: checked ? tokens.sage : tokens.lineDark,
-                        backgroundColor: checked ? tokens.sage : 'transparent',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        {checked && <Icon name="check" size={11} color="#FDF9F3" />}
-                      </View>
-                      <Text style={{
-                        flex: 1,
-                        fontFamily: fonts.sansMedium,
-                        fontSize: 14,
-                        color: checked ? tokens.muted : tokens.ink,
-                        textDecorationLine: checked ? 'line-through' : 'none',
-                      }}>
-                        {item.name}
-                      </Text>
-                      {item.amount > 0 && (
-                        <Text style={{ fontFamily: fonts.sansSemiBold, fontSize: 13, color: tokens.muted }}>
-                          {formatAmt(item.amount, item.unit)}
-                        </Text>
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ))}
-
-            {/* Extra items (BUG-003) */}
-            {extraItems.length > 0 && (
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{
-                  fontFamily: fonts.sansBold, fontSize: 11, color: tokens.muted,
-                  textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8,
-                }}>
-                  Extras
-                </Text>
-                {extraItems.map((extra) => {
-                  const checked = checkedItems.has(extra.id);
-                  return (
-                    <View key={extra.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: tokens.line, gap: 12 }}>
-                      <Pressable onPress={() => toggleCheck(extra.id)} style={{
-                        width: 22, height: 22, borderRadius: 6, borderWidth: 1.5,
-                        borderColor: checked ? tokens.sage : tokens.lineDark,
-                        backgroundColor: checked ? tokens.sage : 'transparent',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        {checked && <Icon name="check" size={11} color="#FDF9F3" />}
-                      </Pressable>
-                      <Text style={{ flex: 1, fontFamily: fonts.sansMedium, fontSize: 14, color: checked ? tokens.muted : tokens.ink, textDecorationLine: checked ? 'line-through' : 'none' }}>
-                        {extra.name}
-                      </Text>
-                      <Pressable onPress={() => handleRemoveExtra(extra.id)}>
-                        <Icon name="x" size={14} color={tokens.muted} />
-                      </Pressable>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* Add custom item — BUG-003 fix */}
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              marginTop: 8,
-              marginBottom: 8,
-              backgroundColor: tokens.cardBg,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: tokens.line,
-              paddingHorizontal: 12,
-              paddingVertical: 4,
-            }}>
-              <Icon name="plus" size={14} color={tokens.muted} />
-              <TextInput
-                value={newItem}
-                onChangeText={setNewItem}
-                placeholder="Add an item…"
-                placeholderTextColor={tokens.muted}
-                style={{ flex: 1, fontFamily: fonts.sans, fontSize: 14, color: tokens.ink, paddingVertical: 10 }}
-                returnKeyType="done"
-                onSubmitEditing={handleAddExtra}
-              />
-              {newItem.trim().length > 0 && (
-                <Pressable onPress={handleAddExtra} style={{ paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, backgroundColor: tokens.paprika }}>
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FDF9F3' }}>Add</Text>
+            {/* Headline */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 4 }}>
+              <Text
+                style={{
+                  flex: 1,
+                  fontFamily: fonts.display,
+                  fontSize: 36,
+                  lineHeight: 40,
+                  color: tokens.ink,
+                }}
+              >
+                Meal Plan
+              </Text>
+              {plannedRecipes.length > 0 && (
+                <Pressable
+                  onPress={handleGenerateShopping}
+                  accessibilityRole="button"
+                  accessibilityLabel="Build shopping list"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: pressed ? tokens.inkSoft : tokens.ink,
+                    borderRadius: 999,
+                    paddingHorizontal: 14,
+                    paddingVertical: 9,
+                    marginBottom: 4,
+                  })}
+                >
+                  <Icon name="cart" size={14} color="#FFF" />
+                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: '#FFF' }}>
+                    Shop
+                  </Text>
                 </Pressable>
               )}
             </View>
+
+            <Text
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: 12,
+                color: tokens.muted,
+              }}
+            >
+              {plannedRecipes.length === 0
+                ? 'No recipes planned yet — tap + Plan on any recipe'
+                : `${plannedRecipes.length} recipe${plannedRecipes.length !== 1 ? 's' : ''} planned`}
+            </Text>
+          </View>
+        }
+        renderItem={({ item: { entry, recipe } }) => (
+          <View
+            style={{
+              backgroundColor: tokens.cream,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+              marginBottom: 12,
+              overflow: 'hidden',
+              shadowColor: tokens.ink,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 3,
+            }}
+          >
+            {/* Recipe row */}
+            <Pressable
+              onPress={() => router.push(`/recipe/${recipe.id}`)}
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                gap: 12,
+                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+              })}
+            >
+              {/* Colour swatch / emoji */}
+              {recipe.emoji ? (
+                <Text style={{ fontSize: 32 }}>{recipe.emoji}</Text>
+              ) : (
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor: recipe.hero_fallback?.[0] ?? tokens.primaryLight,
+                  }}
+                />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.display,
+                    fontSize: 16,
+                    color: tokens.ink,
+                    lineHeight: 20,
+                  }}
+                  numberOfLines={2}
+                >
+                  {recipe.title}
+                </Text>
+                {recipe.source ? (
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 11,
+                      color: tokens.primary,
+                      marginTop: 2,
+                    }}
+                  >
+                    {recipe.source.chef}
+                  </Text>
+                ) : null}
+              </View>
+              {/* Remove */}
+              <Pressable
+                onPress={() => handleRemove(entry.recipe_id)}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={`Remove ${recipe.title} from plan`}
+                style={({ pressed }) => ({
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                })}
+              >
+                <Icon name="x" size={16} color={tokens.muted} />
+              </Pressable>
+            </Pressable>
+
+            {/* Servings row */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingBottom: 14,
+                gap: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 10,
+                  letterSpacing: 1.5,
+                  textTransform: 'uppercase',
+                  color: tokens.muted,
+                  flex: 1,
+                }}
+              >
+                Servings
+              </Text>
+              {/* Stepper */}
+              <Pressable
+                onPress={() => handleServings(entry.recipe_id, -1)}
+                hitSlop={8}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  borderWidth: 1.5,
+                  borderColor: entry.servings <= 1 ? tokens.line : tokens.primary,
+                  backgroundColor: 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: entry.servings <= 1 ? 0.35 : 1,
+                }}
+              >
+                <Icon
+                  name="minus"
+                  size={14}
+                  color={entry.servings <= 1 ? tokens.muted : tokens.primary}
+                />
+              </Pressable>
+              <Text
+                style={{
+                  fontFamily: fonts.display,
+                  fontSize: 22,
+                  color: tokens.ink,
+                  minWidth: 28,
+                  textAlign: 'center',
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {entry.servings}
+              </Text>
+              <Pressable
+                onPress={() => handleServings(entry.recipe_id, 1)}
+                hitSlop={8}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  borderWidth: 1.5,
+                  borderColor: entry.servings >= 20 ? tokens.line : tokens.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: entry.servings >= 20 ? 0.35 : 1,
+                }}
+              >
+                <Icon
+                  name="plus"
+                  size={14}
+                  color={entry.servings >= 20 ? tokens.muted : tokens.primary}
+                />
+              </Pressable>
+              <Text
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: 12,
+                  color: tokens.muted,
+                }}
+              >
+                people
+              </Text>
+              {recipe.time_min ? (
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 11,
+                    color: tokens.muted,
+                    marginLeft: 'auto',
+                  }}
+                >
+                  {recipe.time_min} min
+                </Text>
+              ) : null}
+            </View>
           </View>
         )}
-      </ScrollView>
+        ListEmptyComponent={
+          <View
+            style={{
+              marginTop: 8,
+              padding: 20,
+              backgroundColor: tokens.cream,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Text style={{ fontSize: 36 }}>📋</Text>
+            <Text
+              style={{
+                fontFamily: fonts.display,
+                fontSize: 18,
+                color: tokens.ink,
+                textAlign: 'center',
+              }}
+            >
+              Nothing planned yet
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: 13,
+                color: tokens.muted,
+                textAlign: 'center',
+                lineHeight: 18,
+              }}
+            >
+              Open any recipe and tap{' '}
+              <Text style={{ fontFamily: fonts.sansBold, color: tokens.primary }}>
+                + Plan
+              </Text>{' '}
+              to add it here
+            </Text>
+          </View>
+        }
+      />
+
+      {/* Floating shop CTA */}
+      {plannedRecipes.length > 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            left: 20,
+            right: 20,
+            bottom: insets.bottom + 90,
+          }}
+        >
+          <Pressable
+            onPress={handleGenerateShopping}
+            style={({ pressed }) => ({
+              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+              borderRadius: 18,
+              paddingVertical: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              shadowColor: tokens.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 12,
+              elevation: 8,
+            })}
+          >
+            <Icon name="cart" size={18} color="#FFF" />
+            <Text style={{ fontFamily: fonts.sansXBold, fontSize: 14, color: '#FFF' }}>
+              Build Shopping List · {plannedRecipes.length} meal{plannedRecipes.length !== 1 ? 's' : ''}
+            </Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Shopping list modal */}
+      <Modal
+        visible={showShopping}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowShopping(false)}
+      >
+        <ShoppingListSheet
+          items={shopItems}
+          customItems={customItems}
+          checkedIds={checkedIds}
+          onToggle={(id) => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+            setCheckedIds((prev) => {
+              const next = new Set(prev);
+              next.has(id) ? next.delete(id) : next.add(id);
+              return next;
+            });
+          }}
+          onAddCustom={(name) => setCustomItems((prev) => [...prev, name])}
+          onClose={() => setShowShopping(false)}
+        />
+      </Modal>
+    </View>
+  );
+}
+
+// ── Shopping list sheet ───────────────────────────────────────────────────────
+
+function ShoppingListSheet({
+  items,
+  customItems,
+  checkedIds,
+  onToggle,
+  onAddCustom,
+  onClose,
+}: {
+  items: ShopItem[];
+  customItems: string[];
+  checkedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onAddCustom: (name: string) => void;
+  onClose: () => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const checkedCount = checkedIds.size;
+  const totalCount = items.length + customItems.length;
+
+  const sections = useMemo<ShopSection[]>(() => {
+    return SHOPPING_SECTION_ORDER.map((cat) => ({
+      title: SHOPPING_SECTION_LABEL[cat],
+      sectionKey: cat,
+      data: items.filter((i) => i.category === cat),
+    })).filter((s) => s.data.length > 0);
+  }, [items]);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: tokens.bg, paddingTop: insets.top + 8 }}>
+      {/* Header */}
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingBottom: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: tokens.line,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: fonts.display, fontSize: 28, color: tokens.ink }}>
+              Shopping List
+            </Text>
+            <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.muted, marginTop: 3 }}>
+              {totalCount} items · pantry items excluded
+            </Text>
+            {checkedCount > 0 && (
+              <Text style={{ fontFamily: fonts.sans, fontSize: 12, color: tokens.sage, marginTop: 2 }}>
+                {checkedCount} of {totalCount} grabbed ✓
+              </Text>
+            )}
+          </View>
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: tokens.bgDeep,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name="x" size={16} color={tokens.ink} />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* BUG-003 FIX: custom item input built here where keyboard works */}
+      <CustomItemInput onAdd={onAddCustom} />
+
+      {items.length === 0 && customItems.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+          <Text style={{ fontSize: 36, marginBottom: 12 }}>🎉</Text>
+          <Text style={{ fontFamily: fonts.display, fontSize: 20, color: tokens.ink, marginBottom: 8 }}>
+            Your pantry covers everything
+          </Text>
+          <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: tokens.muted, textAlign: 'center' }}>
+            Nothing extra to buy for this plan.
+          </Text>
+        </View>
+      ) : (
+        <SectionList
+          sections={[
+            ...sections,
+            ...(customItems.length > 0
+              ? [{
+                  title: 'Added by you',
+                  sectionKey: 'Pantry Staples' as PantryCategory,
+                  data: customItems.map((name, i) => ({
+                    id: `custom-${i}`,
+                    name,
+                    amount: 0,
+                    unit: '',
+                    category: 'Pantry Staples' as PantryCategory,
+                  })),
+                }]
+              : []),
+          ]}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingTop: 12, paddingBottom: insets.bottom + 24 }}
+          showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled
+          keyboardShouldPersistTaps="handled"
+          renderSectionHeader={({ section }) => (
+            <View
+              style={{
+                backgroundColor: tokens.bgDeep,
+                paddingHorizontal: 20,
+                paddingVertical: 9,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  textTransform: 'uppercase',
+                  color: tokens.inkSoft,
+                }}
+              >
+                {section.title}
+              </Text>
+            </View>
+          )}
+          renderItem={({ item, index, section }) => {
+            const checked = checkedIds.has(item.id);
+            const isLast = index === section.data.length - 1;
+            const amtStr = fmtAmt(item.amount);
+            return (
+              <Pressable
+                onPress={() => onToggle(item.id)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: tokens.cream,
+                  paddingHorizontal: 20,
+                  paddingVertical: 14,
+                  gap: 14,
+                  minHeight: 56,
+                  borderBottomWidth: isLast ? 0 : 1,
+                  borderBottomColor: tokens.line,
+                }}
+              >
+                <View
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 7,
+                    borderWidth: 2,
+                    borderColor: checked ? tokens.sage : tokens.line,
+                    backgroundColor: checked ? tokens.sage : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {checked && <Icon name="check" size={14} color="#FFF" />}
+                </View>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: fonts.sans,
+                    fontSize: 15,
+                    color: checked ? tokens.muted : tokens.ink,
+                    textDecorationLine: checked ? 'line-through' : 'none',
+                  }}
+                >
+                  {amtStr && item.unit ? (
+                    <Text>
+                      <Text style={{ fontFamily: fonts.sansBold }}>
+                        {amtStr} {item.unit}
+                      </Text>
+                      {' '}{item.name}
+                    </Text>
+                  ) : amtStr ? (
+                    <Text>
+                      <Text style={{ fontFamily: fonts.sansBold }}>{amtStr}</Text>
+                      {' '}{item.name}
+                    </Text>
+                  ) : (
+                    item.name
+                  )}
+                </Text>
+              </Pressable>
+            );
+          }}
+        />
+      )}
     </View>
   );
 }
