@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Simmer Fresh",
-    "slug": "simmer-fresh",
-    "scheme": "simmerfresh",
+    "name": "Hone",
+    "slug": "hone",
+    "scheme": "hone",
     "version": "0.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
