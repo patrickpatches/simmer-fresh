@@ -1,38 +1,58 @@
 /**
- * Pantry — "cook with what you have."
+ * Pantry — search-first redesign (2026-04-28).
  *
- * Ingredients auto-seeded from recipes + common staples.
- * Toggle what you have; app scores every recipe against the pantry.
+ * Shifts the pantry from a category-walled SectionList of toggles to a
+ * search-first model. Why:
+ *   - Recall beats recognition once an option set passes ~7 items
+ *     (Miller's Law). The previous build pre-seeded 100+ ingredients
+ *     and asked the user to scroll-and-tick — wrong end of the trade.
+ *   - The mental model "I just bought milk" → type "milk" → tap is one
+ *     action, not three. Bulk grocery put-away is the dominant use case.
  *
- * Design decisions:
- *   - Toggle sits right side — right-thumb reach zone (90% of users)
- *   - Minimum 52dp row height — oily/damp fingers need the area
- *   - Category headers use bgDeep to signal hierarchy without clutter
- *   - "Can cook" summary at top drives discovery without a separate tab
- *   - Search scoped to pantry items, not recipes
+ * Design (top → bottom):
+ *   1. Sticky search with autocomplete dropdown. Priority order:
+ *      already-in-pantry → AU staple catalog → "Add 'X' as new" escape.
+ *      Aliases work (cilantro→Coriander, bell pepper→Capsicum).
+ *   2. Quick-action pills: bulk add and add-staples shortcut.
+ *   3. Wrapping pill cloud — your pantry. Recently-added first; freshly
+ *      added pills flash in terracotta and decay back to sage after 1.5s.
+ *      Cap at 14 visible with "Show all".
+ *   4. "One ingredient unlocks more" card — surfaces the single ingredient
+ *      that appears in the most near-miss recipes. Shopping intelligence,
+ *      not just filtering.
+ *   5. Closest-matches carousel — top 6 recipes ranked by % match. Each
+ *      card has tappable missing-ingredient chips that drop into a
+ *      shopping list (in-memory for now; promote to DB later).
+ *
+ * No auto-seed — pantry starts empty and grows from search. Existing
+ * users with seeded `have_it=false` rows just won't see them; the new
+ * model treats "in pantry" = "row exists with have_it=true".
+ *
+ * Data layer untouched: still uses upsertPantryItem / deletePantryItem
+ * and scoreRecipeAgainstPantry. Aliases bridge the old normalizer.
  */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
-  SectionList,
+  ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import Animated, {
-  interpolateColor,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
+  FadeIn,
+  FadeOut,
+  LinearTransition,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Haptics from 'expo-haptics';
+
 import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
 import {
@@ -45,190 +65,281 @@ import type { PantryItem } from '../../db/database';
 import type { Recipe } from '../../src/data/types';
 import {
   PANTRY_CATEGORIES,
-  CATEGORY_EMOJI,
   categorizeIngredient,
-  normalizeForMatch,
   cleanIngredientName,
+  normalizeForMatch,
   scoreRecipeAgainstPantry,
-  initializePantryItems,
+  INGREDIENT_CATALOG,
+  fuzzyMatchCatalog,
+  matchedAlias,
 } from '../../src/data/pantry-helpers';
-import type { RecipeMatchResult } from '../../src/data/pantry-helpers';
+import type {
+  CatalogEntry,
+  PantryCategory,
+  RecipeMatchResult,
+} from '../../src/data/pantry-helpers';
 
-type Section = { title: string; emoji: string; data: PantryItem[] };
+// ── Constants ────────────────────────────────────────────────────────────────
 
-// ── Animated toggle (Reanimated for smooth 60fps) ─────────────────────────────
+const FRESH_DURATION_MS = 1500; // pill "fresh" decay
+const PILL_CAP = 14; // collapse to "show all" past this
+const TOP_MATCHES = 6;
+const UNLOCK_MIN_PANTRY = 2;
+const UNLOCK_MIN_COUNT = 2;
 
-function PantryToggle({
-  value,
-  onToggle,
-}: {
-  value: boolean;
-  onToggle: () => void;
-}) {
-  const progress = useSharedValue(value ? 1 : 0);
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    progress.value = withTiming(value ? 1 : 0, { duration: 180 });
-  }, [value, progress]);
-
-  const trackStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(
-      progress.value,
-      [0, 1],
-      [tokens.lineDark, tokens.sage],
-    ),
-  }));
-
-  const thumbStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: progress.value * 20 }],
-  }));
-
+function pantryId(name: string): string {
   return (
-    <Pressable
-      onPress={onToggle}
-      accessibilityRole="switch"
-      accessibilityState={{ checked: value }}
-      hitSlop={8}
-      style={{ justifyContent: 'center' }}
-    >
-      <Animated.View
-        style={[
-          trackStyle,
-          {
-            width: 46,
-            height: 26,
-            borderRadius: 13,
-            padding: 2,
-          },
-        ]}
-      >
-        <Animated.View
-          style={[
-            thumbStyle,
-            {
-              width: 22,
-              height: 22,
-              borderRadius: 11,
-              backgroundColor: '#FFF',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.15,
-              shadowRadius: 3,
-              elevation: 2,
-            },
-          ]}
-        />
-      </Animated.View>
-    </Pressable>
+    'pantry-' +
+    name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') +
+    '-' +
+    Date.now().toString(36)
   );
 }
 
-// ── Main screen ───────────────────────────────────────────────────────────────
+function sameNorm(a: string, b: string): boolean {
+  return normalizeForMatch(a) === normalizeForMatch(b);
+}
+
+// ── Main screen ──────────────────────────────────────────────────────────────
 
 export default function PantryTab() {
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
-  const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
-  const [allRecipes, setAllRecipes]   = useState<Recipe[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [search, setSearch]           = useState('');
-  const [addName, setAddName]         = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Load
+  const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  // Recently-added: maps id → addedAt for sort + fresh decay.
+  const [addedAt, setAddedAt] = useState<Record<string, number>>({});
+  const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
+  const [showAll, setShowAll] = useState(false);
+
+  // In-memory shopping list — the "tap a missing chip" target.
+  // Long-term this lives in the DB so it survives a relaunch; for now it
+  // only persists within the session. Tracked in BUGS.md as follow-up.
+  const [shopping, setShopping] = useState<Set<string>>(new Set());
+
+  const inputRef = useRef<TextInput>(null);
+
+  // ── Load ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [items, recipes] = await Promise.all([
+      const [items, allRecipes] = await Promise.all([
         getPantryItems(db),
         getAllRecipes(db),
       ]);
       if (cancelled) return;
-      setAllRecipes(recipes);
-      if (items.length === 0) {
-        await initializePantryItems(db, recipes);
-        const seeded = await getPantryItems(db);
-        if (!cancelled) setPantryItems(seeded);
-      } else {
-        setPantryItems(items);
-      }
+      // New model: only items with have_it=true count as "in pantry".
+      // Legacy seeded items with have_it=false stay invisible.
+      setPantryItems(items.filter((i) => i.have_it));
+      setRecipes(allRecipes);
       setLoading(false);
     }
-    load().catch(console.error);
-    return () => { cancelled = true; };
+    load().catch((e) => {
+      console.error('pantry load failed', e);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [db]);
 
-  // Recipe match scoring
+  // ── Sort: recently-added first, then alphabetical ──────────────────────────
+  const sortedPantry = useMemo(() => {
+    const copy = [...pantryItems];
+    copy.sort((a, b) => {
+      const ta = addedAt[a.id] ?? 0;
+      const tb = addedAt[b.id] ?? 0;
+      if (ta !== tb) return tb - ta;
+      return a.name.localeCompare(b.name);
+    });
+    return copy;
+  }, [pantryItems, addedAt]);
+
+  const visiblePills = showAll ? sortedPantry : sortedPantry.slice(0, PILL_CAP);
+  const hiddenCount = sortedPantry.length - visiblePills.length;
+
+  // ── Recipe match scoring (memoised once per pantry change) ─────────────────
   const matchResults = useMemo<RecipeMatchResult[]>(() => {
-    if (!allRecipes.length) return [];
-    return allRecipes
-      .map((r) => scoreRecipeAgainstPantry(r, pantryItems))
-      .sort((a, b) => b.score - a.score);
-  }, [allRecipes, pantryItems]);
+    if (!recipes.length) return [];
+    return recipes.map((r) => scoreRecipeAgainstPantry(r, pantryItems));
+  }, [recipes, pantryItems]);
 
-  const canMakeCount = matchResults.filter((m) => m.haveCount === m.totalCount).length;
-  const topMatches   = matchResults.slice(0, 5);
+  const ranked = useMemo(() => {
+    if (!pantryItems.length) return [];
+    return matchResults
+      .filter((m) => m.haveCount > 0)
+      .sort((a, b) => b.score - a.score || a.totalCount - b.totalCount)
+      .slice(0, TOP_MATCHES);
+  }, [matchResults, pantryItems.length]);
 
-  // Toggle handler
-  const handleToggle = useCallback(
-    async (item: PantryItem) => {
+  const fullMatches = ranked.filter(
+    (m) => m.haveCount === m.totalCount,
+  ).length;
+
+  // ── Unlock — single ingredient that surfaces in the most near-misses ──────
+  const unlock = useMemo(() => {
+    if (pantryItems.length < UNLOCK_MIN_PANTRY) return null;
+    const counts = new Map<string, number>();
+    for (const m of matchResults) {
+      const missing = m.totalCount - m.haveCount;
+      if (missing === 0 || missing > 3) continue;
+      for (const name of m.missingNames) {
+        const key = cleanIngredientName(name).toLowerCase();
+        if (!key) continue;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+    let best: { name: string; count: number } | null = null;
+    for (const [name, count] of counts) {
+      if (!best || count > best.count) best = { name, count };
+    }
+    if (!best || best.count < UNLOCK_MIN_COUNT) return null;
+    return best;
+  }, [matchResults, pantryItems.length]);
+
+  // ── Autocomplete suggestions ───────────────────────────────────────────────
+  const suggestions = useMemo(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      return { existing: [], catalog: [], allowAddNew: false };
+    }
+    const ql = q.toLowerCase();
+
+    const existing = pantryItems
+      .filter((p) => p.name.toLowerCase().includes(ql))
+      .slice(0, 3);
+
+    const catalog: { entry: CatalogEntry; alias: string | null }[] = [];
+    for (const entry of INGREDIENT_CATALOG) {
+      if (catalog.length >= 5) break;
+      if (!fuzzyMatchCatalog(entry, q)) continue;
+      // Skip catalog entries already present in pantry.
+      if (pantryItems.some((p) => sameNorm(p.name, entry.name))) continue;
+      catalog.push({ entry, alias: matchedAlias(entry, q) });
+    }
+
+    const exactInCatalog = INGREDIENT_CATALOG.some(
+      (e) => e.name.toLowerCase() === ql,
+    );
+    const exactInPantry = pantryItems.some(
+      (p) => p.name.toLowerCase() === ql,
+    );
+    const allowAddNew = !exactInCatalog && !exactInPantry && q.length >= 2;
+
+    return { existing, catalog, allowAddNew };
+  }, [search, pantryItems]);
+
+  const showDropdown =
+    searchFocused &&
+    search.trim().length >= 2 &&
+    (suggestions.existing.length > 0 ||
+      suggestions.catalog.length > 0 ||
+      suggestions.allowAddNew);
+
+  // ── Mutators ───────────────────────────────────────────────────────────────
+  const addByName = useCallback(
+    async (rawName: string, category?: PantryCategory) => {
+      const clean = cleanIngredientName(rawName);
+      if (!clean) return;
+      // Don't double-add — flash existing pill instead.
+      const existing = pantryItems.find((p) => sameNorm(p.name, clean));
+      if (existing) {
+        Haptics.selectionAsync().catch(() => {});
+        const id = existing.id;
+        setFreshIds((prev) => new Set(prev).add(id));
+        setTimeout(() => {
+          setFreshIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        }, FRESH_DURATION_MS);
+        setSearch('');
+        return;
+      }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      const updated = { ...item, have_it: !item.have_it };
-      await upsertPantryItem(db, updated);
-      setPantryItems((prev) =>
-        prev.map((p) => (p.id === item.id ? updated : p)),
+      const id = pantryId(clean);
+      const item: PantryItem = {
+        id,
+        name: clean,
+        category: category ?? categorizeIngredient(clean),
+        quantity: null,
+        unit: null,
+        have_it: true,
+      };
+      setPantryItems((prev) => [item, ...prev]);
+      setAddedAt((prev) => ({ ...prev, [id]: Date.now() }));
+      setFreshIds((prev) => new Set(prev).add(id));
+      setSearch('');
+      // Persist after state update — UI feels instant.
+      upsertPantryItem(db, item).catch((e) =>
+        console.error('upsertPantryItem failed', e),
+      );
+      setTimeout(() => {
+        setFreshIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }, FRESH_DURATION_MS);
+    },
+    [db, pantryItems],
+  );
+
+  const removeItem = useCallback(
+    async (item: PantryItem) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      setPantryItems((prev) => prev.filter((p) => p.id !== item.id));
+      deletePantryItem(db, item.id).catch((e) =>
+        console.error('deletePantryItem failed', e),
       );
     },
     [db],
   );
 
-  // Delete handler
-  const handleDelete = useCallback(
-    async (item: PantryItem) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      await deletePantryItem(db, item.id);
-      setPantryItems((prev) => prev.filter((p) => p.id !== item.id));
-    },
-    [db],
-  );
+  const toggleShopping = useCallback((name: string) => {
+    Haptics.selectionAsync().catch(() => {});
+    setShopping((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
 
-  // Add item
-  const handleAdd = useCallback(
-    async (name: string) => {
-      const clean = cleanIngredientName(name.trim());
-      if (!clean) return;
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      const item: PantryItem = {
-        id: `user-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        name: clean,
-        category: categorizeIngredient(clean),
-        quantity: null,
-        unit: null,
-        have_it: true,
-      };
-      await upsertPantryItem(db, item);
-      setPantryItems((prev) => [...prev, item]);
-      setAddName('');
-      setShowSuggestions(false);
-    },
-    [db],
-  );
+  const bulkAddStaples = useCallback(async () => {
+    // "Just shopped" demo: add a typical AU weekly haul. Skips items already there.
+    const haul: { name: string; category: PantryCategory }[] = [
+      { name: 'Chicken thigh', category: 'Proteins' },
+      { name: 'Brown onion', category: 'Produce' },
+      { name: 'Garlic', category: 'Produce' },
+      { name: 'Lemon', category: 'Produce' },
+      { name: 'Olive oil', category: 'Pantry Staples' },
+      { name: 'Salt', category: 'Spices & Seasonings' },
+      { name: 'Black pepper', category: 'Spices & Seasonings' },
+      { name: 'Eggs', category: 'Dairy & Eggs' },
+    ];
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+      () => {},
+    );
+    for (const item of haul) {
+      const dup = pantryItems.some((p) => sameNorm(p.name, item.name));
+      if (dup) continue;
+      // Stagger so the pop animation reads as a sequence
+      await new Promise((r) => setTimeout(r, 90));
+      await addByName(item.name, item.category);
+    }
+  }, [pantryItems, addByName]);
 
-  // Sections
-  const sections = useMemo<Section[]>(() => {
-    const q = search.trim().toLowerCase();
-    const filtered = q
-      ? pantryItems.filter((p) => p.name.toLowerCase().includes(q))
-      : pantryItems;
-
-    return PANTRY_CATEGORIES.map((cat) => ({
-      title: cat,
-      emoji: CATEGORY_EMOJI[cat] ?? '🥫',
-      data: filtered.filter((p) => p.category === cat),
-    })).filter((s) => s.data.length > 0);
-  }, [pantryItems, search]);
-
-  const haveCount = pantryItems.filter((p) => p.have_it).length;
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -248,548 +359,865 @@ export default function PantryTab() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: tokens.bg }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        stickySectionHeadersEnabled={false}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          paddingTop: insets.top + 20,
-          paddingBottom: 140,
+      {/* ── Sticky top: header + search ─────────────────────────────── */}
+      <View
+        style={{
+          paddingTop: insets.top + 16,
+          paddingHorizontal: 20,
+          paddingBottom: 8,
+          backgroundColor: tokens.bg,
+          zIndex: 10,
         }}
-        ListHeaderComponent={
-          <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
-            {/* Kicker */}
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 11,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                color: tokens.primary,
-                marginBottom: 4,
-              }}
-            >
-              Cook with what you have
-            </Text>
+      >
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            color: tokens.primary,
+            marginBottom: 4,
+          }}
+        >
+          Cook with what you have
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.display,
+            fontSize: 36,
+            lineHeight: 40,
+            color: tokens.ink,
+          }}
+        >
+          Your{' '}
+          <Text
+            style={{
+              fontFamily: fonts.displayItalic,
+              fontStyle: 'italic',
+              color: tokens.sage,
+            }}
+          >
+            Pantry
+          </Text>
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: 12,
+            color: tokens.muted,
+            marginTop: 6,
+          }}
+        >
+          {pantryItems.length} ingredient
+          {pantryItems.length === 1 ? '' : 's'} stocked
+        </Text>
 
-            {/* Headline */}
-            <Text
-              style={{
-                fontFamily: fonts.display,
-                fontSize: 36,
-                lineHeight: 40,
-                color: tokens.ink,
-              }}
-            >
-              Your{' '}
-              <Text style={{ fontFamily: fonts.displayItalic, fontStyle: 'italic', color: tokens.sage }}>
-                Pantry
-              </Text>
-            </Text>
-
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 12,
-                color: tokens.muted,
-                marginTop: 6,
-              }}
-            >
-              {haveCount} of {pantryItems.length} items stocked
-            </Text>
-
-            {/* Can cook banner */}
-            {canMakeCount > 0 && (
-              <Pressable
-                onPress={() => setShowSuggestions(true)}
-                style={({ pressed }) => ({
-                  marginTop: 16,
-                  backgroundColor: pressed ? tokens.sageDeep : tokens.sage,
-                  borderRadius: 16,
-                  padding: 14,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 10,
-                })}
-              >
-                <Text style={{ fontSize: 22 }}>🍳</Text>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 14,
-                      color: '#FFF',
-                    }}
-                  >
-                    You can make {canMakeCount} recipe{canMakeCount !== 1 ? 's' : ''} right now
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: fonts.sans,
-                      fontSize: 12,
-                      color: 'rgba(255,255,255,0.82)',
-                      marginTop: 2,
-                    }}
-                  >
-                    Tap to see what you can cook tonight
-                  </Text>
-                </View>
-                <Icon name="arrow-right" size={16} color="#FFF" />
-              </Pressable>
-            )}
-
-            {/* Top matches (partial) */}
-            {canMakeCount === 0 && topMatches.length > 0 && (
-              <View
-                style={{
-                  marginTop: 16,
-                  backgroundColor: tokens.cream,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: tokens.lineDark,
-                  overflow: 'hidden',
-                  shadowColor: tokens.ink,
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 4,
-                  elevation: 2,
-                }}
-              >
-                <View
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    borderBottomWidth: 1,
-                    borderBottomColor: tokens.line,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 10,
-                      letterSpacing: 1.5,
-                      textTransform: 'uppercase',
-                      color: tokens.muted,
-                    }}
-                  >
-                    Closest matches
-                  </Text>
-                </View>
-                {topMatches.map((m, idx) => {
-                  const pct = Math.round((m.haveCount / m.totalCount) * 100);
-                  return (
-                    <Pressable
-                      key={m.recipe.id}
-                      onPress={() => router.push(`/recipe/${m.recipe.id}`)}
-                      style={({ pressed }) => ({
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: 14,
-                        paddingVertical: 12,
-                        gap: 12,
-                        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-                        borderBottomWidth: idx < topMatches.length - 1 ? 1 : 0,
-                        borderBottomColor: tokens.line,
-                      })}
-                    >
-                      <View
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 10,
-                          backgroundColor: tokens.primaryLight,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Text style={{ fontFamily: fonts.display, fontSize: 14, color: tokens.primary }}>
-                          {pct}%
-                        </Text>
-                      </View>
-                      <Text
-                        style={{
-                          flex: 1,
-                          fontFamily: fonts.sansBold,
-                          fontSize: 13,
-                          color: tokens.ink,
-                        }}
-                        numberOfLines={1}
-                      >
-                        {m.recipe.title}
-                      </Text>
-                      <Text
-                        style={{
-                          fontFamily: fonts.sans,
-                          fontSize: 11,
-                          color: tokens.muted,
-                        }}
-                      >
-                        {m.missingNames.length} missing
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* Add item row */}
-            <View
-              style={{
-                marginTop: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: tokens.cream,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: tokens.lineDark,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  gap: 8,
-                }}
-              >
-                <Icon name="plus" size={15} color={tokens.muted} />
-                <TextInput
-                  value={addName}
-                  onChangeText={setAddName}
-                  placeholder="Add an ingredient…"
-                  placeholderTextColor={tokens.muted}
-                  style={{
-                    flex: 1,
-                    fontFamily: fonts.sans,
-                    fontSize: 14,
-                    color: tokens.ink,
-                    padding: 0,
-                  }}
-                  returnKeyType="done"
-                  onSubmitEditing={() => {
-                    if (addName.trim()) handleAdd(addName);
-                  }}
-                />
-                {addName.trim() ? (
-                  <Pressable
-                    onPress={() => handleAdd(addName)}
-                    style={{
-                      backgroundColor: tokens.primary,
-                      borderRadius: 10,
-                      paddingHorizontal: 10,
-                      paddingVertical: 5,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: fonts.sansBold,
-                        fontSize: 12,
-                        color: '#FFF',
-                      }}
-                    >
-                      Add
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-
-            {/* Search */}
-            <View
-              style={{
-                marginTop: 10,
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: tokens.cream,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: tokens.lineDark,
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-                gap: 8,
-              }}
-            >
-              <Icon name="search" size={15} color={tokens.muted} />
-              <TextInput
-                value={search}
-                onChangeText={setSearch}
-                placeholder="Filter pantry items…"
-                placeholderTextColor={tokens.muted}
-                style={{
-                  flex: 1,
-                  fontFamily: fonts.sans,
-                  fontSize: 14,
-                  color: tokens.ink,
-                  padding: 0,
-                }}
-              />
-              {search ? (
-                <Pressable onPress={() => setSearch('')} hitSlop={8}>
-                  <Icon name="x" size={14} color={tokens.muted} />
-                </Pressable>
-              ) : null}
-            </View>
-          </View>
-        }
-        renderSectionHeader={({ section }) => (
+        {/* Search bar */}
+        <View style={{ marginTop: 14, position: 'relative' }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              backgroundColor: tokens.bgDeep,
-              marginTop: 8,
+              backgroundColor: tokens.cream,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: searchFocused ? tokens.primary : tokens.lineDark,
+              paddingHorizontal: 14,
+              paddingVertical: 14,
+              gap: 10,
             }}
           >
-            <Text style={{ fontSize: 15 }}>{section.emoji}</Text>
+            <Icon name="search" size={16} color={tokens.muted} />
+            <TextInput
+              ref={inputRef}
+              value={search}
+              onChangeText={setSearch}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() =>
+                // Delay so a tap on a dropdown row registers before blur hides it.
+                setTimeout(() => setSearchFocused(false), 120)
+              }
+              placeholder="Search or add an ingredient…"
+              placeholderTextColor={tokens.muted}
+              autoCorrect={false}
+              autoCapitalize="none"
+              spellCheck={false}
+              style={{
+                flex: 1,
+                fontFamily: fonts.sans,
+                fontSize: 15,
+                color: tokens.ink,
+                padding: 0,
+              }}
+            />
+            {search ? (
+              <Pressable onPress={() => setSearch('')} hitSlop={10}>
+                <Icon name="x" size={14} color={tokens.muted} />
+              </Pressable>
+            ) : null}
+          </View>
+
+          {/* Autocomplete dropdown */}
+          {showDropdown && (
+            <Animated.View
+              entering={FadeIn.duration(140)}
+              exiting={FadeOut.duration(100)}
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                marginTop: 8,
+                backgroundColor: tokens.cream,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: tokens.line,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.12,
+                shadowRadius: 16,
+                elevation: 8,
+                overflow: 'hidden',
+                zIndex: 20,
+              }}
+            >
+              {suggestions.existing.map((p, i) => (
+                <DropdownRow
+                  key={`have-${p.id}`}
+                  iconBg={tokens.sageLight}
+                  iconColor={tokens.sage}
+                  iconChar="✓"
+                  name={p.name}
+                  meta="Already in your pantry"
+                  tagText="In pantry"
+                  tagBg={tokens.sageLight}
+                  tagColor={tokens.sageDeep}
+                  divider={i < suggestions.existing.length - 1 ||
+                    suggestions.catalog.length > 0 ||
+                    suggestions.allowAddNew}
+                  onPress={() => {
+                    addByName(p.name);
+                  }}
+                />
+              ))}
+              {suggestions.catalog.map((c, i) => (
+                <DropdownRow
+                  key={`add-${c.entry.name}`}
+                  iconBg={tokens.primaryLight}
+                  iconColor={tokens.primary}
+                  iconChar="+"
+                  name={c.entry.name}
+                  meta={c.alias ? `Also known as ${c.alias}` : c.entry.category}
+                  tagText="Add"
+                  tagBg={tokens.primaryLight}
+                  tagColor={tokens.primaryDeep}
+                  divider={
+                    i < suggestions.catalog.length - 1 || suggestions.allowAddNew
+                  }
+                  onPress={() => addByName(c.entry.name, c.entry.category)}
+                />
+              ))}
+              {suggestions.allowAddNew && (
+                <DropdownRow
+                  iconBg={tokens.bgDeep}
+                  iconColor={tokens.inkSoft}
+                  iconChar="＋"
+                  name={`Add "${capitalize(search.trim())}" as new`}
+                  meta="Not in our staples list — we'll add it for you"
+                  tagText="New"
+                  tagBg={tokens.bgDeep}
+                  tagColor={tokens.inkSoft}
+                  divider={false}
+                  onPress={() => addByName(search.trim())}
+                />
+              )}
+            </Animated.View>
+          )}
+        </View>
+      </View>
+
+      {/* ── Scrollable body ─────────────────────────────────────────── */}
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 140, paddingTop: 8 }}
+      >
+        {/* Quick actions */}
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 8,
+            paddingHorizontal: 20,
+            marginBottom: 14,
+          }}
+        >
+          <QuickPill
+            icon="🛒"
+            label="Just back from the shops"
+            onPress={bulkAddStaples}
+          />
+          <QuickPill
+            icon="⚡"
+            label="Add staples"
+            onPress={() => inputRef.current?.focus()}
+          />
+        </View>
+
+        {/* Pantry pill cloud */}
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 16,
+            backgroundColor: tokens.cream,
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: tokens.line,
+            overflow: 'hidden',
+          }}
+        >
+          <View
+            style={{
+              paddingHorizontal: 18,
+              paddingTop: 14,
+              paddingBottom: 6,
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              justifyContent: 'space-between',
+            }}
+          >
             <Text
               style={{
                 fontFamily: fonts.sansBold,
-                fontSize: 11,
+                fontSize: 10,
                 letterSpacing: 1.5,
                 textTransform: 'uppercase',
-                color: tokens.inkSoft,
-              }}
-            >
-              {section.title}
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 11,
                 color: tokens.muted,
               }}
             >
-              ({section.data.filter((p) => p.have_it).length}/{section.data.length})
+              In your pantry
+            </Text>
+            <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+              {pantryItems.length} item{pantryItems.length === 1 ? '' : 's'}
             </Text>
           </View>
-        )}
-        renderItem={({ item, index, section }) => (
-          <PantryRow
-            item={item}
-            isLast={index === section.data.length - 1}
-            onToggle={handleToggle}
-            onDelete={handleDelete}
-          />
-        )}
-      />
 
-      {/* "Can cook" suggestions modal */}
-      <Modal
-        visible={showSuggestions}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowSuggestions(false)}
-      >
-        <SuggestionsSheet
-          matches={matchResults.filter((m) => m.haveCount === m.totalCount)}
-          onClose={() => setShowSuggestions(false)}
-          onViewRecipe={(id) => {
-            setShowSuggestions(false);
-            router.push(`/recipe/${id}`);
-          }}
-        />
-      </Modal>
+          {pantryItems.length === 0 ? (
+            <View
+              style={{
+                paddingVertical: 24,
+                paddingHorizontal: 18,
+                alignItems: 'center',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: tokens.muted,
+                  marginBottom: 6,
+                }}
+              >
+                ↑
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: 13,
+                  color: tokens.muted,
+                  textAlign: 'center',
+                  lineHeight: 18,
+                }}
+              >
+                Type above to add your first ingredient.{'\n'}
+                We&apos;ll suggest as you type.
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 8,
+                paddingHorizontal: 18,
+                paddingTop: 6,
+                paddingBottom: 16,
+              }}
+            >
+              {visiblePills.map((it) => (
+                <Pill
+                  key={it.id}
+                  item={it}
+                  fresh={freshIds.has(it.id)}
+                  onRemove={() => removeItem(it)}
+                />
+              ))}
+            </View>
+          )}
+
+          {hiddenCount > 0 && (
+            <Pressable
+              onPress={() => setShowAll(true)}
+              style={({ pressed }) => ({
+                paddingVertical: 12,
+                borderTopWidth: 1,
+                borderTopColor: tokens.line,
+                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+              })}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 12,
+                  color: tokens.inkSoft,
+                  textAlign: 'center',
+                }}
+              >
+                Show all {sortedPantry.length}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+
+        {/* Unlock card */}
+        {unlock && (
+          <Pressable
+            onPress={() => toggleShopping(unlock.name)}
+            style={({ pressed }) => ({
+              marginHorizontal: 20,
+              marginBottom: 16,
+              padding: 16,
+              borderRadius: 18,
+              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 14,
+              shadowColor: tokens.primaryDeep,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.22,
+              shadowRadius: 12,
+              elevation: 4,
+            })}
+          >
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: 'rgba(255,255,255,0.18)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 22 }}>🔑</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 10,
+                  letterSpacing: 1.5,
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.78)',
+                  marginBottom: 3,
+                }}
+              >
+                One ingredient unlocks more
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 15,
+                  color: '#FFF',
+                  lineHeight: 19,
+                }}
+              >
+                Pick up{' '}
+                <Text style={{ textDecorationLine: 'underline' }}>
+                  {unlock.name}
+                </Text>{' '}
+                → {unlock.count} more recipe{unlock.count === 1 ? '' : 's'}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 20, color: 'rgba(255,255,255,0.85)' }}>
+              {shopping.has(unlock.name) ? '✓' : '→'}
+            </Text>
+          </Pressable>
+        )}
+
+        {/* Closest matches carousel */}
+        {ranked.length > 0 && (
+          <View>
+            <View
+              style={{
+                paddingHorizontal: 20,
+                paddingBottom: 10,
+                flexDirection: 'row',
+                alignItems: 'baseline',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 11,
+                  letterSpacing: 1.8,
+                  textTransform: 'uppercase',
+                  color: tokens.inkSoft,
+                }}
+              >
+                {fullMatches > 0 ? 'Ready to cook' : 'Closest matches'}
+              </Text>
+              <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+                {fullMatches > 0
+                  ? `${fullMatches} ready · ${ranked.length - fullMatches} close`
+                  : `${ranked.length} dish${ranked.length === 1 ? '' : 'es'} · ranked by match`}
+              </Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={272}
+              decelerationRate="fast"
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+            >
+              {ranked.map((m) => (
+                <RecipeMatchCard
+                  key={m.recipe.id}
+                  match={m}
+                  shopping={shopping}
+                  onOpenRecipe={() => router.push(`/recipe/${m.recipe.id}`)}
+                  onToggleShopping={toggleShopping}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-// ── Pantry row ────────────────────────────────────────────────────────────────
+// ── Subcomponents ────────────────────────────────────────────────────────────
 
-function PantryRow({
-  item,
-  isLast,
-  onToggle,
-  onDelete,
+function DropdownRow({
+  iconBg,
+  iconColor,
+  iconChar,
+  name,
+  meta,
+  tagText,
+  tagBg,
+  tagColor,
+  divider,
+  onPress,
 }: {
-  item: PantryItem;
-  isLast: boolean;
-  onToggle: (item: PantryItem) => void;
-  onDelete: (item: PantryItem) => void;
+  iconBg: string;
+  iconColor: string;
+  iconChar: string;
+  name: string;
+  meta: string;
+  tagText: string;
+  tagBg: string;
+  tagColor: string;
+  divider: boolean;
+  onPress: () => void;
 }) {
   return (
-    <View
-      style={{
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: tokens.cream,
-        paddingHorizontal: 20,
-        paddingVertical: 0,
-        minHeight: 52,
-        borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: tokens.line,
         gap: 12,
-      }}
+        paddingVertical: 13,
+        paddingHorizontal: 16,
+        borderBottomWidth: divider ? 1 : 0,
+        borderBottomColor: tokens.line,
+        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+      })}
     >
-      {/* Name */}
-      <Text
+      <View
         style={{
-          flex: 1,
-          fontFamily: fonts.sans,
-          fontSize: 14,
-          color: item.have_it ? tokens.ink : tokens.muted,
-          textDecorationLine: item.have_it ? 'none' : 'none',
-          paddingVertical: 14,
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: iconBg,
         }}
-        numberOfLines={1}
       >
-        {item.name}
-      </Text>
-
-      {/* Delete */}
-      <Pressable
-        onPress={() => onDelete(item)}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${item.name}`}
-        style={({ pressed }) => ({
-          opacity: pressed ? 0.5 : 0.3,
-          padding: 4,
-        })}
+        <Text style={{ fontSize: 15, fontWeight: '700', color: iconColor }}>
+          {iconChar}
+        </Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 14,
+            color: tokens.ink,
+          }}
+          numberOfLines={1}
+        >
+          {name}
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: 11,
+            color: tokens.muted,
+            marginTop: 2,
+          }}
+          numberOfLines={1}
+        >
+          {meta}
+        </Text>
+      </View>
+      <View
+        style={{
+          backgroundColor: tagBg,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderRadius: 6,
+        }}
       >
-        <Icon name="x" size={14} color={tokens.ink} />
-      </Pressable>
-
-      {/* Toggle */}
-      <PantryToggle value={item.have_it} onToggle={() => onToggle(item)} />
-    </View>
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 10,
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+            color: tagColor,
+          }}
+        >
+          {tagText}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
-// ── Suggestions sheet ─────────────────────────────────────────────────────────
-
-function SuggestionsSheet({
-  matches,
-  onClose,
-  onViewRecipe,
+function QuickPill({
+  icon,
+  label,
+  onPress,
 }: {
-  matches: RecipeMatchResult[];
-  onClose: () => void;
-  onViewRecipe: (id: string) => void;
+  icon: string;
+  label: string;
+  onPress: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: tokens.bg,
-        paddingTop: insets.top + 8,
-      }}
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        paddingVertical: 9,
+        paddingHorizontal: 14,
+        backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+        borderWidth: 1,
+        borderColor: tokens.lineDark,
+        borderRadius: 999,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+      })}
     >
-      {/* Header */}
-      <View
+      <Text style={{ fontSize: 14 }}>{icon}</Text>
+      <Text
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 20,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: tokens.line,
+          fontFamily: fonts.sansBold,
+          fontSize: 12,
+          color: tokens.inkSoft,
         }}
       >
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 10,
-              letterSpacing: 1.5,
-              textTransform: 'uppercase',
-              color: tokens.sage,
-              marginBottom: 4,
-            }}
-          >
-            Ready to cook
-          </Text>
-          <Text
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 24,
-              color: tokens.ink,
-            }}
-          >
-            {matches.length} recipe{matches.length !== 1 ? 's' : ''} you can make
-          </Text>
-        </View>
-        <Pressable
-          onPress={onClose}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Close suggestions"
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function Pill({
+  item,
+  fresh,
+  onRemove,
+}: {
+  item: PantryItem;
+  fresh: boolean;
+  onRemove: () => void;
+}) {
+  const bg = fresh ? tokens.primaryLight : tokens.sageLight;
+  const fg = fresh ? tokens.primaryDeep : tokens.sageDeep;
+  const xBg = fresh ? 'rgba(184,109,69,0.18)' : 'rgba(77,128,112,0.18)';
+  return (
+    <Animated.View
+      entering={FadeIn.duration(180)}
+      exiting={FadeOut.duration(140)}
+      layout={LinearTransition.duration(180)}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 9,
+        paddingHorizontal: 14,
+        backgroundColor: bg,
+        borderRadius: 999,
+        minHeight: 36,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: fonts.sansBold,
+          fontSize: 13,
+          color: fg,
+        }}
+      >
+        {item.name}
+      </Text>
+      <Pressable
+        onPress={onRemove}
+        hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel={`Remove ${item.name}`}
+        style={{
+          width: 18,
+          height: 18,
+          borderRadius: 999,
+          backgroundColor: xBg,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginLeft: 2,
+          marginRight: -4,
+        }}
+      >
+        <Text
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: tokens.bgDeep,
-            alignItems: 'center',
-            justifyContent: 'center',
+            fontSize: 11,
+            fontFamily: fonts.sansBold,
+            color: fg,
+            lineHeight: 13,
           }}
         >
-          <Icon name="x" size={16} color={tokens.ink} />
-        </Pressable>
-      </View>
+          ×
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+}
 
-      {/* List */}
-      {matches.map((m, idx) => (
-        <Pressable
-          key={m.recipe.id}
-          onPress={() => onViewRecipe(m.recipe.id)}
-          style={({ pressed }) => ({
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            gap: 14,
-            backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-            borderBottomWidth: idx < matches.length - 1 ? 1 : 0,
-            borderBottomColor: tokens.line,
-          })}
-        >
+function RecipeMatchCard({
+  match,
+  shopping,
+  onOpenRecipe,
+  onToggleShopping,
+}: {
+  match: RecipeMatchResult;
+  shopping: Set<string>;
+  onOpenRecipe: () => void;
+  onToggleShopping: (name: string) => void;
+}) {
+  const pct = match.totalCount > 0
+    ? Math.round((match.haveCount / match.totalCount) * 100)
+    : 0;
+  const ringColor =
+    pct === 100 ? tokens.sage : pct >= 70 ? tokens.ochre : tokens.primary;
+  const ringBg =
+    pct === 100
+      ? tokens.sageLight
+      : pct >= 70
+      ? 'rgba(196,160,90,0.20)'
+      : tokens.primaryLight;
+  const allReady = match.totalCount === match.haveCount;
+  return (
+    <Pressable
+      onPress={onOpenRecipe}
+      style={({ pressed }) => ({
+        width: 260,
+        backgroundColor: tokens.cream,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: tokens.line,
+        overflow: 'hidden',
+        opacity: pressed ? 0.9 : 1,
+      })}
+    >
+      {/* Photo + percentage ring */}
+      <View
+        style={{
+          height: 130,
+          backgroundColor: tokens.bgDeep,
+          position: 'relative',
+        }}
+      >
+        {match.recipe.hero_url ? (
+          <Image
+            source={{ uri: match.recipe.hero_url }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        ) : (
           <View
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              backgroundColor: tokens.sageLight,
+              flex: 1,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Icon name="check-circle" size={20} color={tokens.sage} />
+            <Text style={{ fontSize: 38 }}>{match.recipe.emoji ?? '🍳'}</Text>
           </View>
-          <View style={{ flex: 1 }}>
+        )}
+        <View
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            backgroundColor: ringBg,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+            borderRadius: 999,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: fonts.sansXBold,
+              fontSize: 13,
+              color: ringColor,
+            }}
+          >
+            {pct}%
+          </Text>
+        </View>
+        {!allReady && (
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 10,
+              left: 10,
+              backgroundColor: 'rgba(29,25,23,0.7)',
+              paddingHorizontal: 9,
+              paddingVertical: 5,
+              borderRadius: 999,
+            }}
+          >
             <Text
               style={{
                 fontFamily: fonts.sansBold,
-                fontSize: 14,
-                color: tokens.ink,
-              }}
-              numberOfLines={1}
-            >
-              {m.recipe.title}
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 12,
-                color: tokens.muted,
-                marginTop: 2,
+                fontSize: 10,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                color: '#FFF',
               }}
             >
-              All {m.totalCount} ingredients in your pantry
+              Missing {match.totalCount - match.haveCount} of {match.totalCount}
             </Text>
           </View>
-          <Icon name="arrow-right" size={14} color={tokens.line} />
-        </Pressable>
-      ))}
-    </View>
+        )}
+      </View>
+      {/* Body */}
+      <View style={{ padding: 14 }}>
+        <Text
+          style={{
+            fontFamily: fonts.display,
+            fontSize: 15,
+            lineHeight: 19,
+            color: tokens.ink,
+            marginBottom: 8,
+          }}
+          numberOfLines={2}
+        >
+          {match.recipe.title}
+        </Text>
+        {allReady ? (
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              paddingVertical: 7,
+              paddingHorizontal: 12,
+              backgroundColor: tokens.sageLight,
+              borderRadius: 999,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 12,
+                color: tokens.sageDeep,
+              }}
+            >
+              ✓ Tap to cook
+            </Text>
+          </View>
+        ) : (
+          <View>
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 10,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                color: tokens.muted,
+                marginBottom: 6,
+              }}
+            >
+              Tap to add to shopping list
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 6,
+              }}
+            >
+              {match.missingNames.map((name) => {
+                const added = shopping.has(name);
+                return (
+                  <Pressable
+                    key={name}
+                    onPress={() => onToggleShopping(name)}
+                    style={({ pressed }) => ({
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      backgroundColor: added ? tokens.sageLight : tokens.bgDeep,
+                      borderWidth: 1,
+                      borderColor: added ? 'transparent' : tokens.lineDark,
+                      borderStyle: added ? 'solid' : 'dashed',
+                      borderRadius: 8,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 5,
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: fonts.sansBold,
+                        fontSize: 11,
+                        color: added ? tokens.sageDeep : tokens.inkSoft,
+                      }}
+                    >
+                      {added ? '✓' : '+'}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: fonts.sansBold,
+                        fontSize: 12,
+                        color: added ? tokens.sageDeep : tokens.inkSoft,
+                      }}
+                    >
+                      {name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+      </View>
+    </Pressable>
   );
+}
+
+// ── Tiny utils ───────────────────────────────────────────────────────────────
+
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
