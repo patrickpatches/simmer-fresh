@@ -1,9 +1,24 @@
 /**
- * SQLite schema — CREATE TABLE statements.
- * Each string is run once during initDatabase.
- * Foreign keys with ON DELETE CASCADE keep child rows tidy when a recipe is deleted.
+ * SQLite schema — CREATE TABLE statements + migration system.
+ *
+ * SCHEMA_SQL: run once on a fresh install (CREATE TABLE IF NOT EXISTS).
+ * SCHEMA_MIGRATIONS: ALTER TABLE statements keyed by version number.
+ *   initDatabase runs any migration whose version > current PRAGMA user_version,
+ *   then sets user_version to the latest applied version.
+ *
+ * Adding a new column:
+ *   1. Add it to SCHEMA_SQL (for fresh installs).
+ *   2. Add an entry to SCHEMA_MIGRATIONS (for existing installs).
+ *   3. Bump SCHEMA_VERSION.
  */
 
+/** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
+export const SCHEMA_VERSION = 5;
+
+/**
+ * Full schema for a fresh install.
+ * Each string is run once via execAsync.
+ */
 export const SCHEMA_SQL: string[] = [
   `CREATE TABLE IF NOT EXISTS recipes (
     id                     TEXT PRIMARY KEY,
@@ -24,20 +39,23 @@ export const SCHEMA_SQL: string[] = [
     generated_by_claude    INTEGER NOT NULL DEFAULT 0,
     leftover_extra_servings INTEGER,
     leftover_note          TEXT,
+    categories             TEXT,
+    whole_food_verified    INTEGER,
     created_at             TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
 
   `CREATE TABLE IF NOT EXISTS ingredients (
-    id          TEXT NOT NULL,
-    recipe_id   TEXT NOT NULL,
-    sort_order  INTEGER NOT NULL DEFAULT 0,
-    name        TEXT NOT NULL,
-    amount      REAL NOT NULL DEFAULT 0,
-    unit        TEXT NOT NULL DEFAULT '',
-    scales      TEXT NOT NULL DEFAULT 'linear',
-    cap         REAL,
-    prep        TEXT,
-    curve       TEXT,
+    id            TEXT NOT NULL,
+    recipe_id     TEXT NOT NULL,
+    sort_order    INTEGER NOT NULL DEFAULT 0,
+    name          TEXT NOT NULL,
+    amount        REAL NOT NULL DEFAULT 0,
+    unit          TEXT NOT NULL DEFAULT '',
+    scales        TEXT NOT NULL DEFAULT 'linear',
+    cap           REAL,
+    prep          TEXT,
+    curve         TEXT,
+    substitutions TEXT,
     PRIMARY KEY (id, recipe_id),
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
   )`,
@@ -75,7 +93,16 @@ export const SCHEMA_SQL: string[] = [
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
   )`,
 
-  `CREATE TABLE IF NOT EXISTS favorites (
+  `CREATE TABLE IF NOT EXISTS shopping_extras (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    amount      REAL NOT NULL DEFAULT 0,
+    unit        TEXT NOT NULL DEFAULT '',
+    category    TEXT NOT NULL DEFAULT 'Pantry Staples',
+    created_at  INTEGER NOT NULL
+  )`,
+
+    `CREATE TABLE IF NOT EXISTS favorites (
     recipe_id  TEXT PRIMARY KEY,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
@@ -98,4 +125,72 @@ export const SCHEMA_SQL: string[] = [
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
   )`,
+
+  `CREATE TABLE IF NOT EXISTS ingredient_swaps (
+    id            TEXT PRIMARY KEY,
+    recipe_id     TEXT NOT NULL,
+    ingredient_id TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    swap_name     TEXT NOT NULL,
+    quantity_note TEXT,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+  )`,
 ];
+
+/**
+ * Migration steps for existing installs.
+ *
+ * Key = the version NUMBER this migration brings the DB to.
+ * Value = array of SQL statements to run in order.
+ *
+ * Version 1 = original schema (no explicit user_version set).
+ * Version 2 = Phase 2 additions: categories, whole_food_verified, substitutions.
+ * Version 3 = ingredient_swaps table for persistent cross-screen swap state.
+ */
+export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
+  2: [
+    `ALTER TABLE recipes ADD COLUMN categories TEXT`,
+    `ALTER TABLE recipes ADD COLUMN whole_food_verified INTEGER`,
+    `ALTER TABLE ingredients ADD COLUMN substitutions TEXT`,
+  ],
+  3: [
+    `CREATE TABLE IF NOT EXISTS ingredient_swaps (
+      id            TEXT PRIMARY KEY,
+      recipe_id     TEXT NOT NULL,
+      ingredient_id TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      swap_name     TEXT NOT NULL,
+      quantity_note TEXT,
+      created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    )`,
+  ],
+  4: [
+    `CREATE TABLE IF NOT EXISTS shopping_extras (
+      id          TEXT PRIMARY KEY,
+      name        TEXT NOT NULL,
+      amount      REAL NOT NULL DEFAULT 0,
+      unit        TEXT NOT NULL DEFAULT '',
+      category    TEXT NOT NULL DEFAULT 'Pantry Staples',
+      created_at  INTEGER NOT NULL
+    )`,
+  ],
+  5: [
+    // Source-tracked shopping list. Replaces shopping_extras going forward;
+    // shopping_extras stays in the schema for backwards compatibility but
+    // is no longer written to. New code reads/writes shopping_items.
+    `CREATE TABLE IF NOT EXISTS shopping_items (
+      id              TEXT PRIMARY KEY,
+      name            TEXT NOT NULL,
+      category        TEXT NOT NULL DEFAULT 'Pantry Staples',
+      quantity        REAL,
+      unit            TEXT,
+      notes           TEXT,
+      manually_added  INTEGER NOT NULL DEFAULT 0,
+      in_cart         INTEGER NOT NULL DEFAULT 0,
+      added_at        INTEGER NOT NULL DEFAULT 0,
+      sources_json    TEXT NOT NULL DEFAULT '[]'
+    )`,
+  ],
+};
