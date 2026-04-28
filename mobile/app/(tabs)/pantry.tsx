@@ -55,6 +55,7 @@ import * as Haptics from 'expo-haptics';
 
 import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
+import { VersionFooter } from '../../src/components/VersionFooter';
 import {
   getAllRecipes,
   getPantryItems,
@@ -815,6 +816,7 @@ export default function PantryTab() {
             </ScrollView>
           </View>
         )}
+        <VersionFooter paddingBottom={32} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

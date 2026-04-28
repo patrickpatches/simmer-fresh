@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Hone",
-    "slug": "hone",
-    "scheme": "hone",
-    "version": "0.9.0",
+    "name": "Simmer Fresh",
+    "slug": "simmer-fresh",
+    "scheme": "simmerfresh",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -15,20 +15,21 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.patricknasr.hone"
+      "bundleIdentifier": "com.patricknasr.simmerfresh"
     },
     "android": {
-      "package": "com.patricknasr.hone",
+      "package": "com.patricknasr.simmerfresh",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#F9C43F"
+        "backgroundColor": "#F5F0E8"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.WAKE_LOCK"
-      ]
+      ],
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -42,12 +43,8 @@
     "experiments": {
       "typedRoutes": true
     },
-    "extra": {
-      "eas": {
-        "projectId": "0006cb61-e3ae-4433-955e-5d02f5dd078d"
-      }
-    },
-    "owner": "patrick-nasr"
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
-
