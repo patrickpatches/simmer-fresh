@@ -320,9 +320,33 @@
     background-position:center;
     position:relative;
   }
+  .recipe-photo .pct-ring{
+    position:absolute;
+    top:10px;right:10px;
+    min-width:46px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.3px;
+    text-align:center;
+    backdrop-filter:blur(8px);
+    background:rgba(255,255,255,.92);
+    box-shadow:0 1px 4px rgba(0,0,0,.12);
+  }
+  .ready-pill{
+    display:inline-block;
+    padding:7px 12px;
+    background:var(--sageLight);
+    color:var(--sageDeep);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.5px;
+    border-radius:999px;
+  }
   .recipe-photo .badge{
     position:absolute;
-    top:10px;left:10px;
+    bottom:10px;left:10px;
     background:rgba(29,25,23,.7);
     color:white;
     font-size:10px;
@@ -462,13 +486,12 @@
     <span class="card-title">In your pantry</span>
     <span class="card-count" id="pantry-count">0 items</span>
   </div>
-  <div class="pill-flow" id="pill-flow">
-    <div class="empty-pantry" id="empty-state">
-      <span class="arrow">↑</span>
-      Type above to add your first ingredient.<br>
-      We'll suggest as you type.
-    </div>
+  <div class="empty-pantry" id="empty-state">
+    <span class="arrow">↑</span>
+    Type above to add your first ingredient.<br>
+    We'll suggest as you type.
   </div>
+  <div class="pill-flow" id="pill-flow"></div>
   <button class="show-all hidden" id="show-all">Show all <span id="show-all-count"></span></button>
 </div>
 
@@ -579,6 +602,26 @@ const RECIPES = [
     title: 'Cumin-roasted carrots & yoghurt',
     img: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=70',
     needs: ['Olive oil','Cumin','Garlic','Greek yoghurt','Salt'],
+  },
+  {
+    title: 'Pasta with parsley, lemon & parmesan',
+    img: 'https://images.unsplash.com/photo-1598866594230-a7c12756260f?auto=format&fit=crop&w=600&q=70',
+    needs: ['Pasta','Parsley','Lemon','Parmesan','Olive oil','Black pepper'],
+  },
+  {
+    title: 'Garlic-butter prawns on toast',
+    img: 'https://images.unsplash.com/photo-1633504581786-316c8002b1b9?auto=format&fit=crop&w=600&q=70',
+    needs: ['Prawns','Garlic','Unsalted butter','Lemon','Parsley','Salt'],
+  },
+  {
+    title: 'Smoky paprika roast chicken',
+    img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=70',
+    needs: ['Chicken thigh','Smoked paprika','Olive oil','Garlic','Lemon','Salt'],
+  },
+  {
+    title: 'Tomato & basil pasta',
+    img: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=70',
+    needs: ['Pasta','Canned tomatoes','Garlic','Basil','Olive oil','Parmesan'],
   },
 ];
 
@@ -695,37 +738,36 @@ function acTapAdd(name, cat){
 // ── Pantry render ─────────────────────────────────────────────────
 function render(){
   const items = Array.from(pantry.values()).sort((a,b)=> b.addedAt - a.addedAt);
-  const $flow = document.getElementById('pill-flow');
-  const $empty = document.getElementById('empty-state');
-  const $count = document.getElementById('pantry-count');
+  const $flow    = document.getElementById('pill-flow');
+  const $empty   = document.getElementById('empty-state');
+  const $count   = document.getElementById('pantry-count');
   const $stocked = document.getElementById('stocked-count');
   const $showAll = document.getElementById('show-all');
 
   $stocked.textContent = `${items.length} ingredient${items.length===1?'':'s'} stocked`;
-  $count.textContent = `${items.length} item${items.length===1?'':'s'}`;
+  $count.textContent   = `${items.length} item${items.length===1?'':'s'}`;
 
   if (items.length === 0) {
-    $empty.style.display='block';
-    $flow.querySelectorAll('.pill').forEach(p => p.remove());
+    if ($empty) $empty.style.display = 'block';
+    $flow.innerHTML = '';
     $showAll.classList.add('hidden');
   } else {
-    $empty.style.display='none';
+    if ($empty) $empty.style.display = 'none';
     const cap = 14;
     const visible = items.slice(0, cap);
-    $flow.innerHTML = visible.map(it => `
-      <span class="pill ${it.freshlyAdded?'fresh':''}" data-pill="${it.name}">
-        ${it.name}
-        <button class="x" onclick="removePill('${it.name}')">×</button>
-      </span>
-    `).join('');
+    $flow.innerHTML = visible.map(it => (
+      `<span class="pill ${it.freshlyAdded?'fresh':''}" data-pill="${it.name}">`
+      + `${it.name}`
+      + `<button class="x" onclick="removePill('${it.name}')" aria-label="Remove ${it.name}">×</button>`
+      + `</span>`
+    )).join('');
     if (items.length > cap){
       $showAll.classList.remove('hidden');
       $showAll.textContent = `Show all ${items.length}`;
     } else {
       $showAll.classList.add('hidden');
     }
-    // After 1.5s, "fresh" decay so they sort into chronology naturally next session
-    setTimeout(() => { items.forEach(it => it.freshlyAdded=false); }, 1500);
+    setTimeout(() => { items.forEach(it => it.freshlyAdded = false); }, 1500);
   }
 
   renderRecipes();
@@ -744,63 +786,86 @@ function renderRecipes(){
   STAPLES.forEach(s => {
     if (pantry.has(s.name) && s.aliases) s.aliases.forEach(a => aliasHave.add(norm(a)));
   });
-
   const isCovered = ing => have.has(norm(ing)) || aliasHave.has(norm(ing));
 
   const scored = RECIPES.map(r => {
     const missing = r.needs.filter(n => !isCovered(n));
-    return { ...r, missing, missingCount: missing.length, total: r.needs.length };
+    const haveCount = r.needs.length - missing.length;
+    const pct = Math.round((haveCount / r.needs.length) * 100);
+    return { ...r, missing, missingCount: missing.length, haveCount, total: r.needs.length, pct };
   });
 
-  // ── B: Almost there (missing 1–2) ──
-  const almost = scored.filter(r => r.missingCount > 0 && r.missingCount <= 2)
-                       .sort((a,b)=>a.missingCount - b.missingCount);
   const $almost = document.getElementById('almost-section');
   const $car    = document.getElementById('almost-carousel');
   const $sub    = document.getElementById('almost-sub');
+  const $title  = document.querySelector('#almost-section .section-title');
 
-  if (almost.length === 0 || pantry.size < 2) {
-    $almost.style.display='none';
+  // Show top 6 by match %, but only those with at least one ingredient covered.
+  // Hide entire section if pantry is empty.
+  const ranked = scored
+    .filter(r => r.haveCount > 0)
+    .sort((a,b) => (b.pct - a.pct) || (a.total - b.total))
+    .slice(0, 6);
+
+  if (pantry.size === 0 || ranked.length === 0) {
+    $almost.style.display = 'none';
   } else {
-    $almost.style.display='block';
-    $sub.textContent = `${almost.length} dish${almost.length===1?'':'es'} · 1–2 missing`;
-    $car.innerHTML = almost.map(r => `
-      <div class="recipe-card">
+    $almost.style.display = 'block';
+    const fullMatches = ranked.filter(r => r.missingCount === 0).length;
+    if (fullMatches > 0) {
+      $title.textContent = 'Ready to cook';
+      $sub.textContent = `${fullMatches} ready · ${ranked.length - fullMatches} close`;
+    } else {
+      $title.textContent = 'Closest matches';
+      $sub.textContent = `${ranked.length} dish${ranked.length===1?'':'es'} · ranked by match`;
+    }
+    $car.innerHTML = ranked.map(r => {
+      const ringColor = r.pct === 100 ? 'var(--sage)'
+                      : r.pct >= 70  ? 'var(--ochre)'
+                      : 'var(--primary)';
+      const ringBg = r.pct === 100 ? 'var(--sageLight)'
+                   : r.pct >= 70  ? 'rgba(196,160,90,0.18)'
+                   : 'var(--primaryLight)';
+      const badgeText = r.missingCount === 0
+        ? 'You have it all'
+        : `Missing ${r.missingCount} of ${r.total}`;
+      const needsBlock = r.missingCount === 0
+        ? `<div class="ready-pill">✓ Tap to cook</div>`
+        : `<div class="recipe-need-label">Tap to add to shopping list</div>
+           <div class="recipe-needs">
+             ${r.missing.map(m => (
+               `<button class="need-chip ${shoppingList.has(m)?'added':''}" onclick="addToShopping('${m}', this)">`
+               + `<span class="ico">${shoppingList.has(m)?'✓':'+'}</span>${m}`
+               + `</button>`
+             )).join('')}
+           </div>`;
+      return `<div class="recipe-card">
         <div class="recipe-photo" style="background-image:url('${r.img}')">
-          <div class="badge">${r.missingCount} missing</div>
+          <div class="pct-ring" style="background:${ringBg};color:${ringColor}">${r.pct}%</div>
+          <div class="badge">${badgeText}</div>
         </div>
         <div class="recipe-body">
           <div class="recipe-title">${r.title}</div>
-          <div class="recipe-need-label">Tap to add to shopping list</div>
-          <div class="recipe-needs">
-            ${r.missing.map(m => `
-              <button class="need-chip ${shoppingList.has(m)?'added':''}" onclick="addToShopping('${m}', this)">
-                <span class="ico">${shoppingList.has(m)?'✓':'+'}</span>${m}
-              </button>
-            `).join('')}
-          </div>
+          ${needsBlock}
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
-  // ── C: One ingredient unlocks more ──
+  // ── Unlock card: which single ingredient unlocks the most? ──
   const unlockCounts = {};
   scored.forEach(r => {
-    if (r.missingCount === 0) return;
-    if (r.missingCount > 3) return; // only count near-misses
-    r.missing.forEach(m => {
-      unlockCounts[m] = (unlockCounts[m] || 0) + 1;
-    });
+    if (r.missingCount === 0 || r.missingCount > 3) return;
+    r.missing.forEach(m => { unlockCounts[m] = (unlockCounts[m] || 0) + 1; });
   });
-  const ranked = Object.entries(unlockCounts).sort((a,b)=>b[1]-a[1]);
+  const rankedUnlock = Object.entries(unlockCounts).sort((a,b)=>b[1]-a[1]);
   const $unlock = document.getElementById('unlock-card');
-  if (ranked.length === 0 || ranked[0][1] < 2 || pantry.size < 3) {
-    $unlock.style.display='none';
+  if (rankedUnlock.length === 0 || rankedUnlock[0][1] < 2 || pantry.size < 2) {
+    $unlock.style.display = 'none';
   } else {
-    $unlock.style.display='flex';
-    document.getElementById('unlock-ingredient').textContent = ranked[0][0];
-    document.getElementById('unlock-count').textContent = ranked[0][1];
+    $unlock.style.display = 'flex';
+    document.getElementById('unlock-ingredient').textContent = rankedUnlock[0][0].toLowerCase();
+    document.getElementById('unlock-count').textContent = rankedUnlock[0][1];
   }
 }
 
