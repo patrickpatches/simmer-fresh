@@ -29,6 +29,10 @@ jobs:
           mkdir -p _site
           # index.html is the deployed PWA (renamed from simmer-fresh.html on first push)
           cp index.html _site/index.html
+          # Prototype mocks — visible at /hone/<name>.html for testing
+          for f in pantry-redesign.html; do
+            [ -f "$f" ] && cp "$f" "_site/$f"
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
