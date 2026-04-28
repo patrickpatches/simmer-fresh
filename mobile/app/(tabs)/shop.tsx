@@ -21,7 +21,12 @@
  *   - One-tap undo when meal removal silently nukes items.
  *   - Share button exports the list as plain text via expo-sharing.
  *   - Voice add stubbed for v1 (full impl needs expo-speech-recognition).
- *   - Drag-to-reorder aisles deferred to v1.1 (needs draggable-flatlist).
+ *   - Drag-to-reorder aisles deferred — the v0.3.0 implementation used
+ *     react-native-draggable-flatlist, whose underlying PanGestureHandler
+ *     swallows vertical scroll on the web build (Chrome on Android),
+ *     leaving items past the visible viewport unreachable. Reverted to a
+ *     plain ScrollView so the list always scrolls. When we revisit
+ *     reordering it should sit behind an explicit "reorder" mode toggle.
  *
  * Persistence: every state change writes back via replaceShoppingItems
  * (atomic transaction) so the list survives a relaunch unchanged.
@@ -44,10 +49,6 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from 'react-native-reanimated';
-import DraggableFlatList, {
-  type RenderItemParams,
-  type DragEndParams,
-} from 'react-native-draggable-flatlist';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -58,11 +59,9 @@ import { Icon } from '../../src/components/Icon';
 import { VersionFooter } from '../../src/components/VersionFooter';
 import {
   getAllRecipes,
-  getMetaValue,
   getPlannedEntries,
   getShoppingItems,
   replaceShoppingItems,
-  setMetaValue,
   type ShoppingItem,
   type ShoppingSource,
 } from '../../db/database';
@@ -92,7 +91,6 @@ import { scaleIngredient } from '../../src/data/scale';
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const UNDO_TIMEOUT_MS = 5500;
-const AISLE_ORDER_META_KEY = 'shop_aisle_order';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -120,13 +118,6 @@ export default function ShopTab() {
   >([]);
   const [loading, setLoading] = useState(true);
 
-  // User-customisable aisle order, persisted in app_meta. Falls back to the
-  // canonical entrance-to-checkout walk order on first run or when the
-  // saved order is missing/corrupt.
-  const [aisleOrder, setAisleOrder] = useState<PantryCategory[]>([
-    ...SHOPPING_SECTION_ORDER,
-  ]);
-
   const [search, setSearch] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -152,38 +143,6 @@ export default function ShopTab() {
   }, []);
 
   const inputRef = useRef<TextInput>(null);
-
-  // ── Restore saved aisle order once on mount ────────────────────────────────
-  // Lives in app_meta as a JSON string. We validate against the canonical set
-  // so a future schema change (new category) doesn't strand stored data.
-  useEffect(() => {
-    let cancelled = false;
-    getMetaValue(db, AISLE_ORDER_META_KEY)
-      .then((stored) => {
-        if (cancelled || !stored) return;
-        try {
-          const parsed = JSON.parse(stored);
-          if (!Array.isArray(parsed)) return;
-          const valid = parsed.filter((c): c is PantryCategory =>
-            (SHOPPING_SECTION_ORDER as readonly string[]).includes(c),
-          );
-          // Append any canonical category that isn't in the stored order.
-          // Defends against future additions to PantryCategory.
-          for (const c of SHOPPING_SECTION_ORDER) {
-            if (!valid.includes(c)) valid.push(c);
-          }
-          if (valid.length === SHOPPING_SECTION_ORDER.length) {
-            setAisleOrder(valid);
-          }
-        } catch {
-          // Corrupt JSON — fall back to defaults silently.
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [db]);
 
   // ── Load whenever the tab is focused ───────────────────────────────────────
   // useFocusEffect re-runs when the user switches back to this tab so any
@@ -376,20 +335,20 @@ export default function ShopTab() {
       suggestions.catalog.length > 0 ||
       suggestions.allowAddNew);
 
-  // ── Aisle sections (custom user order, persisted) ─────────────────────────
+  // ── Aisle sections (canonical entrance-to-checkout walk order) ────────────
   const sections = useMemo(() => {
     const buckets = new Map<PantryCategory, ShoppingItem[]>();
-    for (const cat of aisleOrder) buckets.set(cat, []);
+    for (const cat of SHOPPING_SECTION_ORDER) buckets.set(cat, []);
     for (const it of items) {
       const cat =
-        (aisleOrder as readonly string[]).includes(it.category)
+        (SHOPPING_SECTION_ORDER as readonly string[]).includes(it.category)
           ? (it.category as PantryCategory)
           : 'Pantry Staples';
       buckets.get(cat)!.push(it);
     }
     // Within each section: in-cart items drop to the bottom (struck-through)
     // so the eye lands on what's still to buy.
-    return aisleOrder
+    return SHOPPING_SECTION_ORDER
       .map((cat) => ({
         cat,
         label: SHOPPING_SECTION_LABEL[cat],
@@ -400,37 +359,7 @@ export default function ShopTab() {
         }),
       }))
       .filter((s) => s.items.length > 0);
-  }, [items, aisleOrder]);
-
-  type AisleSection = (typeof sections)[number];
-
-  // ── Drag-to-reorder ───────────────────────────────────────────────────────
-  // Only sections with items are draggable. Reordering preserves the
-  // positions of empty categories in the saved order, so when an item
-  // later lands in a previously-empty category it still appears in the
-  // user's preferred slot.
-  const handleDragEnd = useCallback(
-    ({ data }: DragEndParams<AisleSection>) => {
-      const visibleCats = data.map((s) => s.cat);
-      const visiblePositions: number[] = [];
-      aisleOrder.forEach((c, i) => {
-        if (visibleCats.includes(c)) visiblePositions.push(i);
-      });
-      const next = [...aisleOrder];
-      visiblePositions.forEach((pos, i) => {
-        next[pos] = visibleCats[i];
-      });
-      // No-op guard — avoids a write when the drop returns to its origin.
-      const same = next.every((c, i) => c === aisleOrder[i]);
-      if (same) return;
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      setAisleOrder(next);
-      setMetaValue(db, AISLE_ORDER_META_KEY, JSON.stringify(next)).catch(
-        (e) => console.error('persist aisle order failed', e),
-      );
-    },
-    [aisleOrder, db],
-  );
+  }, [items]);
 
   const totalCount = items.length;
   const tickedCount = items.filter((it) => it.in_cart).length;
@@ -710,7 +639,7 @@ export default function ShopTab() {
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 140, paddingTop: 4 }}
+          contentContainerStyle={{ paddingBottom: 160, paddingTop: 4 }}
         >
           <PlanSummary
             plannedCount={plannedRecipeIds.length}
@@ -771,73 +700,61 @@ export default function ShopTab() {
           <VersionFooter paddingBottom={32} />
         </ScrollView>
       ) : (
-        <DraggableFlatList<AisleSection>
-          data={sections}
-          keyExtractor={(s) => s.cat}
-          onDragEnd={handleDragEnd}
-          activationDistance={12}
+        <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 140, paddingTop: 4 }}
-          ListHeaderComponent={
-            <PlanSummary
-              plannedCount={plannedRecipeIds.length}
-              fromMeals={fromMealsCount}
-              manual={manualCount}
-            />
-          }
-          ListFooterComponent={
-            <View>
-              {tickedCount > 0 && (
-                <View
-                  style={{
-                    marginHorizontal: 20,
-                    marginTop: 8,
-                    marginBottom: 16,
-                  }}
-                >
-                  <Pressable
-                    onPress={clearTicked}
-                    style={({ pressed }) => ({
-                      paddingVertical: 14,
-                      borderRadius: 14,
-                      backgroundColor: pressed
-                        ? tokens.bgDeep
-                        : 'transparent',
-                      borderWidth: 1,
-                      borderColor: tokens.lineDark,
-                      alignItems: 'center',
-                    })}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: fonts.sansBold,
-                        fontSize: 13,
-                        color: tokens.inkSoft,
-                      }}
-                    >
-                      Clear {tickedCount} ticked item
-                      {tickedCount === 1 ? '' : 's'}
-                    </Text>
-                  </Pressable>
-                </View>
-              )}
-              <VersionFooter paddingBottom={32} />
-            </View>
-          }
-          renderItem={({ item, drag, isActive }: RenderItemParams<AisleSection>) => (
+          contentContainerStyle={{ paddingBottom: 160, paddingTop: 4 }}
+        >
+          <PlanSummary
+            plannedCount={plannedRecipeIds.length}
+            fromMeals={fromMealsCount}
+            manual={manualCount}
+          />
+          {sections.map((item) => (
             <Section
+              key={item.cat}
               label={item.label}
               emoji={item.emoji}
               items={item.items}
               onToggle={handleToggleInCart}
               onRemove={handleRemove}
               onLongPress={(it) => setSourceSheetItem(it)}
-              drag={drag}
-              isActive={isActive}
             />
+          ))}
+          {tickedCount > 0 && (
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginTop: 8,
+                marginBottom: 16,
+              }}
+            >
+              <Pressable
+                onPress={clearTicked}
+                style={({ pressed }) => ({
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                  borderWidth: 1,
+                  borderColor: tokens.lineDark,
+                  alignItems: 'center',
+                })}
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 13,
+                    color: tokens.inkSoft,
+                  }}
+                >
+                  Clear {tickedCount} ticked item
+                  {tickedCount === 1 ? '' : 's'}
+                </Text>
+              </Pressable>
+            </View>
           )}
-        />
+          <VersionFooter paddingBottom={32} />
+        </ScrollView>
       )}
 
       {/* Undo toast */}
@@ -1098,8 +1015,6 @@ function Section({
   onToggle,
   onRemove,
   onLongPress,
-  drag,
-  isActive,
 }: {
   label: string;
   emoji: string;
@@ -1107,24 +1022,10 @@ function Section({
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
   onLongPress: (it: ShoppingItem) => void;
-  drag: () => void;
-  isActive: boolean;
 }) {
   return (
-    <View
-      style={{
-        marginTop: 6,
-        marginBottom: 4,
-        opacity: isActive ? 0.92 : 1,
-        transform: [{ scale: isActive ? 1.02 : 1 }],
-      }}
-    >
-      {/* Header — long-press anywhere to drag, or grab the grip on the right. */}
-      <Pressable
-        onLongPress={drag}
-        delayLongPress={220}
-        accessibilityRole="button"
-        accessibilityLabel={`Drag ${label} section to reorder`}
+    <View style={{ marginTop: 6, marginBottom: 4 }}>
+      <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -1154,18 +1055,16 @@ function Section({
         >
           ({items.length})
         </Text>
-        <View style={{ flex: 1 }} />
-        <Icon name="grip" size={16} color={tokens.muted} />
-      </Pressable>
+      </View>
       <View
         style={{
           marginHorizontal: 20,
           backgroundColor: tokens.cream,
           borderRadius: 14,
           borderWidth: 1,
-          borderColor: isActive ? tokens.primary : tokens.line,
+          borderColor: tokens.line,
           overflow: 'hidden',
-          ...(isActive ? shadows.cardLifted : shadows.card),
+          ...shadows.card,
         }}
       >
         {items.map((it, idx) => (
@@ -1232,7 +1131,7 @@ function ShopRow({
         }}
       >
         {item.in_cart && (
-          <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '900' }}>
+          <Text style={{ color: tokens.ink, fontSize: 13, fontWeight: '900' }}>
             ✓
           </Text>
         )}
