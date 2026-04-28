@@ -409,7 +409,7 @@ export default function PantryTab() {
           justifyContent: 'center',
         }}
       >
-        <ActivityIndicator color={tokens.primary} />
+        <ActivityIndicator color={tokens.primaryInk} />
       </View>
     );
   }

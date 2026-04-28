@@ -117,7 +117,7 @@ export default function KitchenHome() {
           justifyContent: 'center',
         }}
       >
-        <ActivityIndicator color={tokens.primary} />
+        <ActivityIndicator color={tokens.primaryInk} />
       </View>
     );
   }
@@ -146,7 +146,7 @@ export default function KitchenHome() {
               fontSize: 11,
               letterSpacing: 2,
               textTransform: 'uppercase',
-              color: tokens.primary,
+              color: tokens.primaryInk,
               marginBottom: 4,
             }}
           >

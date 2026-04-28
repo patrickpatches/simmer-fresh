@@ -409,7 +409,7 @@ export default function ShopTab() {
           justifyContent: 'center',
         }}
       >
-        <ActivityIndicator color={tokens.primary} />
+        <ActivityIndicator color={tokens.primaryInk} />
       </View>
     );
   }

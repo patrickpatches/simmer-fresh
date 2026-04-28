@@ -214,12 +214,12 @@ export function RecipeCard({
           <MetaChip icon="users" label={`${recipe.base_servings}`} />
           {recipe.source ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Icon name="external" size={12} color={tokens.primary} />
+              <Icon name="external" size={12} color={tokens.primaryInk} />
               <Text
                 style={{
                   fontSize: 11,
                   fontFamily: fonts.sansBold,
-                  color: tokens.primary,
+                  color: tokens.primaryInk,
                   textTransform: 'uppercase',
                   letterSpacing: 0.5,
                 }}

@@ -383,31 +383,6 @@ export async function clearAllPantryItems(db: SQLiteDatabase): Promise<void> {
   await db.runAsync('DELETE FROM pantry_items WHERE have_it = 1');
 }
 
-// ── App meta (key/value settings) ────────────────────────────────────────────
-
-export async function getMetaValue(
-  db: SQLiteDatabase,
-  key: string,
-): Promise<string | null> {
-  const row = await db.getFirstAsync<{ value: string }>(
-    'SELECT value FROM app_meta WHERE key = ?',
-    [key],
-  );
-  return row?.value ?? null;
-}
-
-export async function setMetaValue(
-  db: SQLiteDatabase,
-  key: string,
-  value: string,
-): Promise<void> {
-  await db.runAsync(
-    `INSERT INTO app_meta (key, value) VALUES (?, ?)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-    [key, value],
-  );
-}
-
 // ── Plan toggle (simple on/off, no dates) ────────────────────────────────────
 // Uses meal_plan with sentinel date='planned' and id=recipe_id for 1:1 mapping.
 

@@ -95,7 +95,7 @@ export function ServingsSelector({
           style={{
             fontFamily: fonts.sans,
             fontSize: 11,
-            color: factor === 1 ? tokens.sage : tokens.primary,
+            color: factor === 1 ? tokens.sageDeep : tokens.primaryInk,
           }}
         >
           {scaledBadge}

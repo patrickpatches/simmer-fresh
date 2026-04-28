@@ -10,6 +10,52 @@ Until then we're in `0.x.y` and bump minor for each shipped APK.
 — EAS Update will be re-attempted via EAS Build cloud, not DIY Gradle CI.
   See `docs/eas-update-strategy.md`.
 
+## [0.4.1] — 2026-04-28 — Pastel theme + dark cook mode + Shop scroll fix
+
+### Fixed
+- **Shop list now scrolls on the web build.** The aisle list was wrapped
+  in `react-native-draggable-flatlist`, whose underlying gesture handler
+  swallowed vertical touch events on Chrome (Android), leaving items
+  past the visible viewport unreachable. Replaced with a plain
+  `ScrollView` that mirrors the pattern already used on the Pantry tab.
+- **Cook mode is now actually dark**, per CLAUDE.md mandate ("Dark mode
+  default in cook mode. OLED-friendly true blacks"). Previously only
+  the sticky header switched to dark — the entire recipe body stayed
+  cream. Title card, ingredients card, step cards, callouts, and
+  leftover note now render dark espresso with cream text whenever
+  `cooking` is true.
+- **Primary-as-text contrast.** The new pastel rose `tokens.primary`
+  is too light to read as small body text on cream surfaces (~2.5:1).
+  Added `tokens.primaryInk` (#A85040 — same family, deep enough for
+  AA contrast) for label/kicker/link text. Buttons keep the soft
+  pastel surface with dark ink text.
+
+### Changed
+- **Pastel palette.** Sun-faded Scandi-linen direction:
+  - `bg`: cream `#FAF7F2` → chalk-linen `#F7F2EE`
+  - `primary`: terracotta `#C4562A` → dusty rose `#D88A7B` (with new
+    `primaryInk` `#A85040` for text uses)
+  - `sage`: olive `#5C7A53` → fern-mist `#9DB89C`
+  - `ochre`: gold `#D4A96A` → butter `#E8C97A`
+  - New `sky` token (`#B8CFD9` / `#7A9CAB`) for info accents
+  - `ink` deliberately kept at `#1A130E` — pastels need a strong text
+    colour, lifting it is the most common pastel-redesign mistake.
+  - Solid pastel buttons (primary / sage / ochre backgrounds) now
+    take `tokens.ink` for text and icons (was `'#FFF'`).
+- **Cook mode surfaces** moved into a dedicated `tokens.cookMode`
+  group with OLED-friendly values; recipe screen derives a `c`
+  surface object that swaps to dark while cooking.
+
+### Removed
+- **Aisle drag-to-reorder on Shop tab.** Was the only consumer of
+  `react-native-draggable-flatlist`. To be reintroduced later behind
+  an explicit "reorder" mode toggle so it doesn't fight scroll. The
+  saved aisle order in `app_meta` is left in place (harmless — no
+  code reads it now).
+- `react-native-draggable-flatlist` dependency.
+- Unused `getMetaValue` / `setMetaValue` exports from `db/database.ts`.
+- Duplicate `tokens.cardBg` (was identical to `tokens.cream`).
+
 ## [0.6.3] — 2026-04-26 — Rolled back v0.7.x EAS Update attempt
 
 ### Removed

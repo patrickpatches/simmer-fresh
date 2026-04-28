@@ -32,7 +32,6 @@ export const tokens = {
   bg:      '#F7F2EE',   // chalk-linen — primary background
   bgDeep:  '#EDE6DD',   // section headers, pressed states
   cream:   '#FFFFFF',   // card surfaces, inputs (legacy name kept for compat)
-  cardBg:  '#FFFFFF',
 
   // Ink — text and structural (kept dark on purpose)
   ink:     '#1A130E',   // deep espresso — primary text
@@ -41,8 +40,12 @@ export const tokens = {
 
   // Primary — dusty rose (buttons, links, active states).
   // Buttons with `backgroundColor: primary` MUST use `color: tokens.ink`.
+  // For *text* coloured by the primary family (kickers, link labels,
+  // attribution) on light surfaces, use `primaryInk` — same family,
+  // deep enough for AA contrast at small body sizes (~4:1 vs white).
   primary:      '#D88A7B',
   primaryDeep:  '#B86A5A',                    // pressed states / borders for separation
+  primaryInk:   '#A85040',                    // primary-as-text on light surfaces (AA on cream)
   primaryLight: 'rgba(216,138,123,0.18)',     // tints for chips
 
   // Secondary — fern-mist (success, checked states).

@@ -100,7 +100,7 @@ export default function RecipeDetailScreen() {
   if (recipe === undefined) {
     return (
       <View style={{ flex: 1, backgroundColor: tokens.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={tokens.primary} />
+        <ActivityIndicator color={tokens.primaryInk} />
       </View>
     );
   }
@@ -143,32 +143,39 @@ export default function RecipeDetailScreen() {
   // Cook-mode surface palette. CLAUDE.md: dark, OLED-friendly true blacks.
   // The same surface names are used in both modes so JSX can read `c.X`
   // without branching on `cooking` everywhere.
+  //
+  // `primary` is the surface fill (progress bar, button bg).
+  // `primaryInk` is the same family used as TEXT colour on light cards
+  // — deeper in light mode for WCAG AA contrast, lifted in cook mode
+  // because the dark card already gives enough separation.
   const c = cooking
     ? {
-        screenBg: tokens.cookMode.screenBg,
-        cardBg:   tokens.cookMode.cardBg,
-        bgDeep:   tokens.cookMode.bgDeep,
-        ink:      tokens.cookMode.ink,
-        inkSoft:  tokens.cookMode.inkSoft,
-        muted:    tokens.cookMode.muted,
-        line:     tokens.cookMode.line,
-        lineDark: tokens.cookMode.lineDark,
-        primary:  tokens.cookMode.primary,
-        sage:     tokens.cookMode.sage,
-        ochre:    tokens.cookMode.ochre,
+        screenBg:   tokens.cookMode.screenBg,
+        cardBg:     tokens.cookMode.cardBg,
+        bgDeep:     tokens.cookMode.bgDeep,
+        ink:        tokens.cookMode.ink,
+        inkSoft:    tokens.cookMode.inkSoft,
+        muted:      tokens.cookMode.muted,
+        line:       tokens.cookMode.line,
+        lineDark:   tokens.cookMode.lineDark,
+        primary:    tokens.cookMode.primary,
+        primaryInk: tokens.cookMode.primary,    // already lifted, reads on dark
+        sage:       tokens.cookMode.sage,
+        ochre:      tokens.cookMode.ochre,
       }
     : {
-        screenBg: tokens.bg,
-        cardBg:   tokens.cream,
-        bgDeep:   tokens.bgDeep,
-        ink:      tokens.ink,
-        inkSoft:  tokens.inkSoft,
-        muted:    tokens.muted,
-        line:     tokens.line,
-        lineDark: tokens.lineDark,
-        primary:  tokens.primary,
-        sage:     tokens.sage,
-        ochre:    tokens.ochre,
+        screenBg:   tokens.bg,
+        cardBg:     tokens.cream,
+        bgDeep:     tokens.bgDeep,
+        ink:        tokens.ink,
+        inkSoft:    tokens.inkSoft,
+        muted:      tokens.muted,
+        line:       tokens.line,
+        lineDark:   tokens.lineDark,
+        primary:    tokens.primary,
+        primaryInk: tokens.primaryInk,          // deeper for AA on cream
+        sage:       tokens.sage,
+        ochre:      tokens.ochre,
       };
   const attribution  = recipe.generated_by_claude
     ? 'Invented from your pantry'
@@ -373,7 +380,7 @@ export default function RecipeDetailScreen() {
                   fontSize: 10,
                   letterSpacing: 2,
                   textTransform: 'uppercase',
-                  color: c.primary,
+                  color: c.primaryInk,
                   marginBottom: 6,
                 }}
               >
@@ -426,10 +433,10 @@ export default function RecipeDetailScreen() {
                 onPress={openSource}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14 }}
               >
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primary }}>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primaryInk }}>
                   Watch the original
                 </Text>
-                <Icon name="external" size={12} color={c.primary} />
+                <Icon name="external" size={12} color={c.primaryInk} />
               </Pressable>
             ) : null}
 
@@ -448,7 +455,7 @@ export default function RecipeDetailScreen() {
                     ? (pressed ? tokens.sageDeep : tokens.sage)
                     : (pressed ? tokens.primaryLight : 'transparent'),
                   borderWidth: 1.5,
-                  borderColor: isPlanned ? tokens.sage : tokens.primary,
+                  borderColor: isPlanned ? tokens.sage : tokens.primaryInk,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -458,13 +465,13 @@ export default function RecipeDetailScreen() {
                 <Icon
                   name={isPlanned ? 'check' : 'plus'}
                   size={16}
-                  color={isPlanned ? tokens.ink : tokens.primary}
+                  color={isPlanned ? tokens.ink : tokens.primaryInk}
                 />
                 <Text
                   style={{
                     fontFamily: fonts.sansBold,
                     fontSize: 13,
-                    color: isPlanned ? tokens.ink : tokens.primary,
+                    color: isPlanned ? tokens.ink : tokens.primaryInk,
                   }}
                 >
                   {isPlanned ? 'In your plan ✓' : '+ Plan this recipe'}
