@@ -24,6 +24,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as SystemUI from 'expo-system-ui';
 import { SQLiteProvider } from 'expo-sqlite';
 import { useFonts } from 'expo-font';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   Lora_500Medium_Italic,
   Lora_700Bold,
@@ -63,16 +64,18 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <SQLiteProvider databaseName="hone.db" onInit={initDatabase}>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: tokens.bg },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </SQLiteProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SQLiteProvider databaseName="hone.db" onInit={initDatabase}>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: tokens.bg },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </SQLiteProvider>
+    </GestureHandlerRootView>
   );
 }

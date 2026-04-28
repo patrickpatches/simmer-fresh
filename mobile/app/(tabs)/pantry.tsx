@@ -36,6 +36,7 @@ import {
   ActivityIndicator,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -57,6 +58,7 @@ import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
 import { VersionFooter } from '../../src/components/VersionFooter';
 import {
+  clearAllPantryItems,
   getAllRecipes,
   getPantryItems,
   upsertPantryItem,
@@ -124,6 +126,8 @@ export default function PantryTab() {
   // Long-term this lives in the DB so it survives a relaunch; for now it
   // only persists within the session. Tracked in BUGS.md as follow-up.
   const [shopping, setShopping] = useState<Set<string>>(new Set());
+
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
   // Track mount state — setTimeout callbacks must not setState after unmount,
@@ -337,6 +341,21 @@ export default function PantryTab() {
       return next;
     });
   }, []);
+
+  const confirmClearAll = useCallback(async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
+      () => {},
+    );
+    setShowClearConfirm(false);
+    setPantryItems([]);
+    setAddedAt({});
+    setFreshIds(new Set());
+    try {
+      await clearAllPantryItems(db);
+    } catch (e) {
+      console.error('clearAllPantryItems failed', e);
+    }
+  }, [db]);
 
   const bulkAddStaples = useCallback(async () => {
     // "Just shopped" demo: add a typical AU weekly haul. Skips items already there.
@@ -606,7 +625,7 @@ export default function PantryTab() {
               paddingTop: 14,
               paddingBottom: 6,
               flexDirection: 'row',
-              alignItems: 'baseline',
+              alignItems: 'center',
               justifyContent: 'space-between',
             }}
           >
@@ -621,9 +640,36 @@ export default function PantryTab() {
             >
               In your pantry
             </Text>
-            <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
-              {pantryItems.length} item{pantryItems.length === 1 ? '' : 's'}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Text
+                style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}
+              >
+                {pantryItems.length} item{pantryItems.length === 1 ? '' : 's'}
+              </Text>
+              {pantryItems.length > 0 && (
+                <Pressable
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    setShowClearConfirm(true);
+                  }}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear all pantry items"
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 10,
+                      letterSpacing: 1.2,
+                      textTransform: 'uppercase',
+                      color: tokens.inkSoft,
+                    }}
+                  >
+                    Clear all
+                  </Text>
+                </Pressable>
+              )}
+            </View>
           </View>
 
           {pantryItems.length === 0 ? (
@@ -818,6 +864,132 @@ export default function PantryTab() {
         )}
         <VersionFooter paddingBottom={32} />
       </ScrollView>
+
+      {/* Bulk-clear confirmation — custom modal, not Alert.alert(), so it
+          matches the cream/linen design system. */}
+      <Modal
+        visible={showClearConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowClearConfirm(false)}
+      >
+        <Pressable
+          onPress={() => setShowClearConfirm(false)}
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 28,
+          }}
+        >
+          <Animated.View
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(120)}
+            style={{ width: '100%', maxWidth: 380 }}
+          >
+            <Pressable
+              onPress={(e) => e.stopPropagation && e.stopPropagation()}
+              style={{
+                backgroundColor: tokens.cream,
+                borderRadius: 22,
+                paddingTop: 28,
+                paddingBottom: 18,
+                paddingHorizontal: 24,
+                shadowColor: '#000',
+                shadowOpacity: 0.25,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 12 },
+                elevation: 12,
+              }}
+            >
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 18,
+                  backgroundColor: tokens.primaryLight,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 16,
+                }}
+              >
+                <Icon name="trash" size={24} color={tokens.primaryDeep} />
+              </View>
+              <Text
+                style={{
+                  fontFamily: fonts.display,
+                  fontSize: 22,
+                  lineHeight: 26,
+                  color: tokens.ink,
+                  marginBottom: 8,
+                }}
+              >
+                Clear your pantry?
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: 14,
+                  lineHeight: 20,
+                  color: tokens.inkSoft,
+                  marginBottom: 20,
+                }}
+              >
+                This removes all {pantryItems.length} ingredient
+                {pantryItems.length === 1 ? '' : 's'} from your pantry. You can
+                add them back any time, but this can&apos;t be undone.
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Pressable
+                  onPress={() => setShowClearConfirm(false)}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    paddingVertical: 14,
+                    borderRadius: 14,
+                    backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                    borderWidth: 1,
+                    borderColor: tokens.lineDark,
+                    alignItems: 'center',
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 14,
+                      color: tokens.ink,
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={confirmClearAll}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    paddingVertical: 14,
+                    borderRadius: 14,
+                    backgroundColor: pressed
+                      ? tokens.primaryDeep
+                      : tokens.primary,
+                    alignItems: 'center',
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 14,
+                      color: '#FFF',
+                    }}
+                  >
+                    Clear pantry
+                  </Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Animated.View>
+        </Pressable>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
