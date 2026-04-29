@@ -199,7 +199,7 @@ This rule applies even when the fix is "obvious" or "the diff proves it works."
 1. **Read `BUGS.md`** — check all open tickets before touching any file. A bug marked OPEN or FIX ATTEMPTED must not be ignored.
 2. **Check GitHub Issues** — `https://github.com/patrickpatches/hone/issues` — Patrick logs bugs from his phone here. Pull any new issues into `BUGS.md` at the start of the session.
 3. **Never self-close a bug ticket.**
-4. Update the seperate session logs file
+4. Write a session report to `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` summarising what was built and what Patrick needs to do next.
 
 ## Bug tracking system
 
@@ -207,5 +207,55 @@ This rule applies even when the fix is "obvious" or "the diff proves it works."
 - **Session cache:** `BUGS.md` in project root — Claude updates this each session from GitHub Issues
 - **Visual board:** Cowork artifact `hone-bug-tracker` (sidebar)
 - **Status flow:** OPEN → FIX ATTEMPTED → VALIDATED ✅ (by Patrick) or REJECTED 🔴 (reopened)
-- **PAT:** Stored in memory (`reference_github_token.md`) — repo+workflow scope, expires ~2026-07-21
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+- **PAT:** Embedded in `.git/config` remote URL — repo+workflow scope, expires ~2026-07-21
+
+---
+
+# Part 4 — Document control
+
+## The file map
+
+`docs/FILE_MAP.md` is the canonical index of every file and folder in this repo. Read it when you're unsure where something lives. Update it when you create or move a file.
+
+## Where things go
+
+| What | Where |
+|---|---|
+| Session reports | `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` |
+| Architecture decisions | `docs/adr/NNN-kebab-title.md` |
+| HTML prototypes / mockups | `docs/prototypes/` |
+| Completed checklists, old backups | `docs/archive/` |
+| Dev utility scripts (.bat, .sh) | `scripts/` |
+| ATO development log | `docs/Hone_Development_Log_FY2025-26.xlsx` |
+| App source code | `mobile/` — never at repo root |
+
+## What must never appear in the repo
+
+- Files with `-Desktop-P` suffix — stale worktree backup artefacts. Delete on sight.
+- Duplicate files with no meaningful difference from their canonical version — one source of truth per file.
+- Stale references to "Simmer Fresh" in user-facing docs or code (CHANGELOG history entries and the known `app.json` bundle identifier are the only permitted exceptions).
+- APK files — GitHub Actions artifacts only, never committed.
+- Secrets or API keys of any kind.
+
+## Naming conventions
+
+- Source files: `camelCase.ts`, `PascalCase.tsx` (React components), `kebab-case.md` (docs)
+- Session reports: `Hone_Session_Report_DD_Month_YYYY.md`
+- ADRs: `NNN-kebab-title.md` (zero-padded three-digit sequence)
+- Archive snapshots: `backup-YYYY-MM-DD[-descriptor]/`
+
+## Session start checklist (updated)
+
+1. Read `BUGS.md` — sync from GitHub Issues if stale.
+2. Read `docs/FILE_MAP.md` — know where things are before touching anything.
+3. Run `git remote prune origin` — prune stale `claude/*` branches.
+4. Do the work.
+5. Write a session report to `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md`.
+6. Commit with a meaningful message and push.
+
+## GitHub branch hygiene
+
+- `main` is the only permanent branch.
+- `claude/*` worktree branches are temporary — delete from GitHub once merged or abandoned.
+- Never leave more than 2 open `claude/*` branches at any time.
+- PAT is embedded in `.git/config` remote URL — repo+workflow scope, expires ~2026-07-21.

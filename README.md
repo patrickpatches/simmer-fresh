@@ -78,15 +78,12 @@ Artifact attaches to the run. See [docs/RELEASING.md](./docs/RELEASING.md) for t
 
 ## Documentation
 
-- `CLAUDE.md` — single source of truth for project rules, decisions, session log
-- `CHANGELOG.md` — shipped versions
-- `docs/RELEASING.md` — how to cut a release
-- `docs/the file system-fix.md` — known issue with the working-folder location
-- `docs/adr/` — Architecture Decision Records
-- `docs/ux-redesign-research.md` — current UX redesign master plan
-- `docs/add-recipe-research.md` — Add Recipe screen design supplement
-- `docs/session-NN/` — per-session backups and notes
-
-## Licence
-
-This is a private project. All recipe content, attribution, and code © Patrick Nasr. Original chef inspirations and source URLs are credited per recipe.
+- `CLAUDE.md` — single source of truth for project rules, product vision, document control
+- `BUGS.md` — open bug tracker (synced from GitHub Issues each session)
+- `CHANGELOG.md` — shipped versions (semver, Keep a Changelog format)
+- `docs/FILE_MAP.md` — canonical index of every file and folder in this repo
+- `docs/RELEASING.md` — how to cut a release and build an APK
+- `docs/SMOKE-TEST.md` — manual test checklist before every release
+- `docs/roadmap.md` — phased build plan and current status
+- `docs/adr/` — Architecture Decision Records (why we chose each technology)
+- `docs/sessions/` — per-session reports (what was built, what changed
