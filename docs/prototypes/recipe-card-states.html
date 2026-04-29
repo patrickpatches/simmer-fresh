@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Card States — Hone Design Spec</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,500&family=Source+Sans+3:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Hone design tokens ── */
+    :root {
+      --bg:            #F7F2EE;
+      --bg-deep:       #EDE6DD;
+      --cream:         #FFFFFF;
+      --ink:           #1A130E;
+      --ink-soft:      #5A4D44;
+      --muted:         #7A6B62;
+      --primary:       #D88A7B;
+      --primary-deep:  #B86A5A;
+      --primary-ink:   #A85040;
+      --primary-light: rgba(216,138,123,0.18);
+      --sage:          #9DB89C;
+      --sage-deep:     #7A9779;
+      --sage-light:    rgba(157,184,156,0.22);
+      --ochre:         #E8C97A;
+      --sky:           #B8CFD9;
+      --sky-deep:      #7A9CAB;
+      --sky-light:     rgba(184,207,217,0.28);
+      --warm-brown:    #85614D;
+      --line:          #E8DFD4;
+      --line-dark:     #D4C9BB;
+      --font-display:  'Playfair Display', Georgia, serif;
+      --font-sans:     'Source Sans 3', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #E8E0D6;
+      font-family: var(--font-sans);
+      color: var(--ink);
+    }
+
+    /* ── Spec header ── */
+    .spec-header {
+      background: var(--ink);
+      color: #F5EFE8;
+      padding: 24px 32px;
+    }
+    .spec-header h1 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .spec-header p {
+      font-size: 13px;
+      opacity: 0.6;
+    }
+    .spec-badge {
+      display: inline-block;
+      margin-top: 10px;
+      background: var(--sky);
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── Layout ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .section-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+      max-width: 620px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 14px;
+    }
+
+    /* ── Card grid ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 380px);
+      gap: 32px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 48px;
+    }
+
+    /* ── Phone simulation (narrow frame for context) ── */
+    .phone-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .phone-col .state-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 10px;
+    }
+
+    /* ── Recipe card (matches actual app from screenshots) ── */
+    .recipe-card {
+      background: var(--bg);
+      border-radius: 0;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .card-photo-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: var(--bg-deep);
+    }
+    .card-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Difficulty badge — bottom-left, matches screenshot */
+    .difficulty-badge {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(255,255,255,0.92);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    /* Heart — top-right, matches screenshot */
+    .heart-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      background: rgba(255,255,255,0.85);
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── "Stage photos" badge — bottom-right of photo ── */
+    .stage-badge {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(26,19,14,0.62);
+      backdrop-filter: blur(6px);
+      color: rgba(255,255,255,0.92);
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      padding: 4px 9px 4px 7px;
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stage-badge svg {
+      flex-shrink: 0;
+    }
+
+    /* Card body — matches screenshot layout */
+    .card-body {
+      padding: 14px 16px 18px;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .card-tagline {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .card-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card-meta-item svg { flex-shrink: 0; }
+    .card-chef {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary-ink);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .divider {
+      height: 1px;
+      background: var(--line);
+      margin: 0;
+    }
+
+    /* ── Annotation box ── */
+    .annotation {
+      background: var(--cream);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      border-left: 3px solid var(--sky);
+    }
+    .annotation h4 {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--ink);
+      margin-bottom: 5px;
+    }
+    .annotation p {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+    code {
+      font-family: 'Menlo', monospace;
+      font-size: 10px;
+      background: var(--bg-deep);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--primary-ink);
+    }
+
+    /* ── Section divider ── */
+    .section-sep {
+      height: 1px;
+      background: var(--line);
+      margin: 48px 0 40px;
+    }
+
+    /* ── Recipe detail section ── */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 380px 380px;
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .phone-frame {
+      width: 375px;
+      background: var(--bg);
+      border-radius: 32px;
+      border: 7px solid #2A1F18;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .phone-screen {
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* recipe detail mock */
+    .detail-hero {
+      position: relative;
+      height: 240px;
+      overflow: hidden;
+      background: #2A1F18;
+    }
+    .detail-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+    .detail-hero-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(160deg, #3D2B20 0%, #1A130E 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .detail-card {
+      background: var(--cream);
+      border-radius: 24px 24px 0 0;
+      margin-top: -24px;
+      position: relative;
+      padding: 20px 20px 16px;
+    }
+    .detail-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary-ink);
+      margin-bottom: 5px;
+    }
+    .detail-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.15;
+      margin-bottom: 5px;
+    }
+    .detail-tagline {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+    }
+    .detail-meta {
+      display: flex;
+      gap: 14px;
+    }
+    .detail-meta span {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .detail-meta strong { color: var(--ink-soft); font-weight: 700; }
+
+    /* Stage photos notice banner (inside recipe detail) */
+    .stage-notice {
+      background: var(--sky-light);
+      border: 1px solid rgba(184,207,217,0.5);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 14px 0 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .stage-notice svg { flex-shrink: 0; margin-top: 1px; }
+    .stage-notice-text {
+      font-size: 12px;
+      color: var(--sky-deep);
+      line-height: 1.45;
+    }
+    .stage-notice-text strong {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 1px;
+    }
+
+    /* ── Step photo placeholder ── */
+    .step-section {
+      padding: 14px 20px 0;
+      background: var(--bg);
+    }
+    .step-section-head {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 12px;
+    }
+    .step-card {
+      background: var(--cream);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(31,24,20,0.07);
+    }
+    .step-photo {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+    .step-photo-placeholder {
+      width: 100%;
+      height: 100px;
+      background: var(--bg-deep);
+      border: 1.5px dashed var(--line-dark);
+      border-radius: 10px;
+      margin: 12px 12px 0;
+      width: calc(100% - 24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-direction: column;
+    }
+    .step-body {
+      padding: 12px 14px;
+    }
+    .step-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--primary-ink);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .step-content {
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    /* ── Spec table ── */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    .spec-card {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .spec-card h4 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .spec-table { width: 100%; border-collapse: collapse; }
+    .spec-table tr { border-bottom: 1px solid var(--line); }
+    .spec-table tr:last-child { border-bottom: none; }
+    .spec-table td {
+      padding: 7px 0;
+      font-size: 12px;
+      vertical-align: top;
+    }
+    .spec-table td:first-child { color: var(--muted); width: 50%; padding-right: 8px; }
+    .spec-table td:last-child { color: var(--ink); font-weight: 700; }
+
+    /* ── Design note ── */
+    .design-note {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--primary);
+    }
+    .design-note h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .design-note p  { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+
+    .notes-wrap { max-width: 720px; margin-bottom: 48px; }
+
+    /* ── Handoff block ── */
+    .handoff-inner {
+      background: var(--ink);
+      border-radius: 12px;
+      padding: 20px 24px;
+      max-width: 720px;
+      margin-bottom: 60px;
+    }
+    .handoff-inner h4 {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .handoff-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .handoff-key { color: var(--primary); font-weight: 700; min-width: 120px; flex-shrink: 0; }
+    .handoff-val { color: rgba(245,239,232,0.80); line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="spec-header">
+  <h1>Recipe Card States</h1>
+  <p>Product Designer spec · Hone v0.5 · 29 April 2026</p>
+  <span class="spec-badge">Stage Photos Badge + Card States</span>
+</div>
+
+<div class="page">
+
+  <!-- ── Section 1: Card states ── -->
+  <h2>Recipe card — three states</h2>
+  <p class="section-desc">
+    The browse-list card (Kitchen tab). State 1 is the launch recipe. State 2 is a non-launch recipe
+    that has a hero shot but no stage photos yet. State 3 is the fallback when the hero URL fails or
+    hasn't loaded — uses the recipe's <code>hero_fallback</code> gradient.
+  </p>
+
+  <div class="cards-grid">
+
+    <!-- State 1: Full photo, no badge -->
+    <div class="phone-col">
+      <span class="state-tag">State 1 — Launch recipe (full photos)</span>
+      <div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+        <div class="recipe-card">
+          <div class="card-photo-wrap">
+            <img class="card-photo"
+              src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80"
+              alt="Smash Burger">
+            <div class="difficulty-badge">Easy</div>
+            <div class="heart-btn" aria-label="Save recipe">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35z" stroke="#1A130E" stroke-width="1.6" fill="none"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Smash Burger</div>
+            <div class="card-tagline">The crispy-edged diner classic</div>
+            <div class="card-meta">
+              <span class="card-meta-item">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M8 5v3.5l2 1.5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+                20 min
+              </span>
+              <span class="card-meta-item">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M2 13c0-2.76 1.79-5 4-5s4 2.24 4 5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2" stroke="#7A6B62" stroke-width="1.2"/><path d="M13 13c0-2.21-1.12-4-2.5-4" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+                2
+              </span>
+              <span class="card-chef">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2a3 3 0 0 1 3 3c0 .55-.15 1.06-.41 1.5H12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7.5a1 1 0 0 1 1-1h1.41A3 3 0 0 1 8 2z" stroke="#A85040" stroke-width="1.2" fill="none"/></svg>
+                Andy Cooks
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation">
+        <h4>No badge needed</h4>
+        <p>Hero shot + stage photos present. This is the full experience. No badge, no notice.</p>
+      </div>
+    </div>
+
+    <!-- State 2: Hero photo + stage badge -->
+    <div class="phone-col">
+      <span class="state-tag">State 2 — Non-launch recipe (hero only)</span>
+      <div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+        <div class="recipe-card">
+          <div class="card-photo-wrap">
+            <img class="card-photo"
+              src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80"
+              alt="Chicken Tikka Masala">
+            <div class="difficulty-badge">Intermediate</div>
+            <div class="heart-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35z" stroke="#1A130E" stroke-width="1.6" fill="none"/>
+              </svg>
+            </div>
+            <!-- STAGE BADGE — bottom-right, opposite corner from difficulty badge -->
+            <div class="stage-badge" role="img" aria-label="Stage photos coming">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M14 12H2V5h2l1.5-2h5L12 5h2v7z" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" fill="none" stroke-linejoin="round"/>
+                <circle cx="8" cy="8.5" r="1.8" stroke="rgba(255,255,255,0.85)" stroke-width="1.3"/>
+              </svg>
+              Photos soon
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Chicken Tikka Masala</div>
+            <div class="card-tagline">The richest, most honest tikka you'll make</div>
+            <div class="card-meta">
+              <span class="card-meta-item">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M8 5v3.5l2 1.5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+                60 min
+              </span>
+              <span class="card-meta-item">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M2 13c0-2.76 1.79-5 4-5s4 2.24 4 5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2" stroke="#7A6B62" stroke-width="1.2"/><path d="M13 13c0-2.21-1.12-4-2.5-4" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+                4
+              </span>
+              <span class="card-chef">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2a3 3 0 0 1 3 3c0 .55-.15 1.06-.41 1.5H12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7.5a1 1 0 0 1 1-1h1.41A3 3 0 0 1 8 2z" stroke="#A85040" stroke-width="1.2" fill="none"/></svg>
+                Hone Kitchen
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation">
+        <h4>The "Photos soon" badge</h4>
+        <p>
+          Small pill, bottom-right corner. Sits opposite the difficulty badge — no collision.
+          Dark scrim background blends with any photo. Camera icon + "Photos soon". 10sp,
+          no exclamation mark, no apology. Sets expectation before the user taps in.
+        </p>
+      </div>
+    </div>
+
+    <!-- State 3: Gradient fallback -->
+    <div class="phone-col">
+      <span class="state-tag">State 3 — No hero image (gradient fallback)</span>
+      <div style="background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+        <div class="recipe-card">
+          <div class="card-photo-wrap">
+            <div class="card-photo-placeholder"
+              style="background:linear-gradient(135deg, #8B4513 0%, #E8C9A0 60%, #F7F2EA 100%);">
+              <div style="font-size:48px;line-height:1;">🍔</div>
+            </div>
+            <div class="difficulty-badge">Easy</div>
+            <div class="heart-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35z" stroke="#1A130E" stroke-width="1.6" fill="none"/>
+              </svg>
+            </div>
+            <!-- Badge still shows if applicable -->
+            <div class="stage-badge">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M14 12H2V5h2l1.5-2h5L12 5h2v7z" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" fill="none" stroke-linejoin="round"/>
+                <circle cx="8" cy="8.5" r="1.8" stroke="rgba(255,255,255,0.85)" stroke-width="1.3"/>
+              </svg>
+              Photos soon
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Smash Burger</div>
+            <div class="card-tagline">The crispy-edged diner classic</div>
+            <div class="card-meta">
+              <span class="card-meta-item">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M8 5v3.5l2 1.5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+                20 min
+              </span>
+              <span class="card-meta-item">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M2 13c0-2.76 1.79-5 4-5s4 2.24 4 5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg>
+                2
+              </span>
+              <span class="card-chef">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2a3 3 0 0 1 3 3c0 .55-.15 1.06-.41 1.5H12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7.5a1 1 0 0 1 1-1h1.41A3 3 0 0 1 8 2z" stroke="#A85040" stroke-width="1.2" fill="none"/></svg>
+                Andy Cooks
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation">
+        <h4>Gradient fallback (existing behaviour)</h4>
+        <p>
+          <code>hero_fallback[0..2]</code> drives a gradient. Badge still shows in same position
+          if <code>has_stage_photos === false</code>. The badge sits on dark gradient just as well
+          as on a dark photo — the scrim background is colour-agnostic.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /cards-grid -->
+
+  <div class="section-sep"></div>
+
+  <!-- ── Section 2: Recipe detail ── -->
+  <h2>Recipe detail screen — photo states</h2>
+  <p class="section-desc">
+    How the stage-photos situation is communicated inside the recipe detail and cook mode screens.
+    The card-level badge sets the expectation; the detail screen explains it briefly once.
+    Step placeholders appear in cook mode where stage photos would normally sit.
+  </p>
+
+  <div class="detail-grid">
+
+    <!-- Detail with photos -->
+    <div class="phone-col">
+      <span class="state-tag">Detail — with stage photos</span>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <!-- Hero -->
+          <div class="detail-hero">
+            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&q=80" alt="Smash Burger">
+          </div>
+          <!-- Floating card -->
+          <div class="detail-card">
+            <div class="detail-kicker">Andy Cooks</div>
+            <div class="detail-title">Smash Burger</div>
+            <div class="detail-tagline">The crispy-edged diner classic</div>
+            <div class="detail-meta">
+              <span><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#7A6B62" stroke-width="1.2"/><path d="M8 5v3.5l2 1.5" stroke="#7A6B62" stroke-width="1.2" stroke-linecap="round"/></svg><strong>20 min</strong></span>
+              <span><strong>Easy</strong></span>
+            </div>
+          </div>
+          <!-- Steps section (abbreviated) -->
+          <div class="step-section">
+            <div class="step-section-head">Steps</div>
+            <div class="step-card">
+              <img class="step-photo"
+                src="https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&q=75"
+                alt="Step 1 photo">
+              <div class="step-body">
+                <div class="step-num">Step 1</div>
+                <div class="step-title">Get the pan screaming hot</div>
+                <div class="step-content">Put a cast-iron skillet over maximum heat for 3–4 minutes. It needs to be just starting to smoke before the beef goes on.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation" style="border-left-color:var(--sage);">
+        <h4>Full photos present</h4>
+        <p>No notice needed. Stage photo sits flush above the step content. This is the gold standard that all 10 launch recipes hit.</p>
+      </div>
+    </div>
+
+    <!-- Detail without stage photos -->
+    <div class="phone-col">
+      <span class="state-tag">Detail — hero only (no stage photos)</span>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <!-- Hero -->
+          <div class="detail-hero">
+            <img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=500&q=80" alt="Tikka Masala">
+          </div>
+          <!-- Floating card -->
+          <div class="detail-card">
+            <div class="detail-kicker">Hone Kitchen</div>
+            <div class="detail-title">Chicken Tikka Masala</div>
+            <div class="detail-tagline">The richest, most honest tikka you'll make</div>
+            <div class="detail-meta">
+              <span><strong>60 min</strong></span>
+              <span><strong>Intermediate</strong></span>
+            </div>
+            <!-- Stage photos notice — appears once, below meta, above Start Cooking -->
+            <div class="stage-notice" role="note" aria-label="Stage photos note">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M14 12H2V5h2l1.5-2h5L12 5h2v7z" stroke="#7A9CAB" stroke-width="1.3" fill="none" stroke-linejoin="round"/>
+                <circle cx="8" cy="8.5" r="1.8" stroke="#7A9CAB" stroke-width="1.3"/>
+              </svg>
+              <div class="stage-notice-text">
+                <strong>Stage photos coming</strong>
+                Step-by-step photos are being shot for this recipe and will appear here soon.
+              </div>
+            </div>
+          </div>
+          <!-- Steps with placeholders -->
+          <div class="step-section">
+            <div class="step-section-head">Steps</div>
+            <div class="step-card">
+              <!-- Placeholder instead of photo -->
+              <div class="step-photo-placeholder" role="img" aria-label="Stage photo coming soon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#D4C9BB" stroke-width="1.5" fill="none"/>
+                  <circle cx="12" cy="13" r="4" stroke="#D4C9BB" stroke-width="1.5"/>
+                </svg>
+                <span style="font-size:11px;color:var(--muted);font-family:var(--font-sans);">Photo coming</span>
+              </div>
+              <div class="step-body">
+                <div class="step-num">Step 1</div>
+                <div class="step-title">Build the marinade</div>
+                <div class="step-content">Combine yoghurt, lemon juice, garlic, ginger and spices. You want a thick, rust-coloured paste that coats the chicken heavily.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation">
+        <h4>One notice, top-of-detail only</h4>
+        <p>
+          The sky-coloured notice appears once between the meta row and Start Cooking — not repeated
+          on every step. Per-step placeholders are visually quiet (greyed camera icon + "Photo coming")
+          so they don't dominate the cook mode experience. Recipe is still fully cookable — photos
+          are supplementary, not essential.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /detail-grid -->
+
+  <div class="section-sep"></div>
+
+  <!-- ── Spec tables ── -->
+  <h2>Component specification</h2>
+  <p class="section-desc" style="margin-bottom:24px;">All values for engineering. Tokens reference <code>mobile/src/theme/tokens.ts</code>.</p>
+
+  <div class="spec-grid">
+
+    <div class="spec-card">
+      <h4>"Photos soon" pill badge (card)</h4>
+      <table class="spec-table">
+        <tr><td>Position</td><td>Absolute, bottom-right: 12dp from bottom, 12dp from right</td></tr>
+        <tr><td>Background</td><td><code>rgba(26,19,14,0.62)</code> + <code>backdropFilter: blur(6px)</code></td></tr>
+        <tr><td>Text colour</td><td><code>rgba(255,255,255,0.92)</code></td></tr>
+        <tr><td>Font</td><td>Source Sans 700, 10sp, 0.05em tracking</td></tr>
+        <tr><td>Padding</td><td>4dp V, 9dp R, 7dp L</td></tr>
+        <tr><td>Border radius</td><td>99dp (pill)</td></tr>
+        <tr><td>Icon</td><td>Camera outline, 11×11dp, same colour as text</td></tr>
+        <tr><td>Icon → text gap</td><td>4dp</td></tr>
+        <tr><td>When to show</td><td><code>!recipe.has_stage_photos</code></td></tr>
+        <tr><td>TalkBack</td><td>"Stage photos coming"</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-card">
+      <h4>Stage notice banner (recipe detail)</h4>
+      <table class="spec-table">
+        <tr><td>Position</td><td>Between meta row and "Start Cooking" pill — appears once only</td></tr>
+        <tr><td>Background</td><td><code>tokens.skyLight</code> <code>rgba(184,207,217,0.28)</code></td></tr>
+        <tr><td>Border</td><td>1dp <code>rgba(184,207,217,0.5)</code></td></tr>
+        <tr><td>Border radius</td><td>10dp</td></tr>
+        <tr><td>Padding</td><td>10dp V, 12dp H</td></tr>
+        <tr><td>Icon</td><td>Camera outline, 14×14dp, <code>tokens.skyDeep</code></td></tr>
+        <tr><td>Header text</td><td>Source Sans 700, 12sp, <code>tokens.skyDeep</code></td></tr>
+        <tr><td>Body text</td><td>Source Sans 400, 12sp, <code>tokens.skyDeep</code></td></tr>
+        <tr><td>When to show</td><td><code>!recipe.has_stage_photos</code></td></tr>
+        <tr><td>TalkBack</td><td>role="note", labelled "Stage photos note"</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-card">
+      <h4>Step photo placeholder (cook mode)</h4>
+      <table class="spec-table">
+        <tr><td>Position</td><td>Where step photo would normally appear</td></tr>
+        <tr><td>Size</td><td>Full card width − 24dp margin, 100dp height</td></tr>
+        <tr><td>Background</td><td><code>tokens.bgDeep</code> #EDE6DD</td></tr>
+        <tr><td>Border</td><td>1.5dp dashed <code>tokens.lineDark</code></td></tr>
+        <tr><td>Border radius</td><td>10dp</td></tr>
+        <tr><td>Margin</td><td>12dp inset within card, 0 bottom (step body follows directly)</td></tr>
+        <tr><td>Icon</td><td>Camera outline, 20×20dp, <code>tokens.lineDark</code></td></tr>
+        <tr><td>Caption</td><td>"Photo coming" — Source Sans 400, 11sp, <code>tokens.muted</code></td></tr>
+        <tr><td>Cook mode</td><td>Use <code>cookMode.bgDeep</code> and <code>cookMode.muted</code></td></tr>
+        <tr><td>TalkBack</td><td>role="img", label "Stage photo coming soon"</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-card">
+      <h4>Schema flag needed</h4>
+      <table class="spec-table">
+        <tr><td>New field</td><td><code>has_stage_photos: boolean</code> on <code>Recipe</code></td></tr>
+        <tr><td>Default</td><td><code>false</code></td></tr>
+        <tr><td>Set to true when</td><td>All steps in the recipe have a populated <code>photo_url</code></td></tr>
+        <tr><td>Alternative</td><td>Derive from <code>steps.every(s => !!s.photo_url)</code> — no new field needed if computed in the component</td></tr>
+        <tr><td>Recommendation</td><td>Compute in component to avoid schema churn. Check <code>steps.every(s => !!s.photo_url)</code>.</td></tr>
+      </table>
+    </div>
+
+  </div><!-- /spec-grid -->
+
+  <!-- ── Design notes ── -->
+  <h2>Design notes</h2>
+  <div class="notes-wrap">
+
+    <div class="design-note">
+      <h4>Why dark scrim on the pill badge rather than sky/blue?</h4>
+      <p>
+        Sky tokens work well inside the recipe detail screen on a white card background —
+        they're clearly informational without being alarming. But on a recipe card photo (which
+        can range from dark stew to pale salad), a light-blue pill would clash unpredictably.
+        The dark scrim (<code>rgba(26,19,14,0.62)</code>) is colour-agnostic — it reads clearly
+        against any photo, the same way the existing difficulty badge uses a white pill.
+        The text colour matches the existing "EASY" badge approach.
+      </p>
+    </div>
+
+    <div class="design-note">
+      <h4>Why does the notice appear once in detail, not on every step?</h4>
+      <p>
+        Repeating a "photos coming" message on every step would make it feel like a constant
+        apology. The recipe is fully cookable — stage photos are supplementary. One calm notice
+        at the top sets the expectation, then the step placeholders are visually quiet.
+        In cook mode the user is focused on cooking, not on what's missing.
+      </p>
+    </div>
+
+    <div class="design-note">
+      <h4>Why "Photos soon" not "Stage photos coming soon"?</h4>
+      <p>
+        "Stage photos" is internal language. "Photos soon" is the shortest honest label that
+        communicates the right thing to a user: this recipe will have photos, they're not here
+        yet. "Coming soon" was considered but reads slightly like a product launch teaser —
+        not quite the right register. "Soon" is lighter-touch and still honest.
+      </p>
+    </div>
+
+    <div class="design-note">
+      <h4>No placeholder on the hero image</h4>
+      <p>
+        The badge + notice are scoped to stage photos only. The hero shot will be taken for all
+        28 recipes as part of the hero-only shoot weekend. If a hero URL fails to load, the
+        existing <code>hero_fallback</code> gradient handles it — no additional placeholder needed.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ── Handoff ── -->
+  <h2>Engineering handoff</h2>
+  <div class="handoff-inner">
+    <h4>→ Senior Product Engineer · Ready to implement alongside SubstitutionSheet</h4>
+    <div class="handoff-row">
+      <span class="handoff-key">Badge logic</span>
+      <span class="handoff-val">Derive from <code>recipe.steps.every(s =&gt; !!s.photo_url)</code> — no new schema field needed. Compute once in <code>recipe/[id].tsx</code>, pass as <code>hasStagePhotos</code> prop.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Card badge</span>
+      <span class="handoff-val">Add to <code>RecipeCard</code> component. Absolute position bottom-right. Render when <code>!hasStagePhotos</code>. Existing difficulty badge stays bottom-left — no collision.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Detail notice</span>
+      <span class="handoff-val">Render once between meta row and Start Cooking pill. Render when <code>!hasStagePhotos</code>.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Step placeholder</span>
+      <span class="handoff-val">In the step render function, replace the <code>&lt;Image&gt;</code> block with the placeholder when <code>!step.photo_url</code>. Cook mode: swap surface colours to <code>tokens.cookMode.*</code>.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">When badge goes away</span>
+      <span class="handoff-val">Once <code>photo_url</code> is populated on all steps in the DB, the derived flag flips automatically. No code change needed at photo time — just a data update.</span>
+    </div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

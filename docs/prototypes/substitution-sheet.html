@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Substitution Bottom-Sheet — Hone Design Spec</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,500&family=Source+Sans+3:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Hone design tokens (mirrored from mobile/src/theme/tokens.ts) ── */
+    :root {
+      --bg:            #F7F2EE;
+      --bg-deep:       #EDE6DD;
+      --cream:         #FFFFFF;
+      --ink:           #1A130E;
+      --ink-soft:      #5A4D44;
+      --muted:         #7A6B62;
+      --primary:       #D88A7B;
+      --primary-deep:  #B86A5A;
+      --primary-ink:   #A85040;
+      --primary-light: rgba(216,138,123,0.18);
+      --sage:          #9DB89C;
+      --sage-deep:     #7A9779;
+      --sage-light:    rgba(157,184,156,0.22);
+      --ochre:         #E8C97A;
+      --ochre-deep:    #C9A858;
+      --warm-brown:    #85614D;
+      --sky:           #B8CFD9;
+      --sky-deep:      #7A9CAB;
+      --sky-light:     rgba(184,207,217,0.28);
+      --line:          #E8DFD4;
+      --line-dark:     #D4C9BB;
+      --font-display:  'Playfair Display', Georgia, serif;
+      --font-sans:     'Source Sans 3', system-ui, sans-serif;
+    }
+
+    /* ── Page chrome ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #F0EBE3;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── Spec header ── */
+    .spec-header {
+      background: var(--ink);
+      color: #F5EFE8;
+      padding: 24px 32px;
+    }
+    .spec-header h1 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .spec-header p {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      opacity: 0.65;
+      letter-spacing: 0.02em;
+    }
+    .spec-badge {
+      display: inline-block;
+      margin-top: 10px;
+      background: var(--primary);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 420px 1fr;
+      gap: 0;
+      padding: 40px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .left-col  { padding: 16px 24px 0 0; }
+    .right-col { padding: 16px 0 0 24px; }
+
+    /* ── Phone frame ── */
+    .phone-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .state-label {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 10px;
+      align-self: flex-start;
+    }
+    .phone {
+      width: 375px;
+      height: 700px;
+      background: var(--bg);
+      border-radius: 40px;
+      border: 8px solid #2A1F18;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .phone-inner {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      border-radius: 32px;
+    }
+
+    /* ── Screen content ── */
+    .screen {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--bg);
+      scrollbar-width: none;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+
+    /* ── Recipe detail (simplified) ── */
+    .recipe-header {
+      background: var(--cream);
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .recipe-kicker {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary-ink);
+      margin-bottom: 6px;
+    }
+    .recipe-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .recipe-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .recipe-meta span {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .recipe-meta span strong {
+      color: var(--ink-soft);
+      font-weight: 700;
+    }
+
+    /* ── Section heading ── */
+    .section-head {
+      padding: 14px 20px 10px;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      background: var(--bg);
+    }
+
+    /* ── Ingredient rows ── */
+    .ingredient-list {
+      background: var(--cream);
+      border-radius: 14px;
+      margin: 0 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(31,24,20,0.07);
+    }
+    .ingredient-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      gap: 12px;
+      cursor: default;
+      transition: background 120ms ease;
+      min-height: 56px;
+    }
+    .ingredient-row:last-child { border-bottom: none; }
+    .ingredient-row.has-subs {
+      cursor: pointer;
+    }
+    .ingredient-row.has-subs:active { background: var(--bg-deep); }
+
+    .ingredient-amount {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--ink);
+      min-width: 52px;
+      text-align: right;
+      padding-top: 1px;
+      flex-shrink: 0;
+    }
+    .ingredient-info {
+      flex: 1;
+    }
+    .ingredient-name {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .ingredient-prep {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .swap-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: -2px;
+    }
+    .swap-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ── Bottom sheet overlay ── */
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(26,19,14,0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 280ms ease;
+      z-index: 10;
+      border-radius: 32px;
+    }
+    .sheet-backdrop.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--cream);
+      border-radius: 20px 20px 0 0;
+      transform: translateY(100%);
+      transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 20;
+      max-height: 82%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+    }
+    .sheet.open {
+      transform: translateY(0);
+    }
+
+    /* Handle */
+    .sheet-handle-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 12px 0 4px;
+      flex-shrink: 0;
+    }
+    .sheet-handle {
+      width: 32px;
+      height: 4px;
+      background: var(--line-dark);
+      border-radius: 2px;
+    }
+
+    /* Sheet header */
+    .sheet-header {
+      padding: 4px 20px 14px;
+      flex-shrink: 0;
+    }
+    .sheet-kicker {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .sheet-ingredient-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .sheet-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 0 20px;
+      flex-shrink: 0;
+    }
+
+    /* Substitution rows */
+    .sub-list {
+      overflow-y: auto;
+      flex: 1;
+      scrollbar-width: none;
+    }
+    .sub-list::-webkit-scrollbar { display: none; }
+
+    .sub-row {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 100ms ease;
+      border-left: 3px solid transparent;
+    }
+    .sub-row:last-child { border-bottom: none; }
+    .sub-row:active { background: var(--bg); }
+    .sub-row.selected {
+      background: var(--primary-light);
+      border-left-color: var(--primary-deep);
+    }
+
+    .sub-row-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+    .quality-pill {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 99px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pill-perfect { background: var(--sage); color: var(--ink); }
+    .pill-great   { background: var(--sage-light); color: var(--sage-deep); border: 1px solid var(--sage-deep); }
+    .pill-good    { background: var(--ochre); color: var(--ink); }
+    .pill-compromise { background: var(--bg-deep); color: var(--muted); }
+
+    .sub-ingredient {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .sub-changes {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+    .sub-qty-note {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+    .sub-hard-find {
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: var(--sky-light);
+      border-radius: 8px;
+    }
+    .sub-hard-find svg { flex-shrink: 0; margin-top: 1px; }
+    .sub-hard-find-text {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--sky-deep);
+      line-height: 1.4;
+    }
+
+    /* Sheet CTA */
+    .sheet-cta {
+      flex-shrink: 0;
+      padding: 14px 20px 20px;
+      border-top: 1px solid var(--line);
+      background: var(--cream);
+    }
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--primary);
+      color: var(--ink);
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 120ms ease, transform 80ms ease;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:active {
+      background: var(--primary-deep);
+      transform: scale(0.99);
+    }
+    .btn-primary:disabled {
+      background: var(--line-dark);
+      color: var(--muted);
+      cursor: default;
+      transform: none;
+    }
+    .btn-keep {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 4px;
+      background: none;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--primary-ink);
+      cursor: pointer;
+      text-align: center;
+      line-height: 1;
+    }
+    .btn-keep:active { opacity: 0.6; }
+
+    /* ── Confirmation toast ── */
+    .toast {
+      position: absolute;
+      bottom: 24px;
+      left: 16px;
+      right: 16px;
+      background: var(--ink);
+      color: #F5EFE8;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 220ms ease, transform 220ms ease;
+      z-index: 30;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Spec panels ── */
+    .spec-section {
+      margin-bottom: 32px;
+    }
+    .spec-section h3 {
+      font-family: var(--font-sans);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .spec-table tr { border-bottom: 1px solid var(--line); }
+    .spec-table tr:last-child { border-bottom: none; }
+    .spec-table td {
+      padding: 7px 0;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      vertical-align: top;
+    }
+    .spec-table td:first-child {
+      color: var(--muted);
+      width: 52%;
+      padding-right: 8px;
+    }
+    .spec-table td:last-child {
+      color: var(--ink);
+      font-weight: 700;
+    }
+    code {
+      font-family: 'Menlo', 'Courier New', monospace;
+      font-size: 11px;
+      background: var(--bg-deep);
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: var(--primary-ink);
+    }
+
+    /* Pill preview */
+    .pill-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+    }
+    .pill-row .quality-pill { display: inline-block; }
+    .pill-row .pill-label { color: var(--muted); }
+
+    /* Instruction callout */
+    .try-hint {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--bg-deep);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .try-hint strong { color: var(--primary-ink); }
+
+    /* ── Full-width states row (below fold) ── */
+    .states-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+    .states-section h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .states-section > p {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .states-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .state-card {
+      background: var(--cream);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+    .state-card h4 {
+      font-family: var(--font-sans);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--warm-brown);
+      margin-bottom: 12px;
+    }
+
+    /* Design notes */
+    .notes-section {
+      max-width: 760px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+    }
+    .notes-section h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .design-note {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      border-left: 3px solid var(--primary);
+    }
+    .design-note h4 {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--ink);
+      margin-bottom: 5px;
+    }
+    .design-note p {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+
+    /* ── Handoff block ── */
+    .handoff-block {
+      max-width: 760px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+    }
+    .handoff-block h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+    .handoff-inner {
+      background: #1A130E;
+      border-radius: 12px;
+      padding: 20px 24px;
+      color: #F5EFE8;
+    }
+    .handoff-inner h4 {
+      font-family: var(--font-sans);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 10px;
+    }
+    .handoff-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+    }
+    .handoff-key {
+      color: var(--primary);
+      font-weight: 700;
+      min-width: 100px;
+      flex-shrink: 0;
+    }
+    .handoff-val {
+      color: rgba(245,239,232,0.80);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .left-col, .right-col { padding: 0; }
+      .phone-wrap { align-items: center; }
+      .states-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Spec header ── -->
+<div class="spec-header">
+  <h1>Substitution Bottom-Sheet</h1>
+  <p>Product Designer spec · Hone v0.5 · 29 April 2026</p>
+  <span class="spec-badge">Interactive Prototype</span>
+</div>
+
+<!-- ── Main layout: phone + spec panels ── -->
+<div class="layout">
+
+  <!-- Left col: context -->
+  <div class="left-col">
+    <div class="spec-section">
+      <h3>What this is</h3>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+        The visible surface for the <code>substitutions[]</code> data already in the schema.
+        This is Hone's primary competitive differentiator over Yummly and Supercook —
+        honest, specific swap guidance with a quality rating for each alternative.
+      </p>
+    </div>
+
+    <div class="spec-section">
+      <h3>Quality pills</h3>
+      <div class="pill-row">
+        <span class="quality-pill pill-perfect">Perfect swap</span>
+        <span class="pill-label"><code>perfect_swap</code></span>
+      </div>
+      <div class="pill-row">
+        <span class="quality-pill pill-great">Great swap</span>
+        <span class="pill-label"><code>great_swap</code></span>
+      </div>
+      <div class="pill-row">
+        <span class="quality-pill pill-good">Good swap</span>
+        <span class="pill-label"><code>good_swap</code> / <code>good</code></span>
+      </div>
+      <div class="pill-row">
+        <span class="quality-pill pill-compromise">Compromise</span>
+        <span class="pill-label"><code>compromise</code></span>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;">
+        No traffic-light red. There is no "bad substitute" in the schema — if the result is bad,
+        it doesn't get listed. The pill label communicates quality; the changes text explains the tradeoff.
+      </p>
+    </div>
+
+    <div class="spec-section">
+      <h3>Ingredient row affordance</h3>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+        Ingredients with substitutions show the ⇌ swap icon in <code>--primary-ink</code>.
+        Ingredients without substitutions show no icon and are not tappable.
+        Whole row is the tap target (min 56dp height satisfies 44dp floor).
+      </p>
+    </div>
+
+    <div class="spec-section">
+      <h3>Hard-to-find flag</h3>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+        When <code>hard_to_find: true</code> on the original ingredient, a sky-coloured
+        information row appears under the substitution's changes text — not intrusive,
+        but surfaced before the user goes shopping. Uses sky tokens as a neutral info colour
+        (not warning amber, which implies danger).
+      </p>
+    </div>
+  </div>
+
+  <!-- Centre: phone -->
+  <div class="phone-wrap">
+    <span class="state-label">Live demo — tap a highlighted ingredient</span>
+
+    <div class="try-hint">
+      <strong>Try it:</strong> Tap any ingredient with the ⇌ icon to open the sheet.
+      Select an alternative, then confirm.
+    </div>
+
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="screen" id="screen">
+
+          <!-- Fake recipe header -->
+          <div class="recipe-header">
+            <div class="recipe-kicker">Andy Cooks</div>
+            <div class="recipe-title">Smash Burger</div>
+            <div class="recipe-meta">
+              <span><strong>20 min</strong></span>
+              <span><strong>Easy</strong></span>
+              <span><strong>2 serves</strong></span>
+            </div>
+          </div>
+
+          <!-- Ingredients section -->
+          <div class="section-head">Ingredients</div>
+          <div class="ingredient-list">
+
+            <!-- Row 1 — has subs -->
+            <div class="ingredient-row has-subs" role="button" aria-expanded="false"
+                 aria-label="Beef mince, 80/20 fat, 400 g. Has substitution options. Double-tap to view."
+                 onclick="openSheet('beef-mince')">
+              <div class="ingredient-amount">400 g</div>
+              <div class="ingredient-info">
+                <div class="ingredient-name" id="name-beef-mince">Beef mince (80/20 fat)</div>
+                <div class="ingredient-prep">Fat ratio matters — lean beef steams instead of crisping</div>
+              </div>
+              <div class="swap-icon">
+                <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M3 5.5h12M12 3l3 2.5-3 2.5M15 12.5H3M6 10l-3 2.5 3 2.5" stroke="#A85040" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Row 2 — has subs -->
+            <div class="ingredient-row has-subs" role="button" aria-expanded="false"
+                 aria-label="Burger buns, brioche, 2. Has substitution options. Double-tap to view."
+                 onclick="openSheet('buns')">
+              <div class="ingredient-amount">2</div>
+              <div class="ingredient-info">
+                <div class="ingredient-name" id="name-buns">Burger buns (brioche)</div>
+              </div>
+              <div class="swap-icon">
+                <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M3 5.5h12M12 3l3 2.5-3 2.5M15 12.5H3M6 10l-3 2.5 3 2.5" stroke="#A85040" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Row 3 — has subs -->
+            <div class="ingredient-row has-subs" role="button" aria-expanded="false"
+                 aria-label="American cheese slices, 2. Has substitution options. Double-tap to view."
+                 onclick="openSheet('cheese')">
+              <div class="ingredient-amount">2</div>
+              <div class="ingredient-info">
+                <div class="ingredient-name" id="name-cheese">American cheese slices</div>
+              </div>
+              <div class="swap-icon">
+                <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M3 5.5h12M12 3l3 2.5-3 2.5M15 12.5H3M6 10l-3 2.5 3 2.5" stroke="#A85040" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Row 4 — no subs -->
+            <div class="ingredient-row" aria-label="Canola oil, 1 tbsp.">
+              <div class="ingredient-amount">1 tbsp</div>
+              <div class="ingredient-info">
+                <div class="ingredient-name">Canola oil</div>
+                <div class="ingredient-prep">Or any neutral high-smoke-point oil</div>
+              </div>
+              <div class="swap-icon"></div>
+            </div>
+
+            <!-- Row 5 — no subs -->
+            <div class="ingredient-row" aria-label="Dill pickles, 6 slices.">
+              <div class="ingredient-amount">6</div>
+              <div class="ingredient-info">
+                <div class="ingredient-name">Dill pickles, sliced</div>
+              </div>
+              <div class="swap-icon"></div>
+            </div>
+
+          </div><!-- /ingredient-list -->
+
+          <div style="height:120px;"></div><!-- scroll buffer -->
+
+        </div><!-- /screen -->
+
+        <!-- ── Backdrop ── -->
+        <div class="sheet-backdrop" id="backdrop" onclick="closeSheet()"></div>
+
+        <!-- ── Bottom sheet ── -->
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+
+          <div class="sheet-handle-wrap"><div class="sheet-handle"></div></div>
+
+          <div class="sheet-header">
+            <div class="sheet-kicker">Swap for</div>
+            <div class="sheet-ingredient-name" id="sheet-title">—</div>
+          </div>
+
+          <div class="sheet-divider"></div>
+
+          <div class="sub-list" id="sub-list" role="radiogroup" aria-label="Substitution options">
+            <!-- filled by JS -->
+          </div>
+
+          <div class="sheet-cta">
+            <button class="btn-primary" id="btn-confirm" disabled onclick="confirmSwap()">
+              Choose a swap above
+            </button>
+            <button class="btn-keep" onclick="closeSheet()">Keep original</button>
+          </div>
+
+        </div><!-- /sheet -->
+
+        <!-- Toast -->
+        <div class="toast" id="toast" aria-live="polite"></div>
+
+      </div><!-- /phone-inner -->
+    </div><!-- /phone -->
+  </div><!-- /phone-wrap -->
+
+  <!-- Right col: spec values -->
+  <div class="right-col">
+
+    <div class="spec-section">
+      <h3>Bottom sheet</h3>
+      <table class="spec-table">
+        <tr><td>Corner radius (top)</td><td>20dp</td></tr>
+        <tr><td>Max height</td><td>82% of viewport</td></tr>
+        <tr><td>Open animation</td><td>300ms <code>cubic-bezier(0.4,0,0.2,1)</code></td></tr>
+        <tr><td>Close animation</td><td>250ms <code>cubic-bezier(0.4,0,0.2,1)</code></td></tr>
+        <tr><td>Handle bar size</td><td>32 × 4dp</td></tr>
+        <tr><td>Handle colour</td><td><code>tokens.lineDark</code> #D4C9BB</td></tr>
+        <tr><td>Handle top padding</td><td>12dp</td></tr>
+        <tr><td>Backdrop</td><td><code>rgba(26,19,14,0.45)</code></td></tr>
+        <tr><td>Shadow</td><td><code>shadows.toast</code></td></tr>
+        <tr><td>Background</td><td><code>tokens.cream</code> #FFFFFF</td></tr>
+        <tr><td>Dismiss</td><td>Backdrop tap · "Keep original" button</td></tr>
+        <tr><td>Scroll</td><td>Sub-list scrolls; handle + CTA pinned</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <h3>Sheet header</h3>
+      <table class="spec-table">
+        <tr><td>Kicker ("Swap for")</td><td>Source Sans 700, 11sp, <code>--muted</code>, uppercase, 0.09em tracking</td></tr>
+        <tr><td>Ingredient name</td><td>Playfair Display 700, 20sp, <code>--ink</code></td></tr>
+        <tr><td>Header padding</td><td>4dp top, 20dp H, 14dp bottom</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <h3>Substitution row</h3>
+      <table class="spec-table">
+        <tr><td>Row padding</td><td>14dp vertical, 20dp horizontal</td></tr>
+        <tr><td>Min height</td><td>72dp</td></tr>
+        <tr><td>Left border (unselected)</td><td>3dp, transparent</td></tr>
+        <tr><td>Left border (selected)</td><td>3dp, <code>--primary-deep</code></td></tr>
+        <tr><td>Background (selected)</td><td><code>--primary-light</code></td></tr>
+        <tr><td>Ingredient name</td><td>Source Sans 700, 14sp, <code>--ink</code></td></tr>
+        <tr><td>Changes text</td><td>Source Sans 400, 12sp, <code>--ink-soft</code>, 1.45 line-height</td></tr>
+        <tr><td>Quantity note</td><td>Source Sans 400 italic, 11sp, <code>--muted</code></td></tr>
+        <tr><td>Pill → name gap</td><td>8dp</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <h3>CTA area</h3>
+      <table class="spec-table">
+        <tr><td>Area padding</td><td>14dp top, 20dp H, 20dp bottom (+ safe inset)</td></tr>
+        <tr><td>Top border</td><td>1dp <code>--line</code></td></tr>
+        <tr><td>Primary button height</td><td>48dp</td></tr>
+        <tr><td>Primary button radius</td><td>12dp</td></tr>
+        <tr><td>Primary button bg</td><td><code>tokens.primary</code> (disabled: <code>--line-dark</code>)</td></tr>
+        <tr><td>Primary button text</td><td>Source Sans 800, 15sp, <code>tokens.ink</code></td></tr>
+        <tr><td>"Keep original"</td><td>Source Sans 400, 14sp, <code>--primary-ink</code>, centred</td></tr>
+        <tr><td>Gap between</td><td>10dp</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <h3>Ingredient row (list)</h3>
+      <table class="spec-table">
+        <tr><td>Row min-height</td><td>56dp</td></tr>
+        <tr><td>Amount column width</td><td>52dp, right-aligned</td></tr>
+        <tr><td>Swap icon size</td><td>18 × 18dp</td></tr>
+        <tr><td>Swap icon colour</td><td><code>--primary-ink</code> #A85040</td></tr>
+        <tr><td>No-subs row</td><td>No icon; not tappable; <code>cursor: default</code></td></tr>
+        <tr><td>TalkBack (has subs)</td><td>"[Name]. Has substitution options. Double-tap to view."</td></tr>
+        <tr><td>TalkBack (no subs)</td><td>"[Amount] [Name]."</td></tr>
+      </table>
+    </div>
+
+  </div><!-- /right-col -->
+</div><!-- /layout -->
+
+
+<!-- ── States reference ── -->
+<div class="states-section">
+  <h2>All states — reference</h2>
+  <p>Static snapshots of each state. Use these alongside the live demo for engineering reference.</p>
+
+  <div class="states-grid">
+
+    <!-- State 1: Default -->
+    <div class="state-card">
+      <h4>1 — Default</h4>
+      <p style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px;">
+        Ingredient list. Rows with substitutions show the ⇌ icon in <code>--primary-ink</code>.
+        No icon on rows without substitutions.
+      </p>
+      <div style="background:var(--cream);border-radius:10px;overflow:hidden;border:1px solid var(--line);">
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);">
+          <span style="font-size:11px;font-weight:700;min-width:44px;text-align:right;color:var(--ink);">400 g</span>
+          <span style="flex:1;font-size:12px;font-weight:700;color:var(--ink);">Beef mince (80/20)</span>
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M3 5.5h12M12 3l3 2.5-3 2.5M15 12.5H3M6 10l-3 2.5 3 2.5" stroke="#A85040" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:700;min-width:44px;text-align:right;color:var(--ink);">1 tbsp</span>
+          <span style="flex:1;font-size:12px;font-weight:700;color:var(--ink);">Canola oil</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 2: Sheet open -->
+    <div class="state-card">
+      <h4>2 — Sheet open</h4>
+      <p style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px;">
+        Sheet slides up. Sub-list visible. No substitution selected yet — confirm button disabled.
+      </p>
+      <div style="background:var(--cream);border-radius:10px;overflow:hidden;border:1px solid var(--line);">
+        <div style="padding:8px 12px 2px;text-align:center;">
+          <div style="width:24px;height:3px;background:var(--line-dark);border-radius:2px;margin:0 auto 6px;"></div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Swap for</div>
+          <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px;">Beef mince (80/20)</div>
+        </div>
+        <div style="border-top:1px solid var(--line);padding:8px 12px;border-bottom:1px solid var(--line);">
+          <div style="margin-bottom:4px;">
+            <span class="quality-pill pill-good" style="font-size:10px;padding:2px 7px;">Good swap</span>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--ink);">Wagyu beef mince</div>
+          <div style="font-size:10px;color:var(--ink-soft);margin-top:2px;">Richer result. Cook 10–15s shorter per side.</div>
+        </div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--line);">
+          <div style="margin-bottom:4px;">
+            <span class="quality-pill pill-compromise" style="font-size:10px;padding:2px 7px;">Compromise</span>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--ink);">Lean beef mince (92/8)</div>
+          <div style="font-size:10px;color:var(--ink-soft);margin-top:2px;">Significantly less crust.</div>
+        </div>
+        <div style="padding:8px 12px;">
+          <div style="background:var(--line-dark);border-radius:8px;height:28px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:11px;font-weight:800;color:var(--muted);">Choose a swap above</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 3: Selected -->
+    <div class="state-card">
+      <h4>3 — Selected</h4>
+      <p style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px;">
+        Row highlighted: <code>--primary-light</code> bg, 3dp <code>--primary-deep</code> left border.
+        Confirm button activates.
+      </p>
+      <div style="background:var(--cream);border-radius:10px;overflow:hidden;border:1px solid var(--line);">
+        <div style="padding:8px 12px;border-bottom:1px solid var(--line);background:var(--primary-light);border-left:3px solid var(--primary-deep);">
+          <div style="margin-bottom:4px;">
+            <span class="quality-pill pill-good" style="font-size:10px;padding:2px 7px;">Good swap</span>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--ink);">Wagyu beef mince ✓</div>
+          <div style="font-size:10px;color:var(--ink-soft);margin-top:2px;">Richer result. Cook 10–15s shorter.</div>
+        </div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--line);opacity:0.5;">
+          <div style="font-size:11px;font-weight:700;color:var(--ink);">Lean beef mince (92/8)</div>
+        </div>
+        <div style="padding:8px 12px;">
+          <div style="background:var(--primary);border-radius:8px;height:28px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:11px;font-weight:800;color:var(--ink);">Use Wagyu beef mince</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 4: Confirmed -->
+    <div class="state-card">
+      <h4>4 — Confirmed</h4>
+      <p style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px;">
+        Sheet closes. Ingredient row name updates inline. Toast confirms the swap (3s auto-dismiss).
+      </p>
+      <div style="background:var(--cream);border-radius:10px;overflow:hidden;border:1px solid var(--line);margin-bottom:8px;">
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);">
+          <span style="font-size:11px;font-weight:700;min-width:44px;text-align:right;color:var(--ink);">400 g</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;color:var(--ink);">Wagyu beef mince</div>
+            <div style="font-size:10px;color:var(--primary-ink);">Swapped from: Beef mince (80/20)</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M3 5.5h12M12 3l3 2.5-3 2.5M15 12.5H3M6 10l-3 2.5 3 2.5" stroke="#A85040" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div style="background:var(--ink);border-radius:8px;padding:8px 12px;">
+        <div style="font-size:11px;font-weight:700;color:#F5EFE8;">Swapped to Wagyu beef mince</div>
+      </div>
+    </div>
+
+  </div><!-- /states-grid -->
+</div><!-- /states-section -->
+
+
+<!-- ── Design notes ── -->
+<div class="notes-section">
+  <h2>Design notes</h2>
+
+  <div class="design-note">
+    <h4>Why a bottom sheet and not an inline dropdown or modal?</h4>
+    <p>
+      Inline dropdowns on long ingredient lists would require the user to scroll back to the right
+      position after the expanded row pushes content down. Modals are disorienting on mobile —
+      they break spatial context. The bottom sheet is the established Android pattern for contextual
+      actions: it keeps the list visible above it (scrim but readable), and dismisses with a familiar
+      swipe-down or backdrop tap. <code>BottomSheetModal</code> from @gorhom/bottom-sheet is the
+      implementation path — it handles safe insets, keyboard avoidance, and fling gestures natively.
+    </p>
+  </div>
+
+  <div class="design-note">
+    <h4>Why no traffic-light colours on quality pills?</h4>
+    <p>
+      Red would signal "don't use this" — but every substitution listed is plausible, just with a
+      tradeoff. Calling something red would undermine trust in the whole system. The "Compromise"
+      pill in warm grey with muted text communicates "use with awareness" rather than "avoid".
+      The changes text does the actual communicating. Colour is a supporting signal only.
+    </p>
+  </div>
+
+  <div class="design-note">
+    <h4>Why does confirming update the ingredient name in the list?</h4>
+    <p>
+      The user should be able to glance at the ingredient list and immediately know what to buy.
+      If they've swapped beef mince for wagyu, the list must reflect that — otherwise they'll
+      notice the discrepancy mid-shop and have to remember which swap they made. A small
+      "Swapped from: X" caption maintains reversibility without requiring a separate undo flow.
+      The swap icon remains on the row so they can re-open the sheet and change again.
+    </p>
+  </div>
+
+  <div class="design-note">
+    <h4>Why is "Keep original" a text button and not a secondary button?</h4>
+    <p>
+      Users will tap into the sheet to browse substitutions without committing. If "Keep original"
+      looked like an equal action to "Confirm", it would create a binary choice framing — "do you
+      swap or not?" The text link reads as dismissal, not a decision, which matches the mental model:
+      browsing is free, confirming is the action.
+    </p>
+  </div>
+
+  <div class="design-note">
+    <h4>Accessibility</h4>
+    <p>
+      Sheet has <code>role="dialog"</code> and <code>aria-modal="true"</code>. Title has
+      <code>aria-labelledby</code>. Sub-list uses <code>role="radiogroup"</code> with each row
+      as <code>role="radio"</code>. Ingredient rows that are tappable carry a TalkBack description:
+      "[Name]. Has substitution options. Double-tap to view." All interactive touch targets are
+      minimum 44dp. The confirm button state is communicated via <code>disabled</code> attribute,
+      not just visual dimming.
+    </p>
+  </div>
+</div>
+
+
+<!-- ── Engineer handoff ── -->
+<div class="handoff-block">
+  <h2>Engineering handoff</h2>
+  <div class="handoff-inner">
+    <h4>→ Senior Product Engineer · Ready to implement</h4>
+    <div class="handoff-row">
+      <span class="handoff-key">Component</span>
+      <span class="handoff-val">SubstitutionSheet — new component in <code>mobile/src/components/SubstitutionSheet.tsx</code></span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Library</span>
+      <span class="handoff-val"><code>@gorhom/bottom-sheet</code> — handles safe insets, gesture dismissal, fling. Use <code>BottomSheetModal</code>.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Props</span>
+      <span class="handoff-val"><code>ingredient: Ingredient</code>, <code>visible: boolean</code>, <code>onSwap(sub: Substitution): void</code>, <code>onDismiss(): void</code></span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Trigger</span>
+      <span class="handoff-val">Tap on ingredient row in <code>mobile/app/recipe/[id].tsx</code>. Only render swap icon when <code>ingredient.substitutions?.length > 0</code>.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">State</span>
+      <span class="handoff-val">Selected substitution is local UI state — does not need to persist to SQLite unless Phase 5 scope expands to "remember my swaps".</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Quality pill map</span>
+      <span class="handoff-val"><code>perfect_swap</code> → sage / <code>great_swap</code> → sage-light / <code>good_swap</code> + <code>good</code> → ochre / <code>compromise</code> → bg-deep</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Toast</span>
+      <span class="handoff-val">Use existing toast infrastructure. Message: "Swapped to [ingredient name]". Auto-dismiss 3000ms.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Cook mode</span>
+      <span class="handoff-val">Sheet should inherit <code>cookMode</code> tokens when cooking is active. Use conditional token set from <code>tokens.cookMode</code>.</span>
+    </div>
+    <div class="handoff-row">
+      <span class="handoff-key">Blocks</span>
+      <span class="handoff-val">Nothing else is blocked by this — work can start immediately.</span>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // ── Substitution data (from seed-recipes.ts, 3 ingredients) ── //
+  const DATA = {
+    'beef-mince': {
+      name: 'Beef mince (80/20 fat)',
+      subs: [
+        {
+          ingredient: 'Wagyu beef mince',
+          changes: 'Richer, beefier result. Cook 10–15 seconds shorter per side — the extra fat means faster browning. Excellent upgrade if budget allows.',
+          quality: 'good',
+          hard_to_find: true,
+          local_alternative: 'Coles and Woolworths stock wagyu beef mince in the premium section. Harris Farm is a reliable backup.'
+        },
+        {
+          ingredient: 'Lean beef mince (92/8 fat)',
+          changes: 'Significantly less crust. The fat is what creates crispy lacey edges — lean beef steams from its own moisture instead of browning. Burger becomes drier throughout.',
+          quality: 'compromise',
+        },
+        {
+          ingredient: 'Lamb mince (20% fat)',
+          changes: 'Completely different flavour profile — gamey and richer. Works very well with yoghurt sauce and mint instead of burger sauce. Not a direct substitute; a different dish.',
+          quality: 'compromise',
+        },
+      ]
+    },
+    'buns': {
+      name: 'Burger buns (brioche)',
+      subs: [
+        {
+          ingredient: 'Potato bun',
+          changes: 'Slightly denser, less sweet, holds up equally well to sauce and steam. Common in American diners — a legitimate choice.',
+          quality: 'good',
+        },
+        {
+          ingredient: 'Regular sesame-seed burger bun',
+          changes: 'Less richness without the egg and butter content of brioche. Toasting is even more critical to prevent sogginess. Budget option that works fine.',
+          quality: 'compromise',
+        },
+      ]
+    },
+    'cheese': {
+      name: 'American cheese slices',
+      subs: [
+        {
+          ingredient: 'Provolone',
+          changes: 'Melts cleanly with a mild, slightly nutty flavour. Italian-American diner standard — a genuine upgrade in flavour with no compromise on melt.',
+          quality: 'good',
+        },
+        {
+          ingredient: 'Gruyère',
+          changes: 'Rich, nutty, excellent melt. Changes the character toward a bistro-style burger. Pairs exceptionally with caramelised onion.',
+          quality: 'good',
+        },
+        {
+          ingredient: 'Mild cheddar, thinly sliced',
+          changes: 'Better flavour but inferior melt. American cheese is engineered for even, glossy melt — cheddar can turn oily. Place it on the patty earlier and cover with a lid to steam-melt it.',
+          quality: 'compromise',
+        },
+      ]
+    }
+  };
+
+  const PILL_CLASS = {
+    perfect_swap: 'pill-perfect',
+    great_swap:   'pill-great',
+    good_swap:    'pill-good',
+    good:         'pill-good',
+    compromise:   'pill-compromise',
+  };
+  const PILL_LABEL = {
+    perfect_swap: 'Perfect swap',
+    great_swap:   'Great swap',
+    good_swap:    'Good swap',
+    good:         'Good swap',
+    compromise:   'Compromise',
+  };
+
+  let currentKey = null;
+  let selectedIdx = null;
+
+  function openSheet(key) {
+    currentKey = key;
+    selectedIdx = null;
+    const data = DATA[key];
+
+    document.getElementById('sheet-title').textContent = data.name;
+
+    // Build sub rows
+    const list = document.getElementById('sub-list');
+    list.innerHTML = '';
+    data.subs.forEach((sub, i) => {
+      const row = document.createElement('div');
+      row.className = 'sub-row';
+      row.setAttribute('role', 'radio');
+      row.setAttribute('aria-checked', 'false');
+      row.setAttribute('aria-label', `${sub.ingredient}. ${PILL_LABEL[sub.quality]}. ${sub.changes}`);
+      row.setAttribute('tabindex', '0');
+      row.innerHTML = `
+        <div class="sub-row-top">
+          <span class="quality-pill ${PILL_CLASS[sub.quality]}">${PILL_LABEL[sub.quality]}</span>
+          <span class="sub-ingredient">${sub.ingredient}</span>
+        </div>
+        <div class="sub-changes">${sub.changes}</div>
+        ${sub.quantity_note ? `<div class="sub-qty-note">${sub.quantity_note}</div>` : ''}
+        ${sub.hard_to_find ? `
+          <div class="sub-hard-find">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="7" stroke="#7A9CAB" stroke-width="1.4"/>
+              <path d="M8 7v4M8 5.5v.5" stroke="#7A9CAB" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <span class="sub-hard-find-text">${sub.local_alternative}</span>
+          </div>` : ''}
+      `;
+      row.onclick = () => selectSub(i);
+      row.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') selectSub(i); };
+      list.appendChild(row);
+    });
+
+    updateConfirmBtn();
+
+    // Animate open
+    document.getElementById('backdrop').classList.add('visible');
+    setTimeout(() => document.getElementById('sheet').classList.add('open'), 10);
+
+    // Scroll screen to top so sheet is visible
+    document.getElementById('screen').scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectSub(idx) {
+    selectedIdx = idx;
+    const rows = document.querySelectorAll('.sub-row');
+    rows.forEach((r, i) => {
+      r.classList.toggle('selected', i === idx);
+      r.setAttribute('aria-checked', i === idx ? 'true' : 'false');
+    });
+    updateConfirmBtn();
+  }
+
+  function updateConfirmBtn() {
+    const btn = document.getElementById('btn-confirm');
+    if (selectedIdx !== null && currentKey) {
+      const sub = DATA[currentKey].subs[selectedIdx];
+      btn.textContent = `Use ${sub.ingredient}`;
+      btn.disabled = false;
+    } else {
+      btn.textContent = 'Choose a swap above';
+      btn.disabled = true;
+    }
+  }
+
+  function confirmSwap() {
+    if (selectedIdx === null || !currentKey) return;
+    const sub = DATA[currentKey].subs[selectedIdx];
+
+    // Update ingredient name in list
+    const nameEl = document.getElementById(`name-${currentKey}`);
+    if (nameEl) {
+      nameEl.innerHTML = `${sub.ingredient}<br><span style="font-size:11px;font-weight:400;color:var(--primary-ink);">Swapped from: ${DATA[currentKey].name}</span>`;
+    }
+
+    closeSheet();
+    showToast(`Swapped to ${sub.ingredient}`);
+  }
+
+  function closeSheet() {
+    document.getElementById('sheet').classList.remove('open');
+    document.getElementById('backdrop').classList.remove('visible');
+    setTimeout(() => {
+      currentKey = null;
+      selectedIdx = null;
+    }, 300);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+
+</body>
+</html>
