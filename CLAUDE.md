@@ -221,7 +221,7 @@ This rule applies even when the fix is "obvious" or "the diff proves it works."
 
 | What | Where |
 |---|---|
-| Session reports | `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` |
+| Session reports | `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` (first of day); `_2`, `_3` etc. for further reports on the same day |
 | Architecture decisions | `docs/adr/NNN-kebab-title.md` |
 | HTML prototypes / mockups | `docs/prototypes/` |
 | Completed checklists, old backups | `docs/archive/` |
@@ -240,7 +240,7 @@ This rule applies even when the fix is "obvious" or "the diff proves it works."
 ## Naming conventions
 
 - Source files: `camelCase.ts`, `PascalCase.tsx` (React components), `kebab-case.md` (docs)
-- Session reports: `Hone_Session_Report_DD_Month_YYYY.md`
+- Session reports: `Hone_Session_Report_DD_Month_YYYY.md` — for the first (or only) report of the day. If a second report lands the same day, append a sequential number: `Hone_Session_Report_DD_Month_YYYY_2.md`, then `_3`, etc. **Never** append a role tag (`_COO`, `_engineer`, etc.) — role tags create a parallel naming convention that erodes over time. Discoverable content belongs in the H1 title and summary inside the file, not the filename.
 - ADRs: `NNN-kebab-title.md` (zero-padded three-digit sequence)
 - Archive snapshots: `backup-YYYY-MM-DD[-descriptor]/`
 

@@ -25,6 +25,85 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-04-30 · IN PROGRESS (awaiting Patrick on-device confirm)
+**From:** Product Designer + COO (direction switch confirmed by Patrick 30 April 2026)
+**Engineer note (30 Apr 2026):** All wiring done. APK build triggered. Awaiting Patrick's on-device smoke-test. Do NOT advance to Priority 2 until confirmed.
+**Subject:** Roll out v0.7 token changes — Dark Dramatic direction (font swap + full palette inversion)
+**Why:** Patrick chose the Dark Dramatic direction on 30 April 2026, superseding the earlier Medium Iteration pick. `mobile/src/theme/tokens.ts` is now at v0.7 with the complete dark token set. The Engineer needs to swap the Google Fonts package, wire up Inter, and verify all components render correctly on the inverted dark palette.
+
+⚠️ **NOTE:** The previous handoff for this slot said Medium Iteration (terracotta #C04A2E, cream bg). That is **superseded**. Implement v0.7 dark tokens. Do not implement v0.6.
+
+**What's done:** `mobile/src/theme/tokens.ts` updated to v0.7 — OLED dark bg (#111111), gold primary (#E8B830), inverted ink (#F5EFE8), Inter font constants, cook mode true black (#000000).
+
+**What's needed (in this order):**
+
+1. **Install Inter, remove Source Sans 3:**
+   ```
+   npx expo install @expo-google-fonts/inter
+   ```
+   Remove `@expo-google-fonts/source-sans-3` from `mobile/package.json` dependencies.
+
+2. **Update `useFonts()` in `mobile/app/_layout.tsx`:**
+   Replace the `SourceSans3_*` font imports with:
+   ```ts
+   import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_800ExtraBold } from '@expo-google-fonts/inter';
+   ```
+   Update the `useFonts({})` call to load those three weights.
+
+3. **Grep for any hardcoded `SourceSans3` or `source-sans` references** outside of tokens.ts and update them.
+
+4. **Grep and fix all hardcoded light surface colours** — any `#F6F0E8`, `#EBE2D6`, `#FFFFFF`, `#181008`, `#D88A7B`, `#C04A2E`, `#B86A5A` in component files. Replace with the appropriate token reference.
+
+5. **Check StatusBar and NavigationBar configuration** — on dark bg the system bars need `dark-content` → `light-content` (light icons on dark bg). Update any `StatusBar` style props accordingly.
+
+6. **Build a dev APK and smoke-test:**
+   - App bg is near-black `#111111`, not cream
+   - Body text is warm off-white `#F5EFE8`, legible on dark
+   - Primary accent (buttons, chips, active states) is gold `#E8B830`, not terracotta
+   - Browse screen renders with Inter body text
+   - Headings still in Playfair Display
+   - Gold buttons use dark label text (`tokens.bgDeep`), not light — the surface is light gold
+   - Cook mode true black `#000000` is visually darker than app bg `#111111`
+   - No cream or pink remnants anywhere
+
+**Files to touch:** `mobile/package.json`, `mobile/app/_layout.tsx`, any component with hardcoded font or colour strings, StatusBar configuration.
+**Prototype reference:** `docs/prototypes/concept-dark-dramatic.html` (open in Chrome — Cowork panel renders prototypes poorly)
+**Blocks:** Photography weekend planning (Patrick needs to see the dark tokens on-device before finalising photo surface decisions)
+
+---
+
+### HANDOFF → File Organiser · 2026-04-29 · DONE
+**From:** COO
+**Subject:** Session report naming breach acknowledged + convention clarified
+**Why:** File Organiser flagged that `Hone_Session_Report_29_April_2026_COO.md` uses a role-tag suffix that doesn't match the CLAUDE.md naming convention.
+**What's done by File Organiser:** Caught the breach, recommended a sequential-number convention (`_2`, `_3`) for multi-session days, asked COO to enforce going forward without retroactively renaming the existing file.
+**What's done by COO (this session):** Recommendation accepted in full.
+- `CLAUDE.md` Part 4 naming conventions and "Where things go" table updated to specify `_N` sequential suffix for additional reports on the same day, and to explicitly forbid role tags.
+- `docs/FILE_MAP.md` naming conventions updated to match.
+- `docs/coo/operating-rhythm.md` "At session end" ritual updated so every specialist sees the rule.
+- DECISION-005 logged in `docs/coo/decision-log.md` with full rationale and the existing file's status as a one-time exception.
+**Net effect:** Future multi-session days will produce `Hone_Session_Report_DD_Month_YYYY.md` and `_2.md`, never `_COO.md` or similar. Existing file on GitHub stands.
+**Note:** This catch is exactly the value the File Organiser role exists to provide. The system worked.
+
+### HANDOFF → Product Designer · 2026-04-29 · DONE (delivered 30 Apr)
+**From:** Patrick (via COO)
+**Subject:** Stylistic refresh — propose 3 genuinely different directions with mockups
+**What's done by Designer (this session, 30 Apr):**
+Patrick found the original three levels (Refinement / Medium / Alternative) too visually similar. Designer pivoted to three fundamentally distinct aesthetic worlds:
+
+1. **Direction 1 — Pastel Cool** (`docs/prototypes/direction-1-pastel.html`)
+   Fraunces + Plus Jakarta Sans. Dulux Piglet blush, sage, lavender, butter, sky. Category-coloured card pills. Soft and tactile — the antithesis of recipe-app beige. Cost: ~2 engineer sessions.
+
+2. **Direction 2 — Bold Magazine** (`docs/prototypes/direction-2-magazine.html`)
+   Space Grotesk throughout. Deep cobalt (#0B1628) surfaces. Recipe titles overlaid directly on full-bleed food photos via gradient scrim — no text below the photo card. Amber (#F0A500) as the only accent. Cost: ~2 engineer sessions.
+
+3. **Direction 3 — Japanese Minimal** (`docs/prototypes/direction-3-minimal.html`)
+   Noto Serif Display + Noto Sans. Browse is a pure typographic list — no cards, no photos. Extreme whitespace. A single vermillion (#CC3311) reserved for the "Start Cooking" CTA only. Best launch story: browse screen looks complete with zero photos. Cost: ~1.5 engineer sessions.
+
+**What Patrick needs to do:** Pick one direction. Reply in the next session with "go with Direction N" and the Designer/Engineer pipeline picks up from there.
+**Files touched:** `docs/prototypes/direction-1-pastel.html`, `docs/prototypes/direction-2-magazine.html`, `docs/prototypes/direction-3-minimal.html`
+**Blocks resolved:** Photography weekend timing depends on Patrick's pick (see Photography Director handoff).
+
 ### HANDOFF → Senior Engineer · 2026-04-29 · OPEN (multi-task — sequence in this order)
 **From:** Patrick (via COO)
 **Subject:** Three priority tasks — bundle rename, substitution UI, add 6 new recipes
@@ -78,17 +157,21 @@ _(Substitution UI handoff superseded by the consolidated Senior Engineer multi-t
 _(Designer-to-engineer handoff folded into the consolidated Senior Engineer multi-task handoff above. Specs remain at the prototype paths for engineer reference.)_
 
 ### HANDOFF → Photography Director · 2026-04-29 · OPEN (URGENT — first shoot 3-4 May)
-**From:** COO
+**From:** COO · **Direction update added 30 April 2026**
 **Subject:** Build shot lists for showcase 10 + hero-only for everything else
+
+⚠️ **DIRECTION UPDATE (30 Apr 2026):** Patrick chose the **Dark Dramatic** visual direction. The app bg is now near-black `#111111`. This changes what good photography looks like in the UI — food shot against dark surfaces, dark boards, and dark plates will integrate far more powerfully than food on white or wood. Factor this into all surface and prop recommendations below.
+
 **Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
 **What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
 **What's needed:**
 1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
 2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
-3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable.
-4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match).
+3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable. **Include dark surface recommendations (dark slate, black board, charcoal linen) as preferred first-choice props for all dishes where they work aesthetically.**
+4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match). **For dark direction: slightly richer shadows, deeper blacks, food colours should feel saturated against the dark bg. Avoid over-brightening whites.**
 5. **Schedule recommendation** — propose which 2 showcase recipes to shoot each weekend, ordered by which are easiest to get right first (build Patrick's confidence) and which need most attention.
 **Coordination:** New showcase recipe (chicken schnitzel) needs to be in the seed library before its shoot weekend — coordinate with Senior Engineer on timing.
+**Dark surface prop notes:** The 2×2 browse grid in the approved prototype uses square crops. Props that disappear into the edges of the frame (dark plates, dark boards) look best — the food is the hero, not the surface. Avoid: white plates, bright-wood boards, busy printed linens. Prefer: matte black slate, charcoal/grey linen, raw dark timber, brushed steel.
 **Files touched:** `docs/coo/photography/shot-list-showcase.md`, `docs/coo/photography/shot-list-hero-only.md`, `docs/coo/photography/preflight-checklist.md`, `docs/coo/photography/post-processing-preset.md`
 **Blocks:** First photo weekend (3-4 May 2026)
 
@@ -122,10 +205,3 @@ _(Designer-to-engineer handoff folded into the consolidated Senior Engineer mult
 **What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
 **What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
 **Files touched:** `docs/SMOKE-TEST.md`
-**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
-
----
-
-## Recently completed
-
-_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_

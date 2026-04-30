@@ -107,6 +107,24 @@ Each risk has: ID, title, likelihood, impact, status, owner, mitigation, trigger
 
 ---
 
+### R-011 · Visual language redesign mid-launch
+- **Likelihood:** —
+- **Impact:** —
+- **Status:** ✅ CLOSED 30 April 2026 — Patrick picked Dark Dramatic direction (DECISION-006)
+- **Resolution:** Two refresh rounds delivered by Product Designer over 30 April; Patrick selected Dark Dramatic from the iterative concept work. Token set v0.7 committed to `mobile/src/theme/tokens.ts`. Engineer handoff queued for implementation. No launch date impact projected if engineer can apply tokens within 1 session.
+- **Follow-on risk:** R-012 (photography prop reset for dark surfaces).
+
+### R-012 · Photography prop reset for dark direction
+- **Likelihood:** High (visual change requires different food-styling props than originally planned)
+- **Impact:** Low–Medium (could push photography weekend 1 by a week if props aren't sourced in time)
+- **Status:** 🟡 Active
+- **Owner:** Photography Director + Patrick
+- **Why this matters:** The original photo plan assumed cream/warm-cream backgrounds. Dark Dramatic requires dark slate boards, dark linen, dark wood, or matte-black surfaces for food styling so dishes integrate with the dark UI. Patrick may not own these. First photo weekend is 3–4 May 2026.
+- **Mitigation:** Photography Director coordinates with Patrick on a prop sourcing list before weekend 1. Options: (a) buy 1–2 dark slate boards from Bunnings/IKEA/Big W in the next 48 hours; (b) use a dark wooden cutting board he may already own; (c) shoot on a dark linen tablecloth/towel as a flexible base. Lighting also shifts — dark surfaces eat light, so bounce/reflector work matters more. If props aren't sourced by Friday 1 May evening, photography weekend 1 slips to weekend 2.
+- **Trigger:** Photography Director cannot source workable dark surfaces before Friday 1 May evening. Promote to 🔴 and slip weekend 1.
+
+---
+
 ## Risks closed
 
-_(Empty — first version of register.)_
+- **R-011** · Visual language redesign mid-launch · Closed 30 April 2026 — Dark Dramatic picked, no launch date impact projected.

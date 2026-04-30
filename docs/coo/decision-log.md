@@ -2,6 +2,41 @@
 
 > Business decisions for Hone. Distinct from `docs/adr/` which records technical architecture decisions. Newest at top.
 
+---
+
+## DECISION-006 · 2026-04-30 · Visual direction switch — Dark Dramatic replaces Medium Iteration
+**Status:** ✅ APPROVED by Patrick 30 April 2026 — "confirmed, i like the dark style"
+**Decider:** Patrick
+**Context:** On 30 April 2026 the Product Designer delivered a second round of three direction options (Pastel Cool, Bold Magazine, Japanese Minimal) after Patrick found the first round too visually similar. Patrick then requested food-forward and dark-dramatic concepts inspired by reference apps (Pizza Party, Kopi Kap, Burger House). After iterative refinement of the dark dramatic prototype — gold border on image, square grid, fixed-height label panels, real embedded food photography — Patrick confirmed the dark direction.
+
+Earlier in the same session Patrick had chosen "Option B — Medium Iteration" and that token set had already been committed to `mobile/src/theme/tokens.ts` (v0.6). This decision supersedes that choice.
+
+**Options considered:**
+1. **Medium Iteration** (v0.6, warm cream #F6F0E8, deep terracotta #C04A2E, Inter body). Already tokened and handed off to engineer. Rejected on aesthetic grounds — Patrick's reference apps had darker, more dramatic visual language.
+2. **Dark Dramatic** (v0.7, OLED near-black #111111 bg, gold #E8B830 accent, Playfair + Inter unchanged). Full-bleed food photography on dark surfaces; gold as sole typographic accent. Approved.
+3. Pastel Cool, Bold Magazine, Japanese Minimal — all considered and not chosen this session.
+
+**Decision:** Dark Dramatic is the visual direction for Hone v1.0.
+- App bg: `#111111` (dark), card surfaces: `#1A1A1A`, label panels: `#080808`
+- Primary accent: gold `#E8B830` (replaces terracotta `#C04A2E`)
+- Ink inverted: warm off-white `#F5EFE8` (was near-black `#181008`)
+- Cook mode: true `#000000` (visually distinct from app bg)
+- Font pairing unchanged: Playfair Display (display) + Inter (body)
+- Prototype reference: `docs/prototypes/concept-dark-dramatic.html`
+
+**Rationale:** Food photography is the product's core differentiator. Dark surfaces make food photos "pop" more than light/cream backgrounds — the photo becomes the primary visual element rather than competing with a warm background. Gold as a single accent colour is disciplined and memorable. The dark direction also means cook mode (already mandated dark by CLAUDE.md) is a natural continuation of the app's overall visual language rather than an abrupt shift.
+
+**Consequences:**
+- `mobile/src/theme/tokens.ts` updated to v0.7 with dark token set (done this session).
+- Senior Engineer handoff updated — font swap instructions unchanged (Inter still needed), palette swap now covers the full dark token set not just terracotta.
+- Photography Director handoff updated — food should now be shot against dark surfaces/boards/slates where possible so hero and stage photos integrate with the dark UI.
+- v0.6 token values (Medium Iteration) are superseded. No components were updated to use them yet, so there is no rollback work required in components — the engineer just implements v0.7.
+- The warm-cream prototype references (`refresh-B-medium.html`, `refresh-A-refinement.html`) remain in `docs/prototypes/` as archived direction options but are no longer the reference implementation.
+
+**Revisit when:** Patrick sees the dark palette on-device and wants to adjust specific values (bg lightness, gold saturation, or card surface contrast). Fine-tuning is expected; the direction itself is locked.
+
+---
+
 ## Format
 
 ```
@@ -14,6 +49,20 @@
 **Consequences:** What this means downstream — both intended and side effects
 **Revisit when:** A trigger that should make us reconsider
 ```
+
+---
+
+## DECISION-005 · 2026-04-29 · Session-report naming convention — clarify multi-session-per-day case
+**Status:** ✅ APPROVED 29 April 2026 (COO accepted File Organiser's recommendation)
+**Decider:** File Organiser proposed, COO approved, applied to CLAUDE.md and FILE_MAP.md.
+**Context:** On 29 April 2026 the COO created a second session report on the same day and named it `Hone_Session_Report_29_April_2026_COO.md`. The File Organiser flagged this as a naming convention breach — CLAUDE.md specifies `Hone_Session_Report_DD_Month_YYYY.md` with nothing after the date. The original convention didn't address the case of multiple reports on the same day.
+**Options considered:**
+1. Allow role tags as suffixes (`_COO`, `_engineer`, etc.). Rejected — creates a parallel naming convention that erodes over time as roles multiply.
+2. Sequential numbering for the second-and-later report of the day (`_2`, `_3`, etc.). **Accepted.**
+3. Force append-to-existing-report-for-the-day. Rejected — sometimes sessions are distinct enough to warrant their own write-up.
+**Decision:** Convention going forward is `Hone_Session_Report_DD_Month_YYYY.md` for the first (or only) report of the day, and `_2.md`, `_3.md` etc. for further reports. Discoverable content goes in the H1 title and summary inside the file, never in the filename.
+**Consequences:** CLAUDE.md, FILE_MAP.md, and `docs/coo/operating-rhythm.md` updated to make this explicit. The existing `Hone_Session_Report_29_April_2026_COO.md` remains as-is on GitHub — File Organiser's call not to retroactively rename. It stands as a one-time exception that documents the lesson.
+**Revisit when:** A naming case comes up that this rule doesn't cover (e.g., session reports authored from a different timezone where dates collide).
 
 ---
 

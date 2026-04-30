@@ -1,91 +1,97 @@
 /**
- * Design tokens — Hone v0.5 pastel palette.
+ * Design tokens — Hone v0.7 Dark Dramatic palette.
  *
- * Sun-faded "Scandi-linen" pastels: chalk-linen background, dusty-rose
- * primary, fern-mist secondary, butter tertiary, taupe-rose labels, sky
- * for info accents. Strong dark ink kept as-is — pastel surfaces need a
- * confident text colour to read at small sizes (this is the most common
- * pastel-redesign mistake; we deliberately don't lift the ink).
+ * Direction chosen by Patrick on 30 April 2026.
+ * Prototype reference: docs/prototypes/concept-dark-dramatic.html
  *
- * The token NAMES (`sage`, `ochre`, etc.) are kept from v0.4 so existing
- * components don't need a rename pass; only the values move.
+ * FULL DIRECTION CHANGE FROM v0.6:
+ *   v0.6 was Medium Iteration (warm cream #F6F0E8 bg, deep terracotta #C04A2E primary).
+ *   v0.7 is Dark Dramatic — OLED-dark surfaces, gold accent, inverted ink values.
  *
- * Contrast notes (against bg #F7F2EE):
- *   ink       #1A130E   ~16:1   AAA body
- *   inkSoft   #5A4D44   ~7.5:1  AAA body
- *   muted     #7A6B62   ~4.7:1  AA body
- *   warmBrown #85614D   ~5.0:1  AA body (labels)
- *   primary   #D88A7B   ~2.5:1  used as a SURFACE; text on top must be
- *                                tokens.ink (6.9:1 AAA), not white.
+ * THREE CHANGES:
+ *   1. Surfaces inverted: warm linen → near-black #111111. Cards → #1A1A1A.
+ *   2. Ink inverted: near-black text → warm off-white #F5EFE8.
+ *   3. Primary colour: deep terracotta #C04A2E → gold #E8B830.
+ *      Gold is the single accent colour — used for CTAs, active states,
+ *      and the typographic grid labels on the browse screen.
  *
- * On-pastel text rule: any solid pastel surface (`primary`, `sage`,
- * `ochre`) takes `tokens.ink` for text/icons, NOT '#FFF'. Dark surfaces
- * (`tokens.ink`, dark scrims) keep '#FFF'.
+ * Font pairing is unchanged: Playfair Display (display) + Inter (body).
+ * Token NAMES are unchanged — no component rename pass required.
  *
- * Cook mode (CLAUDE.md mandate: dark, OLED-friendly true blacks) gets
- * its own surface set under `tokens.cookMode`. The recipe screen swaps
- * surfaces to that group while `cooking` is true.
+ * Contrast notes (against bg #111111):
+ *   ink         #F5EFE8   ~18:1   AAA body
+ *   inkSoft     #C4B8A8   ~9.5:1  AAA body
+ *   muted       #8A7E72   ~4.5:1  AA body
+ *   primary     #E8B830   ~9.8:1  AAA — gold reads very well on dark; use freely
+ *
+ * Buttons with `backgroundColor: primary` (gold) use `color: tokens.bgDeep`
+ * (dark), not tokens.ink — gold is light, label must be dark for contrast.
+ *
+ * Cook mode (CLAUDE.md mandate: dark, OLED-friendly true blacks) uses
+ * true #000000 to be visually distinct from the dark app bg (#111111).
+ * The recipe screen swaps surfaces to cookMode while `cooking` is true.
  */
 
 export const tokens = {
-  // Surfaces
-  bg:      '#F7F2EE',   // chalk-linen — primary background
-  bgDeep:  '#EDE6DD',   // section headers, pressed states
-  cream:   '#FFFFFF',   // card surfaces, inputs (legacy name kept for compat)
+  // Surfaces — dark dramatic
+  bg:      '#111111',   // near-black — primary background
+  bgDeep:  '#080808',   // section headers, pressed states, label panels
+  cream:   '#1A1A1A',   // card surfaces, inputs (legacy name kept for compat)
 
-  // Ink — text and structural (kept dark on purpose)
-  ink:     '#1A130E',   // deep espresso — primary text
-  inkSoft: '#5A4D44',   // warm brown — secondary text (slightly cooler)
-  muted:   '#7A6B62',   // warm taupe — captions, hints, placeholders
+  // Ink — inverted for dark surfaces
+  ink:     '#F5EFE8',   // warm off-white — primary text
+  inkSoft: '#C4B8A8',   // softer warm — secondary text
+  muted:   '#8A7E72',   // warm taupe — captions, hints, placeholders
 
-  // Primary — dusty rose (buttons, links, active states).
-  // Buttons with `backgroundColor: primary` MUST use `color: tokens.ink`.
-  // For *text* coloured by the primary family (kickers, link labels,
-  // attribution) on light surfaces, use `primaryInk` — same family,
-  // deep enough for AA contrast at small body sizes (~4:1 vs white).
-  primary:      '#D88A7B',
-  primaryDeep:  '#B86A5A',                    // pressed states / borders for separation
-  primaryInk:   '#A85040',                    // primary-as-text on light surfaces (AA on cream)
-  primaryLight: 'rgba(216,138,123,0.18)',     // tints for chips
+  // Primary — gold (buttons, links, active states, typographic accents).
+  // v0.7 change: deep terracotta #C04A2E → gold #E8B830.
+  // Gold reads AAA on dark surfaces. Use freely.
+  // Buttons with `backgroundColor: primary` use `color: tokens.bgDeep` (dark label).
+  // For inline text links use `primaryInk` — same gold, same AA on dark.
+  primary:      '#E8B830',
+  primaryDeep:  '#C49820',                    // pressed states / borders
+  primaryInk:   '#E8B830',                    // primary-as-text on dark surfaces
+  primaryLight: 'rgba(232,184,48,0.18)',      // tints for chips, selected states
 
-  // Secondary — fern-mist (success, checked states).
-  // Same on-pastel rule: text on solid sage = tokens.ink.
-  sage:      '#9DB89C',
-  sageDeep:  '#7A9779',
-  sageLight: 'rgba(157,184,156,0.22)',
+  // Secondary — sage (success, checked states).
+  // Lifted slightly for readability on dark bg. Text on solid sage = tokens.bgDeep.
+  sage:      '#AACCA8',
+  sageDeep:  '#8AAE88',
+  sageLight: 'rgba(170,204,168,0.20)',
 
-  // Tertiary — butter (badges, highlights).
-  ochre:     '#E8C97A',
-  ochreDeep: '#C9A858',
+  // Tertiary — ochre/butter (badges, highlights).
+  ochre:     '#F2D896',
+  ochreDeep: '#D4B860',
 
-  // Warm brown — category headers, labels. Kept dark for AA on cream.
-  warmBrown: '#85614D',
+  // Warm brown — category headers, labels. Lightened for AA on dark bg.
+  warmBrown: '#C4A882',
 
-  // Sky — soft info/filter accent (new in v0.5).
-  // Use as a tint background; for text on solid sky use tokens.ink.
-  sky:      '#B8CFD9',
-  skyDeep:  '#7A9CAB',
-  skyLight: 'rgba(184,207,217,0.28)',
+  // Sky — soft info/filter accent.
+  // Use as a tint background; for text on solid sky use tokens.bgDeep.
+  sky:      '#A8C4D0',
+  skyDeep:  '#7AAABB',
+  skyLight: 'rgba(168,196,208,0.20)',
 
-  // Structural
-  line:     '#E8DFD4',   // dividers, light borders
-  lineDark: '#D4C9BB',   // stronger borders on white cards
+  // Structural — subtle on dark surfaces
+  line:     'rgba(255,255,255,0.08)',   // dividers, light borders
+  lineDark: 'rgba(255,255,255,0.14)',   // stronger borders on card surfaces
 
   // Cook-mode surfaces. CLAUDE.md mandate: dark, OLED true blacks.
+  // True #000000 to be visually distinct from the dark app bg (#111111).
   // The recipe screen pulls from this group while `cooking` is true.
   cookMode: {
-    screenBg: '#0B0807',   // near-black OLED-friendly screen background
-    cardBg:   '#16100C',   // raised card surface (espresso)
-    bgDeep:   '#22180F',   // callouts, leftover note
-    ink:      '#F5EFE8',   // warm cream — primary text on dark
-    inkSoft:  '#D4C5B4',   // softer cream for body
-    muted:    '#9C8E80',   // dimmed warm taupe for captions
+    screenBg: '#000000',   // true OLED black — visually distinct from app bg
+    cardBg:   '#0D0D0D',   // raised card surface
+    bgDeep:   '#161616',   // callouts, leftover note
+    ink:      '#F5EFE8',   // warm cream — primary text (unchanged from app layer)
+    inkSoft:  '#C4B8A8',   // softer cream for body
+    muted:    '#8A7E72',   // warm taupe for captions
     line:     'rgba(255,255,255,0.06)',
     lineDark: 'rgba(255,255,255,0.12)',
-    // Accents stay readable on dark by lifting their values.
-    primary:  '#E8A091',   // dusty rose lifted for dark bg
-    sage:     '#B8D2B7',   // fern lifted
-    ochre:    '#F2D896',   // butter lifted
+    // Accents — gold and sage read well on true black without adjustment.
+    primary:  '#E8B830',   // gold — same as app primary, reads AAA on #000000
+    sage:     '#AACCA8',   // sage — unchanged
+    ochre:    '#F2D896',   // ochre — unchanged
   },
 } as const;
 
@@ -125,17 +131,22 @@ export const shadows = {
  * Font family tokens.
  * Must match exactly what _layout.tsx loads via useFonts.
  *
- * Playfair Display (display) + Source Sans 3 (body): editorial serif paired
- * with a humanist sans optimised for UI. Playfair has more contrast and
- * personality than Lora, suiting the restyled palette; Source Sans 3 reads
- * cleanly at 11–14sp where Inter felt slightly tight.
+ * Playfair Display (display) + Inter (body): editorial serif paired with
+ * a geometric sans. v0.6 change: Source Sans 3 → Inter for body text.
+ * Inter is more architectural and confident at UI sizes (12–15sp); it
+ * also has tighter default letter-spacing which suits the deeper terracotta
+ * palette — less delicate, more considered.
+ *
+ * Engineer note: swap @expo-google-fonts/source-sans-3 → @expo-google-fonts/inter
+ * in package.json and update useFonts() in mobile/app/_layout.tsx.
+ * Constant names are unchanged — no component rename pass required.
  */
 export const fonts = {
   display:       'PlayfairDisplay_700Bold',
   displayItalic: 'PlayfairDisplay_500Medium_Italic',
-  sans:          'SourceSans3_400Regular',
-  sansBold:      'SourceSans3_700Bold',
-  sansXBold:     'SourceSans3_800ExtraBold',
+  sans:          'Inter_400Regular',
+  sansBold:      'Inter_600SemiBold',
+  sansXBold:     'Inter_800ExtraBold',
 } as const;
 
 export type TokenName = keyof typeof tokens;

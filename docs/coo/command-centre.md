@@ -11,7 +11,8 @@
 - **App version:** v0.4.0
 - **Phase:** Pre-Closed-Testing — code polish + photography prep
 - **Top risk:** Photography schedule slippage (5 weekends needed, none shot yet)
-- **Top blocker on Patrick:** Spin up Senior Engineer + Photography Director + Culinary Verifier chats for tomorrow's session
+- **Top blocker on Patrick:** Spin up Senior Engineer chat to apply v0.7 dark tokens; install dev APK and confirm on-device
+- **Visual direction:** ✅ DARK DRAMATIC locked 30 Apr 2026 (DECISION-006). Tokens v0.7 in `mobile/src/theme/tokens.ts`. Reference prototype: `docs/prototypes/concept-dark-dramatic.html`
 - **Play Console verification:** ✅ Done (confirmed 25 Apr 2026)
 
 ---

@@ -2,14 +2,20 @@
  * Root layout.
  *
  * Responsibilities:
- *   - Load the bundled fonts (Playfair Display for display, Source Sans 3
+ *   - Load the bundled fonts (Playfair Display for display headings, Inter
  *     for body) before anything renders. We keep the splash screen up until
  *     fonts are ready so the first frame doesn't flash system fonts.
  *   - Set the background colour at the OS level (expo-system-ui) so the status
- *     bar region matches the app cream rather than flashing white on launch.
+ *     bar region matches the app near-black rather than flashing white on launch.
  *   - Stack host for expo-router. (tabs) is the default destination; future
  *     full-screen routes like /recipe/[id] and /cook/[id] will live as
  *     sibling routes so the bottom nav can hide for those screens.
+ *
+ * Font pairing: Playfair Display (display/headings) + Inter (body/UI).
+ * v0.7 change: Source Sans 3 → Inter. Inter is more architectural at UI
+ * sizes (12–15sp) and suits the dark dramatic palette better.
+ *
+ * StatusBar: style="light" (light icons on the near-black #111111 bg).
  *
  * Everything cooking-specific (recipes, pantry, etc.) lives under child
  * routes. This file is boilerplate for the whole app's shell and should
@@ -30,10 +36,10 @@ import {
   PlayfairDisplay_700Bold,
 } from '@expo-google-fonts/playfair-display';
 import {
-  SourceSans3_400Regular,
-  SourceSans3_700Bold,
-  SourceSans3_800ExtraBold,
-} from '@expo-google-fonts/source-sans-3';
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_800ExtraBold,
+} from '@expo-google-fonts/inter';
 import { tokens } from '../src/theme/tokens';
 import { initDatabase } from '../db/database';
 
@@ -46,9 +52,9 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     PlayfairDisplay_700Bold,
     PlayfairDisplay_500Medium_Italic,
-    SourceSans3_400Regular,
-    SourceSans3_700Bold,
-    SourceSans3_800ExtraBold,
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_800ExtraBold,
   });
 
   useEffect(() => {
@@ -66,7 +72,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SQLiteProvider databaseName="hone.db" onInit={initDatabase}>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <Stack
           screenOptions={{
             headerShown: false,

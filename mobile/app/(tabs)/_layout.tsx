@@ -51,12 +51,17 @@ export default function TabLayout() {
             backgroundColor: 'transparent',
           }}
         >
+          {/* Pill bg: tokens.cream (#1A1A1A) — dark card surface, sits as a
+              floating dark dock on the near-black app bg. tokens.ink was
+              previously the dark label colour used here, but in the v0.7 Dark
+              Dramatic palette tokens.ink is now warm off-white (#F5EFE8).
+              Using tokens.cream keeps the dock dark as designed. */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-around',
-              backgroundColor: tokens.ink,
+              backgroundColor: tokens.cream,
               borderRadius: 999,
               padding: 4,
               maxWidth: 480,
@@ -96,14 +101,17 @@ export default function TabLayout() {
                     gap: 2,
                   }}
                 >
+                  {/* Focused: gold pill — use tokens.bgDeep (near-black) for
+                      the icon/label. Per tokens.ts: gold bg = dark label.
+                      Unfocused: semi-transparent white on the dark pill. */}
                   <Icon
                     name={spec.icon}
                     size={16}
-                    color={focused ? tokens.ink : 'rgba(255,255,255,0.55)'}
+                    color={focused ? tokens.bgDeep : 'rgba(255,255,255,0.55)'}
                   />
                   <Text
                     style={{
-                      color: focused ? tokens.ink : 'rgba(255,255,255,0.55)',
+                      color: focused ? tokens.bgDeep : 'rgba(255,255,255,0.55)',
                       fontFamily: fonts.sansBold,
                       fontSize: 10,
                       letterSpacing: 0.2,

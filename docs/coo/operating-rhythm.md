@@ -68,7 +68,7 @@ The COO chat reads `docs/coo/launch-plan.md` and `docs/coo/risk-register.md`, th
 
 1. Close any handoffs you completed (mark them DONE with a date)
 2. Open new handoffs if you finished something that another specialist needs to pick up
-3. Write a session report to `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` (or append to today's if one exists)
+3. Write a session report to `docs/sessions/Hone_Session_Report_DD_Month_YYYY.md`. **If a session report already exists for today**, either append to it (preferred for short sessions) or create a numbered second report: `Hone_Session_Report_DD_Month_YYYY_2.md`. **Never** append a role tag (`_COO`, `_engineer`, etc.) — content discoverability belongs in the H1 title and summary inside the file, not the filename.
 4. Commit and push with a meaningful message
 
 ---

@@ -149,7 +149,8 @@ export function RecipeCard({
           </View>
         ) : null}
 
-        {/* Difficulty chip — bottom left */}
+        {/* Difficulty chip — bottom left. Dark scrim so cream text reads
+            on any food photo colour (dark dramatic direction). */}
         <View
           style={{
             position: 'absolute',
@@ -158,7 +159,7 @@ export function RecipeCard({
             paddingHorizontal: 10,
             paddingVertical: 4,
             borderRadius: 999,
-            backgroundColor: 'rgba(255,255,255,0.9)',
+            backgroundColor: 'rgba(0,0,0,0.62)',
           }}
         >
           <Text
