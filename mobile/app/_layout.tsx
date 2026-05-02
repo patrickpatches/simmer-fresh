@@ -78,3 +78,15 @@ export default function RootLayout() {
       <SQLiteProvider databaseName="hone.db" onInit={initDatabase}>
         <StatusBar style="light" />
         <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: tokens.bg },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </SQLiteProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
+  );
+}
