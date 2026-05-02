@@ -139,7 +139,10 @@ export interface RecipeMatchResult {
   score: number;
   haveCount: number;
   totalCount: number;
+  /** Backward-compat: names only. Prefer missingIngredients for display. */
   missingNames: string[];
+  /** Full ingredient info for Variant A chips — name + amount + unit. */
+  missingIngredients: Array<{ name: string; amount: number; unit: string }>;
 }
 
 export function scoreRecipeAgainstPantry(
@@ -162,13 +165,17 @@ export function scoreRecipeAgainstPantry(
   };
 
   let matched = 0;
-  const missingNames: string[] = [];
+  const missingRaw: Array<{ name: string; amount: number; unit: string }> = [];
 
   for (const ing of recipe.ingredients) {
     if (isMatch(ing.name)) {
       matched++;
     } else {
-      missingNames.push(cleanIngredientName(ing.name));
+      missingRaw.push({
+        name: cleanIngredientName(ing.name),
+        amount: ing.amount,
+        unit: ing.unit,
+      });
     }
   }
 
@@ -182,12 +189,24 @@ export function scoreRecipeAgainstPantry(
   const hasAllAromatics =
     recipeAromatics.length === 0 || recipeAromatics.every((ing) => isMatch(ing.name));
 
+  // Sort missing ingredients so those with substitutions come first —
+  // they're the most valuable chips to show since the user has fallback options.
+  const withSubs = missingRaw.filter((m) => {
+    const orig = recipe.ingredients.find(
+      (ing) => cleanIngredientName(ing.name) === m.name,
+    );
+    return (orig?.substitutions?.length ?? 0) > 0;
+  });
+  const withoutSubs = missingRaw.filter((m) => !withSubs.includes(m));
+  const sortedMissing = [...withSubs, ...withoutSubs].slice(0, 4);
+
   return {
     recipe,
     score: coverage + (hasAllAromatics ? 0.1 : 0),
     haveCount: matched,
     totalCount: total,
-    missingNames: missingNames.slice(0, 4),
+    missingNames: sortedMissing.map((m) => m.name),
+    missingIngredients: sortedMissing,
   };
 }
 
