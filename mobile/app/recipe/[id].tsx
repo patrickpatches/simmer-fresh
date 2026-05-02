@@ -844,4 +844,242 @@ export default function RecipeDetailScreen() {
 
       {/* ── FLOATING START-COOKING PILL ──
           Solid paprika-tint pill, centered horizontally near the bottom.
-   
+          Stays put while the recipe scrolls (ScrollView already pads
+          bottom 140 so content clears it).
+
+          Structure note: the Pressable is a bare tap target with no
+          layout/visual styling — all of that lives on an inner View.
+          On Android, Pressable + function-style + layout properties
+          (flexDirection, backgroundColor) sometimes renders without
+          the background. Splitting the roles makes the bg reliable
+          and lets android_ripple handle press feedback. */}
+      {!cooking ? (
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: insets.bottom + 18,
+            alignItems: 'center',
+            pointerEvents: 'box-none',
+          }}
+        >
+          <Pressable
+            onPress={toggleCooking}
+            accessibilityRole="button"
+            accessibilityLabel="Start cooking"
+            android_ripple={{ color: 'rgba(255,255,255,0.22)', borderless: false }}
+            style={{ borderRadius: 999 }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                paddingVertical: 16,
+                paddingHorizontal: 32,
+                borderRadius: 999,
+                backgroundColor: tokens.primary,
+                shadowColor: tokens.ink,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.22,
+                shadowRadius: 14,
+                elevation: 8,
+              }}
+            >
+              <Icon name="chef" size={18} color={tokens.ink} />
+              <Text
+                style={{
+                  fontFamily: fonts.sansXBold,
+                  fontSize: 15,
+                  color: tokens.ink,
+                  letterSpacing: 0.3,
+                }}
+              >
+                Start Cooking
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      ) : progress === 1 ? (
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: insets.bottom + 18,
+            alignItems: 'center',
+            pointerEvents: 'box-none',
+          }}
+        >
+          <Pressable
+            onPress={toggleCooking}
+            accessibilityRole="button"
+            accessibilityLabel="Finish cooking"
+            android_ripple={{ color: 'rgba(255,255,255,0.22)', borderless: false }}
+            style={{ borderRadius: 999 }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                paddingVertical: 16,
+                paddingHorizontal: 32,
+                borderRadius: 999,
+                backgroundColor: tokens.sage,
+                shadowColor: tokens.ink,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.22,
+                shadowRadius: 14,
+                elevation: 8,
+              }}
+            >
+              <Icon name="check" size={18} color={tokens.ink} />
+              <Text
+                style={{
+                  fontFamily: fonts.sansXBold,
+                  fontSize: 15,
+                  color: tokens.ink,
+                  letterSpacing: 0.3,
+                }}
+              >
+                Done — eat well
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {/* SubstitutionSheet — rendered outside ScrollView so it can overlay it.
+          BottomSheetModal portals above all content via @gorhom/portal. */}
+      <SubstitutionSheet
+        ingredient={sheetIngredient}
+        visible={sheetVisible}
+        activeSwapName={
+          sheetIngredient && activeSwaps[sheetIngredient.id]
+            ? (activeSwaps[sheetIngredient.id] as Substitution).ingredient
+            : undefined
+        }
+        inCookMode={cooking}
+        onSwap={handleSwap}
+        onDismiss={handleSheetDismiss}
+      />
+    </View>
+  );
+}
+
+// ── Small pieces ──────────────────────────────────────────────────────────────
+
+function MetaPill({
+  icon,
+  label,
+  color = tokens.inkSoft,
+}: {
+  icon: React.ComponentProps<typeof Icon>['name'];
+  label: string;
+  color?: string;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <Icon name={icon} size={14} color={color} />
+      <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function SectionHeader({
+  title,
+  hint,
+  inkColor = tokens.ink,
+  mutedColor = tokens.muted,
+}: {
+  title: string;
+  hint?: string;
+  inkColor?: string;
+  mutedColor?: string;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+      }}
+    >
+      <Text style={{ fontFamily: fonts.display, fontSize: 22, color: inkColor }}>
+        {title}
+      </Text>
+      {hint ? (
+        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: mutedColor }}>
+          {hint}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+function Callout({
+  label,
+  text,
+  accent,
+  italic,
+  bg = tokens.bgDeep,
+  bodyColor = tokens.inkSoft,
+}: {
+  label: string;
+  text: string;
+  accent: string;
+  italic?: boolean;
+  bg?: string;
+  bodyColor?: string;
+}) {
+  return (
+    <View
+      style={{
+        marginTop: 10,
+        padding: 10,
+        borderRadius: 12,
+        backgroundColor: bg,
+        borderLeftWidth: 3,
+        borderLeftColor: accent,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: fonts.sansBold,
+          fontSize: 9,
+          letterSpacing: 1.5,
+          textTransform: 'uppercase',
+          color: accent,
+          marginBottom: 3,
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontFamily: italic ? fonts.displayItalic : fonts.sans,
+          fontStyle: italic ? 'italic' : 'normal',
+          fontSize: 13,
+          lineHeight: 18,
+          color: bodyColor,
+        }}
+      >
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function formatTimer(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.round(seconds / 60);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  return rem === 0 ? `${h} h` : `${h} h ${rem} min`;
+}
