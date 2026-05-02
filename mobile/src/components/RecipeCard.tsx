@@ -242,4 +242,41 @@ export function RecipeCard({
             flexDirection: 'row',
             alignItems: 'center',
             gap: 14,
-          
+            marginTop: 12,
+          }}
+        >
+          <MetaChip icon="clock" label={`${recipe.time_min} min`} />
+          <MetaChip icon="users" label={`${recipe.base_servings}`} />
+          {recipe.source ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Icon name="external" size={12} color={tokens.primaryInk} />
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontFamily: fonts.sansBold,
+                  color: tokens.primaryInk,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }}
+                numberOfLines={1}
+              >
+                {recipe.source.chef}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+function MetaChip({ icon, label }: { icon: 'clock' | 'users'; label: string }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <Icon name={icon} size={12} color={tokens.muted} />
+      <Text style={{ fontSize: 12, fontFamily: fonts.sans, color: tokens.muted }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
