@@ -110,4 +110,6 @@ const PATHS: Record<IconName, React.ReactNode> = {
   'arrow-up': <><Path d="M12 19V5" /><Path d="m5 12 7-7 7 7" /></>,
   'calendar': <><Rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><Line x1="16" x2="16" y1="2" y2="6" /><Line x1="8" x2="8" y1="2" y2="6" /><Line x1="3" x2="21" y1="10" y2="10" /></>,
   'plus-circle': <><Circle cx="12" cy="12" r="10" /><Line x1="12" x2="12" y1="8" y2="16" /><Line x1="8" x2="16" y1="12" y2="12" /></>,
-  'grip': <><Circle cx="9" cy="6" r="1" /><Circle cx="9" cy="12" r="1" /><Circle cx="9" cy="18" r="1" /><Circle cx="15" cy="6" r="1" /><Circle cx="15" cy="12" r="1" /><Circle cx="15" cy="18" r="
+  'grip': <><Circle cx="9" cy="6" r="1" /><Circle cx="9" cy="12" r="1" /><Circle cx="9" cy="18" r="1" /><Circle cx="15" cy="6" r="1" /><Circle cx="15" cy="12" r="1" /><Circle cx="15" cy="18" r="1" /></>,
+  'camera': <><Path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><Circle cx="12" cy="13" r="4" /></>,
+};
