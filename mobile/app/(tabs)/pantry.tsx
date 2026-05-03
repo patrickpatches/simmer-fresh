@@ -452,25 +452,27 @@ export default function PantryTab() {
             justifyContent: 'space-between',
           }}
         >
-          <Text
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 36,
-              lineHeight: 40,
-              color: tokens.ink,
-            }}
-          >
-            Your{' '}
+          <View style={{ flex: 1 }}>
             <Text
               style={{
-                fontFamily: fonts.displayItalic,
-                fontStyle: 'italic',
-                color: tokens.sage,
+                fontFamily: fonts.display,
+                fontSize: 36,
+                lineHeight: 40,
+                color: tokens.ink,
               }}
             >
-              Pantry
+              Your{' '}
+              <Text
+                style={{
+                  fontFamily: fonts.displayItalic,
+                  fontStyle: 'italic',
+                  color: tokens.sage,
+                }}
+              >
+                Pantry
+              </Text>
             </Text>
-          </Text>
+          </View>
           {pantryItems.length > 0 ? (
             <Text
               style={{
@@ -478,6 +480,7 @@ export default function PantryTab() {
                 fontSize: 11,
                 color: tokens.muted,
                 paddingBottom: 4,
+                paddingLeft: 8,
               }}
             >
               {pantryItems.length} stocked
@@ -547,26 +550,30 @@ export default function PantryTab() {
           ) : null}
         </Pressable>
 
-        {/* ── Have-it pills (horizontal scroll) ──────────────────── */}
+        {/* ── Have-it pills (contained card, flex-wrap) ───────────── */}
         {havePills.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-              paddingBottom: 14,
-              gap: 7,
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginBottom: 14,
+              backgroundColor: tokens.cream,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+              padding: 12,
             }}
           >
-            {havePills.map((it) => (
-              <Pill
-                key={it.id}
-                item={it}
-                fresh={freshIds.has(it.id)}
-                onRemove={() => removeItem(it)}
-              />
-            ))}
-          </ScrollView>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}>
+              {havePills.map((it) => (
+                <Pill
+                  key={it.id}
+                  item={it}
+                  fresh={freshIds.has(it.id)}
+                  onRemove={() => removeItem(it)}
+                />
+              ))}
+            </View>
+          </View>
         ) : (
           <EmptyPantry onAddFirst={() => setOverlayVisible(true)} />
         )}
@@ -822,20 +829,21 @@ export default function PantryTab() {
       ) : null}
 
       {/* ── Shopping-list add undo toast (3 s) ──────────────────────── */}
+      {/* Gold background makes this impossible to miss — the user needs to
+          know their tap *did* something even though the chip went to a
+          different tab. Dark text on gold satisfies contrast requirements. */}
       {shopUndo ? (
         <Animated.View
           entering={FadeIn.duration(160)}
           exiting={FadeOut.duration(120)}
           style={{
             position: 'absolute',
-            bottom: insets.bottom + (undoSnapshot ? 140 : 80),
+            bottom: insets.bottom + (undoSnapshot ? 152 : 92),
             left: 16,
             right: 16,
-            backgroundColor: tokens.bgDeep,
+            backgroundColor: tokens.primary,
             borderRadius: 14,
-            borderWidth: 1,
-            borderColor: 'rgba(232,184,48,0.30)',
-            paddingVertical: 13,
+            paddingVertical: 14,
             paddingHorizontal: 16,
             flexDirection: 'row',
             alignItems: 'center',
@@ -843,13 +851,13 @@ export default function PantryTab() {
             ...shadows.toast,
           }}
         >
-          <Icon name="check" size={13} color={tokens.primary} />
+          <Text style={{ fontSize: 16 }}>🛒</Text>
           <Text
             style={{
               flex: 1,
-              fontFamily: fonts.sans,
+              fontFamily: fonts.sansBold,
               fontSize: 13,
-              color: tokens.inkSoft,
+              color: tokens.bgDeep,
             }}
           >
             {shopUndo.label}
@@ -861,7 +869,8 @@ export default function PantryTab() {
                 fontSize: 12,
                 letterSpacing: 1,
                 textTransform: 'uppercase',
-                color: tokens.primary,
+                color: tokens.bgDeep,
+                opacity: 0.65,
               }}
             >
               Undo
