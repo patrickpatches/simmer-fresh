@@ -25,6 +25,188 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-03 · OPEN (URGENT — Pantry v3 implementation)
+**From:** Product Designer
+**Subject:** Implement the three Pantry v3 design fixes from `docs/prototypes/pantry-v3.html`
+**Why:** Pantry v3 prototype delivered in response to Patrick's on-device feedback. Three UX problems identified; all fixed in the prototype. Engineer needs to wire them into `pantry.tsx`.
+
+**What's done (Designer):**
+- `docs/prototypes/pantry-v3.html` — full annotated prototype with three screen states, component comparison, and this engineer handoff.
+
+**What's needed (Engineer — implement in this order):**
+
+**1. Delete `IngredientSearchOverlay.tsx` and switch to inline search.**
+The full-screen takeover was the wrong pattern for an augmentation flow. Inline is correct.
+- Remove `IngredientSearchOverlay.tsx` from `mobile/src/components/`.
+- Remove the import and modal render from `pantry.tsx`.
+- When `isSearchActive === true`, freeze the header (pills row stays visible) and replace the `SectionList` data source with autocomplete results — no navigation, no overlay, no z-index fight.
+- Transition: `withTiming(opacity, { duration: 150 })` on the results list entering/leaving.
+- Search bar becomes active-state when focused: `border-color: #E8B830` + `box-shadow: 0 0 0 3px rgba(232,184,48,0.10)`. A "Cancel" text button appears to the right; tapping it clears query and collapses back to browse state.
+- **Shape spec for the search input** (Alt 1 — rounded rect):
+  - `background: #1A1A1A` (surface token), `border: 1.5px solid rgba(232,184,48,0.22)` at idle
+  - `border-radius: 14px`, padding `12px 14px`
+  - Magnifying glass icon left, placeholder "Search or add an ingredient…" in `#8A7E72` (muted)
+  - On active: border goes solid gold, focus ring as above
+
+**2. Emoji inline — leaf emoji and ingredient name must be in the same flex row.**
+Currently the leaf emoji is on its own line in autocomplete results (disjointed). Fix: `flexDirection: 'row'`, `alignItems: 'center'`, emoji and name in the same `<Text>` or side-by-side `<Text>` nodes. No line-break between them.
+
+**3. Relocate "Clear all" and add confirmation modal.**
+- Remove "Clear all" from its current position below the search bar.
+- Add a trash icon button (`Ionicons name="trash-outline"`) to the right side of the Pantry screen title row (same row as "My Pantry" heading).
+- Icon should be `#8A7E72` (muted) at rest — low prominence, hard to hit accidentally.
+- On press: show a `Modal` (not `Alert` — Alert cannot be styled to match dark tokens) with:
+  - Copy: `"Clear [N] stocked ingredients?"` — N is the live count, not the string "all"
+  - Destructive button: `"Clear [N] ingredients"` in red (`#E05252` or similar)
+  - Cancel button: `"Keep my pantry"` (phrased positively — this is the safe default)
+  - Semi-transparent scrim behind modal (`rgba(0,0,0,0.70)`)
+
+**4. Update match banner — replace bare `›` with explicit "See all" pill CTA.**
+The "Getting close" element currently reads as ambiguous (tappable? header?). Replace with:
+- Copy: `"[N] recipes you can cook now · [M] more within 1–3 ingredients"`
+- Remove the bare `›` arrow.
+- Add a small gold pill button labelled `"See all"` at the right end of the banner row.
+- If `"See all"` is not yet wired to a destination screen, navigate to recipe-search filtered by pantry ingredients (or no-op with a `TODO` comment — do not silently do nothing without the comment).
+- Banner colour: stays gold-tinted as currently implemented.
+
+**Files to touch:**
+- `mobile/src/components/IngredientSearchOverlay.tsx` — **DELETE**
+- `mobile/app/(tabs)/pantry.tsx` — inline search, clear-all modal, banner update, emoji fix
+- `mobile/src/components/` — no new components needed for these changes
+
+**Does NOT block:** Derivation-aware matching (Phase 2) — that lands on top of these changes independently.
+**Blocks:** Patrick's next on-device review session.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (URGENT — two pantry bugs from on-device session)
+**From:** Patrick (via COO)
+**Subject:** Two bugs found on-device in v0.4.1 build 49
+**Why:** Patrick spent on-device time today walking through the pantry-match flow. Found two issues that need engineer triage. Both should also be logged as GitHub Issues per CLAUDE.md (Patrick can do this from phone, OR engineer creates them when working the fix).
+
+**BUG 1 — Match counter stale after pantry change.**
+- **Severity:** P1 (feature broken in user-visible way)
+- **Repro:** Open Pantry. Add "Spaghetti", "Sumac", "Black pepper", "Salt" to pantry. Pasta Carbonara recipe card shows "3 OF 7 MATCHED" badge. Tap the "+" affordance on a missing ingredient (e.g., "Whole egg" or "Pecorino Romano"). Observe: badge does NOT update — still says "3 OF 7."
+- **Root cause hypotheses to investigate:**
+  - "+" tap might be adding to shopping list (not pantry) — in which case counter shouldn't change, but the visual feedback for the user needs to be much clearer that "shopping list" ≠ "pantry"
+  - OR pantry state IS updating but the recipe-card badge isn't re-rendering on state change (memo/key issue)
+  - OR the matching algorithm is recomputing but the displayed count is cached
+- **Fix:** Investigate and resolve. If "shopping list ≠ pantry" is the intended behaviour, work with Designer (open handoff) on visual clarity so user sees what tapping "+" actually does. If it's a stale-state bug, fix the state propagation.
+
+**BUG 2 — Recipe carousel snap regression.**
+- **Severity:** P2 (polish regression)
+- **Repro:** Open Pantry with stocked ingredients. In the "Closest Matches" horizontal carousel, swipe between recipe cards. Observe: cards no longer snap cleanly to one card per view — partial cards visible on left and right edges (e.g., "...bled Eggs" / "Mujadara" both partially shown).
+- **History:** This was reportedly fixed in session 29 April: *"Recipe card carousel: Fixed the card snap behaviour so cards settle cleanly on one card instead of bouncing between two."* Suggests regression — likely reintroduced during the dark-direction restyle or Pantry v2 changes.
+- **Fix:** Reinstate the snap-to-card behaviour. Bonus: add a regression test or visual smoke check so this doesn't return.
+- **Note for QA Test Lead** (when spun up): two regressions caught in the past week (this carousel + the prior plan.tsx OneDrive corruption). Worth thinking about a regression-prevention layer in the smoke test.
+
+**Files touched:** `mobile/app/(tabs)/pantry.tsx` (BUG 1 state), recipe-card carousel component (BUG 2)
+**Blocks:** Pantry experience polish.
+
+---
+
+### HANDOFF → Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04 · PHASE 1 DONE — ENGINEER UNBLOCKED
+**From:** Patrick (via COO)
+**Subject:** Pantry needs derivation-aware ingredient matching — "I have eggs" should match recipes calling for "egg yolks"
+**Why:** Patrick discovered on-device that the pantry-match algorithm treats every ingredient as atomic. He has eggs in his pantry. Pasta Carbonara wants egg yolks. The match misses entirely. This is one of many cases — chicken stock comes from a whole chicken, lemon zest from lemons, ground spices from whole spices, etc. The pantry-match feature is the kill feature; right now it's quietly under-counting matches and making the recipe library look thinner than it actually is.
+
+**The split (handoff has two phases):**
+
+**PHASE 1 — Culinary Verifier defines the derivations.**
+- Create `mobile/src/data/ingredient-derivations.ts` (or equivalent — coordinate location with Engineer).
+- The structure is a map from "source ingredient" → list of "derived ingredients."
+- Examples to seed:
+  - `eggs` → `egg yolks`, `egg whites`
+  - `whole chicken` → `chicken breast`, `chicken thighs`, `chicken stock`, `chicken bones`
+  - `lemon` → `lemon juice`, `lemon zest`
+  - `lime` → `lime juice`, `lime zest`
+  - `cumin seeds` → `ground cumin`
+  - `coriander seeds` → `ground coriander`
+  - `whole peppercorns` → `ground black pepper`
+  - `garlic` → `crushed garlic`, `minced garlic`, `garlic paste`
+  - `ginger` → `grated ginger`, `ginger paste`
+  - `tomatoes` → `diced tomatoes`, `crushed tomatoes` (only when fresh substitutes for tinned — flag as compromise)
+  - `parmesan` → `grated parmesan`
+  - `pecorino` → `grated pecorino`
+- Walk through the existing seed library and the 6 new recipes you're writing — every derived ingredient that appears as a recipe ingredient needs a parent in this map.
+- For ambiguous ones (canned vs fresh tomatoes, dried vs fresh herbs), flag them with a `prep_note` so the user sees "you have fresh tomatoes — for the depth this dish wants, tinned is better, but fresh works."
+
+**PHASE 2 — Senior Engineer updates the matching algorithm.**
+- After Verifier ships the derivations file, update `mobile/src/data/pantry-helpers.ts` (the existing scoring file).
+- New matching rule: an ingredient in the user's pantry counts as "matched" for a recipe ingredient if EITHER (a) the names match directly, OR (b) the recipe ingredient is in the derivations list under one of the user's pantry ingredients.
+- Surface the derivation in the UI: when a derivation match happens, show a small "from your eggs" annotation under the matched ingredient row, and optionally a small icon indicating "requires prep." Coordinate with Designer on visual treatment.
+- Update the match percentage / "X of Y matched" counter to count derivation matches as full matches (not partial).
+
+**Sequencing:** Phase 1 must complete before Phase 2 starts. Engineer is blocked until derivations file exists.
+**Files touched:** `mobile/src/data/ingredient-derivations.ts` (new, by Verifier), `mobile/src/data/pantry-helpers.ts` (by Engineer), `mobile/app/(tabs)/pantry.tsx` (UI surface, by Engineer + Designer)
+**Blocks:** Pantry feature accuracy. Currently every recipe with a derived ingredient under-counts the match.
+
+---
+
+**PHASE 1 COMPLETE — 2026-05-03 (Culinary Verifier)**
+
+`mobile/src/data/ingredient-derivations.ts` delivered. Summary for the Engineer:
+
+**Genuine gaps the current matcher MISSES (where this file fixes real bugs):**
+- `eggs` → `egg yolks`, `egg whites`, `egg yolk`, `egg white`, `beaten egg`, `egg wash`
+  — the plural/component split breaks all substring and token checks
+- `parmesan` ↔ `parmigiano` / `parmigiano reggiano`
+  — the Bolognese recipe uses the Italian name; these share no substring
+- `whole chicken` → `chicken stock` (stock-making is a transformation)
+- `beef bones` → `beef stock`
+- `prawns` → `prawn stock` (from reserved shells — Laksa recipe)
+- `unsalted butter` / `butter` → `ghee`
+- `desiccated coconut` → `kerisik` ("kerisik" is opaque, no substring relationship to "coconut")
+
+**Also included (for UI annotation "from your X →" even though substring already catches them):**
+- `lemon`/`lime` → juice/zest; `garlic` → paste/crushed/minced; `ginger` → grated/paste
+- `cumin seeds`/`coriander seeds`/`black peppercorns`/`allspice berries`/`cardamom pods`/
+  `cinnamon stick`/`whole cloves`/`nutmeg`/`mustard seeds` → their ground forms
+- `tomatoes` → tinned/crushed/paste (with honest compromise `prep_note`s)
+- `fresh herbs` (thyme, rosemary, mint, coriander, parsley) → their variants
+- `bread` → `breadcrumbs`, `panko breadcrumbs`, `stale bread`
+- `pitta bread` → `stale pitta bread`, `flatbread`
+- `lemongrass` → `lemongrass paste`
+- `dried chickpeas` → `tinned chickpeas`/`cooked chickpeas`
+- `pure cream`/`double cream` → each other, `thickened cream`
+
+**What the Engineer needs to do (Phase 2):**
+1. Import `DERIVATION_LOOKUP` and `getDerivationEntry` from `./ingredient-derivations`
+2. In `scoreRecipeAgainstPantry()`, expand `isMatch()` to check: after the existing
+   direct-name checks fail, loop over `haveNorms`, call `DERIVATION_LOOKUP.get(p)`,
+   and test whether `norm` matches any derived name (run normalizeForMatch on each
+   derived name before comparing)
+3. When a derivation match fires, add the source pantry item + `DerivationEntry`
+   to a side-channel so the UI can show "from your eggs →" and the prep icon
+4. Count derivation matches as full matches (not partial) in `haveCount`
+5. Designer coordination: small "from your X" annotation below matched ingredient row;
+   `prep_note` shown on tap if present; "requires prep" icon if `prep_note` is set
+
+---
+
+### HANDOFF → Product Designer · 2026-05-04 · DONE (delivered 2026-05-03)
+**Delivered:** `docs/prototypes/pantry-v3.html` — inline search (Alt 1 rounded-rect, recommended), Clear all relocated to title row with confirmation modal, "Getting close" banner replaced with gold "See all" pill CTA. Engineer handoff block included.
+**From:** Patrick (via COO)
+**Subject:** Pantry v3 — revisit full-screen search, fix Clear-all hazard, clarify "Getting close" element
+**Why:** Patrick spent on-device time today after engineer shipped Pantry v2 (3 back-and-forths). He's flagged three specific issues. Honest note from COO: the full-screen search pattern was my recommendation in the previous Pantry handoff, and Patrick is rightly questioning it. Don't feel bound to keep it — the better answer may be inline.
+
+**Issues:**
+
+0. **Search bar itself needs a holistic rethink — not just relocation.** Patrick (5 May, on-device): "I want the product designer not just move the location, I want them to think what is the best way, font, location size, to display the search box that should look good as well as functional." Currently the "Search or add an ingredient..." reads more like a section heading than a tappable input — there's no visible boundary, no shape, no affordance. It also sits awkwardly between the page heading and the pill cluster, and the "Clear all" is tucked underneath it which makes the whole zone feel cramped. Don't just move it. Treat the search box as a first-class design problem and recommend the right shape, weight, position, and affordance for an "augmenting your pantry" task. Reference apps to consider: how Notion handles its search input, how Apple Notes treats the search bar, how Things 3 surfaces "add a task." All of those make the input field unambiguously a tappable surface, not text. Propose at least two alternatives (e.g., a pill-shaped input near the bottom of the pantry zone vs a top-bar search like Spotify) and pick one with rationale.
+
+1. **Full-screen search may not be the right pattern.** When Patrick taps the search bar, the page transitions away from the Pantry view and into a full-screen ingredient browser. He notices that he loses his pantry context (the pills he's already added) while searching, which feels wrong for an *augmentation* flow rather than a *navigation* flow. Reference apps to consider: Spotify keeps the pantry-like context visible while showing search results inline; Apple Notes does full-screen takeover. Material Design 3 default is full-screen. Your call — research, recommend, mock both options if unclear which is better, and write a one-paragraph rationale. Also: the leaf emoji is on a separate line from the ingredient name, which feels disjointed. Either drop the emoji or get it inline with the name.
+
+2. **Clear all is too easy to press accidentally.** It currently sits right under the search bar, in thumb-tap territory. The 5-second undo toast (from v0.3, may or may not still be present in v0.7 dark) is helpful but not enough — accidental destructive actions should be harder to trigger in the first place. Options to consider: (a) move Clear all into a long-press menu on a pantry pill, (b) move it to a Settings/More sheet, (c) require a confirmation modal with the count ("Clear all 4 ingredients?"), (d) hold-to-clear gesture. Pick the one you think fits best, propose it.
+
+3. **"Getting close" element looks like a button — is it?** The "Getting close · 6 matches · ranked by coverage →" element with the right-pointing arrow reads as tappable. Patrick can't tell if it does anything. If it's tappable and goes to a fuller match-results screen, the destination needs to be designed; if it's not tappable, drop the arrow and treat it as a section header. Coordinate with Senior Engineer on what (if anything) the current behaviour is, then propose either a clear destination or a static section header.
+
+**Constraint:** Dark v0.7 tokens locked. Pill style for added ingredients locked. Don't touch what works.
+
+**Deliverable:** Update `docs/prototypes/pantry-redesign-v2.html` (or new `pantry-v3.html` if the changes are large), with all three fixes shown, plus rationale at the bottom and engineer handoff block.
+
+**Files touched:** `docs/prototypes/pantry-v3.html` (new) or update existing
+**Blocks:** Engineer's next Pantry-related work. Patrick reviews the mockup as soon as you ship.
+
 ### HANDOFF → Patrick · 2026-05-02 · OPEN (awaiting on-device validation)
 **From:** Senior Engineer
 **Subject:** Pantry v0.5.0 redesign — install build #90 and smoke-test
@@ -288,4 +470,23 @@ _(Designer-to-engineer handoff folded into the consolidated Senior Engineer mult
 
 2. **Audit pass** on all priority 17 recipes per the format in your brief. Output to `docs/coo/culinary-audit.md`. Required before launch.
 
-3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everyw
+3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everywhere.
+
+**Sequence:** Item 1 first (Senior Engineer is blocked on it). Items 2-3 can run in parallel after.
+**Files touched:** `docs/coo/culinary-research/`, `docs/coo/culinary-audit.md`, `mobile/src/data/seed-recipes.ts` (read-only), `docs/prototypes/hone.html` (read-only)
+**Blocks:** Senior Engineer's recipe-add task (#1 above), Photography Director's showcase shoot for chicken schnitzel
+
+### HANDOFF → QA Test Lead · 2026-04-29 · OPEN
+**From:** COO
+**Subject:** Stand up the smoke-test checklist v1
+**Why:** Currently `docs/SMOKE-TEST.md` exists but isn't owned. We need it to be the gate before every build.
+**What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
+**What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
+**Files touched:** `docs/SMOKE-TEST.md`
+**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
+
+---
+
+## Recently completed
+
+_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_

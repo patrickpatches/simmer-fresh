@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone — Pantry v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,600;1,700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* v0.7 Dark Dramatic tokens — DECISION-006 */
+  --bg:          #111111;
+  --bg-deep:     #080808;
+  --surface:     #1A1A1A;
+  --surface-2:   #222222;
+  --surface-3:   #2A2A2A;
+  --line:        rgba(255,255,255,0.08);
+  --line-dark:   rgba(255,255,255,0.14);
+  --ink:         #F5EFE8;
+  --ink-soft:    #C4B8A8;
+  --muted:       #8A7E72;
+  --gold:        #E8B830;
+  --gold-deep:   #C49820;
+  --gold-light:  rgba(232,184,48,0.16);
+  --gold-border: rgba(232,184,48,0.32);
+  --gold-active: rgba(232,184,48,0.55);
+  --sage:        #AACCA8;
+  --sage-light:  rgba(170,204,168,0.20);
+  --sage-border: rgba(170,204,168,0.50);
+  --danger:      #E05252;
+  --danger-light: rgba(224,82,82,0.14);
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+}
+
+body {
+  background: #0A0A0A;
+  font-family: var(--sans);
+  color: var(--ink);
+  padding: 52px 24px 100px;
+}
+
+/* ── Page header ───────────────────────────────── */
+.page-header { text-align: center; margin-bottom: 60px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.page-header h1 { font-family: var(--serif); font-size: 40px; font-weight: 900; letter-spacing: -0.03em; color: var(--ink); line-height: 1.05; margin-bottom: 12px; }
+.page-header h1 em { font-style: italic; color: var(--gold); }
+.page-header p { font-size: 15px; font-weight: 300; color: var(--ink-soft); max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+/* ── Section headings ──────────────────────────── */
+.section-head { text-align: center; margin-bottom: 36px; }
+.section-head h2 { font-family: var(--serif); font-size: 26px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.section-head p { font-size: 13px; color: var(--muted); max-width: 560px; margin: 0 auto; line-height: 1.6; }
+.section-divider { border: none; border-top: 1px solid var(--line); margin: 72px auto; max-width: 500px; }
+.decision-note { display: inline-block; background: var(--gold-light); border: 1px solid var(--gold-border); border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+
+/* ── Phone layout ──────────────────────────────── */
+.phones { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-bottom: 64px; }
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.phone-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.phone-sub { font-size: 10px; color: var(--muted); opacity: 0.7; max-width: 230px; text-align: center; line-height: 1.5; margin-top: -10px; }
+
+/* ── Phone shell ───────────────────────────────── */
+.phone { width: 310px; height: 660px; background: var(--bg); border-radius: 46px; border: 1.5px solid rgba(255,255,255,0.07); overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 36px 88px rgba(0,0,0,0.90); position: relative; display: flex; flex-direction: column; }
+.phone::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 84px; height: 24px; background: #000; border-radius: 13px; z-index: 30; }
+
+/* ── Status bar ────────────────────────────────── */
+.sbar { height: 48px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px 8px; flex-shrink: 0; position: relative; z-index: 10; }
+.sbar-time { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.sbar-icons { display: flex; gap: 5px; align-items: center; }
+
+/* ── Tab bar ───────────────────────────────────── */
+.tabbar { height: 76px; background: var(--bg-deep); border-top: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-around; padding: 10px 0 0; flex-shrink: 0; z-index: 20; }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; }
+.tab-lbl { font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+.tab.active .tab-lbl { color: var(--gold); }
+.tab.active svg { stroke: var(--gold); }
+.tab:not(.active) .tab-lbl { color: var(--muted); }
+.tab:not(.active) svg { stroke: var(--muted); }
+
+/* ── Screen area ───────────────────────────────── */
+.screen { flex: 1; overflow: hidden; position: relative; }
+.scroll { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+
+/* ── Typography shortcuts ──────────────────────── */
+.kicker { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+.screen-title { font-family: var(--serif); font-size: 34px; font-weight: 900; color: var(--ink); line-height: 1.05; }
+
+/* ── THE KEY FIX — new search input ───────────── */
+/* Rounded-rect, full width, visible surface + border.
+   Unambiguously a tappable input, consistent with app input language.
+   Idle: gold-tint border (warm, not neutral). Active: full gold border. */
+.search-input {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1.5px solid rgba(232,184,48,0.22);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: text;
+}
+.search-input.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(232,184,48,0.10);
+}
+.search-placeholder { font-size: 14px; color: var(--muted); flex: 1; }
+.search-val { font-size: 14px; color: var(--ink); flex: 1; }
+.cursor { display: inline-block; width: 2px; height: 16px; background: var(--gold); vertical-align: -3px; margin-left: 1px; animation: blink 1.1s step-end infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ── Have-it pills ─────────────────────────────── */
+.have-it-row { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; }
+.have-it-row::-webkit-scrollbar { display: none; }
+.have-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--sage-light); border: 1px solid var(--sage-border); border-radius: 999px; padding: 5px 10px; white-space: nowrap; flex-shrink: 0; }
+.have-pill-name { font-size: 12px; font-weight: 600; color: var(--sage); }
+.have-pill-x { font-size: 10px; color: var(--sage); opacity: 0.7; }
+.have-more { display: inline-flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--line-dark); border-radius: 999px; padding: 5px 11px; white-space: nowrap; flex-shrink: 0; font-size: 12px; font-weight: 500; color: var(--muted); }
+
+/* ── Match banner ──────────────────────────────── */
+.match-banner { background: var(--surface); border: 1px solid var(--gold-border); border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden; cursor: pointer; }
+.match-banner::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--gold); border-radius: 4px 0 0 4px; }
+.match-banner-text { flex: 1; padding-left: 6px; }
+.match-banner-title { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--gold); line-height: 1.2; }
+.match-banner-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+/* NEW: explicit "See N matches" CTA on right instead of bare › */
+.match-banner-cta { display: flex; align-items: center; gap: 3px; background: var(--gold-light); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.match-banner-cta-txt { font-size: 11px; font-weight: 700; color: var(--gold); }
+
+/* ── List elements ─────────────────────────────── */
+.list-header { background: var(--bg-deep); padding: 8px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.ing-row { display: flex; align-items: center; background: var(--surface); padding: 0 16px; height: 54px; border-bottom: 1px solid var(--line); gap: 10px; }
+.ing-row:last-of-type { border-bottom: none; }
+.ing-name { flex: 1; font-size: 14px; color: var(--ink-soft); }
+.ing-name.active { color: var(--ink); }
+.toggle { border-radius: 999px; padding: 6px 13px; font-size: 11px; font-weight: 600; border: 1.5px solid; white-space: nowrap; }
+.toggle.on { background: var(--sage-light); border-color: var(--sage); color: var(--sage); }
+.toggle.off { background: transparent; border-color: var(--line-dark); color: var(--muted); }
+
+/* ── Inline autocomplete results ──────────────── */
+/* Replaces the section-list area when search is active.
+   Sits BELOW the search bar. Pills row ABOVE stays visible. */
+.autocomplete-region {
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+.result-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); gap: 10px; }
+.result-item.already { opacity: 0.5; }
+.result-main { flex: 1; display: flex; align-items: center; gap: 8px; }
+.result-emoji { font-size: 14px; line-height: 1; }  /* inline with name — fix for leaf emoji issue */
+.result-name { font-size: 14px; color: var(--ink-soft); }
+.result-name strong { color: var(--ink); font-weight: 600; }
+.result-alias { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.result-cat { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.result-check { font-size: 12px; color: var(--sage); font-weight: 600; }
+
+/* ── Keyboard simulation ───────────────────────── */
+.keyboard { height: 224px; background: #1C1C1C; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; padding: 10px 8px 6px; display: flex; flex-direction: column; gap: 8px; }
+.kb-row { display: flex; gap: 5px; justify-content: center; }
+.k { height: 38px; border-radius: 5px; background: #3A3A3C; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.90); flex: 1; min-width: 0; }
+.k.dark { background: #252527; color: rgba(255,255,255,0.55); }
+.k.space { flex: 5; font-size: 12px; color: rgba(255,255,255,0.50); }
+.k.ret { flex: 2; font-size: 11px; background: #636366; color: var(--ink); }
+
+/* ── Clear all confirmation dialog ────────────── */
+.dialog-scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.72); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.dialog { background: var(--surface-2); border-radius: 20px; border: 1px solid var(--line-dark); padding: 24px 22px 18px; width: 100%; max-width: 260px; }
+.dialog-icon { font-size: 32px; text-align: center; margin-bottom: 14px; }
+.dialog-title { font-family: var(--serif); font-size: 18px; font-weight: 800; color: var(--ink); text-align: center; margin-bottom: 8px; line-height: 1.2; }
+.dialog-body { font-size: 13px; color: var(--ink-soft); text-align: center; line-height: 1.55; margin-bottom: 20px; }
+.dialog-body strong { color: var(--ink); }
+.dialog-btns { display: flex; flex-direction: column; gap: 8px; }
+.btn-clear { background: var(--danger); border-radius: 12px; padding: 13px; text-align: center; font-size: 14px; font-weight: 700; color: #fff; }
+.btn-cancel { background: var(--surface-3); border-radius: 12px; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+
+/* ── Header with clear-all icon ────────────────── */
+.title-row { display: flex; align-items: flex-end; justify-content: space-between; }
+.clear-icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line-dark); margin-bottom: 2px; }
+
+/* ── Component comparison cards ────────────────── */
+.comp-row { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px; }
+.comp-card { background: var(--surface); border: 1.5px solid var(--line-dark); border-radius: 20px; padding: 24px; width: 320px; }
+.comp-card.recommended { border-color: var(--gold-border); }
+.comp-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px; }
+.comp-tag.rec { color: var(--gold); }
+.comp-tag.alt { color: var(--muted); }
+.comp-title { font-family: var(--serif); font-size: 17px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.comp-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.6; margin-bottom: 16px; }
+.comp-demo { border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+.comp-pro-con { font-size: 11px; color: var(--muted); line-height: 1.7; }
+.comp-pro-con span { color: var(--ink-soft); }
+
+/* ── Match banner comparison ────────────────────── */
+.banner-comp { max-width: 680px; margin: 0 auto 56px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.banner-example { flex: 1; min-width: 280px; }
+.banner-example-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.banner-old { background: var(--surface); border: 1px solid var(--sage-border); border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden; opacity: 0.6; }
+.banner-old::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sage); border-radius: 4px 0 0 4px; }
+
+/* ── Rationale prose ───────────────────────────── */
+.prose { max-width: 780px; margin: 0 auto; }
+.prose-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+.prose h2 { font-family: var(--serif); font-size: 30px; font-weight: 900; color: var(--ink); margin-bottom: 28px; line-height: 1.15; }
+.prose h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-top: 32px; margin-bottom: 10px; }
+.prose p { font-size: 14px; color: var(--ink-soft); line-height: 1.75; margin-bottom: 14px; }
+.prose strong { color: var(--ink); font-weight: 600; }
+
+/* ── Engineer handoff ──────────────────────────── */
+.handoff { max-width: 780px; margin: 56px auto 0; background: var(--surface); border: 1.5px solid var(--gold-border); border-radius: 20px; padding: 28px 32px; }
+.handoff-top { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+.handoff-badge { background: var(--gold-light); border: 1px solid var(--gold-border); border-radius: 999px; padding: 4px 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+.handoff-title { font-family: var(--serif); font-size: 20px; font-weight: 800; color: var(--ink); }
+.handoff h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-top: 22px; margin-bottom: 8px; }
+.handoff p, .handoff li { font-size: 13px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 5px; }
+.handoff ul { padding-left: 18px; margin-bottom: 10px; }
+.handoff code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; color: var(--gold); }
+.handoff strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="eyebrow">Product Designer · Hone v1 · Pantry v3</div>
+  <h1>Pantry <em>v3</em></h1>
+  <p>Search bar rethought holistically. Full-screen takeover replaced with inline results. Clear all moved and gated. "Getting close" made unambiguously tappable. Open in Chrome.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION A — SEARCH BAR: TWO ALTERNATIVES
+═══════════════════════════════════════════════ -->
+<div class="section-head">
+  <h2>Search bar — two alternatives</h2>
+  <p>The current input reads as a section heading, not a tappable field. Both alternatives fix the affordance. One is recommended.</p>
+</div>
+
+<div class="comp-row">
+
+  <!-- Alt 1 — Recommended -->
+  <div class="comp-card recommended">
+    <div class="comp-tag rec">✓ Recommended — Alternative 1</div>
+    <div class="comp-title">Rounded rect, gold-tint border · inline position</div>
+    <div class="comp-desc">Consistent with the app's existing input language (substitution sheet, add-ingredient field). Stays in its natural position between the title and pills. Gold-tinted border at idle (warm, not neutral) makes it unmistakably a field. Full gold border + focus ring on active. Scrolls with content.</div>
+    <div class="comp-demo" style="padding: 16px; background: var(--bg); border-radius: 12px;">
+      <!-- IDLE state -->
+      <div style="font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Idle</div>
+      <div class="search-input" style="margin-bottom: 14px;">
+        <svg width="15" height="15" fill="none" stroke="var(--muted)" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <div class="search-placeholder">Search or add an ingredient…</div>
+      </div>
+      <!-- ACTIVE state -->
+      <div style="font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">Active (focused)</div>
+      <div class="search-input active">
+        <svg width="15" height="15" fill="none" stroke="var(--gold)" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <div class="search-val">Brown on<span class="cursor"></span></div>
+        <svg width="14" height="14" fill="none" stroke="var(--muted)" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="comp-pro-con">✓ <span>App-consistent input shape — no new language to learn</span><br>✓ <span>Gold border reads "this belongs to Hone" not just "this is a field"</span><br>✓ <span>Scrolls with page — doesn't interrupt the header hierarchy</span></div>
+  </div>
+
+  <!-- Alt 2 — Not recommended -->
+  <div class="comp-card">
+    <div class="comp-tag alt">Alternative 2</div>
+    <div class="comp-title">Sticky top bar, edge-to-edge · Spotify/Maps pattern</div>
+    <div class="comp-desc">Pinned below the status bar, always visible even when scrolling. Full-width, no border, bottom separator line only. When focused, the header above it collapses and results fill the remaining screen. Familiar from Maps and music apps.</div>
+    <div class="comp-demo" style="background: var(--bg); border-radius: 12px; overflow: hidden;">
+      <!-- Sticky bar simulation -->
+      <div style="background: var(--bg-deep); padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line);">
+        <svg width="15" height="15" fill="none" stroke="var(--muted)" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <div style="font-size: 14px; color: var(--muted); flex: 1;">Search ingredients…</div>
+      </div>
+      <div style="padding: 12px 14px; font-size: 12px; color: var(--muted); opacity: 0.6;">Pantry title + pills scroll below this bar…</div>
+    </div>
+    <div class="comp-pro-con">✓ <span>Always visible, very discoverable</span><br>✗ <span>Navigation pattern — wrong mental model for augmentation</span><br>✗ <span>Header collapse on focus feels jarring for a list-editing task</span><br>✗ <span>Inconsistent with the rest of the app's input placement</span></div>
+  </div>
+</div>
+
+<div style="text-align: center; font-size: 13px; color: var(--ink-soft); max-width: 560px; margin: -32px auto 64px; line-height: 1.65;">
+  <strong style="color: var(--ink);">Going with Alternative 1.</strong> The Pantry screen is <em>augmentation</em> — the user is editing a list they can already see. A sticky top bar is the right pattern when search is the <em>primary purpose</em> of the screen (Maps, Spotify). Here it's secondary to browsing. Alt 1 stays in its natural position, respects the hierarchy, and uses the existing input shape.
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION B — MATCH BANNER: BEFORE / AFTER
+═══════════════════════════════════════════════ -->
+<hr class="section-divider">
+<div class="section-head">
+  <h2>"Getting close" — before and after</h2>
+  <p>The banner had an arrow (›) that made it look like a button without confirming it. New version makes the CTA explicit.</p>
+</div>
+
+<div class="banner-comp">
+  <div class="banner-example">
+    <div class="banner-example-label">Before — ambiguous</div>
+    <div class="banner-old">
+      <div style="flex: 1; padding-left: 10px;">
+        <div style="font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--sage);">Getting close · 6 matches</div>
+        <div style="font-size: 11px; color: var(--muted); margin-top: 3px;">ranked by coverage</div>
+      </div>
+      <div style="color: var(--sage); font-size: 16px; opacity: 0.8;">›</div>
+    </div>
+    <div style="font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5;">Sage green "Getting close" — Patrick couldn't tell if tapping did anything. The bare › is too subtle. Also: sage implies "good / complete" but 6 matches at partial coverage isn't complete.</div>
+  </div>
+
+  <div class="banner-example">
+    <div class="banner-example-label">After — explicit CTA</div>
+    <div class="match-banner">
+      <div class="match-banner-text">
+        <div class="match-banner-title">3 recipes you can cook now</div>
+        <div class="match-banner-sub">6 more within 1–3 ingredients</div>
+      </div>
+      <div class="match-banner-cta">
+        <span class="match-banner-cta-txt">See all</span>
+        <svg width="11" height="11" fill="none" stroke="var(--gold)" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5;">Gold (primary action). "See all" pill-CTA on the right is unambiguously tappable. Title tells you what you can do now; sub-line tells you what's close. No ambiguity.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION C — THREE STATES
+═══════════════════════════════════════════════ -->
+<hr class="section-divider">
+<div class="section-head">
+  <h2>Three states</h2>
+  <p>Idle · Active search (inline, context preserved) · Clear all confirmation</p>
+</div>
+
+<div class="phones">
+
+  <!-- ── PHONE 1: IDLE / POPULATED ──────────────── -->
+  <div class="phone-wrap">
+    <div class="phone-label">State 1 — Idle</div>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">9:41</span>
+        <div class="sbar-icons">
+          <svg width="15" height="10" fill="none" viewBox="0 0 15 10"><rect x="0" y="3" width="3" height="7" rx="0.5" fill="#C4B8A8"/><rect x="4" y="2" width="3" height="8" rx="0.5" fill="#C4B8A8"/><rect x="8" y="0" width="3" height="10" rx="0.5" fill="#C4B8A8"/><rect x="12" y="0" width="3" height="10" rx="0.5" fill="#C4B8A8"/></svg>
+          <svg width="22" height="10" fill="none" viewBox="0 0 22 10"><rect x="0" y="1" width="18" height="8" rx="2" stroke="#8A7E72" stroke-width="1"/><rect x="1.5" y="2.5" width="14" height="5" rx="1" fill="#C4B8A8"/><path d="M19.5 3.5v3a1.5 1.5 0 000-3z" fill="#8A7E72"/></svg>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="scroll">
+          <div style="padding: 4px 18px 14px;">
+            <div class="kicker" style="margin-bottom: 4px;">Your kitchen</div>
+
+            <!-- Title row with Clear all icon in header — moved OUT of cramped zone -->
+            <div class="title-row" style="margin-bottom: 10px;">
+              <div class="screen-title">Pantry</div>
+              <div class="clear-icon-btn" title="Clear all">
+                <!-- Broom/trash icon -->
+                <svg width="16" height="16" fill="none" stroke="var(--muted)" stroke-width="1.6" viewBox="0 0 24 24">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Have-it pills -->
+            <div class="have-it-row" style="margin-bottom: 14px;">
+              <div class="have-pill"><span class="have-pill-name">Brown onion</span><span class="have-pill-x">×</span></div>
+              <div class="have-pill"><span class="have-pill-name">Paprika</span><span class="have-pill-x">×</span></div>
+              <div class="have-pill"><span class="have-pill-name">Garlic</span><span class="have-pill-x">×</span></div>
+              <div class="have-pill"><span class="have-pill-name">Olive oil</span><span class="have-pill-x">×</span></div>
+              <div class="have-more">+8</div>
+            </div>
+
+            <!-- Search bar — Alt 1, idle state -->
+            <div class="search-input" style="margin-bottom: 14px;">
+              <svg width="15" height="15" fill="none" stroke="var(--muted)" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <div class="search-placeholder">Search or add an ingredient…</div>
+            </div>
+
+            <!-- Match banner — updated CTA -->
+            <div class="match-banner" style="margin-bottom: 18px;">
+              <div class="match-banner-text">
+                <div class="match-banner-title">3 recipes you can cook now</div>
+                <div class="match-banner-sub">6 more within 1–3 ingredients</div>
+              </div>
+              <div class="match-banner-cta">
+                <span class="match-banner-cta-txt">See all</span>
+                <svg width="10" height="10" fill="none" stroke="var(--gold)" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ingredient list -->
+          <div class="list-header"><span>🥦</span> Produce</div>
+          <div class="ing-row"><div class="ing-name active">Brown onion</div><div class="toggle on">✓ Got it</div></div>
+          <div class="ing-row"><div class="ing-name">Carrot</div><div class="toggle off">Got it?</div></div>
+          <div class="ing-row"><div class="ing-name active">Garlic</div><div class="toggle on">✓ Got it</div></div>
+          <div class="ing-row"><div class="ing-name">Potato</div><div class="toggle off">Got it?</div></div>
+          <div class="list-header" style="margin-top:8px;"><span>🧂</span> Spices</div>
+          <div class="ing-row"><div class="ing-name active">Paprika</div><div class="toggle on">✓ Got it</div></div>
+          <div class="ing-row"><div class="ing-name active">Cumin</div><div class="toggle on">✓ Got it</div></div>
+          <div class="ing-row"><div class="ing-name">Coriander</div><div class="toggle off">Got it?</div></div>
+          <div style="height: 8px;"></div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9"/><path d="M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg><span class="tab-lbl">Home</span></div>
+        <div class="tab"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="tab-lbl">Browse</span></div>
+        <div class="tab active"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M9 7h6M9 12h6M9 17h4"/></svg><span class="tab-lbl">Pantry</span></div>
+        <div class="tab"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="tab-lbl">Plan</span></div>
+      </div>
+    </div>
+    <div class="phone-sub">Clear all moves to the title row (trash icon). No longer in cramped thumb territory below the search bar.</div>
+  </div>
+
+
+  <!-- ── PHONE 2: ACTIVE SEARCH INLINE ──────────── -->
+  <div class="phone-wrap">
+    <div class="phone-label">State 2 — Search active</div>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">9:41</span>
+        <div class="sbar-icons">
+          <svg width="15" height="10" fill="none" viewBox="0 0 15 10"><rect x="0" y="3" width="3" height="7" rx="0.5" fill="#C4B8A8"/><rect x="4" y="2" width="3" height="8" rx="0.5" fill="#C4B8A8"/><rect x="8" y="0" width="3" height="10" rx="0.5" fill="#C4B8A8"/><rect x="12" y="0" width="3" height="10" rx="0.5" fill="#C4B8A8"/></svg>
+          <svg width="22" height="10" fill="none" viewBox="0 0 22 10"><rect x="0" y="1" width="18" height="8" rx="2" stroke="#8A7E72" stroke-width="1"/><rect x="1.5" y="2.5" width="14" height="5" rx="1" fill="#C4B8A8"/><path d="M19.5 3.5v3a1.5 1.5 0 000-3z" fill="#8A7E72"/></svg>
+        </div>
+      </div>
+
+      <div class="screen" style="display: flex; flex-direction: column;">
+        <!-- FROZEN HEADER — stays visible while searching (the fix Patrick asked for) -->
+        <div style="padding: 4px 18px 12px; flex-shrink: 0; border-bottom: 1px solid var(--line);">
+          <div class="kicker" style="margin-bottom: 4px;">Your kitchen</div>
+          <div class="title-row" style="margin-bottom: 10px;">
+            <div class="screen-title" style="font-size: 28px;">Pantry</div>
+            <div style="font-size: 11px; color: var(--muted); padding-bottom: 3px;">12 stocked</div>
+          </div>
+
+          <!-- Pills row stays visible — context preserved -->
+          <div class="have-it-row" style="margin-bottom: 12px;">
+            <div class="have-pill"><span class="have-pill-name">Brown onion</span><span class="have-pill-x">×</span></div>
+            <div class="have-pill"><span class="have-pill-name">Paprika</span><span class="have-pill-x">×</span></div>
+            <div class="have-pill"><span class="have-pill-name">Garlic</span><span class="have-pill-x">×</span></div>
+            <div class="have-more">+9</div>
+          </div>
+
+          <!-- Search bar ACTIVE — full gold border, cursor, cancel button -->
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="search-input active" style="flex: 1;">
+              <svg width="15" height="15" fill="none" stroke="var(--gold)" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <div class="search-val">Brown on<span class="cursor"></span></div>
+              <svg width="14" height="14" fill="none" stroke="var(--muted)" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--gold); white-space: nowrap; cursor: pointer;">Cancel</div>
+          </div>
+        </div>
+
+        <!-- INLINE autocomplete results — replaces ingredient list while searching -->
+        <!-- Pills row above still visible. NO full-screen takeover. -->
+        <div style="flex: 1; overflow-y: auto;">
+          <div class="autocomplete-region">
+            <div class="list-header">🥦 Produce</div>
+
+            <!-- "already added" item — dimmed, shows ✓ -->
+            <div class="result-item already">
+              <div class="result-main">
+                <div class="result-emoji">🧅</div>
+                <div>
+                  <div class="result-name"><strong>Brown onion</strong></div>
+                  <div class="result-alias">also yellow onion</div>
+                </div>
+              </div>
+              <div class="result-check">✓ Added</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-main">
+                <div class="result-emoji">🌿</div>
+                <div><div class="result-name">Spring <strong>onion</strong></div></div>
+              </div>
+              <div class="result-cat">Produce</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-main">
+                <div class="result-emoji">🧅</div>
+                <div>
+                  <div class="result-name">White <strong>onion</strong></div>
+                  <div class="result-alias">milder, good raw</div>
+                </div>
+              </div>
+              <div class="result-cat">Produce</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-main">
+                <div class="result-emoji">🧅</div>
+                <div><div class="result-name">Red <strong>onion</strong></div></div>
+              </div>
+              <div class="result-cat">Produce</div>
+            </div>
+
+            <div class="list-header">🧂 Spices &amp; Seasonings</div>
+
+            <div class="result-item">
+              <div class="result-main">
+                <div class="result-emoji">🫙</div>
+                <div><div class="result-name"><strong>Onion</strong> powder</div></div>
+              </div>
+              <div class="result-cat">Spices</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-main">
+                <div class="result-emoji">🫙</div>
+                <div>
+                  <div class="result-name"><strong>Onion</strong> flakes</div>
+                  <div class="result-alias">dried</div>
+                </div>
+              </div>
+              <div class="result-cat">Spices</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyboard -->
+        <div class="keyboard">
+          <div class="kb-row"><div class="k">q</div><div class="k">w</div><div class="k">e</div><div class="k">r</div><div class="k">t</div><div class="k">y</div><div class="k">u</div><div class="k">i</div><div class="k">o</div><div class="k">p</div></div>
+          <div class="kb-row"><div style="width:14px"></div><div class="k">a</div><div class="k">s</div><div class="k">d</div><div class="k">f</div><div class="k">g</div><div class="k">h</div><div class="k">j</div><div class="k">k</div><div class="k">l</div><div style="width:14px"></div></div>
+          <div class="kb-row"><div class="k dark" style="flex:1.5;">⇧</div><div class="k">z</div><div class="k">x</div><div class="k">c</div><div class="k">v</div><div class="k">b</div><div class="k">n</div><div class="k">m</div><div class="k dark" style="flex:1.5;">⌫</div></div>
+          <div class="kb-row"><div class="k dark" style="flex:1.4; font-size:11px;">123</div><div class="k space">space</div><div class="k ret">return</div></div>
+        </div>
+      </div>
+      <!-- No tab bar in search mode -->
+    </div>
+    <div class="phone-sub">Context preserved — pills row stays frozen above. The ingredient list is replaced by inline results below the search bar. Emojis are inline with names (leaf issue fixed). "Cancel" dismisses and restores the ingredient list.</div>
+  </div>
+
+
+  <!-- ── PHONE 3: CLEAR ALL DIALOG ──────────────── -->
+  <div class="phone-wrap">
+    <div class="phone-label">State 3 — Clear all dialog</div>
+    <div class="phone">
+      <div class="sbar">
+        <span class="sbar-time">9:41</span>
+        <div class="sbar-icons">
+          <svg width="15" height="10" fill="none" viewBox="0 0 15 10"><rect x="0" y="3" width="3" height="7" rx="0.5" fill="#C4B8A8"/><rect x="4" y="2" width="3" height="8" rx="0.5" fill="#C4B8A8"/><rect x="8" y="0" width="3" height="10" rx="0.5" fill="#C4B8A8"/><rect x="12" y="0" width="3" height="10" rx="0.5" fill="#C4B8A8"/></svg>
+          <svg width="22" height="10" fill="none" viewBox="0 0 22 10"><rect x="0" y="1" width="18" height="8" rx="2" stroke="#8A7E72" stroke-width="1"/><rect x="1.5" y="2.5" width="14" height="5" rx="1" fill="#C4B8A8"/><path d="M19.5 3.5v3a1.5 1.5 0 000-3z" fill="#8A7E72"/></svg>
+        </div>
+      </div>
+
+      <div class="screen">
+        <!-- Blurred-out background content (dimmed) -->
+        <div style="padding: 4px 18px 14px; opacity: 0.25; pointer-events: none;">
+          <div class="kicker" style="margin-bottom: 4px;">Your kitchen</div>
+          <div class="title-row" style="margin-bottom: 10px;">
+            <div class="screen-title">Pantry</div>
+            <div class="clear-icon-btn"><svg width="16" height="16" fill="none" stroke="var(--muted)" stroke-width="1.6" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></div>
+          </div>
+          <div class="have-it-row" style="margin-bottom: 14px;">
+            <div class="have-pill"><span class="have-pill-name">Brown onion</span><span class="have-pill-x">×</span></div>
+            <div class="have-pill"><span class="have-pill-name">Paprika</span><span class="have-pill-x">×</span></div>
+            <div class="have-pill"><span class="have-pill-name">Garlic</span><span class="have-pill-x">×</span></div>
+          </div>
+          <div class="search-input" style="margin-bottom: 14px;"><svg width="15" height="15" fill="none" stroke="var(--muted)" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><div class="search-placeholder">Search or add an ingredient…</div></div>
+        </div>
+
+        <!-- Confirmation dialog over scrim -->
+        <div class="dialog-scrim">
+          <div class="dialog">
+            <div class="dialog-icon">🗑️</div>
+            <div class="dialog-title">Clear your pantry?</div>
+            <div class="dialog-body">This removes all <strong>12 stocked ingredients</strong>. Your recipe matches will reset. This can't be undone.</div>
+            <div class="dialog-btns">
+              <div class="btn-clear">Clear 12 ingredients</div>
+              <div class="btn-cancel">Keep my pantry</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar" style="opacity: 0.3;">
+        <div class="tab"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><path d="M3 12L12 3l9 9"/><path d="M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg><span class="tab-lbl">Home</span></div>
+        <div class="tab"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="tab-lbl">Browse</span></div>
+        <div class="tab active"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M9 7h6M9 12h6M9 17h4"/></svg><span class="tab-lbl">Pantry</span></div>
+        <div class="tab"><svg width="22" height="22" fill="none" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="tab-lbl">Plan</span></div>
+      </div>
+    </div>
+    <div class="phone-sub">Confirmation dialog tells the user exactly what they're about to lose ("12 stocked ingredients"). Primary button is red with the count baked in. Cancel is the salient choice visually.</div>
+  </div>
+
+</div><!-- /phones -->
+
+
+<!-- ═══════════════════════════════════════════════
+     RATIONALE
+═══════════════════════════════════════════════ -->
+<hr class="section-divider">
+<div class="prose">
+  <div class="prose-eyebrow">Design Rationale — Pantry v3</div>
+  <h2>Four problems, four decisions</h2>
+
+  <h3>0. Search bar — holistic rethink</h3>
+  <p>The current bar reads as a section heading because it has no visible surface. Text on a dark background without a containing shape is a label, not an input. <strong>The fix is a clearly bounded, shaped input field with a warm gold-tint border at idle and a full gold focus ring when active.</strong> Alternative 1 is recommended over a sticky top bar because the Pantry screen's primary purpose is browsing and editing an existing list — search is a secondary action. Leading with search (sticky top, Spotify pattern) implies the screen is about finding things, which is wrong for this context.</p>
+  <p>The rounded-rect shape (14px radius) matches the existing input language in the app (substitution sheet, add-ingredient field). No new interaction language for the user to learn. The gold-tint border at idle is the tell: it's not a neutral grey field, it's part of the Hone palette, and it reads "tap me" without requiring a label to say so.</p>
+
+  <h3>1. Full-screen search — reverting to inline</h3>
+  <p>The v2 full-screen takeover was the wrong call. Patrick's on-device instinct was correct: when you hide the pantry context (the pills of what you've already added) behind a full-screen search overlay, the user is flying blind. They can't see what they have while deciding what to add next. <strong>Inline results fix this architecturally</strong> — the header is frozen, the pills row stays visible above the search bar, and the autocomplete list replaces only the ingredient section-list below it.</p>
+  <p>Cancel dismisses the search and restores the ingredient list. The page never fully hands off to a search context — it borrows the lower half of the screen for autocomplete results while keeping the top half intact. This is the correct pattern for augmentation flows.</p>
+  <p>The leaf emoji issue (emoji appearing on its own line, separate from the ingredient name) is fixed: the emoji and name are now in the same flex row. No text wrapping between them.</p>
+
+  <h3>2. Clear all — moved and gated</h3>
+  <p>Two fixes applied, not one. First, the button is moved from the cramped zone directly below the search bar (prime thumb-hit territory) to a trash icon in the title row — a more intentional position that requires deliberate navigation to the top of the screen. Second, tapping it now triggers a confirmation modal that names the exact count: <em>"Clear 12 stocked ingredients."</em> The count matters — a user with 3 ingredients and a user with 40 ingredients have very different stakes. The modal primary button is red and reads "Clear 12 ingredients" (not just "Clear all"), making the consequence concrete. Cancel is the visually dominant choice — it's larger and reads first.</p>
+  <p>Long-press on pill was considered but rejected: hidden gestures require discovery, and a destructive action should not depend on a gesture the user might never find. A visible icon with a confirmation modal is predictable and matches Android Material 3 conventions for destructive actions.</p>
+
+  <h3>3. "Getting close" / match banner — explicit CTA</h3>
+  <p>The bare <em>›</em> arrow was doing too much work as an interactive affordance. The new version adds a "See all" pill on the right — a small contained element that reads as a button without requiring the user to infer that the whole card is tappable. The gold color remains throughout (title, pill, arrow inside pill). Sage is removed from the banner — sage means "complete" or "success" in this app's colour language; a set of partial matches is not a success state and shouldn't use that colour.</p>
+  <p>The title copy is also tightened: "3 recipes you can cook now" is the primary reward signal; "6 more within 1–3 ingredients" is the secondary motivator. These two lines give the user a reason to tap and a sense of what they'll find inside.</p>
+
+  <h3>What's unchanged</h3>
+  <p>Pill style for added ingredients is preserved. Toggle rows ("Got it? / ✓ Got it") are unchanged. Dark v0.7 tokens throughout. Variant A missing-ingredient chips carry forward from v2. "Photos soon" badge on recipe cards carries through per DECISION-003.</p>
+</div>
+
+
+<!-- ENGINEER HANDOFF -->
+<div class="handoff">
+  <div class="handoff-top">
+    <div class="handoff-badge">Engineer Handoff — Pantry v3</div>
+    <div class="handoff-title">Implementation notes</div>
+  </div>
+
+  <h4>1. Search input — replace the existing TextInput wrapper</h4>
+  <p>The current search bar is a <code>View</code> + <code>TextInput</code> with minimal styling. Replace the outer container with the new style:</p>
+  <ul>
+    <li><code>backgroundColor: tokens.surface</code>, <code>borderWidth: 1.5</code>, <code>borderColor: 'rgba(232,184,48,0.22)'</code>, <code>borderRadius: 14</code>, <code>paddingHorizontal: 14</code>, <code>paddingVertical: 12</code>.</li>
+    <li>On focus: <code>borderColor: tokens.primary</code> + add a <code>shadowColor: tokens.primary, shadowOpacity: 0.10, shadowRadius: 6, elevation: 0</code> focus ring.</li>
+    <li>Left icon: magnifying glass, switches from <code>tokens.muted</code> → <code>tokens.primary</code> on focus.</li>
+    <li>Right: clear (×) button when input non-empty; nothing when empty.</li>
+    <li>Cancel button: appears to the right of the input box on focus (not inside it). Tapping dismisses focus, clears the search state, restores the ingredient list. <code>onPress: () => { setSearch(''); Keyboard.dismiss(); }</code></li>
+  </ul>
+
+  <h4>2. Inline autocomplete — replace full-screen IngredientSearchOverlay</h4>
+  <p><strong>The <code>IngredientSearchOverlay</code> modal built in v2 should be removed.</strong> Inline results are implemented within the existing <code>SectionList</code>:</p>
+  <ul>
+    <li>Add <code>isSearchActive</code> state (<code>true</code> when <code>addName.length > 0</code> and input is focused).</li>
+    <li>When <code>isSearchActive</code>: the <code>SectionList</code>'s <code>sections</code> prop switches from the pantry category sections to the autocomplete results sections (same <code>SectionList</code>, different data source). Animate with a short fade: <code>useAnimatedStyle</code> + <code>withTiming(opacity, 150ms)</code>.</li>
+    <li>Autocomplete result items: <code>emoji</code> and <code>name</code> in the <strong>same flex row</strong> — emoji is a <code>Text</code> at 14sp with <code>marginRight: 8</code>, name is a <code>Text</code> at 14sp in the same <code>View flexDirection="row"</code>. This fixes the leaf-emoji separate-line bug.</li>
+    <li>Already-added items: dimmed (<code>opacity: 0.45</code>) with a "✓ Added" label in <code>tokens.sage</code> on the right. Not tappable (or tapping does nothing).</li>
+    <li>The frozen header (pills row + search bar) stays mounted in <code>ListHeaderComponent</code> regardless of <code>isSearchActive</code>. Only the section data changes.</li>
+  </ul>
+
+  <h4>3. Clear all — relocate and gate</h4>
+  <ul>
+    <li><strong>Remove</strong> the current "Clear all" button from below the search bar.</li>
+    <li><strong>Add</strong> a trash icon button (<code>Icon name="trash-2"</code> or similar, 16sp, <code>tokens.muted</code>) to the title row, right-aligned. Wrap in a <code>Pressable</code> with <code>hitSlop={12}</code>.</li>
+    <li>On press: show a <code>Modal</code> confirmation dialog (not an Alert — Alert can't be styled to match dark tokens). Dialog content:
+      <ul>
+        <li>Title: <code>"Clear your pantry?"</code> in <code>fonts.display</code>.</li>
+        <li>Body: <code>"This removes all {haveCount} stocked ingredients. Your recipe matches will reset."</code> — include the count, make it concrete.</li>
+        <li>Primary button: <code>backgroundColor: '#E05252'</code> (danger red), label <code>"Clear {haveCount} ingredients"</code>.</li>
+        <li>Cancel button: <code>backgroundColor: tokens.surface2</code>, label "Keep my pantry" (positive framing — the cancel is the safe choice).</li>
+      </ul>
+    </li>
+    <li>On confirm: <code>clearAllPantryItems(db)</code> → <code>setPantryItems([])</code>. Haptic: <code>Haptics.notificationAsync(ImpactFeedbackType.Warning)</code>.</li>
+  </ul>
+
+  <h4>4. Match banner — update copy and CTA</h4>
+  <ul>
+    <li>Title: <code>"{canMakeCount} recipe{canMakeCount !== 1 ? 's' : ''} you can cook now"</code> in <code>fonts.display</code>, <code>tokens.primary</code> (gold).</li>
+    <li>Sub-line: <code>"{topMatches.length - canMakeCount} more within 1–3 ingredients"</code>.</li>
+    <li>Replace bare <code>›</code> with a <code>"See all"</code> pill: <code>backgroundColor: tokens.primaryLight</code>, <code>borderRadius: 999</code>, <code>paddingHorizontal: 10</code>, <code>paddingVertical: 4</code>. Label "See all" in <code>tokens.primary</code> 11sp 700 weight, followed by a small right-arrow SVG.</li>
+    <li>Remove sage colour from this card entirely — sage means complete/success elsewhere in the app.</li>
+  </ul>
+
+  <h4>5. Files to touch</h4>
+  <ul>
+    <li><code>mobile/app/(tabs)/pantry.tsx</code> — all four changes above.</li>
+    <li><code>mobile/src/components/IngredientSearchOverlay.tsx</code> — <strong>delete</strong> this file (inline supersedes it).</li>
+    <li>No new tokens. No schema changes. No new packages.</li>
+  </ul>
+
+  <p style="margin-top: 20px; font-size: 12px; color: var(--muted);">Prototype: <code>docs/prototypes/pantry-v3.html</code> · Tokens: <code>mobile/src/theme/tokens.ts</code> v0.7 · Handoff logged: <code>docs/coo/handoffs.md</code> 5 May 2026</p>
+</div>
+
+</body>
+</html>
