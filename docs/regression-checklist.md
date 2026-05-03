@@ -62,17 +62,9 @@ snaps cleanly to one card per view — partial cards from adjacent entries are v
 
 ---
 
-## How to run this checklist before a release tag
-
-1. Open the Pantry tab on a real device (not the emulator).
-2. Stock 4 ingredients → check REGN-001: swipe the carousel, verify snap.
-3. Check the build log for the release APK: no unexpected-character syntax errors.
-4. Mark each entry ✅ or 🔴 above.
-5. If any entry is 🔴, do not tag the release — fix first.
-
----
-
-## Adding a new entry
-
-Copy the template above. Increment the REGN-NNN counter. Fill in all fields.
-Commit the file update in the same PR that contains the bug fix — not later.
+### [REGN-003] — pantry.tsx file-write truncation (Pantry v3)
+**Description:** Large file writes via shell heredoc or Python base64 push can silently truncate mid-expression. Pantry v3 was cut at `{undo` (line 1219), then a reconstruction attempt missed the `>` closing the `<Text>` opening tag. Metro bundler caught it only at bundle time as either `Unexpected token, expected "}"` or `Unexpected token, expected "..."`.
+**Repro steps:**
+1. Push any file > 40 KB via the GitHub API.
+2. Trigger a build.
+3. **Fail:** Metro reports a `SyntaxError` near th
