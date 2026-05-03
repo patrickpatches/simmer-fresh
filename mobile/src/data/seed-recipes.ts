@@ -3418,6 +3418,1061 @@ const FLOUR_TORTILLAS: Recipe = {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
+//  Phase 2 batch — 6 new recipes from culinary-research files (2026-05-03)
+// ────────────────────────────────────────────────────────────────────────────
+
+const CHICKEN_SCHNITZEL: Recipe = {
+  id: 'chicken-schnitzel',
+  title: 'Chicken Schnitzel',
+  tagline: "Crisp, golden, pub-classic — the schnitzel that earns its place on the plate.",
+  description: "Schnitzel is German and Austrian by heritage — Wiener Schnitzel from Vienna, traditionally veal pounded thin and crumbed. Post-war migration carried the technique into Australian kitchens, where chicken became the everyday version and the country pub turned it into a national dish. This is the weeknight rendition: the brine keeps the chicken juicy, the double-coat gives the crunch, a single pan does the work.",
+  base_servings: 4,
+  time_min: 45,
+  difficulty: 'Easy',
+  tags: ['schnitzel', 'pub classic', 'crumbed', 'pan-fried', 'weeknight'],
+  categories: { cuisines: ['australian'], types: ['chicken'] },
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Adam Liaw',
+    video_url: 'https://www.smh.com.au/goodfood/recipes/adam-liaws-classic-chicken-schnitzel-20180206-h0vphi.html',
+    notes: "Inspired by Adam Liaw's brined-then-crumbed approach. The brine and the double-coat are his; the rest is simplified for the weeknight kitchen.",
+  },
+  hero_fallback: fallback('#C8A96E'),
+  whole_food_verified: true,
+  leftover_mode: { extra_servings: 2, note: "Cold schnitzel sliced over a salad makes tomorrow's lunch" },
+  ingredients: [
+    {
+      id: 'chicken_breast', name: 'Chicken breast fillets, butterflied', amount: 800, unit: 'g',
+      scales: 'linear', prep: 'Butterflied and lightly pounded to 1 cm thick',
+      substitutions: [
+        { ingredient: 'Chicken thigh fillets (boneless, skinless)', changes: 'Richer flavour, more forgiving if cooked a touch long. Cooks 1–2 minutes longer per side.', quality: 'great_swap' },
+        { ingredient: 'Veal escalope', changes: 'This is the original Wiener Schnitzel meat. Lighter colour, faster cook.', quality: 'perfect_swap', quantity_note: 'Same weight per serve.' },
+        { ingredient: 'Pork loin steak', changes: 'Closer to the central-European original. Slightly drier — extend the brine to 45 minutes.', quality: 'great_swap' },
+      ],
+    },
+    {
+      id: 'salt_brine', name: 'Table salt (for brine)', amount: 50, unit: 'g',
+      scales: 'linear', prep: 'Dissolved in 1 L cold water',
+      scaling_note: "Concentration matters, not volume. The brine is 5% salt by water (50 g salt per 1 L water). When scaling down to 1–2 schnitzels, keep the ratio: 250 ml water + 12.5 g salt. Don't dilute below 5%; the brine stops working.",
+      substitutions: [
+        { ingredient: 'Sea salt flakes', changes: 'No flavour difference at the brine stage. Flakes are less dense, so use 70 g per 1 L water.', quality: 'perfect_swap', quantity_note: 'Use 70 g per 1 L water.' },
+        { ingredient: 'Skip the brine entirely', changes: 'Faster, but the chicken dries at the edges and the crumb crusts before the meat finishes. The brine is what separates pub-grade from average.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'plain_flour', name: 'Plain flour', amount: 100, unit: 'g',
+      scales: 'linear',
+      scaling_note: 'Bowl quantity, not consumption. 100 g of dusting flour crumbs up to 8 schnitzels — most stays in the tray. For 1–2 serves, drop to 50 g.',
+      substitutions: [
+        { ingredient: 'Gluten-free plain flour blend', changes: "Coating still crisps. The crumb feels slightly sandier in the mouth — most people won't notice.", quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'eggs', name: 'Eggs, large', amount: 2, unit: 'whole',
+      scales: 'linear', prep: 'Beaten with a splash of water',
+      scaling_note: '2 eggs cover up to 6 schnitzels. Add a third only if crumbing 7 or more pieces. Egg is a coverage ingredient, not a per-piece one.',
+    },
+    {
+      id: 'panko', name: 'Panko breadcrumbs', amount: 200, unit: 'g',
+      scales: 'linear',
+      scaling_note: 'Bowl quantity, not consumption. 200 g crumbs up to 8 schnitzels. For 1–2 serves, 100 g is enough.',
+      substitutions: [
+        { ingredient: 'Fresh white breadcrumbs (day-old sourdough, blitzed)', changes: 'Less uniform crunch, more rustic crust. Australian pubs use both styles.', quality: 'great_swap' },
+        { ingredient: 'Dry breadcrumbs (the supermarket bottle)', changes: 'Smaller crumb, denser coating, slightly less crunch.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'parmesan_schnitz', name: 'Parmesan, finely grated', amount: 30, unit: 'g',
+      scales: 'linear', prep: 'Mixed through the panko',
+      substitutions: [
+        { ingredient: 'Pecorino', changes: 'Sharper, saltier — cut the finishing salt by a small pinch.', quality: 'great_swap' },
+        { ingredient: 'Omit', changes: 'More neutral crumb; lets the chicken speak. The parmesan is a flavour booster, not a structural ingredient.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'lemon_zest_schnitz', name: 'Lemon zest', amount: 1, unit: 'lemon',
+      scales: 'fixed', cap: 2, prep: 'Mixed through the panko',
+      substitutions: [
+        { ingredient: 'Omit', changes: 'Crumb is less aromatic; still very good.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'frying_oil_schnitz', name: 'Neutral vegetable oil (rice bran or canola)', amount: 200, unit: 'ml',
+      scales: 'custom', curve: { '1': 100, '2': 150, '4': 200, '6': 250, '8': 300 },
+      prep: 'For shallow frying — depth-driven, see scaling notes',
+      scaling_note: "Depth-driven, not serving-driven. The oil must sit at 1 cm depth in whatever pan you're using. A 24 cm pan needs 150–200 ml; a 30 cm pan needs 250–300 ml.",
+      substitutions: [
+        { ingredient: 'Ghee or clarified butter', changes: 'Richer, faster browning, slightly more savoury crust. Higher cost.', quality: 'great_swap' },
+        { ingredient: 'Light olive oil (not extra virgin)', changes: 'Faint olive note in the crust. Works fine. Do not use extra virgin — it burns at frying temperature and the dish goes bitter.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'lemon_wedges_schnitz', name: 'Lemon, cut into wedges, to serve', amount: 1, unit: 'lemon',
+      scales: 'fixed', cap: 6,
+    },
+    {
+      id: 'flake_salt_schnitz', name: 'Sea salt flakes, to finish', amount: 5, unit: 'g',
+      scales: 'fixed', cap: 5,
+    },
+  ],
+  steps: [
+    {
+      id: 'step_1_brine', title: 'Brine the chicken',
+      content: 'Dissolve the salt in 1 L of cold water in a bowl big enough to hold the chicken flat. Slip the butterflied breasts in, cover, and rest in the fridge for 30 minutes. The salt is doing two jobs: seasoning the inside of the meat, and restructuring the proteins so they hold onto moisture while the crumb has time to crisp.',
+      stage_note: 'Brine for 30 minutes — no longer. Past 45 the texture turns slightly springy.',
+      lookahead: 'While the brine works, set up your three-tray crumbing line.',
+      timer_seconds: 1800,
+      why_note: 'Salt brining is the line between juicy schnitzel and dry chicken under crumb. Without it, by the time the panko goes golden, the meat at the edges is already overcooked.',
+    },
+    {
+      id: 'step_2_setup', title: 'Set up the crumbing line',
+      content: "Three shallow trays, left to right. Tray one: plain flour. Tray two: beaten eggs with a splash of water. Tray three: panko, parmesan, and lemon zest, tossed with your fingers so the zest scatters evenly.",
+      stage_note: 'Each tray wide enough to lay a whole breast flat without folding it.',
+      lookahead: "You'll work left-to-right with one wet hand and one dry hand.",
+      why_note: 'Flour gives the egg something to stick to. Egg gives the panko something to stick to. Skip a layer and the crust falls off in the pan.',
+    },
+    {
+      id: 'step_3_crumb', title: 'Crumb the chicken',
+      content: "Pull a breast from the brine and pat it bone-dry with paper towel — wet chicken takes flour in patches. Coat in flour, shake the excess off. Drag through the egg, let the excess drip back into the tray. Press firmly into the panko on both sides — press, don't pat. You want the crumb embedded, not sitting on top.",
+      stage_note: 'Crumb is even all the way to the edges, no bald patches.',
+      lookahead: 'Rest the crumbed schnitzels on a wire rack for 5 minutes while the oil heats — this sets the coating.',
+      why_note: 'A short rest after crumbing lets the egg start to set, which is why the crust survives the flip later.',
+    },
+    {
+      id: 'step_4_heat_oil', title: 'Heat the oil',
+      content: 'Pour the oil into a wide heavy-based frying pan to a depth of about 1 cm. Heat over medium-high. Drop in a few panko crumbs to test — they should sizzle steadily and turn golden in 25–30 seconds.',
+      stage_note: 'A test crumb fizzes the moment it lands and turns golden in under 30 seconds. If it browns in 10, the oil is too hot — drop the heat for 30 seconds.',
+      lookahead: 'Schnitzels go in one or two at a time, depending on pan size.',
+      why_note: 'Panko at the right temperature shatters into glass-like crunch. Too cool and it drinks the oil and turns greasy; too hot and the crust burns before the chicken cooks through.',
+    },
+    {
+      id: 'step_5_fry_first', title: 'Fry the first side',
+      content: "Lay the schnitzels in away from you so any oil splashes back. Don't crowd — leave a thumb's width between them. Fry without touching for 2½ to 3 minutes.",
+      stage_note: 'Lift one corner with tongs. Underside is deep golden — not pale, not mahogany.',
+      lookahead: 'Flip once and only once.',
+      timer_seconds: 165,
+      why_note: 'Moving the schnitzel during frying breaks the crust away from the meat. Patience is what gives you the perfect even golden colour.',
+    },
+    {
+      id: 'step_6_flip_finish', title: 'Flip and finish',
+      content: "Flip carefully with tongs. Fry the second side for 2 minutes, then transfer to a wire rack set over a tray. The rack is non-negotiable — paper towel makes the bottom go soggy.",
+      stage_note: "Both sides deep golden. Internal temperature 71 °C if you're checking, but at 1 cm thick, golden = done.",
+      lookahead: 'Rest 2 minutes before plating — the crumb keeps crisping as it cools.',
+      timer_seconds: 120,
+      why_note: 'Resting on a rack lets steam escape from underneath. On a plate or paper towel, the steam re-condenses and ruins the crunch you just earned.',
+    },
+    {
+      id: 'step_7_plate', title: 'Salt and plate',
+      content: "Hit the schnitzel with sea salt flakes the moment it leaves the pan — flakes won't stick to a cooled crust. Plate with lemon wedges.",
+      stage_note: 'Crumb shatters audibly when you cut it; chicken is opaque white through the centre with no pink.',
+      why_note: 'Squeeze the lemon at the table, not in the kitchen. Citrus on hot crumb starts going soggy in seconds — this is the rule that separates pub-class schnitzel from cafe schnitzel.',
+    },
+  ],
+};
+
+const CHICKEN_VEG_STIR_FRY: Recipe = {
+  id: 'chicken-vegetable-stir-fry',
+  title: 'Easy Chicken & Vegetable Stir-Fry',
+  tagline: 'Twenty minutes, one wok, the takeaway taste at home.',
+  description: "Stir-fry comes from southern China — Cantonese kitchens with screaming-hot woks and the smoky char called wok hei that defines a great one. The technique travelled with Chinese migration into Australia from the 1850s gold rushes onwards, and the weeknight chicken-and-vegetable version below is what most Australian households cook on a Tuesday night. Velveting — the cornflour-and-soy slick on the chicken before it hits the wok — is the trick that takes a home stir-fry from average to takeaway-grade.",
+  base_servings: 4,
+  time_min: 25,
+  difficulty: 'Easy',
+  tags: ['stir-fry', 'wok', 'weeknight', 'velveting', '20-minute'],
+  categories: { cuisines: ['chinese', 'australian'], types: ['chicken'] },
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Nagi Maehashi',
+    video_url: 'https://www.recipetineats.com/chicken-stir-fry/',
+    notes: "Inspired by Nagi Maehashi's all-purpose stir-fry sauce. The 'velveting' step (cornflour + soy on the chicken before cooking) is the technique that makes home stir-fries taste like takeaway, and it's the one technique she's drilled into Australian home cooks via RecipeTinEats.",
+  },
+  hero_fallback: fallback('#5C7A3E'),
+  whole_food_verified: true,
+  leftover_mode: { extra_servings: 2, note: 'Excellent next-day lunch — reheat fast in a hot pan, never the microwave or the chicken goes rubbery' },
+  ingredients: [
+    {
+      id: 'chicken_thigh', name: 'Chicken thigh fillets, boneless skinless', amount: 600, unit: 'g',
+      scales: 'linear', prep: 'Sliced 1 cm thick across the grain',
+      substitutions: [
+        { ingredient: 'Chicken breast', changes: 'Drier than thigh — be strict on the timing or it overcooks. Velveting helps.', quality: 'good_swap', quantity_note: 'Same weight, slice slightly thinner.' },
+        { ingredient: 'Firm tofu (extra-firm, pressed)', changes: 'Different dish in spirit but works on its own terms. Skip the velveting; pan-fry the tofu first to crisp the edges.', quality: 'good_swap', quantity_note: 'Use 500 g; tofu is denser per bite.' },
+        { ingredient: 'Beef (rump or flank)', changes: 'Slice thinner across the grain. Velveting is even more important — beef can turn chewy fast.', quality: 'great_swap', quantity_note: 'Same weight.' },
+      ],
+    },
+    {
+      id: 'cornflour_velvet', name: 'Cornflour (for velveting the chicken)', amount: 2, unit: 'tsp',
+      scales: 'linear', prep: 'Tossed through the chicken',
+    },
+    {
+      id: 'soy_velvet', name: 'Light soy sauce (for velveting)', amount: 1, unit: 'tbsp',
+      scales: 'linear', prep: 'Tossed through the chicken',
+    },
+    {
+      id: 'peanut_oil', name: 'Peanut oil (or other high-smoke-point oil)', amount: 3, unit: 'tbsp',
+      scales: 'linear',
+      scaling_note: 'Wok-coverage, not per-serve. 3 tbsp slicks any household wok. For 2 serves, 2 tbsp; for 8, 4 tbsp. More oil makes the dish greasy without cooking it better.',
+      substitutions: [
+        { ingredient: 'Rice bran oil', changes: 'No flavour difference, identical smoke point.', quality: 'perfect_swap' },
+        { ingredient: 'Vegetable oil (canola)', changes: 'Slightly less aromatic. Functions identically.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'garlic_stirfry', name: 'Garlic cloves', amount: 3, unit: 'cloves',
+      scales: 'fixed', cap: 6, prep: 'Finely chopped',
+    },
+    {
+      id: 'ginger_stirfry', name: 'Fresh ginger', amount: 20, unit: 'g',
+      scales: 'linear', prep: 'Finely chopped',
+    },
+    {
+      id: 'onion_stirfry', name: 'Brown onion', amount: 1, unit: 'medium',
+      scales: 'fixed', cap: 2, prep: 'Sliced into wedges',
+    },
+    {
+      id: 'capsicum_red', name: 'Red capsicum', amount: 1, unit: 'medium',
+      scales: 'linear', prep: 'Sliced into 1 cm strips',
+      substitutions: [
+        { ingredient: 'Yellow or green capsicum', changes: 'Green is more vegetal; yellow milder and sweeter. Visual change only.', quality: 'perfect_swap' },
+        { ingredient: 'Snow peas', changes: 'Lighter dish, more crunch.', quality: 'great_swap' },
+      ],
+    },
+    {
+      id: 'broccoli', name: 'Broccoli', amount: 400, unit: 'g',
+      scales: 'linear', prep: 'Cut into small florets',
+      substitutions: [
+        { ingredient: 'Broccolini (asparation)', changes: 'Slightly more elegant; same flavour. Cooks 30 seconds faster.', quality: 'perfect_swap' },
+        { ingredient: 'Snow peas + bok choy', changes: 'Different texture — crisper, more delicate. Add bok choy at the very end so the leaves wilt and stems stay crunchy.', quality: 'great_swap' },
+      ],
+    },
+    {
+      id: 'carrot_stirfry', name: 'Carrot', amount: 1, unit: 'medium',
+      scales: 'linear', prep: 'Sliced into thin batons',
+    },
+    {
+      id: 'spring_onion', name: 'Spring onions', amount: 4, unit: 'stalks',
+      scales: 'linear', prep: 'Cut into 4 cm lengths, white and green separated',
+    },
+    {
+      id: 'oyster_sauce', name: 'Oyster sauce', amount: 3, unit: 'tbsp',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Vegetarian mushroom oyster sauce (Lee Kum Kee)', changes: 'Slightly earthier, less mineral. Most people cannot tell.', quality: 'great_swap', local_alternative: 'Asian grocers and large Coles/Woolworths.' },
+        { ingredient: 'Skip and double the soy', changes: 'Loses the body and umami glaze. The dish becomes simpler — still good, no longer takeaway-style.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'soy_sauce', name: 'Light soy sauce', amount: 2, unit: 'tbsp',
+      scales: 'linear',
+    },
+    {
+      id: 'shaoxing_wine', name: 'Chinese cooking wine (Shaoxing)', amount: 2, unit: 'tbsp',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Dry sherry', changes: 'Almost identical — many AU restaurants substitute either way.', quality: 'great_swap', hard_to_find: true, local_alternative: "If you can't find Shaoxing at your supermarket, dry sherry is at every bottle shop." },
+        { ingredient: 'Mirin', changes: 'Sweeter, less savoury. The dish leans Japanese in flavour. Reduce the soy slightly to compensate.', quality: 'compromise' },
+        { ingredient: 'Skip', changes: 'Sauce is flatter. Add a teaspoon of rice vinegar at the end to wake it up.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'sesame_oil', name: 'Sesame oil', amount: 1, unit: 'tsp',
+      scales: 'fixed', cap: 2,
+      prep: 'Off the heat at the end',
+      scaling_note: 'Finishing oil only. 1 tsp is right for any reasonable batch; 2 tsp is the upper limit. Doubling it makes the dish taste like sesame, not chicken.',
+    },
+    {
+      id: 'cornflour_sauce', name: 'Cornflour (to thicken sauce)', amount: 1, unit: 'tsp',
+      scales: 'linear', prep: 'Whisked with 2 tbsp water',
+    },
+    {
+      id: 'steamed_rice', name: 'Steamed jasmine rice, to serve', amount: 1, unit: 'cup per serve',
+      scales: 'linear', prep: 'Cooked separately',
+    },
+  ],
+  steps: [
+    {
+      id: 'step_1_velvet', title: 'Velvet the chicken',
+      content: 'In a bowl, toss the sliced chicken with the cornflour and the 1 tablespoon of soy. Massage it with your hands for 30 seconds — every piece should look glossy and slick. Set aside while you prep the vegetables.',
+      stage_note: 'Chicken looks coated and shiny, no dry patches.',
+      lookahead: 'While it sits, get every vegetable cut and lined up beside the wok.',
+      why_note: 'Velveting is what makes home stir-fries taste like the takeaway. The cornflour creates a thin barrier that stops the chicken from drying out when it hits the screaming-hot wok, and the soy seasons the meat from the surface in.',
+    },
+    {
+      id: 'step_2_mise', title: 'Line up the wok station',
+      content: "Stir-fry cooks in minutes — every ingredient needs to be cut and within arm's reach before the wok goes on. Whisk the oyster sauce, light soy, Shaoxing wine, and the cornflour-water slurry together in a small jug. Have the rice already cooked and warm.",
+      stage_note: 'Vegetables in piles by cooking order: aromatics (garlic, ginger, white spring onion), then onion and carrot, then capsicum and broccoli, then green spring onion last.',
+      lookahead: "From the moment the wok hits the heat, you won't have time to chop. This step is the difference between a clean stir-fry and a panicked one.",
+      why_note: "This is what professional kitchens call mise en place. For stir-fry it's not optional — the cooking window is 4 minutes total.",
+    },
+    {
+      id: 'step_3_sear_chicken', title: 'Sear the chicken hot and fast',
+      content: 'Heat the wok over the highest flame your stovetop will give until you see the first wisp of smoke. Add 2 tablespoons of the peanut oil — it should shimmer immediately. Add the chicken in one layer and leave it. Do not stir for 30 seconds.',
+      stage_note: 'Chicken sizzles loudly the moment it lands. The bottoms turn opaque and start to colour after 30 seconds.',
+      lookahead: 'After the first 30 seconds, toss for another minute until the chicken is just cooked through, then tip it onto a plate. It finishes cooking later in the sauce.',
+      timer_seconds: 90,
+      why_note: 'The wok must be screaming hot before the protein goes in — this is what gives you wok hei, the smoky char that defines a good stir-fry. A medium pan steams the chicken instead of searing it.',
+    },
+    {
+      id: 'step_4_aromatics', title: 'Aromatics into the hot wok',
+      content: 'Drop the heat to medium-high. Add the last tablespoon of peanut oil, then the garlic, ginger, and the white parts of the spring onion. Toss continuously for 20 seconds.',
+      stage_note: 'Aromatics smell sharp and toasted, garlic is pale gold — not brown. If garlic browns it goes bitter and the dish is poisoned.',
+      lookahead: 'Vegetables are next, in order from hardest to softest.',
+      timer_seconds: 20,
+      why_note: 'Garlic, ginger and spring onion bloom in oil — their flavour compounds are fat-soluble and need this brief hot-oil moment to release. But the line between bloomed and burnt is about 15 seconds.',
+    },
+    {
+      id: 'step_5_vegetables', title: 'Vegetables, hardest to softest',
+      content: 'Add the onion and carrot first. Toss for 1 minute. Add the broccoli and capsicum. Toss for another 2 minutes — keep everything moving.',
+      stage_note: 'Vegetables are vibrant in colour, with edges just starting to char. Broccoli is bright green, not olive. Capsicum still has bite.',
+      lookahead: 'Chicken comes back in next, then sauce.',
+      timer_seconds: 180,
+      why_note: 'Stir-fry is about texture as much as flavour. Vegetables that go soft are vegetables that have given up — keep the heat high and the pan moving.',
+    },
+    {
+      id: 'step_6_sauce', title: 'Return the chicken and sauce the wok',
+      content: 'Tip the chicken back in along with any juices on the plate. Give the sauce jug one more whisk (the cornflour will have settled) and pour it down the side of the wok so it hits hot metal first.',
+      stage_note: 'Sauce bubbles up, foams briefly, then thickens into a glossy coating that clings to every piece.',
+      lookahead: 'Toss for 30 seconds to coat everything evenly. Off the heat: drizzle the sesame oil and scatter the green spring onion.',
+      timer_seconds: 30,
+      why_note: 'Pouring the sauce down the side of the wok flash-evaporates the alcohol from the Shaoxing and lets the cornflour activate against hot metal — this is what gives the sauce its glossy body in seconds rather than minutes.',
+    },
+    {
+      id: 'step_7_serve', title: 'Plate and eat now',
+      content: 'Spoon over hot jasmine rice and serve immediately. Stir-fry waits for nobody — every minute on the bench, the vegetables steam in their own residual heat and the texture goes downhill.',
+      stage_note: 'Sauce is glossy, vegetables vibrant, chicken slippery and tender.',
+      why_note: "This is why takeaway stir-fries are always sent in foil-vented containers — the kitchens know steam is the enemy. At home, plate it and call everyone to the table.",
+    },
+  ],
+};
+
+const BEEF_LASAGNE: Recipe = {
+  id: 'beef-lasagne',
+  title: 'Beef Lasagne',
+  tagline: 'Slow ragù, silky béchamel, sheets that drink the sauce — the lasagne worth the afternoon.',
+  description: "Lasagne alla bolognese is from Emilia-Romagna, the rich-cooking region of northern Italy centred on Bologna. The defining element is the ragù — meat slowly braised in milk, wine, and tomato — codified in English-language kitchens by Marcella Hazan in the early 1990s. Italian migration to Australia after the Second World War brought the dish into Australian homes, where the Sunday lasagne tray became a cross-cultural household standard. This version stays close to Hazan's milk-first ragù; the assembly is the way most Australian families build it — most of the work is the wait, and the wait is what makes it taste like Bologna and not a tray of mince.",
+  base_servings: 6,
+  time_min: 180,
+  difficulty: 'Intermediate',
+  tags: ['lasagne', 'bolognese', 'ragù', 'béchamel', 'weekend cooking', 'family-sized'],
+  categories: { cuisines: ['italian'], types: ['beef', 'pasta'] },
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Marcella Hazan',
+    video_url: 'https://www.nytimes.com/recipes/12869/marcella-hazans-bolognese-meat-sauce.html',
+    notes: "The ragù is Marcella Hazan's classic Bolognese — milk first, wine after, long slow simmer. The lasagne assembly is the home-cook approach Australian families have built around her ragù for forty years. We are not pretending the lasagne stack is a Hazan original; the ragù is.",
+  },
+  hero_fallback: fallback('#8B3A2A'),
+  whole_food_verified: true,
+  leftover_mode: { extra_servings: 2, note: 'Lasagne is better the next day. The slices set firm overnight and reheat cleanly in a 180 °C oven for 15 minutes' },
+  ingredients: [
+    // Ragù
+    {
+      id: 'olive_oil_ragu', name: 'Olive oil', amount: 2, unit: 'tbsp',
+      scales: 'linear',
+      scaling_note: 'Pan-coverage, not per-serve. 2 tbsp oil + 60 g butter coats the soffritto for any reasonable batch.',
+    },
+    {
+      id: 'butter_ragu', name: 'Unsalted butter', amount: 60, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'onion_ragu', name: 'Brown onion', amount: 1, unit: 'medium',
+      scales: 'fixed', cap: 2, prep: 'Finely chopped',
+    },
+    {
+      id: 'celery', name: 'Celery stalk', amount: 1, unit: 'stalk',
+      scales: 'linear', prep: 'Finely chopped',
+    },
+    {
+      id: 'carrot_ragu', name: 'Carrot', amount: 1, unit: 'medium',
+      scales: 'linear', prep: 'Finely chopped',
+    },
+    {
+      id: 'beef_mince', name: 'Beef mince (chuck or oyster blade, 20% fat)', amount: 750, unit: 'g',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: '50/50 beef and pork mince', changes: "This is what an Italian household actually uses. Slightly richer, slightly sweeter. Hazan's original recipe calls for it.", quality: 'perfect_swap', quantity_note: 'Same total weight, 375 g of each.' },
+        { ingredient: 'Veal mince (in place of part of the beef)', changes: 'Even closer to canonical Bolognese. 250 g veal + 500 g beef.', quality: 'great_swap', hard_to_find: true, local_alternative: 'Most Australian butchers will mince veal on request — supermarkets rarely stock it pre-minced.' },
+      ],
+    },
+    {
+      id: 'salt_ragu', name: 'Fine salt', amount: 5, unit: 'g',
+      scales: 'linear', prep: 'For seasoning the mince at browning',
+      scaling_note: 'Concentration, not volume. Taste the ragù at the end of the simmer and salt to taste rather than scaling rigidly.',
+    },
+    {
+      id: 'whole_milk_ragu', name: 'Whole milk', amount: 250, unit: 'ml',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Skim or low-fat milk', changes: 'The whole milk is structural — it tenderises the meat through a slow reaction with the lactose. Skim works but the ragù is less silky.', quality: 'compromise' },
+        { ingredient: 'Skip', changes: 'The dish becomes more obviously tomato-forward. Still good. Not Hazan\'s Bolognese any more — it\'s a different ragù.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'nutmeg_ragu', name: 'Whole nutmeg, freshly grated', amount: 1, unit: 'small grate',
+      scales: 'fixed', cap: 1,
+    },
+    {
+      id: 'white_wine_ragu', name: 'Dry white wine', amount: 250, unit: 'ml',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Dry red wine', changes: 'Slightly heavier, slightly more tannic. A common Italian household variation; many cooks prefer it.', quality: 'good_swap' },
+        { ingredient: 'Beef stock', changes: 'No alcohol means no fat-cutting acidity — the ragù feels heavier. Add a splash of white wine vinegar at the end if going this route.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'tomato_passata', name: 'Tomato passata', amount: 500, unit: 'ml',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Whole peeled tomatoes (tinned), crushed by hand', changes: 'More texture in the finished sauce. Less smooth. Many cooks prefer this for the rustic feel.', quality: 'great_swap', quantity_note: 'Use 400 g tin × 1 + a 250 ml splash of water.' },
+        { ingredient: 'Tomato puree (paste)', changes: 'Far more concentrated. Thin with 250 ml water and the result is denser, less fresh-tasting.', quality: 'compromise' },
+      ],
+    },
+    // Béchamel
+    {
+      id: 'butter_bechamel', name: 'Unsalted butter (for béchamel)', amount: 60, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'plain_flour_bechamel', name: 'Plain flour (for béchamel)', amount: 60, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'whole_milk_bechamel', name: 'Whole milk (for béchamel)', amount: 750, unit: 'ml',
+      scales: 'linear', prep: 'Warmed',
+    },
+    {
+      id: 'salt_bechamel', name: 'Fine salt (for béchamel)', amount: 4, unit: 'g',
+      scales: 'linear',
+      scaling_note: 'Concentration, not volume. Taste the béchamel before assembling and adjust.',
+    },
+    {
+      id: 'nutmeg_bechamel', name: 'Whole nutmeg (for béchamel)', amount: 1, unit: 'small grate',
+      scales: 'fixed', cap: 1,
+    },
+    // Assembly
+    {
+      id: 'lasagne_sheets', name: 'Fresh lasagne sheets', amount: 400, unit: 'g',
+      scales: 'linear',
+      scaling_note: "Tray-driven, not serve-driven. The recipe assumes a 25 × 35 cm dish. For 12 serves you'll want a deeper dish or two trays.",
+      substitutions: [
+        { ingredient: 'Dried lasagne sheets (no-precook kind)', changes: 'Wider gaps between layers; slightly chewier bite. Many Australian households use these — they work fine.', quality: 'good_swap' },
+        { ingredient: 'Dried sheets that need precooking', changes: "Same final result; an extra 10 minutes of work blanching them. Don't skip the precook — they will not soften enough on baking alone.", quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'parmesan_lasagne', name: 'Parmesan, finely grated', amount: 100, unit: 'g',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Grana Padano', changes: 'Younger, milder, cheaper. Most Australian households substitute on price alone.', quality: 'perfect_swap' },
+        { ingredient: 'Pecorino Romano', changes: 'Sharper, saltier. Reduce the salt elsewhere.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'mozzarella', name: 'Fresh mozzarella (fior di latte), torn', amount: 200, unit: 'g',
+      scales: 'linear', prep: 'Drained well',
+      substitutions: [
+        { ingredient: 'Bocconcini, drained and torn', changes: 'Same cheese in smaller balls. No flavour difference.', quality: 'perfect_swap' },
+        { ingredient: 'Pre-grated pizza mozzarella', changes: "Drier, saltier, less stretch. Functional but the finish is more 'pizza' than 'lasagne'.", quality: 'compromise' },
+        { ingredient: 'Omit and double the parmesan', changes: "More austere finish. Many Bolognese households don't put mozzarella in lasagne — it's an Italian-American/Australian addition.", quality: 'great_swap' },
+      ],
+    },
+  ],
+  steps: [
+    {
+      id: 'step_1_soffritto', title: 'Build the soffritto',
+      content: 'Heat the olive oil and butter in a heavy-based pot over medium-low. Add the chopped onion, celery, and carrot. Cook gently, stirring now and then, until the onion is translucent and the vegetables smell sweet — not coloured.',
+      stage_note: 'Vegetables are softened, glossy, no browning. The mixture smells sweet and herbal.',
+      lookahead: 'The mince goes in next, but you want the vegetables fully soft before then — they will not soften further once the meat hits.',
+      timer_seconds: 600,
+      why_note: 'Soffritto is the flavour foundation. Italian cooks treat this step as non-negotiable — rushing it gives you raw onion bite running through the finished ragù.',
+    },
+    {
+      id: 'step_2_brown_mince', title: 'Add the mince and brown gently',
+      content: 'Crumble the mince into the pot. Salt it. Stir to break up large clumps and cook over medium heat until the meat loses its raw pink colour and starts to release fat — about 8 minutes.',
+      stage_note: 'Mince is broken into small fragments, no large lumps, just turning from pink to grey-brown.',
+      lookahead: 'The milk goes in next, before any tomato. This sequence matters.',
+      timer_seconds: 480,
+      why_note: "Hazan's signature instruction is to brown the meat lightly, not aggressively — heavy browning hardens the proteins and the ragù turns chewy. You want the meat cooked, not crusty.",
+    },
+    {
+      id: 'step_3_milk', title: 'Milk first',
+      content: 'Pour the milk in. Grate a small amount of nutmeg. Cook on a slow simmer until the milk has been almost entirely absorbed — about 15 minutes. The pot will look slightly curdled along the way; that\'s normal.',
+      stage_note: 'Almost no liquid left in the pot. The mince smells faintly sweet.',
+      lookahead: 'Wine goes in next, while the pot is dry. The sequence is dry-then-wet, twice over.',
+      timer_seconds: 900,
+      why_note: "This is Hazan's break with most other Bolognese recipes. Milk before wine tenderises the meat fibres — the lactose proteins coat the mince before the acid of the wine and tomato can toughen it. Skip this step and the dish is fine but it isn't Hazan's ragù.",
+    },
+    {
+      id: 'step_4_wine', title: 'Wine, then reduce',
+      content: 'Pour in the white wine and let it bubble briskly over medium heat until the alcohol has cooked off and the pot is mostly dry again — about 10 minutes.',
+      stage_note: 'No more alcohol smell when you bend over the pot. The mixture is thick, not soupy.',
+      lookahead: 'The tomato passata goes in next, then the long simmer begins.',
+      timer_seconds: 600,
+      why_note: 'Cooking off the alcohol before the tomato hits is what gives Bolognese its depth without harshness. Wine flashed off in tomato sauce stays sharp for the whole cook.',
+    },
+    {
+      id: 'step_5_simmer', title: 'The long simmer',
+      content: 'Add the passata. Bring the pot back to a simmer, then drop the heat to the lowest setting. Cover with the lid slightly ajar — you want the sauce to reduce, not seal in the steam. Cook for 2½ hours, stirring once every 20 minutes or so.',
+      stage_note: 'Ragù is deep brick red, glossy, and tight — when you drag a spoon through it leaves a trail that closes slowly. The fat has separated and is sitting on top in pools.',
+      lookahead: 'While it cooks, make the béchamel and pre-warm the oven. The ragù is ready when you\'re ready.',
+      timer_seconds: 9000,
+      why_note: 'Time, not heat, is what builds the depth. A fast simmer evaporates water without breaking down the meat fibres. A long, slow simmer melts the connective tissue in the mince and the sauce becomes silky rather than chunky.',
+    },
+    {
+      id: 'step_6_bechamel', title: 'Make the béchamel',
+      content: 'Melt the butter in a saucepan over medium heat. Once foaming, add the flour and whisk constantly for 90 seconds — you\'re cooking the raw flour taste out without colouring it. Pour in the warmed milk in a steady stream, whisking the whole time. Bring to a gentle simmer, season with salt and a small grate of nutmeg, then cook for another 3 minutes until the sauce coats the back of a spoon.',
+      stage_note: 'Sauce is the consistency of pourable cream — thick enough to coat a spoon but still flowing.',
+      lookahead: 'Press a piece of baking paper directly onto the surface to stop a skin forming. Move on to assembly.',
+      timer_seconds: 360,
+      why_note: 'Béchamel for lasagne is slightly thinner than for other dishes — it needs to flow between the layers. If your sauce is too thick, the lasagne will be dry; too thin and it pools at the bottom of the dish.',
+    },
+    {
+      id: 'step_7_assemble', title: 'Build the lasagne',
+      content: 'Heat the oven to 180 °C fan-forced. Spread a thin layer of ragù across the base of a 25 × 35 cm baking dish. Lay down a layer of pasta sheets, overlapping slightly. Top with a third of the remaining ragù, a third of the béchamel, a third of the mozzarella, and a sprinkle of parmesan. Repeat twice more. Finish with a final layer of pasta, the last of the béchamel, the last of the mozzarella, and a generous shower of parmesan.',
+      stage_note: 'Five layers of pasta total, four layers of fillings between. Top is mostly béchamel and cheese.',
+      lookahead: 'Cover with foil for the first half of baking, uncover for the colour at the end.',
+      why_note: 'Sauce on the bottom of the dish is the rule that prevents stuck pasta. Mostly cheese and béchamel on top is the rule that gives you the brown, blistered crust everyone fights over.',
+    },
+    {
+      id: 'step_8_bake', title: 'Bake covered, then uncovered',
+      content: 'Cover the dish tightly with foil. Bake for 25 minutes. Remove the foil and bake for another 10 to 15 minutes, until the top is deep golden in patches and the edges are bubbling.',
+      stage_note: 'Top is patchy gold to brown — not pale. Edges around the dish are bubbling. A skewer slid through the centre meets no resistance.',
+      lookahead: 'Critical: rest before you cut.',
+      timer_seconds: 2100,
+      why_note: 'Foil for the first half cooks the pasta through with steam. Removing it for the second half gives you the colour. Skip the foil and the top burns before the centre softens.',
+    },
+    {
+      id: 'step_9_rest', title: 'Rest 15 minutes, then cut',
+      content: 'Pull the lasagne out and let it sit on the bench, uncovered, for 15 minutes before cutting. Cut into squares with a sharp knife.',
+      stage_note: 'Squares hold their shape on the spatula — they do not slump or ooze.',
+      why_note: 'A lasagne cut hot collapses into a heap of pasta and sauce. The 15-minute rest lets the béchamel and ragù set just enough to slice cleanly. The lasagne stays piping hot under its own mass.',
+    },
+  ],
+};
+
+const ROAST_LAMB: Recipe = {
+  id: 'roast-lamb-rosemary-garlic',
+  title: 'Roast Lamb with Rosemary & Garlic',
+  tagline: 'A lamb shoulder that pulls apart with a fork, the way Sunday is supposed to taste.',
+  description: "Lamb roasted with rosemary and garlic comes from two heritages that both shaped Australian cooking: the Mediterranean (Italy, Greece, Spain — where lamb, herbs, and olive oil are everyday) and the British Sunday roast that arrived with colonisation. The slow-roast shoulder method — long, low, lid on for the first hour — is associated in Australia with Maggie Beer, whose Barossa kitchen made this style of cooking the modern Australian Sunday roast. This is that recipe, lightly streamlined: three hours start to finish, almost all of it hands-off.",
+  base_servings: 6,
+  time_min: 200,
+  difficulty: 'Easy',
+  tags: ['Sunday roast', 'slow roast', 'lamb shoulder', 'family-sized', 'special occasion'],
+  categories: { cuisines: ['australian'], types: ['lamb'] },
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Maggie Beer',
+    video_url: 'https://maggiebeer.com.au/recipes/slow-roasted-lamb-shoulder',
+    notes: "Inspired by Maggie Beer's slow-roast lamb shoulder approach — long and low, garlic and rosemary tucked into slits in the meat, the lid on for the first hour to steam the connective tissue. The hands-off elegance is hers; we've left it largely alone because it doesn't need fixing.",
+  },
+  hero_fallback: fallback('#7A4A2E'),
+  whole_food_verified: true,
+  leftover_mode: { extra_servings: 4, note: 'Pulled lamb is the gift the next day — sandwiches with chutney, or fold through pasta with the pan juices' },
+  ingredients: [
+    {
+      id: 'lamb_shoulder', name: 'Lamb shoulder, bone-in', amount: 2000, unit: 'g',
+      scales: 'linear', prep: 'At room temperature 1 hour before cooking',
+      scaling_note: 'Linear up to about 3 kg, after which two smaller shoulders cook more evenly than one giant one — the centre of a big shoulder takes too long to soften.',
+      substitutions: [
+        { ingredient: 'Lamb leg, bone-in', changes: 'Leaner cut. Cooks faster (about 2 hours instead of 3) and the meat will not pull apart the same way — it slices instead of shreds.', quality: 'good_swap', quantity_note: 'Same weight; reduce roast time by 30 minutes.' },
+        { ingredient: 'Boneless lamb shoulder', changes: 'Easier to carve, slightly less flavour without the bone. Tie it with butcher\'s twine if not pre-rolled.', quality: 'good_swap', quantity_note: '1.6 kg boneless ≈ 2 kg bone-in.' },
+      ],
+    },
+    {
+      id: 'garlic_lamb', name: 'Garlic bulb', amount: 1, unit: 'whole bulb',
+      scales: 'fixed', cap: 2, prep: 'Cloves separated, peeled, halved',
+      substitutions: [
+        { ingredient: 'Pre-peeled garlic from the supermarket fridge', changes: 'Less aromatic. Functional. Use 12 to 15 cloves for the equivalent of one fresh bulb.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'rosemary', name: 'Fresh rosemary', amount: 6, unit: 'sprigs',
+      scales: 'fixed', cap: 10, prep: 'Some kept whole, some leaves stripped',
+      substitutions: [
+        { ingredient: 'Fresh thyme', changes: 'Lighter, more delicate herbal note. Use the same volume.', quality: 'great_swap' },
+        { ingredient: 'Dried rosemary', changes: "Strong, slightly dusty flavour. Use a third of the quantity (2 tsp) and don't tuck it into slits — it will burn. Scatter into the roasting tray instead.", quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'olive_oil_lamb', name: 'Extra virgin olive oil', amount: 3, unit: 'tbsp',
+      scales: 'linear',
+      scaling_note: 'Surface-area driven, not weight-driven. 3 tbsp coats any shoulder up to 3 kg.',
+    },
+    {
+      id: 'flake_salt_lamb', name: 'Sea salt flakes', amount: 15, unit: 'g',
+      scales: 'linear',
+      scaling_note: 'Roughly 1 g per 130 g of meat. Linear within reason, but bigger roasts develop more concentrated pan juices — taste before serving.',
+    },
+    {
+      id: 'black_pepper_lamb', name: 'Black pepper, freshly cracked', amount: 5, unit: 'g',
+      scales: 'fixed', cap: 5,
+    },
+    {
+      id: 'lemon_lamb', name: 'Lemon', amount: 1, unit: 'whole',
+      scales: 'fixed', cap: 2, prep: 'Halved',
+    },
+    {
+      id: 'onion_lamb', name: 'Brown onion', amount: 2, unit: 'medium',
+      scales: 'fixed', cap: 4, prep: 'Quartered, skin on',
+      scaling_note: 'Tray-driven cushion under the lamb. 2 onions cushion any tray for a 2–3 kg shoulder.',
+    },
+    {
+      id: 'white_wine_lamb', name: 'Dry white wine', amount: 250, unit: 'ml',
+      scales: 'linear',
+      scaling_note: 'Tray-driven, not weight-driven. The 250 ml + 250 ml fills the tray to about 1 cm depth, which creates the steam phase. For larger trays, scale to maintain the 1 cm depth.',
+      substitutions: [
+        { ingredient: 'Dry red wine', changes: 'Heavier, more savoury pan juices. A common variation.', quality: 'good_swap' },
+        { ingredient: 'Chicken stock (extra)', changes: 'No alcohol means no acidity to cut the lamb fat. Add a splash of red wine vinegar at the end if going this route.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'chicken_stock_lamb', name: 'Chicken stock (homemade or low-sodium)', amount: 250, unit: 'ml',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Lamb stock', changes: 'Deeper lamb flavour in the pan juices.', quality: 'great_swap' },
+        { ingredient: 'Vegetable stock', changes: "Lighter pan juices. Won't overpower — works fine.", quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'potatoes_lamb', name: 'Roasting potatoes (Sebago or Dutch Cream)', amount: 1200, unit: 'g',
+      scales: 'linear', prep: 'Peeled, cut into 5 cm chunks',
+      scaling_note: 'Linear at 200 g per serve, but the tray must be wide enough that the potatoes do not stack. Stacked potatoes steam instead of roasting.',
+      substitutions: [
+        { ingredient: 'Maris Piper or King Edward', changes: 'Similar starch profile, identical roast result.', quality: 'perfect_swap', hard_to_find: true, local_alternative: 'Most large supermarkets stock these; if not, Sebago is the AU default.' },
+        { ingredient: 'Kipfler or chat potatoes (small, waxy)', changes: "Won't fluff up the same way. Crisper outside but the inside stays dense — different texture entirely.", quality: 'compromise' },
+      ],
+    },
+  ],
+  steps: [
+    {
+      id: 'step_1_temper', title: 'Take the lamb out of the fridge',
+      content: 'Pull the lamb out of the fridge a full hour before you start cooking. Let it come to room temperature on the bench, uncovered.',
+      stage_note: 'Surface of the meat is dry to the touch and no longer cold against your wrist.',
+      lookahead: 'While it sits, make slits all over the surface for the garlic and rosemary.',
+      timer_seconds: 3600,
+      why_note: 'A cold lamb shoulder going into the oven means the outside overcooks before the inside warms up. Tempering is the difference between evenly cooked meat and a grey rind around a rare middle.',
+    },
+    {
+      id: 'step_2_score', title: 'Score and stuff the lamb',
+      content: 'With a sharp paring knife, make 16 slits across the top and sides of the lamb, about 2 cm deep. Push half a garlic clove into each slit, followed by 3 or 4 rosemary leaves. Use the rest of the garlic and the whole rosemary sprigs to scatter underneath the lamb in the tray.',
+      stage_note: 'Lamb looks evenly studded — no bald patches, no clusters.',
+      lookahead: 'Next is the dry rub. The slits are filled, you\'re working on the surface now.',
+      why_note: 'Cutting slits and tucking aromatics inside is what gets the rosemary and garlic flavour into the meat instead of just sitting on top. You can taste the difference — meat seasoned only on the outside is bland through the centre after three hours.',
+    },
+    {
+      id: 'step_3_season', title: 'Rub with oil, salt, and pepper',
+      content: "Drizzle the lamb generously with the olive oil and rub it in with your hands — get into every crevice. Sprinkle the salt flakes and pepper evenly across all sides. Squeeze the lemon halves over the top and tuck the spent halves into the tray.",
+      stage_note: 'Lamb is glossy with oil, evenly speckled with salt — not patchy.',
+      lookahead: 'The tray gets the onions, the wine, and the stock next, and the lamb goes on top.',
+      why_note: 'Salt applied right before the oven, not hours ahead, gives a better crust. Long-salted meat draws moisture to the surface and steams instead of crisps.',
+    },
+    {
+      id: 'step_4_tray', title: 'Build the roasting tray',
+      content: "Scatter the quartered onions across the base of a heavy roasting tray. Pour in the wine and stock. Lay the lamb on top of the onions — they raise it off the bottom and stop the bottom from boiling in the liquid.",
+      stage_note: 'Liquid sits in the tray about 1 cm deep. Onions cushion the lamb.',
+      lookahead: 'Cover tightly with foil for the first hour — this is the key step.',
+      why_note: "The onions are doing two jobs: lifting the lamb so it roasts rather than poaches, and gradually melting into the pan juices for sweetness. They're more important than they look.",
+    },
+    {
+      id: 'step_5_first_roast', title: 'First hour, covered',
+      content: 'Heat the oven to 220 °C fan-forced. Cover the tray tightly with foil and slide it onto the middle shelf. Roast for 20 minutes, then drop the heat to 160 °C fan-forced. Continue cooking, still covered, for 1 hour 40 minutes.',
+      stage_note: 'When you peek under the foil at the 2-hour mark, the lamb is darker, fragrant, and the liquid has reduced by a third. The fork should slide in but meet some resistance.',
+      lookahead: 'Foil comes off next, potatoes go in, and the heat goes back up.',
+      timer_seconds: 7200,
+      why_note: 'The high-heat blast at the start sets the crust. The long, low, covered phase that follows is what melts the connective tissue in the shoulder — this is what makes the meat fork-tender. Skip the cover and the surface dries out before the centre softens.',
+    },
+    {
+      id: 'step_6_potatoes', title: 'Add the potatoes, take the foil off',
+      content: "Pull the tray out, lift off the foil, and arrange the potato chunks around (not on top of) the lamb, rolling them through the pan juices. Crank the heat back up to 200 °C fan-forced. Roast for another 40 minutes, basting the lamb with the pan juices every 15 minutes.",
+      stage_note: 'Potatoes are golden and crisp on the cut sides; lamb has a deep mahogany crust. The pan juices have reduced to a glossy slick.',
+      lookahead: 'Once it\'s done, the lamb has to rest. The potatoes go on a hot tray to stay crisp.',
+      timer_seconds: 2400,
+      why_note: 'Potatoes added in the second half cook in the lamb fat — they\'re the bonus dish, full of flavour from the meat above. Adding them at the start means they go to mush; adding them at the end means they don\'t catch the juices.',
+    },
+    {
+      id: 'step_7_rest', title: 'Rest the lamb under foil',
+      content: 'Lift the lamb out of the tray onto a warm plate. Tent loosely with foil and let it rest for 15 minutes. Move the potatoes to a warmed tray and keep them in the (turned-off) oven, door slightly ajar.',
+      stage_note: 'Lamb is hot to touch through the foil; juices on the plate are pooling rather than running.',
+      lookahead: 'Pan juices need a quick reduction next, while the lamb rests.',
+      timer_seconds: 900,
+      why_note: 'Resting is the same physics as a brine: muscle fibres relax and the juices redistribute. Cut a roast straight from the oven and you lose half the moisture to the board. 15 minutes is the minimum for a 2 kg shoulder.',
+    },
+    {
+      id: 'step_8_pan_juices', title: 'Reduce the pan juices',
+      content: 'Pour the pan juices through a sieve into a small saucepan, pressing the onions to extract their liquid. Set the saucepan over medium-high heat and reduce by a third — about 4 minutes.',
+      stage_note: 'Sauce coats the back of a spoon and tastes seasoned without needing more salt — taste it before serving.',
+      lookahead: 'Lamb is ready to pull or carve.',
+      timer_seconds: 240,
+      why_note: "Reduction concentrates the lamb-and-aromatic flavour into something that goes from 'pan liquid' to 'sauce.' It's a 4-minute step that triples the dish's depth.",
+    },
+    {
+      id: 'step_9_serve', title: 'Pull or carve, plate hot',
+      content: 'Pull the lamb apart with two forks, or carve in thick slices off the bone. Pile onto a warm platter with the potatoes around it. Pour the reduced pan juices over the meat and scatter any leftover rosemary leaves on top.',
+      stage_note: 'Meat falls apart at the touch of a fork; potatoes are golden, not soft.',
+      why_note: 'A 2 kg shoulder pulled with two forks gives you the texture this dish is famous for — long strands of lamb that fall through the gravy. Carving works too if you prefer slices, but the cut needs to be thick — thin slices on lamb shoulder dry out in seconds.',
+    },
+  ],
+};
+
+const FISH_AND_CHIPS: Recipe = {
+  id: 'fish-and-chips',
+  title: 'Fish & Chips',
+  tagline: 'Beer-battered flake, double-fried chips, lemon and salt — the Friday night that built this country.',
+  description: "Fish and chips arrived in Australia with British migration in the late nineteenth century and made themselves at home in every coastal town. The Australian version differs from the British in two ways that matter: the fish is local (gummy shark, called flake, became the chip-shop standard), and the cooking is fast and bright rather than slow-fried in beef tallow. This is the home version of what you'd queue twenty minutes for at any seaside take-away — beer-battered fish, double-fried chips, served with lemon and salt and nothing else that doesn't need to be there.",
+  base_servings: 4,
+  time_min: 50,
+  difficulty: 'Intermediate',
+  tags: ['fish and chips', 'beer batter', 'deep-fry', 'Friday night', 'pub classic', 'seaside'],
+  categories: { cuisines: ['australian'], types: ['seafood'] },
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Australian Friday tradition',
+    notes: "Fish and chips is the dish that doesn't have an author. Every Australian seaside town has a take-away that does it well, and the home version below is the consensus method — beer batter, double-fried chips, served the moment it lands.",
+  },
+  hero_fallback: fallback('#D4A832'),
+  whole_food_verified: true,
+  ingredients: [
+    {
+      id: 'potatoes_chips', name: 'Sebago potatoes (or other floury variety)', amount: 1200, unit: 'g',
+      scales: 'linear', prep: 'Peeled, cut into 1.5 cm-thick chips',
+      substitutions: [
+        { ingredient: 'Maris Piper', changes: 'Identical chip result. Maris Piper is the British chip-shop default.', quality: 'perfect_swap', hard_to_find: true, local_alternative: 'Some larger Australian supermarkets, otherwise greengrocers.' },
+        { ingredient: 'Russet (Idaho) potatoes', changes: 'Slightly drier, very similar fluff.', quality: 'great_swap' },
+        { ingredient: 'Desiree or Pontiac (red waxy potatoes)', changes: 'Will not fluff up the same way. The chips stay denser and waxier — a different texture.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'salt_blanch', name: 'Fine salt (for blanching)', amount: 30, unit: 'g',
+      scales: 'linear', prep: 'Dissolved in cold water',
+      scaling_note: 'Concentration, not volume. The blanching water is salted at roughly 30 g per 4 L. For 2 serves use 15 g salt + 2 L water.',
+    },
+    {
+      id: 'frying_oil_chips', name: 'Neutral oil for deep frying (rice bran or vegetable)', amount: 2000, unit: 'ml',
+      scales: 'custom', curve: { '2': 1500, '4': 2000, '6': 2500, '8': 3000 },
+      scaling_note: 'Depth-driven, not serving-driven. 2 L fills a typical heavy-based household pot to about half. Safety rule: the pot must never be more than half full of oil — hot oil overflowing onto a gas flame is the most common kitchen-fire cause for this dish.',
+      substitutions: [
+        { ingredient: 'Beef tallow', changes: 'Traditional British chippy fat — beefier, slightly more flavourful chip. Higher cost.', quality: 'great_swap', hard_to_find: true, local_alternative: 'Butchers will sell rendered tallow, or you can render your own from beef trim.' },
+        { ingredient: 'Peanut oil', changes: 'No real difference; some people prefer it for the higher smoke point.', quality: 'perfect_swap' },
+      ],
+    },
+    {
+      id: 'flake', name: 'Flake (gummy shark) or other firm white fish', amount: 600, unit: 'g',
+      scales: 'linear', prep: 'Skin off, pin-boned, cut into 4 portions',
+      substitutions: [
+        { ingredient: 'Hoki', changes: 'Lighter, slightly flakier. Common Australian fish-and-chip-shop substitute.', quality: 'great_swap' },
+        { ingredient: 'Snapper', changes: 'Sweeter, slightly firmer. Excellent fish but more expensive.', quality: 'great_swap' },
+        { ingredient: 'Barramundi', changes: 'Mild, firm, and reliably available in Australia. Works well with batter.', quality: 'good_swap' },
+        { ingredient: 'Ling', changes: 'Many Sydney fish-and-chip shops use ling — firm, white, takes batter beautifully.', quality: 'perfect_swap' },
+      ],
+    },
+    {
+      id: 'plain_flour_dust', name: 'Plain flour for dusting', amount: 50, unit: 'g',
+      scales: 'linear',
+      scaling_note: 'Bowl quantity, not consumption. 50 g coats up to 8 fish portions; most stays in the tray.',
+    },
+    {
+      id: 'plain_flour_batter', name: 'Plain flour for batter', amount: 200, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'cornflour_batter', name: 'Cornflour for batter', amount: 50, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'baking_powder_chips', name: 'Baking powder', amount: 1, unit: 'tsp',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Bicarb soda + cream of tartar (1:2)', changes: 'What baking powder is, dismantled. Same result.', quality: 'perfect_swap', quantity_note: '1 tsp baking powder = ⅓ tsp bicarb + ⅔ tsp cream of tartar.' },
+      ],
+    },
+    {
+      id: 'salt_batter', name: 'Fine salt (for batter)', amount: 5, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'beer', name: 'Cold lager or pale ale', amount: 330, unit: 'ml',
+      scales: 'linear', prep: 'Straight from the fridge',
+      substitutions: [
+        { ingredient: 'Soda water', changes: 'Same effect — the bubbles are what lighten the batter. Slightly less flavour. Works for a non-alcoholic batter.', quality: 'great_swap', quantity_note: 'Same volume.' },
+        { ingredient: 'Pilsner or other light lager', changes: 'Any cold light beer works the same.', quality: 'perfect_swap' },
+      ],
+    },
+    {
+      id: 'flake_salt_fish', name: 'Sea salt flakes, to finish', amount: 10, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'lemon_chips', name: 'Lemon', amount: 2, unit: 'whole',
+      scales: 'fixed', cap: 4, prep: 'Cut into wedges',
+    },
+  ],
+  steps: [
+    {
+      id: 'step_1_blanch', title: 'Blanch the chips',
+      content: 'Drop the cut chips into a large pot of cold salted water. Bring to the boil, then drop the heat to a simmer. Cook for 6 minutes — the chips should be just tender at the edges but still hold their shape. Drain gently and lay them in a single layer on a tray lined with a clean tea towel. Pat dry.',
+      stage_note: 'Chips bend slightly when picked up but do not break. Surface is matte and slightly fuzzy from the starch.',
+      lookahead: 'Now they need to dry. Move them into the freezer for 20 minutes — this is the secret that gives them the proper chippy texture.',
+      timer_seconds: 360,
+      why_note: 'Blanching is the first of two cooks. It gelatinises the starch on the surface, which then crisps in the second fry. A single fry gives you a chip that\'s either undercooked inside or over-coloured outside — the double cook is non-negotiable.',
+    },
+    {
+      id: 'step_2_freeze', title: 'Cold-shock the chips',
+      content: 'Lay the blanched chips on a tray in a single layer and slide them into the freezer for 20 minutes. They should be cold and dry to the touch when you take them out — not frozen solid.',
+      stage_note: 'Chips are firm, dry, and very cold.',
+      lookahead: 'While they chill, heat the oil and prep the batter and fish. Timing should land all three at the same moment.',
+      timer_seconds: 1200,
+      why_note: 'Cold, dry chips going into hot oil cause violent steam, which is what creates the rough, blistered surface that holds salt and shatters in the mouth. Wet chips into hot oil = soggy chips, every time.',
+    },
+    {
+      id: 'step_3_oil', title: 'Heat the oil',
+      content: "Pour the oil into a deep heavy-based pot — it should come no more than halfway up the sides. Heat to 160 °C for the first chip fry. Use a thermometer if you have one; if not, drop a wooden chopstick in — steady stream of small bubbles around it = right temperature.",
+      stage_note: 'Oil is shimmering. A test chip dropped in floats up within 5 seconds with a steady fizz of small bubbles.',
+      lookahead: 'The chips go in at 160, the fish goes in later at 180.',
+      why_note: 'Two oil temperatures, two purposes. 160 °C cooks the chip inside without colouring the outside. 180 °C will sear the colour on later.',
+    },
+    {
+      id: 'step_4_first_fry', title: 'First fry the chips',
+      content: "Lower the chips into the oil in 2 batches — don't crowd, the temperature drops too far if you do. Fry for 5 minutes, until the chips are pale and just starting to colour. Lift out with a spider strainer and rest on a wire rack — never paper towel.",
+      stage_note: 'Chips are pale yellow with no real browning. Surface is dry and rough rather than smooth.',
+      lookahead: 'Now you cook the fish. The chips wait on the rack.',
+      timer_seconds: 300,
+      why_note: 'This first fry is half-cooking the chip from the inside out. The colour comes later. Skip this step or rush it and the chip is hollow or soggy.',
+    },
+    {
+      id: 'step_5_batter', title: 'Mix the batter',
+      content: 'In a large bowl, whisk the plain flour, cornflour, baking powder, and salt. Pour the cold beer in all at once. Whisk only until the mixture comes together — small lumps are fine. Do not overmix.',
+      stage_note: 'Batter is the consistency of pouring cream — it coats a spoon but flows off in a steady ribbon. Small lumps remain visible.',
+      lookahead: 'Use the batter immediately. The bubbles in the beer are doing the lifting and they do not last.',
+      why_note: 'Cold liquid + minimal mixing = light batter. The cornflour keeps it crisp; the baking powder and beer bubbles keep it lacy. Overmixed batter develops gluten and goes chewy.',
+    },
+    {
+      id: 'step_6_heat_high', title: 'Bring the oil to fish temperature',
+      content: 'Crank the oil up to 180 °C. Test with a tiny dollop of batter dropped in — it should rise to the surface immediately, sizzling, and turn golden in 60 seconds.',
+      stage_note: 'Test batter dollop bobs up the moment it lands and turns golden in under a minute.',
+      lookahead: 'Fish is dipped, dunked, and goes straight in.',
+      why_note: 'Hot oil = the batter sets in a second-skin shell. Lukewarm oil = batter sloughs off the fish and absorbs oil.',
+    },
+    {
+      id: 'step_7_fry_fish', title: 'Dust, dip, and fry the fish',
+      content: 'Dust each piece of fish in the seasoning flour, shake off the excess, then drag through the batter, letting the surplus drip back. Lower into the hot oil holding the tail end of the fish — let half submerge, let go, and step back. Fry for 4 to 5 minutes, flipping once halfway through.',
+      stage_note: 'Batter is deep gold and crisp. The fish underneath is opaque white when you lift a corner with tongs.',
+      lookahead: 'Fish out, onto a wire rack, salted while hot. Chips go back in next.',
+      timer_seconds: 270,
+      why_note: 'Dusting the fish in flour first gives the batter something to grip. Without the dust, the batter slides off. The "hold the tail and let go" trick stops the batter from sticking to the bottom of the pot.',
+    },
+    {
+      id: 'step_8_second_fry', title: 'Second fry the chips',
+      content: 'Drop the parboiled chips back into the oil — still at 180 °C. Fry for 2 to 3 minutes, until deeply golden and crisp.',
+      stage_note: 'Chips rattle against the sides of the spider when you lift them — that\'s the sound of crisp.',
+      lookahead: 'Salt while hot, plate immediately.',
+      timer_seconds: 150,
+      why_note: 'This is the colour cook. The inside is already done from earlier; you\'re now creating the shattering crust.',
+    },
+    {
+      id: 'step_9_serve', title: 'Plate and serve immediately',
+      content: "Pile the chips on a serving plate, lay the battered fish on top or beside, scatter sea salt flakes generously, and add lemon wedges. Serve straight away — fish and chips wait for nobody.",
+      stage_note: 'Steam rises off the plate; batter is glassy and golden; chips are visibly crisp.',
+      why_note: "From the moment they leave the oil, the clock is against you. Five minutes on the bench and the steam from the chips has softened the batter on the fish. The reason fish-and-chip shops wrap in butcher's paper, not plastic, is the same reason — paper lets the steam escape.",
+    },
+  ],
+};
+
+const FALAFEL: Recipe = {
+  id: 'falafel',
+  title: 'Falafel',
+  tagline: 'Bright-green inside, shattering crust outside — the falafel of every good Beirut, Damascus, Amman and Ramallah street corner.',
+  description: "Falafel's deepest roots are Egyptian — the fava-bean fritters called ta'amia, traditionally made by Coptic Christians during Lent. The chickpea version most Australians know is the Levantine adaptation, eaten daily across Palestine, Lebanon, Syria, and Jordan, where it's street food, breakfast, and the heart of a thousand sandwich shops. This is that recipe: dried chickpeas (never tinned), soaked overnight, blitzed raw with herbs and spices, fried until the outside shatters and the inside is bright green and tender. Made well, it's one of the great vegetarian dishes of the world.",
+  base_servings: 4,
+  time_min: 60,
+  difficulty: 'Intermediate',
+  tags: ['falafel', 'middle eastern', 'levantine', 'palestinian', 'lebanese', 'syrian', 'chickpea', 'deep-fry', 'vegan', 'street food'],
+  categories: { cuisines: ['levantine'], types: ['vegetarian'] },
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Levantine tradition',
+    notes: "Falafel is a Levantine folk dish without a single author. Every household across Palestine, Lebanon, Syria, and Jordan has its own version. This is the consensus method — dried chickpeas soaked overnight, blitzed raw with herbs and spices, fried until the outside shatters.",
+  },
+  hero_fallback: fallback('#4A7A2E'),
+  whole_food_verified: true,
+  leftover_mode: { extra_servings: 2, note: 'Reheat in a hot oven (200 °C, 8 minutes) — never the microwave, which steams the crust soft' },
+  ingredients: [
+    {
+      id: 'chickpeas_dried', name: 'Dried chickpeas (never tinned)', amount: 250, unit: 'g',
+      scales: 'linear', prep: 'Soaked in plenty of cold water for 12–24 hours, then drained and patted dry',
+      scaling_note: 'Linear by weight, but watch the food processor capacity. 250 g of soaked chickpeas (~600 g hydrated) fills a 2 L processor bowl. Doubling means processing in two batches.',
+      substitutions: [
+        { ingredient: '50/50 dried chickpeas + dried fava beans (both soaked)', changes: "Closer to the original Egyptian ta'amia lineage. Fava beans add sweetness and a softer interior. Common in Egyptian, Syrian, and Palestinian recipes.", quality: 'great_swap', hard_to_find: true, local_alternative: "Dried fava beans at Middle Eastern grocers (called 'ful' or 'broad beans'); rare in Coles/Woolworths." },
+        { ingredient: 'Dried fava beans only (the Egyptian ta\'amia version)', changes: 'A different dish in spirit, but legitimate and historically older. Slightly sweeter, paler green, softer texture. Same method.', quality: 'great_swap', hard_to_find: true },
+      ],
+    },
+    {
+      id: 'onion_falafel', name: 'Brown onion, small', amount: 1, unit: 'medium',
+      scales: 'fixed', cap: 2, prep: 'Roughly chopped',
+      substitutions: [
+        { ingredient: 'Red onion', changes: 'Slightly sweeter, very common in Palestinian and Lebanese versions.', quality: 'perfect_swap' },
+        { ingredient: 'Spring onion (white parts only)', changes: 'Lighter, more delicate. Use 6 stalks.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'garlic_falafel', name: 'Garlic cloves', amount: 4, unit: 'cloves',
+      scales: 'fixed', cap: 8, prep: 'Peeled',
+    },
+    {
+      id: 'coriander_fresh', name: 'Fresh coriander', amount: 30, unit: 'g',
+      scales: 'linear', prep: 'Stems and leaves, roughly chopped',
+      substitutions: [
+        { ingredient: 'Double the parsley, omit coriander', changes: 'More straightforwardly herbal, less citrus-edge. Some Lebanese versions use parsley-only.', quality: 'good_swap' },
+        { ingredient: 'Mint added (10 g) plus the coriander', changes: 'A Syrian and Palestinian variation. Brightens the whole mix.', quality: 'great_swap' },
+      ],
+    },
+    {
+      id: 'parsley_fresh', name: 'Fresh flat-leaf parsley', amount: 30, unit: 'g',
+      scales: 'linear', prep: 'Stems and leaves, roughly chopped',
+    },
+    {
+      id: 'cumin_ground', name: 'Ground cumin', amount: 1, unit: 'tsp',
+      scales: 'linear', prep: 'Toasted whole and freshly ground if possible',
+    },
+    {
+      id: 'coriander_ground', name: 'Ground coriander', amount: 1, unit: 'tsp',
+      scales: 'linear',
+    },
+    {
+      id: 'cayenne', name: 'Cayenne pepper (optional)', amount: 0.25, unit: 'tsp',
+      scales: 'fixed', cap: 0.5,
+      substitutions: [
+        { ingredient: 'Aleppo pepper (sweet, mild, fruity)', changes: 'Closer to authentic Levantine flavour profile. Use double quantity — Aleppo is much milder.', quality: 'perfect_swap', hard_to_find: true, local_alternative: 'Middle Eastern grocers; some specialty spice retailers in Sydney/Melbourne.', quantity_note: 'Use ½ tsp — Aleppo is much milder than cayenne.' },
+        { ingredient: 'Omit', changes: 'Many traditional Levantine versions include no heat. Authentic with or without.', quality: 'perfect_swap' },
+      ],
+    },
+    {
+      id: 'salt_falafel', name: 'Fine salt', amount: 1, unit: 'tsp',
+      scales: 'linear',
+      scaling_note: 'Linear, but taste a tiny pinch of the raw mixture before the rest — Australian salt brands vary slightly in saltiness.',
+    },
+    {
+      id: 'black_pepper_falafel', name: 'Black pepper, freshly cracked', amount: 0.5, unit: 'tsp',
+      scales: 'fixed', cap: 1,
+    },
+    {
+      id: 'bicarb_soda', name: 'Bicarb soda', amount: 0.5, unit: 'tsp',
+      scales: 'linear', prep: 'Added at frying time, not earlier',
+      scaling_note: 'Timing matters more than amount. Add to only the batch you are about to fry — do not pre-mix a large batch and let it sit.',
+      substitutions: [
+        { ingredient: 'Increase baking powder to 2 tsp, omit bicarb', changes: 'Falafel will be lighter but lose the bright green colour and the slight savoury minerality. Bicarb is what gives the inside that distinctive green-yellow tone.', quality: 'compromise' },
+      ],
+    },
+    {
+      id: 'baking_powder_falafel', name: 'Baking powder', amount: 1, unit: 'tsp',
+      scales: 'linear', prep: 'Added at frying time, not earlier',
+    },
+    {
+      id: 'sesame_seeds', name: 'Sesame seeds (optional, for coating)', amount: 30, unit: 'g',
+      scales: 'linear',
+    },
+    {
+      id: 'frying_oil_falafel', name: 'Neutral oil for deep frying', amount: 1500, unit: 'ml',
+      scales: 'custom', curve: { '2': 1000, '4': 1500, '6': 2000, '8': 2500 },
+      scaling_note: 'Depth-driven, not serving-driven. 1.5 L fills a typical heavy-based household pot to about half. The pot must never be more than half full — same safety rule as fish & chips.',
+    },
+    {
+      id: 'flatbread_serve', name: 'Lebanese flatbread or pita', amount: 4, unit: 'rounds',
+      scales: 'linear', prep: 'Warmed',
+      substitutions: [
+        { ingredient: 'Greek-style pita (pocket bread)', changes: 'Smaller, thicker. Holds the falafel well but the bread-to-filling ratio shifts.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'hummus_serve', name: 'Hummus', amount: 1, unit: 'cup',
+      scales: 'linear',
+      substitutions: [
+        { ingredient: 'Skip and double the tahini sauce', changes: 'Lighter, less starchy. Lebanese street-falafel sandwiches often skip the hummus.', quality: 'good_swap' },
+      ],
+    },
+    {
+      id: 'tahini_sauce', name: 'Tahini sauce (tahini + lemon + water + salt)', amount: 1, unit: 'cup',
+      scales: 'linear',
+    },
+    {
+      id: 'tomato_serve', name: 'Roma tomatoes', amount: 2, unit: 'medium',
+      scales: 'linear', prep: 'Diced',
+    },
+    {
+      id: 'cucumber_serve', name: 'Lebanese cucumber', amount: 2, unit: 'medium',
+      scales: 'linear', prep: 'Diced',
+    },
+    {
+      id: 'pickled_turnips', name: 'Pink pickled turnips (optional)', amount: 100, unit: 'g',
+      scales: 'linear', prep: 'Sliced',
+    },
+    {
+      id: 'lemon_falafel', name: 'Lemon', amount: 1, unit: 'whole',
+      scales: 'fixed', cap: 2, prep: 'Cut into wedges',
+    },
+  ],
+  steps: [
+    {
+      id: 'step_1_soak', title: 'Soak the chickpeas (the night before)',
+      content: 'Tip the dried chickpeas into a large bowl and cover with at least 5 cm of cold water — they\'ll triple in size. Leave on the bench overnight, or up to 24 hours in cool weather; transfer to the fridge if your kitchen is warm. Drain well the next day and pat dry with a clean tea towel.',
+      stage_note: 'Chickpeas have roughly tripled in volume and a fingernail can split one in half cleanly without resistance.',
+      lookahead: 'Tomorrow you blitz, rest, fry. The 12–24 hour soak is what does the work — there is no shortcut.',
+      timer_seconds: 43200,
+      why_note: 'Soaked-but-uncooked chickpeas are the entire point of falafel. Tinned chickpeas are already cooked, and cooked chickpea purée is hummus. Falafel needs the structure of the raw bean — the proteins have not been broken down by heat yet, so the fritters hold together when they hit the oil instead of dissolving.',
+    },
+    {
+      id: 'step_2_blitz', title: 'Blitz to coarse, not smooth',
+      content: 'Tip the drained chickpeas into a food processor along with the onion, garlic, coriander, parsley, cumin, ground coriander, cayenne, salt, and black pepper. Pulse — do not run continuously — for about a minute, scraping the bowl down twice, until the mixture looks like coarse damp couscous. You should still see flecks of chickpea, not a smooth purée.',
+      stage_note: 'Mixture is bright green-flecked and grainy. A pinch held tightly in your fist holds together briefly before crumbling.',
+      lookahead: 'This rests in the fridge before you fry — the rest tightens the texture and the flavours marry.',
+      why_note: 'Smooth purée gives you wet, dense fritters that fall apart in the oil. The coarse texture is what gives falafel its signature ragged crust and tender, distinct interior. If your processor over-runs, the dish is done — start again rather than push on.',
+    },
+    {
+      id: 'step_3_rest', title: 'Rest 30 minutes in the fridge',
+      content: 'Tip the mixture into a bowl, cover, and rest in the fridge for 30 minutes. Do not add the bicarb or baking powder yet — those go in just before frying.',
+      stage_note: 'Mixture has firmed slightly and looks darker green from the herbs releasing.',
+      lookahead: 'The bicarb-and-baking-powder addition is the final step before shaping.',
+      timer_seconds: 1800,
+      why_note: 'The rest lets the chickpea starch hydrate slightly from the herb moisture, which helps binding without turning the mixture wet. Skip this and the falafel can fall apart in the fryer; rest too long (over 2 hours) and the herbs go grey.',
+    },
+    {
+      id: 'step_4_oil', title: 'Heat the oil',
+      content: 'Pour the oil into a deep, heavy pot — never more than half full. Heat over medium-high to 175 °C. If you do not have a thermometer, drop a small pinch of the falafel mixture in: it should sink for a moment, then rise to the surface in a steady stream of bubbles.',
+      stage_note: 'Test pinch sinks briefly, then rises within 3 seconds with steady bubbles around it. No splattering or violent fizz.',
+      lookahead: 'While the oil heats, mix the bicarb and baking powder through and shape the falafel.',
+      why_note: '175 °C is the falafel sweet spot. Hotter and the outside burns before the inside cooks; cooler and the falafel absorbs oil and goes greasy. The half-full pot rule is non-negotiable — overfilled oil is the most common kitchen-fire cause for deep-frying.',
+    },
+    {
+      id: 'step_5_shape', title: 'Lift the mixture and shape',
+      content: 'Sprinkle the bicarb and baking powder over the rested mixture and mix through gently with a fork — do not compact it. Take a heaped tablespoon at a time and shape into balls or small patties. If you have a falafel scoop, use it. Press sesame seeds onto one side if using.',
+      stage_note: 'Falafel hold their shape on the bench without slumping. Surface is rough — not smoothed.',
+      lookahead: 'Fry in batches as you shape — falafel shaped and held on the bench start to weep.',
+      why_note: 'Bicarb and baking powder added at the last moment is the trick that makes home falafel light. Add them earlier and the leavening is wasted before the oil hits — the gas escapes through the rest. The rough surface is what gives the shattering crust; smoothing the falafel gives you a hard ball.',
+    },
+    {
+      id: 'step_6_fry', title: 'Deep-fry in batches',
+      content: 'Lower the falafel into the oil four or five at a time — never crowd. Fry for 3 to 4 minutes, turning once with a spider strainer halfway through. They\'re done when deep golden-brown all over.',
+      stage_note: 'Outside is deep golden, almost mahogany. Lift one out and break it open: the inside is bright green-yellow, fluffy, and steaming.',
+      lookahead: 'Drain on a wire rack — never paper towel — while you fry the rest.',
+      timer_seconds: 210,
+      why_note: 'Deep colour is the doneness signal — pale falafel is undercooked inside, mahogany falafel is overcooked. The bright-green interior is your check that the inside is hot through but not dried out.',
+    },
+    {
+      id: 'step_7_serve', title: 'Build and eat now',
+      content: "Warm the flatbread briefly. Spread with hummus, then pack with falafel, drizzle generously with tahini sauce, scatter the diced tomato and cucumber, add pickled turnips if you have them, and finish with a squeeze of lemon. Roll up tight or eat open.",
+      stage_note: 'Falafel is hot, crust is crisp, fillings are bright and fresh.',
+      why_note: "Falafel waits for nobody — five minutes on the bench and the crust softens. The classic Levantine sandwich is built in this exact order: hummus first as a moisture barrier on the bread, then falafel, then tahini, then salads, then pickles last for crunch and acid. Skip the order and the bread goes soggy from the bottom.",
+    },
+  ],
+};
+
+// ────────────────────────────────────────────────────────────────────────────
 //  Export — order reflects hone.html ordering, then kept v0 recipe, then
 //  originals at the end.
 // ────────────────────────────────────────────────────────────────────────────
@@ -3462,4 +4517,11 @@ export const SEED_RECIPES: Recipe[] = [
   BARRAMUNDI,
   PAVLOVA,
   FLOUR_TORTILLAS,
+  // Phase 2 culinary-research batch (2026-05-03)
+  CHICKEN_SCHNITZEL,
+  CHICKEN_VEG_STIR_FRY,
+  BEEF_LASAGNE,
+  ROAST_LAMB,
+  FISH_AND_CHIPS,
+  FALAFEL,
 ];
