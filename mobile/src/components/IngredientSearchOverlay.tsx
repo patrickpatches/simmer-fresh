@@ -18,6 +18,20 @@
  *     items in one session. They close it by tapping ‹ or Android back.
  *   - onClose — called when the user explicitly dismisses. Parent sets
  *     visible=false.
+ *
+ * v0.5.1 visual redesign:
+ *   - Category emoji on every row — instant visual scan, no need to read
+ *     the category label to orient yourself in the list.
+ *   - Editorial section headers: warm-brown spaced caps + emoji. The old
+ *     muted-grey headers read as disabled; warm-brown reads as intentional.
+ *   - In-pantry items: full opacity + sage "✓ In pantry" badge instead of
+ *     0.45 opacity dimming. Dimming made already-added names hard to read
+ *     on a dark background. Full opacity + explicit badge is more readable
+ *     AND more informative — the user sees exactly what they already have.
+ *   - Compact rows (46 px min-height vs 50 px) for a denser, less
+ *     spreadsheet-like feel. More items visible above the fold.
+ *   - Category tag chips removed — the per-row emoji already communicates
+ *     this; a chip was redundant visual noise.
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -33,6 +47,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tokens, fonts } from '../theme/tokens';
 import {
+  CATEGORY_EMOJI,
   INGREDIENT_CATALOG,
   fuzzyMatchCatalog,
   matchedAlias,
@@ -89,9 +104,10 @@ export function IngredientSearchOverlay({
   // Sections: group catalog results by category. If no query, show all.
   const sections = useMemo<Section[]>(() => {
     const q = query.trim();
-    const entries = q.length >= 2
-      ? INGREDIENT_CATALOG.filter((e) => fuzzyMatchCatalog(e, q))
-      : INGREDIENT_CATALOG;
+    const entries =
+      q.length >= 2
+        ? INGREDIENT_CATALOG.filter((e) => fuzzyMatchCatalog(e, q))
+        : INGREDIENT_CATALOG;
 
     // Group by category, preserving catalog order within each group.
     const map = new Map<PantryCategory, CatalogEntry[]>();
@@ -119,7 +135,16 @@ export function IngredientSearchOverlay({
 
   // ── Render helpers ────────────────────────────────────────────────────────
 
-  function renderHighlighted(text: string) {
+  /**
+   * Highlight the matched query substring in the ingredient name.
+   * For in-pantry items (muted=true) we skip highlighting entirely —
+   * they're not tappable, so drawing attention to the match would be
+   * confusing. Full muted text is cleaner.
+   */
+  function renderHighlighted(text: string, muted: boolean) {
+    if (muted) {
+      return <Text style={styles.resultNameMuted}>{text}</Text>;
+    }
     const q = query.trim().toLowerCase();
     if (!q) return <Text style={styles.resultName}>{text}</Text>;
     const idx = text.toLowerCase().indexOf(q);
@@ -145,6 +170,7 @@ export function IngredientSearchOverlay({
     const alias = matchedAlias(item, query.trim());
     const alreadyAdded = inPantrySet.has(item.name.toLowerCase().trim());
     const isLast = index === section.data.length - 1;
+    const emoji = CATEGORY_EMOJI[item.category] ?? '📦';
 
     return (
       <Pressable
@@ -157,28 +183,28 @@ export function IngredientSearchOverlay({
         }
         style={({ pressed }) => [
           styles.resultRow,
-          !isLast && { borderBottomWidth: 1, borderBottomColor: tokens.line },
+          !isLast && styles.resultRowBorder,
           pressed && !alreadyAdded && { backgroundColor: tokens.bgDeep },
-          alreadyAdded && { opacity: 0.45 },
         ]}
       >
+        {/* Category emoji — visual scan anchor; communicates category
+            without needing a text label on every row. */}
+        <Text style={styles.rowEmoji}>{emoji}</Text>
+
+        {/* Name + optional alias match */}
         <View style={styles.resultMain}>
-          {renderHighlighted(item.name)}
+          {renderHighlighted(item.name, alreadyAdded)}
           {alias ? (
             <Text style={styles.resultAlias}>also {alias}</Text>
           ) : null}
         </View>
+
+        {/* In-pantry: sage checkmark badge at full opacity — more readable
+            than 0.45 dimming and explicitly tells the user this is already
+            in their pantry rather than making them wonder why it looks faded. */}
         {alreadyAdded ? (
-          <View style={[styles.tag, { backgroundColor: tokens.sageLight }]}>
-            <Text style={[styles.tagText, { color: tokens.sageDeep }]}>In pantry</Text>
-          </View>
-        ) : (
-          <View style={[styles.tag, { backgroundColor: tokens.bgDeep }]}>
-            <Text style={[styles.tagText, { color: tokens.inkSoft }]}>
-              {item.category}
-            </Text>
-          </View>
-        )}
+          <Text style={styles.inPantryBadge}>✓ In pantry</Text>
+        ) : null}
       </Pressable>
     );
   };
@@ -241,10 +267,10 @@ export function IngredientSearchOverlay({
                 <Text style={styles.havePillText}>{p.name}</Text>
               </View>
             ))}
-            {pantryItems.filter(pi => pi.have_it).length > 10 ? (
+            {pantryItems.filter((pi) => pi.have_it).length > 10 ? (
               <View style={styles.morePill}>
                 <Text style={styles.morePillText}>
-                  +{pantryItems.filter(pi => pi.have_it).length - 10}
+                  +{pantryItems.filter((pi) => pi.have_it).length - 10}
                 </Text>
               </View>
             ) : null}
@@ -279,6 +305,9 @@ export function IngredientSearchOverlay({
             keyExtractor={(item, idx) => item.name + idx}
             renderSectionHeader={({ section: { title } }) => (
               <View style={styles.sectionHeader}>
+                <Text style={styles.sectionEmoji}>
+                  {CATEGORY_EMOJI[title] ?? '📦'}
+                </Text>
                 <Text style={styles.sectionTitle}>{title.toUpperCase()}</Text>
               </View>
             )}
@@ -303,6 +332,8 @@ const styles = {
     flex: 1,
     backgroundColor: tokens.bg,
   },
+
+  // ── Header ───────────────────────────────────────────────────────────────
   header: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -346,6 +377,8 @@ const styles = {
     color: tokens.muted,
     lineHeight: 17,
   },
+
+  // ── Have-it pills strip ───────────────────────────────────────────────────
   pillsRow: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
@@ -381,25 +414,50 @@ const styles = {
     fontFamily: fonts.sans,
     color: tokens.muted,
   },
+
+  // ── Section headers ───────────────────────────────────────────────────────
+  // Warm-brown with generous letter-spacing reads as intentional editorial
+  // typography rather than a disabled/placeholder state.
   sectionHeader: {
-    backgroundColor: tokens.bgDeep,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 7,
+    backgroundColor: tokens.bg,
     paddingHorizontal: 16,
-    paddingVertical: 7,
+    paddingVertical: 9,
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.line,
+  },
+  sectionEmoji: {
+    fontSize: 12,
+    lineHeight: 15,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: fonts.sansBold,
-    letterSpacing: 1.5,
-    color: tokens.muted,
+    letterSpacing: 2,
+    color: tokens.warmBrown,
   },
+
+  // ── Result rows ───────────────────────────────────────────────────────────
   resultRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     paddingHorizontal: 16,
-    paddingVertical: 13,
-    minHeight: 50,
+    paddingVertical: 11,
+    minHeight: 46,
     backgroundColor: tokens.cream,
     gap: 10,
+  },
+  resultRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.line,
+  },
+  rowEmoji: {
+    fontSize: 18,
+    width: 26,
+    textAlign: 'center' as const,
+    lineHeight: 22,
   },
   resultMain: {
     flex: 1,
@@ -407,8 +465,14 @@ const styles = {
   resultName: {
     fontSize: 14,
     fontFamily: fonts.sans,
-    color: tokens.inkSoft,
-    lineHeight: 20,
+    color: tokens.ink,
+    lineHeight: 19,
+  },
+  resultNameMuted: {
+    fontSize: 14,
+    fontFamily: fonts.sans,
+    color: tokens.muted,
+    lineHeight: 19,
   },
   resultNameBold: {
     fontFamily: fonts.sansBold,
@@ -420,16 +484,14 @@ const styles = {
     color: tokens.muted,
     marginTop: 1,
   },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  tagText: {
-    fontSize: 10,
+  inPantryBadge: {
+    fontSize: 11,
     fontFamily: fonts.sansBold,
-    letterSpacing: 0.5,
+    color: tokens.sage,
+    letterSpacing: 0.3,
   },
+
+  // ── Empty / add-new ───────────────────────────────────────────────────────
   noResults: {
     flex: 1,
     alignItems: 'center' as const,
