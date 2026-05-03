@@ -1,46 +1,47 @@
 /**
- * Pantry — v0.5.0 redesign (2026-05-02).
+ * Pantry — v0.6.0 (Pantry v3 redesign, 2026-05-03).
  *
- * Changes from v0.4.0:
- *   1. Search bar is now a tappable Pressable that opens the full-screen
- *      IngredientSearchOverlay. No more inline dropdown. Reason: inline
- *      dropdowns fight with keyboard height and collapse to a small scroll
- *      zone on short screens; the full-screen overlay gives the user the
- *      entire device surface to browse and add.
+ * Changes from v0.5.x:
  *
- *   2. Have-it pills are now a horizontally-scrollable row directly below
- *      the search bar, no longer wrapped in the old "unified zone" card.
- *      The card chrome (cream bg, border, shadow) has been removed — the
- *      pills read as a status strip, not a data-entry container.
+ *   1. Inline search replaces the full-screen IngredientSearchOverlay modal.
+ *      Rationale: augmentation tasks (adding to an existing list) need the list
+ *      visible while searching. A full-screen takeover hides the pills context
+ *      the user needs to avoid duplicates. Inline keeps the pills frozen above
+ *      the autocomplete results.
  *
- *   3. Gold match summary banner (compact, bordered) replaces the sage pill
- *      affordance as the "here's what you can cook" signal. It lives above
- *      the recipe carousel and provides a one-glance summary before the user
- *      scrolls into the cards.
+ *   2. Clear-all confirmation Modal (not Alert — Alert can't be styled for
+ *      dark tokens). "Clear all" moved from below the search bar to a low-
+ *      prominence trash icon in the screen's title row. Count baked into the
+ *      destroy button label so the user knows what they're losing.
  *
- *   4. Missing-ingredient chips on recipe match cards are now Variant A —
- *      gold-tinted, tap to add to the shopping list (not the pantry).
- *      Reason: if you're missing an ingredient, the right action is "pick it
- *      up next shop", not "pretend you have it". A 3-second undo banner
- *      covers accidental taps.
+ *   3. Match banner now shows concrete numbers ("3 recipes you can cook now ·
+ *      6 more within 1–3 ingredients") with a gold "See all" pill CTA. The
+ *      ambiguous bare `→` arrow is removed.
  *
- *   5. Percentage badge removed from recipe match cards. The "X of Y
- *      matched" counter below the title is enough information; the floating
- *      % badge was cognitive noise on an already-dense card.
+ *   4. Carousel snap regression fixed: switched from snapToOffsets (fragile
+ *      with dynamic data) to snapToInterval (robust, one constant).
  *
- *   6. Chips are sorted: ingredients with substitutions available come first.
- *      Reason: if the user is missing something, knowing they have a swap
- *      option is the most valuable signal. (Sorting happens in
- *      scoreRecipeAgainstPantry in pantry-helpers.ts.)
+ *   5. Emoji rendered inline with ingredient name in autocomplete results,
+ *      not as a separate element that could reflow on narrow screens.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
+  SectionList,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import Animated, {
@@ -57,7 +58,6 @@ import * as Haptics from 'expo-haptics';
 import { tokens, fonts, shadows } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
 import { VersionFooter } from '../../src/components/VersionFooter';
-import { IngredientSearchOverlay } from '../../src/components/IngredientSearchOverlay';
 import {
   clearAllPantryItems,
   getAllRecipes,
@@ -74,9 +74,14 @@ import {
   cleanIngredientName,
   normalizeForMatch,
   scoreRecipeAgainstPantry,
+  INGREDIENT_CATALOG,
+  CATEGORY_EMOJI,
+  fuzzyMatchCatalog,
+  matchedAlias,
 } from '../../src/data/pantry-helpers';
 import type {
   PantryCategory,
+  CatalogEntry,
   RecipeMatchResult,
 } from '../../src/data/pantry-helpers';
 
@@ -91,6 +96,10 @@ const SHOP_UNDO_TIMEOUT_MS = 3000;
 const CARD_WIDTH = 260;
 const CARD_GAP = 12;
 const CAROUSEL_PADDING = 20;
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type AutocompleteSection = { title: PantryCategory; data: CatalogEntry[] };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -126,9 +135,20 @@ export default function PantryTab() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [overlayVisible, setOverlayVisible] = useState(false);
+  // Search state
+  const [addName, setAddName] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  // Search is active whenever the input has text — results stay visible while
+  // the user picks items without the view snapping back on each selection.
+  const isSearchActive = addName.length > 0 || isFocused;
+
   const [addedAt, setAddedAt] = useState<Record<string, number>>({});
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
+
+  // Clear-all confirmation modal
+  const [showClearModal, setShowClearModal] = useState(false);
 
   // Clear-all undo state
   const [undoSnapshot, setUndoSnapshot] = useState<{
@@ -205,7 +225,6 @@ export default function PantryTab() {
     [ranked],
   );
 
-  // Unlock: single ingredient that unblocks the most near-miss recipes.
   const unlock = useMemo(() => {
     if (pantryItems.length < UNLOCK_MIN_PANTRY) return null;
     const counter = new Map<string, number>();
@@ -225,11 +244,37 @@ export default function PantryTab() {
     return best;
   }, [matchResults, pantryItems.length]);
 
-  // Have-it pills: only items with have_it = true, sorted by recency.
   const havePills = useMemo(
     () => sortedPantry.filter((p) => p.have_it),
     [sortedPantry],
   );
+
+  // ── Autocomplete sections ──────────────────────────────────────────────────
+  // When search is active, the SectionList shows these instead of browse content.
+
+  const autocompleteSections = useMemo<AutocompleteSection[]>(() => {
+    const q = addName.trim();
+    const entries =
+      q.length >= 2
+        ? INGREDIENT_CATALOG.filter((e) => fuzzyMatchCatalog(e, q))
+        : INGREDIENT_CATALOG;
+
+    const inPantryNorms = new Set(pantryItems.map((p) => normalizeForMatch(p.name)));
+
+    const map = new Map<PantryCategory, CatalogEntry[]>();
+    for (const entry of entries) {
+      const bucket = map.get(entry.category) ?? [];
+      bucket.push(entry);
+      map.set(entry.category, bucket);
+    }
+    return Array.from(map.entries()).map(([title, data]) => ({ title, data }));
+  }, [addName, pantryItems]);
+
+  const inPantrySet = useMemo(() => {
+    const s = new Set<string>();
+    for (const p of pantryItems) s.add(p.name.toLowerCase().trim());
+    return s;
+  }, [pantryItems]);
 
   // ── Mutators ───────────────────────────────────────────────────────────────
 
@@ -280,6 +325,27 @@ export default function PantryTab() {
     [db, pantryItems],
   );
 
+  const handleSearchSelect = useCallback(
+    (entry: CatalogEntry) => {
+      addByName(entry.name, entry.category);
+      // Don't collapse — let the user keep adding multiple items
+    },
+    [addByName],
+  );
+
+  const handleSearchCancel = useCallback(() => {
+    setAddName('');
+    setIsFocused(false);
+    Keyboard.dismiss();
+  }, []);
+
+  const handleAddCustom = useCallback(() => {
+    const trimmed = addName.trim();
+    if (!trimmed) return;
+    addByName(trimmed);
+    setAddName('');
+  }, [addName, addByName]);
+
   const removeItem = useCallback(
     async (item: PantryItem) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -304,9 +370,12 @@ export default function PantryTab() {
   );
 
   // ── Clear all + undo ───────────────────────────────────────────────────────
+  // v3: Modal confirmation replaces the inline button. This is the actual clear
+  // function — it runs after the user confirms in the modal.
 
   const clearAll = useCallback(async () => {
     if (pantryItems.length === 0) return;
+    setShowClearModal(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
       () => {},
     );
@@ -350,9 +419,6 @@ export default function PantryTab() {
   }, [db, undoSnapshot]);
 
   // ── Shopping list add + undo ───────────────────────────────────────────────
-  // Variant A: missing-ingredient chip tap adds to shopping list, not pantry.
-  // Rationale: the user is *missing* this ingredient — the right action is
-  // "add to shopping list so I pick it up next trip", not "mark as owned".
 
   const addToShoppingList = useCallback(
     async (
@@ -373,7 +439,6 @@ export default function PantryTab() {
         added_at: Date.now(),
         sources: [{ kind: 'pantry-suggestion', recipe_id: recipeId }],
       };
-      // Optimistic: no local state to update (shopping list is on a different tab).
       if (shopUndoTimerRef.current) clearTimeout(shopUndoTimerRef.current);
       setShopUndo({ id, label: `${ing.name} added to shopping list` });
       shopUndoTimerRef.current = setTimeout(() => {
@@ -417,14 +482,14 @@ export default function PantryTab() {
     );
   }
 
-  const snapOffsets = ranked.map((_, i) => i * (CARD_WIDTH + CARD_GAP));
+  const haveCount = havePills.length;
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: tokens.bg }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* ── Fixed header ───────────────────────────────────────────── */}
+      {/* ── Fixed header zone — never scrolls ──────────────────────── */}
       <View
         style={{
           paddingTop: insets.top + 16,
@@ -433,6 +498,7 @@ export default function PantryTab() {
           backgroundColor: tokens.bg,
         }}
       >
+        {/* Eyebrow */}
         <Text
           style={{
             fontFamily: fonts.sansBold,
@@ -445,11 +511,14 @@ export default function PantryTab() {
         >
           Cook with what you have
         </Text>
+
+        {/* Title row — title + optional trash icon */}
         <View
           style={{
             flexDirection: 'row',
-            alignItems: 'baseline',
+            alignItems: 'center',
             justifyContent: 'space-between',
+            marginBottom: 12,
           }}
         >
           <View style={{ flex: 1 }}>
@@ -473,70 +542,10 @@ export default function PantryTab() {
               </Text>
             </Text>
           </View>
-          {pantryItems.length > 0 ? (
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 11,
-                color: tokens.muted,
-                paddingBottom: 4,
-                paddingLeft: 8,
-              }}
-            >
-              {pantryItems.length} stocked
-            </Text>
-          ) : null}
-        </View>
-      </View>
 
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160, paddingTop: 14 }}
-      >
-
-        {/* ── Search bar (tappable → overlay) ────────────────────── */}
-        <Pressable
-          onPress={() => setOverlayVisible(true)}
-          accessibilityRole="search"
-          accessibilityLabel="Search or add an ingredient"
-          style={({ pressed }) => ({
-            marginHorizontal: 20,
-            marginBottom: 14,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-            backgroundColor: tokens.cream,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: tokens.lineDark,
-            paddingHorizontal: 16,
-            paddingVertical: 13,
-            opacity: pressed ? 0.85 : 1,
-          })}
-        >
-          <Icon name="search" size={15} color={tokens.muted} />
-          <Text
-            style={{
-              flex: 1,
-              fontFamily: fonts.sans,
-              fontSize: 15,
-              color: tokens.muted,
-            }}
-          >
-            Search or add an ingredient…
-          </Text>
-          {pantryItems.length > 0 ? (
-            <Pressable
-              onPress={(e) => {
-                e.stopPropagation?.();
-                clearAll();
-              }}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Clear all pantry items"
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 0.7 })}
-            >
+          {/* Right side: item count + trash (only when pantry has items) */}
+          {haveCount > 0 ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingLeft: 8 }}>
               <Text
                 style={{
                   fontFamily: fonts.sans,
@@ -544,17 +553,122 @@ export default function PantryTab() {
                   color: tokens.muted,
                 }}
               >
-                Clear all
+                {haveCount} stocked
+              </Text>
+              <Pressable
+                onPress={() => setShowClearModal(true)}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Clear all pantry items"
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              >
+                <Icon name="trash" size={16} color={tokens.muted} />
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Search bar — real TextInput (v3: no more tappable Pressable → overlay) */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              backgroundColor: tokens.surface ?? tokens.cream,
+              borderRadius: 14,
+              borderWidth: 1.5,
+              borderColor: isFocused
+                ? tokens.primary
+                : 'rgba(232,184,48,0.22)',
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              ...(isFocused
+                ? {
+                    shadowColor: tokens.primary,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.10,
+                    shadowRadius: 6,
+                    elevation: 2,
+                  }
+                : {}),
+            }}
+          >
+            <Icon name="search" size={15} color={tokens.muted} />
+            <TextInput
+              ref={inputRef}
+              value={addName}
+              onChangeText={setAddName}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="Search or add an ingredient…"
+              placeholderTextColor={tokens.muted}
+              style={{
+                flex: 1,
+                fontFamily: fonts.sans,
+                fontSize: 15,
+                color: tokens.ink,
+                paddingVertical: 0,
+              }}
+              autoCorrect={false}
+              autoCapitalize="none"
+              spellCheck={false}
+              returnKeyType="done"
+              onSubmitEditing={handleAddCustom}
+            />
+            {/* Android clear button — iOS uses clearButtonMode */}
+            {addName.length > 0 && Platform.OS === 'android' ? (
+              <Pressable
+                onPress={() => setAddName('')}
+                hitSlop={10}
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Icon name="x" size={11} color={tokens.muted} />
+              </Pressable>
+            ) : null}
+          </View>
+
+          {/* Cancel button — only when focused */}
+          {isFocused ? (
+            <Pressable
+              onPress={handleSearchCancel}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel search"
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 14,
+                  color: tokens.primary,
+                }}
+              >
+                Cancel
               </Text>
             </Pressable>
           ) : null}
-        </Pressable>
+        </View>
 
-        {/* ── Have-it pills (contained card, flex-wrap) ───────────── */}
+        {/* Have-it pills card — frozen above results in both modes */}
         {havePills.length > 0 ? (
           <View
             style={{
-              marginHorizontal: 20,
               marginBottom: 14,
               backgroundColor: tokens.cream,
               borderRadius: 14,
@@ -574,213 +688,505 @@ export default function PantryTab() {
               ))}
             </View>
           </View>
-        ) : (
-          <EmptyPantry onAddFirst={() => setOverlayVisible(true)} />
-        )}
+        ) : null}
+      </View>
 
-        {/* ── Gold match summary banner ───────────────────────────── */}
-        {ranked.length > 0 ? (
+      {/* ── Content: browse mode or inline autocomplete ─────────────── */}
+      {isSearchActive ? (
+        /* ── Autocomplete results ────────────────────────────────────── */
+        autocompleteSections.length === 0 ? (
           <View
             style={{
-              marginHorizontal: 20,
-              marginBottom: 12,
-              backgroundColor: tokens.cream,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: 'rgba(232,184,48,0.35)',
-              paddingVertical: 13,
-              paddingHorizontal: 16,
-              flexDirection: 'row',
+              flex: 1,
               alignItems: 'center',
-              gap: 12,
-              overflow: 'hidden',
+              justifyContent: 'center',
+              paddingHorizontal: 28,
+              paddingBottom: insets.bottom + 60,
             }}
           >
-            {/* Gold left strip */}
-            <View
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 4,
-                backgroundColor: tokens.primary,
-                borderRadius: 4,
-              }}
-            />
-            <View style={{ flex: 1, paddingLeft: 8 }}>
-              <Text
-                style={{
-                  fontFamily: fonts.display,
-                  fontSize: 15,
-                  color: tokens.primary,
-                  lineHeight: 19,
-                  marginBottom: 2,
-                }}
-              >
-                {fullMatches > 0
-                  ? `${fullMatches} recipe${fullMatches === 1 ? '' : 's'} ready to cook`
-                  : 'Getting close'}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 11,
-                  color: tokens.muted,
-                }}
-              >
-                {fullMatches > 0
-                  ? `${ranked.length - fullMatches > 0 ? `+${ranked.length - fullMatches} more with a few extra ingredients` : 'You have everything you need'}`
-                  : `${ranked.length} match${ranked.length === 1 ? '' : 'es'} · ranked by coverage`}
-              </Text>
-            </View>
             <Text
               style={{
-                fontSize: 16,
-                color: tokens.primary,
-                opacity: 0.7,
+                fontFamily: fonts.sans,
+                fontSize: 14,
+                color: tokens.muted,
+                textAlign: 'center',
+                marginBottom: 16,
               }}
             >
-              →
+              No match — press Enter or tap "+" to add it anyway.
             </Text>
-          </View>
-        ) : null}
-
-        {/* ── Unlock nudge ────────────────────────────────────────── */}
-        {unlock ? (
-          <Pressable
-            onPress={() => addByName(unlock.name)}
-            style={({ pressed }) => ({
-              marginHorizontal: 20,
-              marginBottom: 16,
-              padding: 16,
-              borderRadius: 18,
-              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 14,
-              ...shadows.card,
-              shadowColor: tokens.primaryDeep,
-              shadowOpacity: 0.18,
-            })}
-          >
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 14,
-                backgroundColor: 'rgba(26,19,14,0.10)',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+            <Pressable
+              onPress={handleAddCustom}
+              style={({ pressed }) => ({
+                paddingVertical: 11,
+                paddingHorizontal: 20,
+                backgroundColor: tokens.primaryLight,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(232,184,48,0.35)',
+                opacity: pressed ? 0.75 : 1,
+              })}
             >
-              <Text style={{ fontSize: 22 }}>🔑</Text>
-            </View>
-            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontFamily: fonts.sansBold,
-                  fontSize: 10,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  color: 'rgba(26,19,14,0.70)',
-                  marginBottom: 3,
+                  fontSize: 14,
+                  color: tokens.primary,
                 }}
               >
-                One ingredient unlocks more
+                + Add "{addName.trim()}"
               </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <SectionList<CatalogEntry, AutocompleteSection>
+            sections={autocompleteSections}
+            keyExtractor={(item, idx) => item.name + idx}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            stickySectionHeadersEnabled
+            renderSectionHeader={({ section: { title } }) => (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 7,
+                  backgroundColor: tokens.bg,
+                  paddingHorizontal: 20,
+                  paddingVertical: 9,
+                  borderBottomWidth: 1,
+                  borderBottomColor: tokens.line,
+                }}
+              >
+                <Text style={{ fontSize: 12, lineHeight: 15 }}>
+                  {CATEGORY_EMOJI[title] ?? '📦'}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontFamily: fonts.sansBold,
+                    letterSpacing: 2,
+                    color: tokens.warmBrown,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {title}
+                </Text>
+              </View>
+            )}
+            renderItem={({ item, index, section }) => {
+              const alias = matchedAlias(item, addName.trim());
+              const alreadyAdded = inPantrySet.has(item.name.toLowerCase().trim());
+              const isLast = index === section.data.length - 1;
+
+              return (
+                <Pressable
+                  onPress={() => !alreadyAdded && handleSearchSelect(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    alreadyAdded
+                      ? `${item.name} — already in pantry`
+                      : `Add ${item.name} to pantry`
+                  }
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 20,
+                    paddingVertical: 11,
+                    minHeight: 46,
+                    backgroundColor: tokens.cream,
+                    borderBottomWidth: isLast ? 0 : 1,
+                    borderBottomColor: tokens.line,
+                    gap: 10,
+                    opacity: alreadyAdded ? 0.45 : pressed ? 0.8 : 1,
+                  })}
+                >
+                  {/* Emoji inline with name — same flex row, no reflow risk */}
+                  <Text style={{ fontSize: 18, width: 26, textAlign: 'center', lineHeight: 22 }}>
+                    {CATEGORY_EMOJI[item.category] ?? '📦'}
+                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontFamily: alreadyAdded ? fonts.sans : fonts.sans,
+                        color: alreadyAdded ? tokens.muted : tokens.ink,
+                        lineHeight: 19,
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                    {alias ? (
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontFamily: fonts.sans,
+                          color: tokens.muted,
+                          marginTop: 1,
+                        }}
+                      >
+                        also {alias}
+                      </Text>
+                    ) : null}
+                  </View>
+                  {alreadyAdded ? (
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontFamily: fonts.sansBold,
+                        color: tokens.sage,
+                        letterSpacing: 0.3,
+                      }}
+                    >
+                      ✓ In pantry
+                    </Text>
+                  ) : (
+                    <Icon name="plus" size={16} color={tokens.muted} />
+                  )}
+                </Pressable>
+              );
+            }}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 60,
+            }}
+          />
+        )
+      ) : (
+        /* ── Browse mode ─────────────────────────────────────────────── */
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 160, paddingTop: 4 }}
+        >
+          {/* Empty pantry state — shown when no pills */}
+          {havePills.length === 0 ? (
+            <EmptyPantry onAddFirst={() => inputRef.current?.focus()} />
+          ) : null}
+
+          {/* Gold match summary banner */}
+          {ranked.length > 0 ? (
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginBottom: 12,
+                backgroundColor: tokens.cream,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: 'rgba(232,184,48,0.35)',
+                paddingVertical: 13,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                overflow: 'hidden',
+              }}
+            >
+              {/* Gold left strip */}
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 4,
+                  backgroundColor: tokens.primary,
+                  borderRadius: 4,
+                }}
+              />
+              <View style={{ flex: 1, paddingLeft: 8 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.display,
+                    fontSize: 15,
+                    color: tokens.primary,
+                    lineHeight: 19,
+                    marginBottom: 2,
+                  }}
+                >
+                  {fullMatches > 0
+                    ? `${fullMatches} recipe${fullMatches === 1 ? '' : 's'} you can cook now`
+                    : `${ranked.length} match${ranked.length === 1 ? '' : 'es'} — keep adding`}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 11,
+                    color: tokens.muted,
+                  }}
+                >
+                  {fullMatches > 0
+                    ? `${ranked.length - fullMatches > 0
+                        ? `${ranked.length - fullMatches} more within 1–3 ingredients`
+                        : 'You have everything you need'}`
+                    : `${ranked.length} recipe${ranked.length === 1 ? '' : 's'} ranked by coverage`}
+                </Text>
+              </View>
+
+              {/* "See all" gold pill CTA — replaces bare → arrow */}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="See all matching recipes"
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? tokens.primary : tokens.primaryLight,
+                  borderRadius: 999,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderWidth: 1,
+                  borderColor: 'rgba(232,184,48,0.40)',
+                })}
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 11,
+                    color: tokens.primary,
+                  }}
+                >
+                  See all
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {/* Unlock nudge */}
+          {unlock ? (
+            <Pressable
+              onPress={() => addByName(unlock.name)}
+              style={({ pressed }) => ({
+                marginHorizontal: 20,
+                marginBottom: 16,
+                padding: 16,
+                borderRadius: 18,
+                backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                ...shadows.card,
+                shadowColor: tokens.primaryDeep,
+                shadowOpacity: 0.18,
+              })}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: 'rgba(26,19,14,0.10)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 22 }}>🔑</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    color: 'rgba(26,19,14,0.70)',
+                    marginBottom: 3,
+                  }}
+                >
+                  One ingredient unlocks more
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 15,
+                    color: tokens.ink,
+                    lineHeight: 19,
+                  }}
+                >
+                  Add{' '}
+                  <Text style={{ textDecorationLine: 'underline' }}>
+                    {unlock.name}
+                  </Text>{' '}
+                  → {unlock.count} more recipe{unlock.count === 1 ? '' : 's'}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 20, color: tokens.ink }}>＋</Text>
+            </Pressable>
+          ) : null}
+
+          {/* Recipe match carousel */}
+          {ranked.length > 0 ? (
+            <View>
+              <View
+                style={{
+                  paddingHorizontal: 20,
+                  paddingBottom: 10,
+                  flexDirection: 'row',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 11,
+                    letterSpacing: 1.8,
+                    textTransform: 'uppercase',
+                    color: tokens.inkSoft,
+                  }}
+                >
+                  {fullMatches > 0 ? 'Ready to cook' : 'Closest matches'}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 11,
+                    color: tokens.muted,
+                  }}
+                >
+                  {fullMatches > 0
+                    ? `${fullMatches} ready · ${ranked.length - fullMatches} close`
+                    : `${ranked.length} dish${ranked.length === 1 ? '' : 'es'}`}
+                </Text>
+              </View>
+
+              {/* Carousel — snapToInterval is more reliable than snapToOffsets
+                  because it doesn't depend on the computed offset array being
+                  correct after data changes. CARD_GAP is the gap between cards
+                  set in contentContainerStyle, so the snap unit is exact. */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                decelerationRate="fast"
+                snapToInterval={CARD_WIDTH + CARD_GAP}
+                snapToAlignment="start"
+                disableIntervalMomentum
+                contentContainerStyle={{
+                  paddingHorizontal: CAROUSEL_PADDING,
+                  gap: CARD_GAP,
+                }}
+              >
+                {ranked.map((m) => (
+                  <RecipeMatchCard
+                    key={m.recipe.id}
+                    match={m}
+                    onOpenRecipe={() => router.push(`/recipe/${m.recipe.id}`)}
+                    onAddToShoppingList={(ing) =>
+                      addToShoppingList(ing, m.recipe.id)
+                    }
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          ) : pantryItems.length > 0 ? (
+            <NoMatchesState />
+          ) : null}
+
+          <VersionFooter paddingBottom={32} />
+        </ScrollView>
+      )}
+
+      {/* ── Clear-all confirmation Modal ────────────────────────────── */}
+      {/* Modal (not Alert) so we can apply dark tokens and custom styling.
+          The count in the button label makes the cost of the action explicit. */}
+      <Modal
+        visible={showClearModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowClearModal(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            paddingBottom: insets.bottom + 16,
+            paddingHorizontal: 20,
+          }}
+          onPress={() => setShowClearModal(false)}
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation?.()}
+            style={{
+              width: '100%',
+              backgroundColor: tokens.surface ?? tokens.cream,
+              borderRadius: 20,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: fonts.display,
+                fontSize: 20,
+                color: tokens.ink,
+                marginBottom: 10,
+                textAlign: 'center',
+              }}
+            >
+              Clear your pantry?
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: 13,
+                color: tokens.muted,
+                textAlign: 'center',
+                lineHeight: 18,
+                marginBottom: 24,
+              }}
+            >
+              This removes all {haveCount} stocked ingredient{haveCount === 1 ? '' : 's'}.{'\n'}
+              Your recipe matches will reset.
+            </Text>
+
+            {/* Destructive action */}
+            <Pressable
+              onPress={clearAll}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? '#C04040' : '#E05252',
+                borderRadius: 12,
+                paddingVertical: 14,
+                alignItems: 'center',
+                marginBottom: 10,
+              })}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 15,
+                  color: '#FFF',
+                }}
+              >
+                Clear {haveCount} ingredient{haveCount === 1 ? '' : 's'}
+              </Text>
+            </Pressable>
+
+            {/* Safe default — phrased positively */}
+            <Pressable
+              onPress={() => setShowClearModal(false)}
+              style={({ pressed }) => ({
+                backgroundColor: pressed
+                  ? tokens.bgDeep
+                  : (tokens.surface2 ?? tokens.bgDeep),
+                borderRadius: 12,
+                paddingVertical: 14,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: tokens.line,
+              })}
+            >
               <Text
                 style={{
                   fontFamily: fonts.sansBold,
                   fontSize: 15,
                   color: tokens.ink,
-                  lineHeight: 19,
                 }}
               >
-                Add{' '}
-                <Text style={{ textDecorationLine: 'underline' }}>
-                  {unlock.name}
-                </Text>{' '}
-                → {unlock.count} more recipe{unlock.count === 1 ? '' : 's'}
+                Keep my pantry
               </Text>
-            </View>
-            <Text style={{ fontSize: 20, color: tokens.ink }}>＋</Text>
+            </Pressable>
           </Pressable>
-        ) : null}
-
-        {/* ── Recipe match carousel ───────────────────────────────── */}
-        {ranked.length > 0 ? (
-          <View>
-            <View
-              style={{
-                paddingHorizontal: 20,
-                paddingBottom: 10,
-                flexDirection: 'row',
-                alignItems: 'baseline',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 11,
-                  letterSpacing: 1.8,
-                  textTransform: 'uppercase',
-                  color: tokens.inkSoft,
-                }}
-              >
-                {fullMatches > 0 ? 'Ready to cook' : 'Closest matches'}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 11,
-                  color: tokens.muted,
-                }}
-              >
-                {fullMatches > 0
-                  ? `${fullMatches} ready · ${ranked.length - fullMatches} close`
-                  : `${ranked.length} dish${ranked.length === 1 ? '' : 'es'}`}
-              </Text>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              decelerationRate="fast"
-              snapToOffsets={snapOffsets}
-              snapToAlignment="start"
-              disableIntervalMomentum
-              contentContainerStyle={{
-                paddingHorizontal: CAROUSEL_PADDING,
-                gap: CARD_GAP,
-              }}
-            >
-              {ranked.map((m) => (
-                <RecipeMatchCard
-                  key={m.recipe.id}
-                  match={m}
-                  onOpenRecipe={() => router.push(`/recipe/${m.recipe.id}`)}
-                  onAddToShoppingList={(ing) =>
-                    addToShoppingList(ing, m.recipe.id)
-                  }
-                />
-              ))}
-            </ScrollView>
-          </View>
-        ) : pantryItems.length > 0 ? (
-          <NoMatchesState />
-        ) : null}
-
-        <VersionFooter paddingBottom={32} />
-      </ScrollView>
-
-      {/* ── Search overlay ──────────────────────────────────────────── */}
-      <IngredientSearchOverlay
-        visible={overlayVisible}
-        pantryItems={pantryItems}
-        onAdd={(name, category) => addByName(name, category)}
-        onClose={() => setOverlayVisible(false)}
-      />
+        </Pressable>
+      </Modal>
 
       {/* ── Clear-all undo toast (5 s) ──────────────────────────────── */}
       {undoSnapshot ? (
@@ -810,525 +1216,4 @@ export default function PantryTab() {
               color: '#FFF',
             }}
           >
-            {undoSnapshot.label}
-          </Text>
-          <Pressable onPress={undoClear} hitSlop={8}>
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 12,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                color: tokens.primary,
-              }}
-            >
-              Undo
-            </Text>
-          </Pressable>
-        </Animated.View>
-      ) : null}
-
-      {/* ── Shopping-list add undo toast (3 s) ──────────────────────── */}
-      {/* Gold background makes this impossible to miss — the user needs to
-          know their tap *did* something even though the chip went to a
-          different tab. Dark text on gold satisfies contrast requirements. */}
-      {shopUndo ? (
-        <Animated.View
-          entering={FadeIn.duration(160)}
-          exiting={FadeOut.duration(120)}
-          style={{
-            position: 'absolute',
-            bottom: insets.bottom + (undoSnapshot ? 152 : 92),
-            left: 16,
-            right: 16,
-            backgroundColor: tokens.primary,
-            borderRadius: 14,
-            paddingVertical: 14,
-            paddingHorizontal: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-            ...shadows.toast,
-          }}
-        >
-          <Text style={{ fontSize: 16 }}>🛒</Text>
-          <Text
-            style={{
-              flex: 1,
-              fontFamily: fonts.sansBold,
-              fontSize: 13,
-              color: tokens.bgDeep,
-            }}
-          >
-            {shopUndo.label}
-          </Text>
-          <Pressable onPress={undoShopAdd} hitSlop={8}>
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 12,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                color: tokens.bgDeep,
-                opacity: 0.65,
-              }}
-            >
-              Undo
-            </Text>
-          </Pressable>
-        </Animated.View>
-      ) : null}
-    </KeyboardAvoidingView>
-  );
-}
-
-// ── Subcomponents ─────────────────────────────────────────────────────────────
-
-/**
- * Pill — have-it item in the horizontal strip.
- *
- * Fresh flash: brief gold tint on the pill immediately after adding.
- * This is the tactile "yes, that landed" receipt before it settles to sage.
- */
-function Pill({
-  item,
-  fresh,
-  onRemove,
-}: {
-  item: PantryItem;
-  fresh: boolean;
-  onRemove: () => void;
-}) {
-  const bg = fresh ? tokens.primaryLight : tokens.sageLight;
-  const fg = fresh ? tokens.primaryDeep : tokens.sageDeep;
-  const borderColor = fresh ? 'rgba(232,184,48,0.45)' : 'rgba(170,204,168,0.50)';
-  const xBg = fresh ? 'rgba(163,68,31,0.18)' : 'rgba(70,94,64,0.18)';
-
-  return (
-    <Animated.View
-      entering={FadeIn.duration(180)}
-      exiting={FadeOut.duration(140)}
-      layout={LinearTransition.duration(180)}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingVertical: 8,
-        paddingHorizontal: 13,
-        backgroundColor: bg,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderColor,
-        minHeight: 34,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: fonts.sansBold,
-          fontSize: 13,
-          color: fg,
-        }}
-      >
-        {item.name}
-      </Text>
-      <Pressable
-        onPress={onRemove}
-        hitSlop={10}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${item.name}`}
-        style={{
-          width: 18,
-          height: 18,
-          borderRadius: 999,
-          backgroundColor: xBg,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginLeft: 2,
-          marginRight: -4,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 11,
-            fontFamily: fonts.sansBold,
-            color: fg,
-            lineHeight: 13,
-          }}
-        >
-          ×
-        </Text>
-      </Pressable>
-    </Animated.View>
-  );
-}
-
-function EmptyPantry({ onAddFirst }: { onAddFirst: () => void }) {
-  return (
-    <View
-      style={{
-        paddingVertical: 28,
-        paddingHorizontal: 18,
-        alignItems: 'center',
-      }}
-    >
-      <View
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 24,
-          backgroundColor: tokens.sageLight,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 14,
-        }}
-      >
-        <Text style={{ fontSize: 24 }}>🥘</Text>
-      </View>
-      <Text
-        style={{
-          fontFamily: fonts.display,
-          fontSize: 18,
-          color: tokens.ink,
-          marginBottom: 6,
-          fontStyle: 'italic',
-        }}
-      >
-        What's in your kitchen?
-      </Text>
-      <Text
-        style={{
-          fontFamily: fonts.sans,
-          fontSize: 13,
-          color: tokens.muted,
-          textAlign: 'center',
-          lineHeight: 18,
-          maxWidth: 260,
-          marginBottom: 20,
-        }}
-      >
-        Add a few ingredients and Hone finds the best recipes you can cook right now — no shopping required.
-      </Text>
-      <Pressable
-        onPress={onAddFirst}
-        style={({ pressed }) => ({
-          backgroundColor: tokens.primary,
-          borderRadius: 12,
-          paddingVertical: 12,
-          paddingHorizontal: 22,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          opacity: pressed ? 0.85 : 1,
-        })}
-      >
-        <Text
-          style={{
-            fontFamily: fonts.sansBold,
-            fontSize: 14,
-            color: tokens.bgDeep,
-          }}
-        >
-          Add ingredients
-        </Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function NoMatchesState() {
-  return (
-    <View
-      style={{
-        marginHorizontal: 20,
-        marginTop: 8,
-        marginBottom: 16,
-        paddingVertical: 28,
-        paddingHorizontal: 20,
-        backgroundColor: tokens.cream,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: tokens.line,
-        alignItems: 'center',
-        ...shadows.card,
-      }}
-    >
-      <Text style={{ fontSize: 28, marginBottom: 8 }}>🔍</Text>
-      <Text
-        style={{
-          fontFamily: fonts.display,
-          fontSize: 17,
-          color: tokens.ink,
-          marginBottom: 4,
-        }}
-      >
-        Nothing matches yet
-      </Text>
-      <Text
-        style={{
-          fontFamily: fonts.sans,
-          fontSize: 13,
-          color: tokens.muted,
-          textAlign: 'center',
-          lineHeight: 18,
-          maxWidth: 260,
-        }}
-      >
-        Add a couple more ingredients and recipes will start appearing here.
-      </Text>
-    </View>
-  );
-}
-
-/**
- * RecipeMatchCard — compact horizontal card for the match carousel.
- *
- * v0.5.0 changes from v0.4.0:
- *   - % badge removed. It was visual clutter on a small card; the "X of Y
- *     matched" line below the title carries the same info with more context.
- *   - MissingPill → ChipAdd (Variant A). Chips are gold-tinted, add to the
- *     shopping list on tap. A 3-second undo toast surfaces in the parent.
- *   - Chips are pre-sorted by substitution availability (done in
- *     scoreRecipeAgainstPantry) so the most actionable chips come first.
- */
-function RecipeMatchCard({
-  match,
-  onOpenRecipe,
-  onAddToShoppingList,
-}: {
-  match: RecipeMatchResult;
-  onOpenRecipe: () => void;
-  onAddToShoppingList: (ing: { name: string; amount: number; unit: string }) => void;
-}) {
-  const allReady = match.totalCount === match.haveCount;
-  // Track added chips within this card's render lifetime.
-  const [addedNames, setAddedNames] = useState<Set<string>>(new Set());
-
-  const handleChipAdd = (
-    ing: { name: string; amount: number; unit: string },
-  ) => {
-    setAddedNames((prev) => new Set(prev).add(ing.name));
-    onAddToShoppingList(ing);
-  };
-
-  return (
-    <Pressable
-      onPress={onOpenRecipe}
-      style={({ pressed }) => ({
-        width: CARD_WIDTH,
-        backgroundColor: tokens.cream,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: tokens.line,
-        overflow: 'hidden',
-        opacity: pressed ? 0.95 : 1,
-        ...shadows.card,
-      })}
-    >
-      {/* Hero image */}
-      <View
-        style={{
-          height: 130,
-          backgroundColor: tokens.bgDeep,
-          position: 'relative',
-        }}
-      >
-        {match.recipe.hero_url ? (
-          <Image
-            source={{ uri: match.recipe.hero_url }}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="cover"
-          />
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 38 }}>{match.recipe.emoji ?? '🍳'}</Text>
-          </View>
-        )}
-        {!allReady ? (
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 10,
-              left: 10,
-              backgroundColor: 'rgba(26,19,14,0.7)',
-              paddingHorizontal: 9,
-              paddingVertical: 5,
-              borderRadius: 999,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 10,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                color: '#FFF',
-              }}
-            >
-              {match.haveCount} of {match.totalCount} matched
-            </Text>
-          </View>
-        ) : null}
-      </View>
-
-      {/* Card body */}
-      <View style={{ padding: 14 }}>
-        <Text
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 15,
-            lineHeight: 19,
-            color: tokens.ink,
-            marginBottom: 10,
-          }}
-          numberOfLines={2}
-        >
-          {match.recipe.title}
-        </Text>
-
-        {allReady ? (
-          <View
-            style={{
-              alignSelf: 'flex-start',
-              paddingVertical: 7,
-              paddingHorizontal: 12,
-              backgroundColor: tokens.sage,
-              borderRadius: 999,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 5,
-            }}
-          >
-            <Text style={{ color: tokens.ink, fontSize: 11, fontWeight: '900' }}>
-              ✓
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 12,
-                color: tokens.ink,
-              }}
-            >
-              Tap to cook
-            </Text>
-          </View>
-        ) : (
-          <View>
-            {/* "Need" label */}
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 9,
-                letterSpacing: 1.2,
-                textTransform: 'uppercase',
-                color: tokens.muted,
-                marginBottom: 7,
-              }}
-            >
-              Still need
-            </Text>
-            {/* Variant A chips */}
-            <View
-              style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: 6,
-                marginBottom: 4,
-              }}
-            >
-              {match.missingIngredients.map((ing) => (
-                <ChipAdd
-                  key={ing.name}
-                  ing={ing}
-                  added={addedNames.has(ing.name)}
-                  onAdd={handleChipAdd}
-                />
-              ))}
-            </View>
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 10,
-                color: tokens.muted,
-                marginTop: 2,
-              }}
-            >
-              Tap to add to shopping list
-            </Text>
-          </View>
-        )}
-      </View>
-    </Pressable>
-  );
-}
-
-/**
- * ChipAdd — Variant A missing-ingredient chip.
- *
- * Gold-tinted, dashed-border → solid on "added" state.
- * Tapping calls onAdd and immediately flips to checkmark style.
- * Reason for gold: the chip is an action (add to shopping list), not just
- * information. Gold = primary action in the Hone palette.
- */
-function ChipAdd({
-  ing,
-  added,
-  onAdd,
-}: {
-  ing: { name: string; amount: number; unit: string };
-  added: boolean;
-  onAdd: (ing: { name: string; amount: number; unit: string }) => void;
-}) {
-  const label = ing.amount > 0
-    ? `${ing.amount}${ing.unit ? ' ' + ing.unit : ''} ${ing.name}`
-    : ing.name;
-
-  return (
-    <Pressable
-      onPress={() => !added && onAdd(ing)}
-      accessibilityRole="button"
-      accessibilityLabel={
-        added
-          ? `${ing.name} added to shopping list`
-          : `Add ${label} to shopping list`
-      }
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        backgroundColor: added ? tokens.primary : tokens.primaryLight,
-        borderWidth: 1,
-        borderColor: added ? tokens.primary : 'rgba(232,184,48,0.35)',
-        borderRadius: 999,
-        opacity: pressed ? 0.75 : 1,
-      })}
-    >
-      <Text
-        style={{
-          fontFamily: fonts.sansBold,
-          fontSize: 12,
-          color: added ? tokens.bgDeep : tokens.primary,
-        }}
-      >
-        {added ? '✓' : '+'}
-      </Text>
-      <Text
-        style={{
-          fontFamily: fonts.sansBold,
-          fontSize: 11,
-          color: added ? tokens.bgDeep : tokens.primary,
-        }}
-        numberOfLines={1}
-      >
-        {ing.name}
-      </Text>
-    </Pressable>
-  );
-}
+            {undo
