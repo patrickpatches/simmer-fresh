@@ -25,7 +25,57 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → Senior Engineer · 2026-05-03 · OPEN (URGENT — Pantry v3 implementation)
+### SYNC NOTE → Senior Engineer · 2026-05-05 · DONE (2026-05-03)
+**From:** COO
+**Subject:** Pantry track is fully unblocked — here is the right sequence across the four open Engineer handoffs
+**Why this exists:** Both Designer and Culinary Verifier wrapped sessions today. Their outputs unblock work that was previously waiting. There are now four open Engineer handoffs (Pantry v3 implementation, two bugs from on-device, six new recipes, derivation-aware matching). Doing them in random order causes throwaway work — e.g., fixing BUG 1 before Pantry v3 means the bug fix lands in code that's about to be deleted. Read this sync block before opening any other handoff.
+
+**What just landed (verified by COO):**
+- ✅ `docs/prototypes/pantry-v3.html` — Product Designer's Pantry v3 prototype with full annotated implementation spec for four UX fixes (inline search, emoji inline with name, Clear-all confirmation modal, "Getting close" banner clarity).
+- ✅ `docs/coo/culinary-research/` — Culinary Verifier shipped all six source recipe files (chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel). Each carries chef attribution, Australian English, metric units, substitutions with quality flags, and per DECISION-007 every ingredient has the `scales` flag set with `scaling_note` populated where chef knowledge changes the answer.
+- ✅ `mobile/src/data/ingredient-derivations.ts` — Phase 1 of the joint handoff. Verifier defined the source→derived ingredient map ("eggs" → "egg yolks" + "egg whites", etc.) covering both the existing seed library and the six new recipes.
+
+**Recommended sequence (do in this order):**
+
+1. **Pantry v3 implementation FIRST** — see the existing `Senior Engineer · 2026-05-03` handoff below. Largest refactor; sets the structural surface that everything downstream lands on. While doing this, **incorporate the fix for BUG 1 (stale match counter)** into the new state model. The "+" affordance behaviour needs to be clarified during this work — coordinate with the Designer's spec on whether tapping "+" adds to shopping list or pantry, and make the visual feedback unambiguous.
+
+2. **BUG 2 fix during Pantry v3** — the carousel snap regression. Fix the snap behaviour AND see the regression ask below.
+
+3. **Six new recipes** — populate `mobile/src/data/seed-recipes.ts` from the source files in `docs/coo/culinary-research/`. Pure data work; doesn't depend on UI. Could be done in parallel with Pantry v3 if you have spare cycles.
+
+4. **Derivation-aware matching (Phase 2)** — update `mobile/src/data/pantry-helpers.ts` to use the new `ingredient-derivations.ts` per the existing `Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04` handoff.
+
+**Regression discipline ask (NEW — Patrick raised this; Designer reinforced it):**
+
+The carousel snap was fixed in session 29 April and reintroduced during the dark restyle / Pantry v2 work. The OneDrive null-byte issue happened once and has the potential to recur. Two regressions in three weeks is a pattern, not bad luck. Please do this small piece of structural work the next time you fix BUG 2:
+
+- Create `docs/regression-checklist.md` with a simple format: previously-fixed bug name, one-line description, repro steps, the commit hash that originally fixed it.
+- Seed it with the carousel snap regression and the OneDrive null-byte issue.
+- Add an entry to `docs/SMOKE-TEST.md` linking to it: "Run regression checklist before every release tag."
+- Going forward: every bug you fix that took non-trivial work to find gets one line in this checklist. Cheap on the way out, saves rediscovery cost.
+
+This becomes the seed for QA Test Lead's eventual smoke-test scope. Don't wait for QA — start the file now.
+
+**Files this session will touch (rough estimate):**
+- `mobile/src/components/IngredientSearchOverlay.tsx` (DELETE)
+- `mobile/app/(tabs)/pantry.tsx` (Pantry v3 + BUG 1 + BUG 2)
+- `mobile/src/data/seed-recipes.ts` (six new recipes)
+- `mobile/src/data/types.ts` (already updated for `scaling_note` per DECISION-007 — verify still in)
+- `mobile/src/data/pantry-helpers.ts` (Phase 2 derivation matching)
+- `docs/regression-checklist.md` (NEW)
+- `docs/SMOKE-TEST.md` (link to regression-checklist)
+
+**Existing handoffs to read in detail (in sequence order above):**
+- `Senior Engineer · 2026-05-03 · OPEN (Pantry v3 implementation)` — full Designer spec
+- `Senior Engineer · 2026-05-05 · OPEN (two pantry bugs)` — both bugs detailed
+- `Senior Engineer · 2026-04-29 · IN PROGRESS (multi-task)` — Task 3 (six recipes) is now unblocked
+- `Culinary Verifier → Senior Engineer · 2026-05-04 · OPEN (derivation matching)` — Phase 2
+
+When all of the above is complete, write a single consolidated session report (`docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` or `_2.md` if it's the second of the day) and update each existing handoff to DONE status.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-03 · DONE (2026-05-03)
 **From:** Product Designer
 **Subject:** Implement the three Pantry v3 design fixes from `docs/prototypes/pantry-v3.html`
 **Why:** Pantry v3 prototype delivered in response to Patrick's on-device feedback. Three UX problems identified; all fixed in the prototype. Engineer needs to wire them into `pantry.tsx`.
@@ -79,7 +129,7 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 
 ---
 
-### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (URGENT — two pantry bugs from on-device session)
+### HANDOFF → Senior Engineer · 2026-05-05 · DONE (2026-05-03)
 **From:** Patrick (via COO)
 **Subject:** Two bugs found on-device in v0.4.1 build 49
 **Why:** Patrick spent on-device time today walking through the pantry-match flow. Found two issues that need engineer triage. Both should also be logged as GitHub Issues per CLAUDE.md (Patrick can do this from phone, OR engineer creates them when working the fix).
@@ -105,7 +155,7 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 
 ---
 
-### HANDOFF → Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04 · PHASE 1 DONE — ENGINEER UNBLOCKED
+### HANDOFF → Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04 · DONE (2026-05-03)
 **From:** Patrick (via COO)
 **Subject:** Pantry needs derivation-aware ingredient matching — "I have eggs" should match recipes calling for "egg yolks"
 **Why:** Patrick discovered on-device that the pantry-match algorithm treats every ingredient as atomic. He has eggs in his pantry. Pasta Carbonara wants egg yolks. The match misses entirely. This is one of many cases — chicken stock comes from a whole chicken, lemon zest from lemons, ground spices from whole spices, etc. The pantry-match feature is the kill feature; right now it's quietly under-counting matches and making the recipe library look thinner than it actually is.
@@ -443,50 +493,4 @@ _(Designer-to-engineer handoff folded into the consolidated Senior Engineer mult
 **Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
 **What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
 **What's needed:**
-1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
-2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
-3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable. **Include dark surface recommendations (dark slate, black board, charcoal linen) as preferred first-choice props for all dishes where they work aesthetically.**
-4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match). **For dark direction: slightly richer shadows, deeper blacks, food colours should feel saturated against the dark bg. Avoid over-brightening whites.**
-5. **Schedule recommendation** — propose which 2 showcase recipes to shoot each weekend, ordered by which are easiest to get right first (build Patrick's confidence) and which need most attention.
-**Coordination:** New showcase recipe (chicken schnitzel) needs to be in the seed library before its shoot weekend — coordinate with Senior Engineer on timing.
-**Dark surface prop notes:** The 2×2 browse grid in the approved prototype uses square crops. Props that disappear into the edges of the frame (dark plates, dark boards) look best — the food is the hero, not the surface. Avoid: white plates, bright-wood boards, busy printed linens. Prefer: matte black slate, charcoal/grey linen, raw dark timber, brushed steel.
-**Files touched:** `docs/coo/photography/shot-list-showcase.md`, `docs/coo/photography/shot-list-hero-only.md`, `docs/coo/photography/preflight-checklist.md`, `docs/coo/photography/post-processing-preset.md`
-**Blocks:** First photo weekend (3-4 May 2026)
-
-### HANDOFF → Culinary & Cultural Verifier · 2026-04-29 · OPEN (URGENT)
-**From:** COO
-**Subject:** Audit existing recipes + provide source recipes for 6 NEW additions
-**Why:** v1.0 launch library expanded per DECISION-004. Now ~34 recipes need audit, AND 6 new recipes need authoritative sources before Senior Engineer can populate them.
-**What's done:** Brief at `docs/coo/specialists/culinary-verifier.md`. Recipe library locked per DECISION-004.
-**What's needed:**
-
-1. **Provide source recipes for the 6 new dishes** that Senior Engineer needs to populate. For each, deliver: a chef-attributed source URL (or "traditional" framing if no chef is right), the ingredient list, the steps, plausible substitutions list, the cuisine and type categories, and Australian English check. Output to `docs/coo/culinary-research/<recipe-slug>.md`. The 6:
-   - Chicken schnitzel (consider Adam Liaw or another modern AU chef)
-   - Easy chicken & vegetable stir-fry (Bill Granger, RecipeTinEats Nagi, or "traditional Australian weeknight")
-   - Beef lasagne (consider Marcella Hazan classic or modern AU)
-   - Roast lamb with rosemary & garlic (consider Maggie Beer or "Sunday roast traditional")
-   - Fish & chips (likely "Australian Friday traditional")
-   - Falafel (Levantine — credit cuisine + region; specific chef optional)
-
-2. **Audit pass** on all priority 17 recipes per the format in your brief. Output to `docs/coo/culinary-audit.md`. Required before launch.
-
-3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everywhere.
-
-**Sequence:** Item 1 first (Senior Engineer is blocked on it). Items 2-3 can run in parallel after.
-**Files touched:** `docs/coo/culinary-research/`, `docs/coo/culinary-audit.md`, `mobile/src/data/seed-recipes.ts` (read-only), `docs/prototypes/hone.html` (read-only)
-**Blocks:** Senior Engineer's recipe-add task (#1 above), Photography Director's showcase shoot for chicken schnitzel
-
-### HANDOFF → QA Test Lead · 2026-04-29 · OPEN
-**From:** COO
-**Subject:** Stand up the smoke-test checklist v1
-**Why:** Currently `docs/SMOKE-TEST.md` exists but isn't owned. We need it to be the gate before every build.
-**What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
-**What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
-**Files touched:** `docs/SMOKE-TEST.md`
-**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
-
----
-
-## Recently completed
-
-_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_
+1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase reci
