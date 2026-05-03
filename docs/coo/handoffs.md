@@ -25,6 +25,26 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### INCIDENT NOTE → COO · 2026-05-03 · RESOLVED (build #53 in progress)
+**From:** Senior Engineer
+**Subject:** Build failures #51 and #52 — root causes diagnosed and fixed
+**Why this exists:** Patrick reported APK build failures after the session-2 push. Two separate bugs were responsible; both are now resolved.
+
+**Root cause 1 — stale import (build #51)**
+`IngredientSearchOverlay.tsx` was correctly deleted from GitHub in the prior session, but `pantry.tsx` was never updated on GitHub to match (the local v0.6.0 write was not pushed). GitHub was holding the old v0.5.x `pantry.tsx` which still imported the now-deleted file. Metro bundler failed: `Unable to resolve module IngredientSearchOverlay`. Fix: pushed the correct local v0.6.0 `pantry.tsx` to GitHub (commit `5a9a1db`).
+
+**Root cause 2 — truncated file (build #52)**
+The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`{undo`). The file write during the original Pantry v3 session was cut off before the undo toast was completed, and before any of the five subcomponent function definitions (`Pill`, `EmptyPantry`, `NoMatchesState`, `RecipeMatchCard`, `ChipAdd`). Metro bundler reported `SyntaxError: Unexpected token, expected "}" (1219:17)`. This is a variant of the REGN-002 class of issue (file write truncation, not null-byte corruption this time). Fix: completed the toast expression, restored both toast blocks, closed `KeyboardAvoidingView`, and restored all five subcomponents. Brace/paren balance verified at 0. Pushed as commit `7292f07`.
+
+**Build #53 triggered at 2026-05-03T12:31:47Z — currently in progress.**
+
+**Action needed from COO:**
+- None right now. Wait for build #53 to complete, then hand off the APK to Patrick for smoke test.
+- Once Patrick validates on-device, update the open Photography Director handoff (still waiting on his review).
+- Consider adding a "verify file not truncated" step to the release checklist (last N lines of every large file should be inspected before push — `tail -5 pantry.tsx` takes 2 seconds).
+
+---
+
 ### SYNC NOTE → Senior Engineer · 2026-05-05 · DONE (2026-05-03)
 **From:** COO
 **Subject:** Pantry track is fully unblocked — here is the right sequence across the four open Engineer handoffs
@@ -471,26 +491,4 @@ _(Substitution UI handoff superseded by the consolidated Senior Engineer multi-t
 **What's done:** Both specs delivered 29 Apr 2026.
 - `docs/prototypes/substitution-sheet.html` — interactive bottom-sheet prototype. Full flow: ingredient tap → sheet open → substitution select → confirm. All quality pill states (perfect_swap / great_swap / good_swap / compromise), hard_to_find notice, all spacing/token annotations, engineering handoff block.
 - `docs/prototypes/recipe-card-states.html` — recipe card 3 states, recipe detail with/without stage photos, step placeholder, full spec tables. Badge is a dark-scrim pill ("Photos soon") bottom-right of card image — opposite corner from the existing difficulty badge. No collision.
-**Key design decisions:**
-- Badge text: "Photos soon" (not "Stage photos coming soon" — shorter, less internal-feeling)
-- Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no new schema field needed
-- Dark scrim on badge (not sky/blue) so it reads on any photo colour
-- Stage notice appears once in recipe detail (not repeated per step)
-**Files touched:** `docs/prototypes/substitution-sheet.html`, `docs/prototypes/recipe-card-states.html`
-
----
-
-_(Designer-to-engineer handoff folded into the consolidated Senior Engineer multi-task handoff above. Specs remain at the prototype paths for engineer reference.)_
-
-### HANDOFF → Photography Director · 2026-04-29 · IN PROGRESS (all pre-shoot deliverables delivered 1 May)
-**From:** COO · **Direction update 30 Apr · Schedule update 1 May**
-**Subject:** Build shot lists for showcase 10 + hero-only for everything else
-
-⚠️ **SCHEDULE UPDATE (1 May 2026):** Photography weekend 1 (3–4 May) is **lost** — Patrick is away on personal commitments. Re-baselined: **weekend 2 (10–11 May) is now the de facto first shoot weekend.** Phase A buffer is consumed; no further weekends can slip without launch impact. Patrick is using this morning's window to push design and product work forward instead — see new Product Designer handoff for Pantry redesign.
-
-⚠️ **DIRECTION UPDATE (30 Apr 2026):** Patrick chose the **Dark Dramatic** visual direction. The app bg is now near-black `#111111`. This changes what good photography looks like in the UI — food shot against dark surfaces, dark boards, and dark plates will integrate far more powerfully than food on white or wood. Factor this into all surface and prop recommendations below.
-
-**Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
-**What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
-**What's needed:**
-1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase reci
+**Key design decisions:
