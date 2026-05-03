@@ -113,12 +113,10 @@ The rule: **no release notes go out without this checklist passing.**
 - [ ] Pantry quick-add does NOT show items already in pantry
 - [ ] Filter chip rail does NOT disappear when you remove only one filter
 
-## What to do when something fails
+## 10. Regression checklist
 
-1. Note the exact step + the unexpected behaviour.
-2. Take a screenshot.
-3. Open an issue in the repo (or note in CLAUDE.md if solo).
-4. **Do not push the release** until the failed item is fixed.
+Before every release tag, run the items in [`docs/regression-checklist.md`](regression-checklist.md).
+The full checklist takes under two minutes and covers bugs that have already bitten us once.
 
-This list is itself versioned — when we add a screen or feature, we add
-the corresponding checks here.
+Current entries:
+- **REGN-001** — Recipe card carousel partial-snap (was fixed 29 April, regressed in Pantry v2)
