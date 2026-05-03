@@ -146,18 +146,14 @@ export interface RecipeMatchResult {
   /** Full ingredient info for Variant A chips — name + amount + unit. */
   missingIngredients: Array<{ name: string; amount: number; unit: string }>;
   /**
-   * Phase 2 — ingredients matched via derivation, not direct pantry ownership.
-   * E.g. "egg yolks" matched because the user has "Eggs".
-   * Used by the UI to show "from your eggs →" annotations and the prep icon.
-   * Empty array when no derivation matches occurred.
+   * Phase 2 — derivation matches. Each entry records an ingredient matched
+   * via derivation (e.g. "egg yolks" matched because user has "Eggs").
+   * UI surface: "from your Eggs →" annotation + prep icon in ingredient row.
    */
   derivationMatches: Array<{
-    /** Cleaned recipe ingredient name. E.g. "egg yolks" */
-    ingredientName: string;
-    /** The pantry item that yields this ingredient. E.g. "Eggs" */
-    derivedFrom: string;
-    /** Full derivation entry — includes prep_note and quality flag. */
-    entry: DerivationEntry;
+    ingredientName: string;   // cleaned recipe ingredient name
+    derivedFrom: string;      // pantry item that produced this match
+    entry: DerivationEntry;   // prep_note + quality for UI annotation
   }>;
 }
 
@@ -165,67 +161,40 @@ export function scoreRecipeAgainstPantry(
   recipe: Recipe,
   pantryItems: PantryItem[],
 ): RecipeMatchResult {
-  const havePantryItems = pantryItems.filter((p) => p.have_it);
-  const haveNorms = havePantryItems.map((p) => normalizeForMatch(p.name));
+  const haveItems = pantryItems.filter((p) => p.have_it);
+  const haveNorms = haveItems.map((p) => normalizeForMatch(p.name));
 
-  // ── Phase 2: build a derivation lookup for this pantry ───────────────────
-  //
-  // For each pantry item the user has, look up what ingredients it can produce
-  // (e.g. "Eggs" → egg yolks, egg whites, egg wash). We build a map from the
-  // DERIVED ingredient's normalised name → the best pantry source for that
-  // derivation. This lets isMatch() resolve recipe ingredients that aren't
-  // literally in the pantry but can be produced from something that is.
-  //
-  // WHY: "egg yolks" does not substring-match "eggs" (singular ≠ plural, no
-  // common substring longer than 3 chars). Without this, Carbonara and Pavlova
-  // score zero on the egg axis even when the user has eggs.
-  //
-  // The map stores all sources per derived norm so the UI can display the most
-  // relevant "from your X →" annotation. The scoring function records only the
-  // first (best-quality) source per match.
-
-  const derivationSourceMap = new Map<string, Array<{
-    pantryName: string;
-    entry: DerivationEntry;
-  }>>();
-
-  for (const pantryItem of havePantryItems) {
-    const sourceNorm = normalizeForMatch(pantryItem.name);
-    const derivations = DERIVATION_LOOKUP.get(sourceNorm) ?? [];
+  // Build derivation source map: derived-norm → [{pantryName, entry}]
+  // This lets isMatch() check derivation hits in O(1) after build.
+  const derivationSourceMap = new Map<string, Array<{ pantryName: string; entry: DerivationEntry }>>();
+  for (const item of haveItems) {
+    const norm = normalizeForMatch(item.name);
+    const derivations = DERIVATION_LOOKUP.get(norm) ?? [];
     for (const entry of derivations) {
       const derivedNorm = normalizeForMatch(entry.derived);
       const existing = derivationSourceMap.get(derivedNorm) ?? [];
-      existing.push({ pantryName: pantryItem.name, entry });
+      existing.push({ pantryName: item.name, entry });
       derivationSourceMap.set(derivedNorm, existing);
     }
   }
 
-  // Accumulates as isMatch() runs — one entry per recipe ingredient that was
-  // matched via derivation rather than direct pantry ownership.
+  // Side-channel: derivation hits recorded during isMatch() calls
   const derivationHits: RecipeMatchResult['derivationMatches'] = [];
-
-  // ── Core match predicate ─────────────────────────────────────────────────
 
   const isMatch = (recipeName: string): boolean => {
     const norm = normalizeForMatch(recipeName);
-
-    // 1. Direct match — the existing phase-1 logic.
-    const directMatch = haveNorms.some((p) => {
+    // Direct match first
+    const directHit = haveNorms.some((p) => {
       if (norm === p) return true;
       if (norm.length > 4 && p.length > 4 && (norm.includes(p) || p.includes(norm))) return true;
       const ta = norm.split(' ').filter((t) => t.length > 2);
       const tb = p.split(' ').filter((t) => t.length > 2);
       return ta.filter((t) => tb.includes(t)).length >= 2;
     });
-    if (directMatch) return true;
-
-    // 2. Derivation match — Phase 2.
-    //    Check whether any pantry item can PRODUCE this ingredient via a known
-    //    culinary transformation. Record the match for UI display.
+    if (directHit) return true;
+    // Derivation match
     const sources = derivationSourceMap.get(norm);
     if (sources && sources.length > 0) {
-      // Use the first source — if multiple pantry items can derive this
-      // ingredient, the first one in the pantry list is fine for display.
       const { pantryName, entry } = sources[0];
       derivationHits.push({
         ingredientName: cleanIngredientName(recipeName),
@@ -234,11 +203,8 @@ export function scoreRecipeAgainstPantry(
       });
       return true;
     }
-
     return false;
   };
-
-  // ── Score ─────────────────────────────────────────────────────────────────
 
   let matched = 0;
   const missingRaw: Array<{ name: string; amount: number; unit: string }> = [];
@@ -460,4 +426,72 @@ export const INGREDIENT_CATALOG: CatalogEntry[] = [
   { name: 'Spring onion',        category: 'Produce', aliases: ['scallion', 'green onion'] },
   { name: 'Shallot',             category: 'Produce' },
   { name: 'Leek',                category: 'Produce' },
-  { name: 'Lemon', 
+  { name: 'Lemon',               category: 'Produce' },
+  { name: 'Lime',                category: 'Produce' },
+  { name: 'Capsicum',            category: 'Produce', aliases: ['bell pepper'] },
+  { name: 'Tomato',              category: 'Produce' },
+  { name: 'Cherry tomatoes',     category: 'Produce' },
+  { name: 'Cucumber',            category: 'Produce' },
+  { name: 'Carrot',              category: 'Produce' },
+  { name: 'Celery',              category: 'Produce' },
+  { name: 'Potato',              category: 'Produce' },
+  { name: 'Sweet potato',        category: 'Produce' },
+  { name: 'Zucchini',            category: 'Produce', aliases: ['courgette'] },
+  { name: 'Eggplant',            category: 'Produce', aliases: ['aubergine'] },
+  { name: 'Mushroom',            category: 'Produce' },
+  { name: 'Broccoli',            category: 'Produce' },
+  { name: 'Cauliflower',         category: 'Produce' },
+  { name: 'Spinach',             category: 'Produce' },
+  { name: 'Rocket',              category: 'Produce', aliases: ['arugula'] },
+  { name: 'Coriander',           category: 'Produce', aliases: ['cilantro', 'fresh coriander'] },
+  { name: 'Parsley',             category: 'Produce', aliases: ['flat-leaf parsley', 'flat leaf parsley'] },
+  { name: 'Basil',               category: 'Produce' },
+  { name: 'Mint',                category: 'Produce' },
+  { name: 'Thyme',               category: 'Produce' },
+  { name: 'Rosemary',            category: 'Produce' },
+  { name: 'Dill',                category: 'Produce' },
+  { name: 'Chives',              category: 'Produce' },
+  { name: 'Ginger',              category: 'Produce' },
+  { name: 'Lemongrass',          category: 'Produce' },
+  { name: 'Avocado',             category: 'Produce' },
+  // Proteins
+  { name: 'Chicken thigh',       category: 'Proteins', aliases: ['chicken thighs'] },
+  { name: 'Chicken breast',      category: 'Proteins' },
+  { name: 'Chicken wings',       category: 'Proteins' },
+  { name: 'Whole chicken',       category: 'Proteins' },
+  { name: 'Beef mince',          category: 'Proteins', aliases: ['ground beef'] },
+  { name: 'Pork mince',          category: 'Proteins', aliases: ['ground pork'] },
+  { name: 'Lamb mince',          category: 'Proteins', aliases: ['ground lamb'] },
+  { name: 'Beef steak',          category: 'Proteins' },
+  { name: 'Brisket',             category: 'Proteins' },
+  { name: 'Bacon',               category: 'Proteins' },
+  { name: 'Pancetta',            category: 'Proteins' },
+  { name: 'Chorizo',             category: 'Proteins' },
+  { name: 'Salmon',              category: 'Proteins' },
+  { name: 'Tuna',                category: 'Proteins' },
+  { name: 'Cod',                 category: 'Proteins' },
+  { name: 'Prawns',              category: 'Proteins', aliases: ['shrimp'] },
+  { name: 'Tofu',                category: 'Proteins' },
+];
+
+const _normLower = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+
+/**
+ * Match a typed query against a catalog entry by name OR alias.
+ * Substring match — generous on purpose so two letters surface candidates.
+ */
+export function fuzzyMatchCatalog(entry: CatalogEntry, query: string): boolean {
+  const q = _normLower(query);
+  if (!q) return false;
+  if (_normLower(entry.name).includes(q)) return true;
+  if (entry.aliases) return entry.aliases.some((a) => _normLower(a).includes(q));
+  return false;
+}
+
+/** True if any alias of `entry` matches the query (used to label the row). */
+export function matchedAlias(entry: CatalogEntry, query: string): string | null {
+  const q = _normLower(query);
+  if (!q || !entry.aliases) return null;
+  return entry.aliases.find((a) => _normLower(a).includes(q)) ?? null;
+}
