@@ -55,28 +55,26 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: npx expo prebuild --platform android --clean --non-interactive
 
-      - name: Generate CI signing keystore
+      - name: Restore signing keystore from secret
         run: |
-          keytool -genkey -v \
-            -keystore /tmp/ci-release.jks \
-            -alias ci-key \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 365 \
-            -storepass cipassword \
-            -keypass cipassword \
-            -dname "CN=Hone CI, OU=CI, O=Hone, L=Sydney, ST=NSW, C=AU"
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.jks
+          ls -lah /tmp/release.jks
 
       - name: Build standalone release APK
         working-directory: mobile/android
+        env:
+          KEYSTORE_PATH: /tmp/release.jks
+          KEYSTORE_PASS: ${{ secrets.RELEASE_KEYSTORE_PASS }}
+          KEY_ALIAS:     ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASS:      ${{ secrets.RELEASE_KEY_PASS }}
         run: |
           set -o pipefail
           chmod +x gradlew
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=/tmp/ci-release.jks \
-            -Pandroid.injected.signing.store.password=cipassword \
-            -Pandroid.injected.signing.key.alias=ci-key \
-            -Pandroid.injected.signing.key.password=cipassword \
+            -Pandroid.injected.signing.store.file="$KEYSTORE_PATH" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASS" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS" \
             --stacktrace 2>&1 | tee /tmp/gradle-output.txt
           echo "Gradle exit: ${PIPESTATUS[0]}"
 
@@ -116,6 +114,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gradle-failure-log
-          path: /tmp/gradle-output.txt
-          retention-days: 7
-
+          path: /tmp/g
