@@ -29,7 +29,8 @@
         "android.permission.VIBRATE",
         "android.permission.WAKE_LOCK"
       ],
-      "versionCode": 47
+      "versionCode": 47,
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",
