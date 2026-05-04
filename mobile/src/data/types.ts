@@ -14,6 +14,15 @@
  *                                     `substitutions` captures honest tradeoff notes.
  *
  * Phase 2 additions (2026-04-22):
+ *
+ * Phase 3 additions (2026-05-04) — DECISION-009:
+ *   - DifficultyLevel normalised: 'Easy'→'beginner', 'Intermediate'→'intermediate',
+ *     'Involved'→'advanced' (lowercase, consistent with JSON convention)
+ *   - total_time_minutes + active_time_minutes (supersede time_min, kept during migration)
+ *   - equipment[], before_you_start[] (max 3), mise_en_place[]
+ *   - finishing_note, leftovers_note
+ *   All new fields are optional or have empty-array defaults — existing seed
+ *   recipes compile without modification (difficulty values migrated in same commit).
  *   - CuisineId + TypeId enums — the dual-axis category taxonomy
  *   - SwapQuality + Substitution — ingredient-level swap data
  *   - `substitutions[]` on Ingredient
@@ -225,7 +234,7 @@ export type LeftoverMode = z.infer<typeof LeftoverMode>;
 // Recipe — the full object
 // ---------------------------------------------------------------------------
 
-export const DifficultyLevel = z.enum(['Easy', 'Intermediate', 'Involved']);
+export const DifficultyLevel = z.enum(['beginner', 'intermediate', 'advanced']);
 export type DifficultyLevel = z.infer<typeof DifficultyLevel>;
 
 export const Recipe = z.object({
@@ -254,7 +263,44 @@ export const Recipe = z.object({
   fixed_yield: z.boolean().optional(),
 
   time_min: z.number().int().positive(),
+
+  /**
+   * Total elapsed time in minutes (hands-off included).
+   * This supersedes `time_min` — both are kept during migration.
+   * DECISION-009: additive field, optional so existing seed recipes compile.
+   */
+  total_time_minutes: z.number().int().positive().optional(),
+
+  /**
+   * Active cook/prep time the user is hands-on.
+   * Combined with `total_time_minutes` to compute hands-off wait time.
+   */
+  active_time_minutes: z.number().int().positive().optional(),
+
   difficulty: DifficultyLevel,
+
+  /**
+   * Equipment required beyond a standard kitchen (mortar + pestle, wok,
+   * stand mixer, etc.). Displayed in the "Before you start" section.
+   * DECISION-009 field.
+   */
+  equipment: z.array(z.string()).default([]),
+
+  /**
+   * Up to 3 bullets shown at the top of the recipe — temperature warnings,
+   * long-marinate heads-up, "start this the day before" type notes.
+   * Keep to three maximum: users don't read walls of caveats.
+   * DECISION-009 field.
+   */
+  before_you_start: z.array(z.string()).max(3).default([]),
+
+  /**
+   * Everything to weigh, chop, and pre-measure before heat goes on.
+   * Mirrors the professional mise en place list.
+   * DECISION-009 field.
+   */
+  mise_en_place: z.array(z.string()).default([]),
+
   /** Freeform search keywords. Structured taxonomy lives in `categories`. */
   tags: z.array(z.string()),
 
@@ -286,6 +332,21 @@ export const Recipe = z.object({
   steps: z.array(Step).min(1),
 
   leftover_mode: LeftoverMode.optional(),
+
+  /**
+   * Optional closing note shown at the bottom of the recipe —
+   * "Pairs beautifully with a cold Pilsner" or "Squeeze of lemon finishes it."
+   * Keep it short. One sentence. Chef's voice.
+   * DECISION-009 field.
+   */
+  finishing_note: z.string().optional(),
+
+  /**
+   * How to store, reheat, and use leftovers — plain language.
+   * E.g. "Keeps three days in the fridge. Reheat in a dry pan on medium."
+   * DECISION-009 field.
+   */
+  leftovers_note: z.string().optional(),
 
   /**
    * Confirms every ingredient is whole and unprocessed.
