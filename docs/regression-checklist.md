@@ -67,4 +67,25 @@ snaps cleanly to one card per view — partial cards from adjacent entries are v
 **Repro steps:**
 1. Push any file > 40 KB via the GitHub API.
 2. Trigger a build.
-3. **Fail:** Metro reports a `SyntaxError` near th
+3. **Fail:** Metro reports a `SyntaxError` near the end of the file or mid-expression in a component.
+4. **Pass:** clean APK builds, Metro bundles with no syntax errors.
+**Fixed in:** Session 3 May 2026 — built a validation script (brace balance + line-count check) before pushing. Rebuilt pantry.tsx and pantry-helpers.ts from known-good git base commits `f7cb9e0` (pantry.tsx) and `f7cb9e0` (pantry-helpers.ts); pushed ingredient-derivations.ts for the first time.
+**Regressed in:** Not a code regression — a process regression. Can recur on any large API write without the validation gate.
+**Check:** ✅ *REGN-003 script (`scripts/validate-before-push.sh`) in place*
+**Guard:** Before any GitHub API file push > 20 KB: (1) count braces/parens in the local buffer, (2) confirm line count matches expected, (3) download the pushed file and re-validate. Never reconstruct a truncated file by appending a manually-written tail — always download → edit → re-validate → push.
+
+---
+
+### [REGN-004] — Pantry search focus dumps full ingredient catalog (v3)
+**Description:** Tapping the Pantry search input immediately rendered the entire INGREDIENT_CATALOG (every ingredient grouped by category) as a full-screen SectionList, because `isSearchActive = addName.length > 0 || isFocused`. The result looked identical to the deleted IngredientSearchOverlay and dismissed when the user tapped away.
+**Repro steps:**
+1. Open the Pantry tab.
+2. Tap the "Search or add an ingredient…" input without typing anything.
+3. **Fail:** the entire ingredient catalog appears as a categorised full-screen list.
+4. **Pass:** tapping the input leaves the browse view unchanged; the catalog only appears after 2+ characters are typed.
+**Fixed in:** Commit `c917965` — Session 4 May 2026.
+  - `isSearchActive = addName.trim().length > 0` (removed `|| isFocused`)
+  - `autocompleteSections` returns `[]` when query < 2 chars (removed full-catalog fallback)
+  - Empty state distinguishes 1-char "keep typing" from 2+ "no match + add" CTAs
+**Check:** 🔴 *Update to ✅ after on-device verification in build #57*
+**Guard:** When touching the `isSearchActive` or `autocompleteSections` logic in `pantry.tsx`: confirm the condition does NOT include bare `isFocused` — focus state is only for border styling and the Cancel button. Never use `isFocused` as the trigger to show catalog content.
