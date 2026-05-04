@@ -25,6 +25,38 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-04 · OPEN (DECISION-008 — recipe detail UI, second pass)
+**From:** Product Designer
+**Subject:** Implement the 6 new recipe-detail sections from `docs/prototypes/recipe-detail-v2.html`
+**Why:** Schema pass (8 new fields) lands first. This UI pass lands after. Don't start until schema is committed and Carbonara's seed data has been expanded by the Culinary Verifier — you need real data to QA the new sections.
+
+**What's done (Designer):**
+- `docs/prototypes/recipe-detail-v2.html` — full Carbonara prototype with all 8 sections, rationale, and this engineer handoff.
+
+**What to implement (in `mobile/app/recipe/[id].tsx`):**
+
+1. **At-a-glance row** — below recipe header, above servings selector. Fields: `total_time_minutes`, `active_time_minutes`, `difficulty`, first cuisine category, `leftover_mode !== 'none'`. Horizontal row of 5 icon+label pairs, separated by thin lines.
+
+2. **What to know block** — from `before_you_start: string[]`. Left border `#5B8FD4` (not a new token — inline only). Conditionally rendered; omit entirely if array is empty.
+
+3. **Equipment row** — from `equipment: string[]`. Horizontal `ScrollView` of pills. Conditionally rendered.
+
+4. **Mise en place** — from `mise_en_place: string[]`. Tappable rows with circular checkboxes, progress counter. State: `useState<Set<number>>(new Set())`, **session-only** (no SQLite write). Left accent `#F2D896` (ochre, existing token). Conditionally rendered.
+
+5. **Finishing & tasting block** — from `finishing_note?: string`. Left border `#C4A882` (inline only). Conditionally rendered.
+
+6. **Leftovers block** — from `leftovers_note?: string`. Dark low surface. Conditionally rendered.
+
+**Critical rule — conditional rendering:** Every new section must render nothing (no blank card, no section gap) when its data field is absent or empty. The page must be backwards-compatible with unexpanded recipes.
+
+**Do NOT change:** Ingredients, SubstitutionSheet, ServingsSelector, cook steps, hero, back/favourite/plan/share controls.
+
+**Files to touch:** `mobile/app/recipe/[id].tsx` only. No new component files needed.
+
+**Blocks:** Launch quality — every recipe page currently shows none of these sections.
+
+---
+
 ### INCIDENT NOTE → COO · 2026-05-03 · RESOLVED (build #53 in progress)
 **From:** Senior Engineer
 **Subject:** Build failures #51 and #52 — root causes diagnosed and fixed
@@ -42,6 +74,77 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 - None right now. Wait for build #53 to complete, then hand off the APK to Patrick for smoke test.
 - Once Patrick validates on-device, update the open Photography Director handoff (still waiting on his review).
 - Consider adding a "verify file not truncated" step to the release checklist (last N lines of every large file should be inspected before push — `tail -5 pantry.tsx` takes 2 seconds).
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (DECISION-009 — recipe schema expansion)
+**From:** Patrick (via COO)
+**Subject:** Add 8 new fields to the Recipe Zod schema for the full recipe template
+**Why:** DECISION-009 adopts a full 8-section recipe template across every recipe in the database. The cook authors content; you provide the schema fields; Designer designs the page; you implement the UI in a second pass after Designer ships. This is the additive schema work that unblocks both cook (long-running) and Designer (page redesign).
+**What's needed:**
+1. In `mobile/src/data/types.ts`, add to the `Recipe` Zod schema:
+   - `total_time_minutes: z.number().int().positive()`
+   - `active_time_minutes: z.number().int().positive()`
+   - `difficulty: z.enum(["beginner", "intermediate", "advanced"])`
+   - `equipment: z.array(z.string()).default([])`
+   - `before_you_start: z.array(z.string()).max(3).default([])`
+   - `mise_en_place: z.array(z.string()).default([])`
+   - `finishing_note: z.string().optional()`
+   - `leftovers_note: z.string().optional()`
+2. All new fields are additive and optional or have sensible defaults — no breaking change to existing recipes that don't have them populated.
+3. Update the TypeScript `Recipe` type accordingly.
+4. **Do NOT update the recipe-detail UI yet** — wait for Designer's page redesign (separate Designer handoff). UI implementation lands in your second pass after the design ships.
+5. Write an ADR (next number) covering the schema expansion.
+**Files touched:** `mobile/src/data/types.ts`, `docs/adr/NNN-recipe-template-expansion.md`
+**Cost:** ~1-2 hours.
+**Sequencing:** Can be done in any order relative to Pantry v3 work — additive schema doesn't conflict with Pantry refactor.
+**Blocks:** Cook's seed-recipes.ts repopulation (she can author into source `.md` files in `docs/coo/culinary-research/` in parallel; only the typed seed file blocks on this).
+
+---
+
+### HANDOFF → Product Designer · 2026-05-05 · DONE (delivered 2026-05-04)
+**Delivered:** `docs/prototypes/recipe-detail-v2.html` — full 8-section Carbonara prototype. At-a-glance row, before-you-start framing block (blue), equipment pills, mise en place checkboxes (ochre), cook steps unchanged, finishing block (warm-brown), leftovers block. Engineer handoff + conditional-rendering rules + risks section included.
+**From:** Patrick (via COO)
+**Subject:** Redesign the recipe-detail page to display the new 8-section template
+**Why:** DECISION-009 adopts a full recipe template. Each recipe now has additional sections — at-a-glance, before-you-start, equipment, mise en place, finishing & tasting, leftovers — that the current recipe page doesn't surface. The page needs to be redesigned with the right typographic and visual hierarchy. This is the page that defines whether Hone reads as a cookbook or as a recipe app.
+**What's needed:**
+1. Mockup the new recipe-detail page in `docs/prototypes/recipe-detail-v2.html`. Show one recipe end to end (use Pasta Carbonara since it's the canonical reference).
+2. Display all sections in a clear vertical flow that reads top-to-bottom like a cookbook entry, not a long unstructured list.
+3. Visual distinctions to spec:
+   - **At-a-glance** is a compact horizontal row of facts (time, difficulty, leftover-friendly, cuisine) — read in <2 seconds
+   - **What to know before you start** is a visually distinct framing block — short, prominent, before any heat-related content
+   - **Equipment** sits separate from ingredients — possibly a collapsible row or pill row
+   - **Mise en place** is visually distinct from cook steps — the cook reads prep with the fridge open, and reads cook steps with hands wet, so the section needs different treatment (lighter typography, no photos)
+   - **Cook steps** stay as currently designed — photos, why-notes, doneness cues
+   - **Finishing & tasting** is a final framing block, similar treatment to "What to know before you start" but at the end
+   - **Leftovers & storage** is the last block — light, conclusive
+4. Preserve all current design tokens (v0.7 dark) — gold accent, dark surfaces, Playfair display, Inter body. No visual direction change.
+5. Engineer handoff block at the bottom of the prototype.
+6. Written rationale at the bottom — what changes, what stays, what risks.
+**Files touched:** `docs/prototypes/recipe-detail-v2.html`
+**Blocks:** Engineer's UI implementation (second engineer pass for DECISION-008).
+
+---
+
+### HANDOFF → Culinary Verifier · 2026-05-05 · OPEN (DECISION-009 — populate full template across the database)
+**From:** Patrick (via COO)
+**Subject:** Apply full 8-section recipe template to every recipe in the database
+**Why:** DECISION-009 expanded scope from the 17 priority recipes to every recipe in `mobile/src/data/seed-recipes.ts` plus the six new recipes you're currently writing in `docs/coo/culinary-research/`. Every recipe gets the full template treatment. Patrick: *"I prefer to fix every single recipe, everyone in my database."*
+**What's needed:**
+1. Re-read your updated brief at `docs/coo/specialists/culinary-verifier.md` — item 2 under "What you own" now defines the template structure with all 10 numbered points.
+2. **Six new recipes (in flight):** apply the full template to chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel as you write them. If any are already done in the old shape, expand them.
+3. **Existing seed library (~28 recipes):** walk through `mobile/src/data/seed-recipes.ts` and write expansion notes for each recipe in `docs/coo/culinary-research/<recipe-slug>.md` with the full template populated. Do these in priority order — the 11 launch recipes already in the seed library first (carbonara, bolognese, butter chicken, green curry, smash burger, roast chicken, pavlova, barramundi, shawarma, hummus, pad thai), then the others.
+4. For each recipe, the additions you're authoring:
+   - At-a-glance numbers (total time minutes, active time minutes, difficulty)
+   - 1-3 "what to know" framings
+   - Equipment list
+   - Mise en place tasks (discrete pre-heat prep)
+   - Finishing & tasting paragraph
+   - Leftovers & storage note
+5. Output to the per-recipe markdown files in `docs/coo/culinary-research/`. Engineer will move content into seed-recipes.ts in their second pass.
+**Cost:** ~30 min per recipe × ~30 recipes = ~15 hours of cook work, parallelisable across multiple sessions.
+**Sequencing:** This work CAN proceed before Engineer ships the schema and before Designer ships the page redesign — markdown source files are unstructured. Move at your pace.
+**Blocks:** Engineer's seed-recipes.ts repopulation. Launch quality.
 
 ---
 
@@ -418,77 +521,4 @@ Patrick found the original three levels (Refinement / Medium / Alternative) too 
    Fraunces + Plus Jakarta Sans. Dulux Piglet blush, sage, lavender, butter, sky. Category-coloured card pills. Soft and tactile — the antithesis of recipe-app beige. Cost: ~2 engineer sessions.
 
 2. **Direction 2 — Bold Magazine** (`docs/prototypes/direction-2-magazine.html`)
-   Space Grotesk throughout. Deep cobalt (#0B1628) surfaces. Recipe titles overlaid directly on full-bleed food photos via gradient scrim — no text below the photo card. Amber (#F0A500) as the only accent. Cost: ~2 engineer sessions.
-
-3. **Direction 3 — Japanese Minimal** (`docs/prototypes/direction-3-minimal.html`)
-   Noto Serif Display + Noto Sans. Browse is a pure typographic list — no cards, no photos. Extreme whitespace. A single vermillion (#CC3311) reserved for the "Start Cooking" CTA only. Best launch story: browse screen looks complete with zero photos. Cost: ~1.5 engineer sessions.
-
-**What Patrick needs to do:** Pick one direction. Reply in the next session with "go with Direction N" and the Designer/Engineer pipeline picks up from there.
-**Files touched:** `docs/prototypes/direction-1-pastel.html`, `docs/prototypes/direction-2-magazine.html`, `docs/prototypes/direction-3-minimal.html`
-**Blocks resolved:** Photography weekend timing depends on Patrick's pick (see Photography Director handoff).
-
-### HANDOFF → Senior Engineer · 2026-05-02 · OPEN — Pantry redesign (new, do before existing multi-task)
-**From:** Product Designer (Patrick confirmed 2 May 2026)
-**Subject:** Implement pantry redesign v2 — search takeover, have-it pills, match card chips (Variant A)
-**Why:** Patrick confirmed Variant A (tap-to-add missing ingredient chips) on 2 May 2026. Pantry is the kill feature — this takes priority over the recipe-add task in the multi-task handoff below. Full spec in `docs/prototypes/pantry-redesign-v2.html` engineer handoff block — open in Chrome, not Cowork panel.
-**What's needed (in priority order):**
-1. **IngredientSearchOverlay** — new full-screen component replacing the broken floating dropdown. Mounts on add-ingredient input focus. Solid `tokens.bg` background, autocomplete SectionList grouped by category, added-this-session pills row at top. File: `mobile/src/components/IngredientSearchOverlay.tsx`.
-2. **Have-it pills row** — horizontal ScrollView of sage pills for `have_it === true` items, above search bar in `ListHeaderComponent`. × to toggle off.
-3. **Gold match banner** — replace the sage `Pressable` pill with a left-gold-accent card (`tokens.primary` left border, `tokens.surface` bg, `tokens.gold-border` outer border).
-4. **Variant A missing-ingredient chips** — reshape `RecipeMatchResult` to expose `missingIngredients: Array<{name, amount, unit, substitutions}>`. Cap at 4 chips visible, "+N more →" for overflow. On tap: chip disappears + 3-second undo banner. Sort substitution-available first. No hint caption. `hitSlop={8}` on each chip `Pressable`.
-5. **Remove percentage badge** from `MatchCard` entirely. "N of X ingredients" + progress bar is sufficient.
-**Files:** `mobile/app/(tabs)/pantry.tsx`, new `mobile/src/components/IngredientSearchOverlay.tsx`
-**Decision reference:** DECISION-008 in `docs/coo/decision-log.md`
-**Blocks:** Pantry is the kill feature — must land before Internal Alpha (22 May milestone).
-
----
-
-### HANDOFF → Senior Engineer · 2026-04-29 · IN PROGRESS
-**From:** Patrick (via COO)
-**Subject:** Three priority tasks — bundle rename, substitution UI, add 6 new recipes
-**Why:** Patrick made multiple decisions on 29 April that all queue up to Senior Engineer. Sequenced because each unblocks downstream work.
-**Engineer update (30 Apr 2026):**
-- ✅ Task 1 (bundle ID rename) — COMPLETE. `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json`. ADR written at `docs/adr/001-bundle-id-rename.md`. Play Console steps in the ADR. `splash.backgroundColor` and `android.adaptiveIcon.backgroundColor` also updated to `#111111`.
-- ✅ Task 2 (Substitution UI + photo badge) — COMPLETE. `SubstitutionSheet.tsx` built with `@gorhom/bottom-sheet` `BottomSheetModal`. Wired into `recipe/[id].tsx` — ingredient rows show swap icon when substitutions exist, tap opens sheet. "Photos soon" badge added to `RecipeCard.tsx` (bottom-right, dark scrim). Stage notice banner added to recipe detail. Step photo placeholder added to each step. `BottomSheetModalProvider` added to root `_layout.tsx`.
-- 🔴 Task 3 (add 6 new recipes) — BLOCKED. `docs/coo/culinary-research/` does not exist. Culinary Verifier has not delivered source recipes. See new OPEN handoff below. Do not proceed until Culinary Verifier delivers.
-**What's done:** Patrick approvals + Product Designer specs.
-**What's needed (in this order):**
-
-1. **Rename bundle ID** `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json` and `mobile/package.json`. Verify clean APK build. Write ADR (`docs/adr/NNN-bundle-id-rename.md`). Tell Patrick the Play Console steps for the next AAB upload (new app entry under new package name auto-creates).
-
-2. **Implement Substitution UI + recipe-card photo-badge states** per Product Designer's specs at `docs/prototypes/substitution-sheet.html` and `docs/prototypes/recipe-card-states.html`. Use `@gorhom/bottom-sheet` (`BottomSheetModal`) for the SubstitutionSheet component. Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no schema change needed. Badge text "Photos soon" (not "Stage photos coming soon"). See the handoff block in those HTML files for full spec.
-
-**3a. (NEW per DECISION-007) Schema change — add `scaling_note` to Ingredient.** Do this BEFORE populating the 6 new recipes so cook's scaling annotations have a place to land:
-- In `mobile/src/data/types.ts`: add `scaling_note: z.string().optional()` to the `Ingredient` Zod schema. Update the TypeScript type accordingly.
-- In `mobile/src/data/scale.ts`: when scale.ts produces a scaled ingredient list, the `scaling_note` field passes through unchanged (it's plain English, not math).
-- UI surface: in `mobile/app/recipe/[id].tsx`, when the user changes serving count and an ingredient has a `scaling_note`, surface the note as a small icon/tooltip next to the amount (or in the ingredient row's secondary text). Designer hasn't speced this — use minimal styling consistent with v0.7 dark tokens (muted text, gold info icon if needed). Spec it lightly and ship; we'll iterate.
-- Purely additive change — no breaking effect on existing recipes that don't use the field.
-- Cost: ~1 hour of engineer.
-
-3. **Add 6 new recipes** to `mobile/src/data/seed-recipes.ts` per DECISION-004:
-   - Chicken schnitzel (Australian pub classic)
-   - Easy chicken & vegetable stir-fry (generic Australian weeknight)
-   - Beef lasagne (Australian household staple)
-   - Roast lamb with rosemary & garlic (Sunday roast)
-   - Fish & chips (Australian Friday classic)
-   - Falafel (Levantine)
-   Each must follow the standard schema (chef-attributed if possible — coordinate with Culinary Verifier on sources — substitutions populated with quality flags, `scales` flag set per ingredient, `scaling_note` populated where chef knowledge changes the answer, `whole_food_verified: true` where appropriate, Australian English, metric units, dual-axis categories). Block on Culinary Verifier to provide authoritative source recipes before populating chef attribution.
-
-**Files touched:** `mobile/app.json`, `mobile/package.json`, `mobile/app/recipe/[id].tsx`, `mobile/src/components/SubstitutionSheet.tsx` (new), `mobile/src/components/RecipeCard.tsx` (or equivalent), `mobile/src/data/seed-recipes.ts`, `docs/adr/`
-**Blocks:** All future AAB uploads (#1), v1 feature completeness (#2), photography of new showcase recipes (#3)
-
-### HANDOFF → Patrick · 2026-04-29 · DONE (✅ approved 29 Apr — DECISION-001)
-**From:** COO
-**Subject:** Confirm or amend launch date target
-**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for me unless we need more time." DECISION-001 logged. This handoff is closed — engineer reports referencing it as "still open" reflect stale awareness, not actual status.
-
-_(Substitution UI handoff superseded by the consolidated Senior Engineer multi-task handoff above.)_
-
-### HANDOFF → Product Designer · 2026-04-29 · DONE
-**From:** COO
-**Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
-**Why:** Engineer needs visual specs before building. Must respect terracotta/olive/gold tokens and Playfair/Source Sans 3 type scale. Per DECISION-003, the badge is needed for ~18 non-launch recipes.
-**What's done:** Both specs delivered 29 Apr 2026.
-- `docs/prototypes/substitution-sheet.html` — interactive bottom-sheet prototype. Full flow: ingredient tap → sheet open → substitution select → confirm. All quality pill states (perfect_swap / great_swap / good_swap / compromise), hard_to_find notice, all spacing/token annotations, engineering handoff block.
-- `docs/prototypes/recipe-card-states.html` — recipe card 3 states, recipe detail with/without stage photos, step placeholder, full spec tables. Badge is a dark-scrim pill ("Photos soon") bottom-right of card image — opposite corner from the existing difficulty badge. No collision.
-**Key design decisions:
+   Space Grotesk throughou
