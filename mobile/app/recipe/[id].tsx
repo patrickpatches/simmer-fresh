@@ -115,7 +115,6 @@ export default function RecipeDetailScreen() {
   if (!recipe) {
     return (
       <View style={{ flex: 1, backgroundColor: tokens.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-        <Text style={{ fontSize: 40, marginBottom: 8 }}>🤔</Text>
         <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink, marginBottom: 8 }}>
           Recipe not found
         </Text>
@@ -324,12 +323,12 @@ export default function RecipeDetailScreen() {
                 width: 38,
                 height: 38,
                 borderRadius: 19,
-                backgroundColor: isPlanned ? tokens.sageLight : (pressed ? tokens.bgDeep : 'transparent'),
+                backgroundColor: isPlanned ? tokens.primaryLight : (pressed ? tokens.bgDeep : 'transparent'),
                 alignItems: 'center',
                 justifyContent: 'center',
               })}
             >
-              <Icon name={isPlanned ? 'check' : 'plus'} size={20} color={isPlanned ? tokens.sage : tokens.ink} />
+              <Icon name={isPlanned ? 'check' : 'plus'} size={20} color={isPlanned ? tokens.primaryInk : tokens.ink} />
             </Pressable>
             {/* Favourite */}
             <Pressable
@@ -461,12 +460,33 @@ export default function RecipeDetailScreen() {
             {recipe.source?.video_url ? (
               <Pressable
                 onPress={openSource}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14 }}
+                accessibilityRole="link"
+                accessibilityLabel="Watch the original video"
+                style={({ pressed }) => ({
+                  alignSelf: 'flex-start',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 7,
+                  marginTop: 14,
+                  paddingHorizontal: 12,
+                  paddingVertical: 7,
+                  borderRadius: 999,
+                  backgroundColor: pressed
+                    ? tokens.primaryLight
+                    : 'rgba(232,184,48,0.10)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(232,184,48,0.28)',
+                })}
               >
-                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primaryInk }}>
+                <Icon name="play" size={10} color={c.primaryInk} fill={c.primaryInk} />
+                <Text style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 12,
+                  color: c.primaryInk,
+                  letterSpacing: 0.2,
+                }}>
                   Watch the original
                 </Text>
-                <Icon name="external" size={12} color={c.primaryInk} />
               </Pressable>
             ) : null}
 
@@ -479,13 +499,13 @@ export default function RecipeDetailScreen() {
                 accessibilityLabel={isPlanned ? 'Remove from plan' : 'Add to plan'}
                 style={({ pressed }) => ({
                   marginTop: 16,
-                  paddingVertical: 12,
+                  paddingVertical: 13,
                   borderRadius: 14,
                   backgroundColor: isPlanned
-                    ? (pressed ? tokens.sageDeep : tokens.sage)
+                    ? (pressed ? tokens.primaryDeep : tokens.primary)
                     : (pressed ? tokens.primaryLight : 'transparent'),
                   borderWidth: 1.5,
-                  borderColor: isPlanned ? tokens.sage : tokens.primaryInk,
+                  borderColor: tokens.primaryInk,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -494,17 +514,18 @@ export default function RecipeDetailScreen() {
               >
                 <Icon
                   name={isPlanned ? 'check' : 'plus'}
-                  size={16}
+                  size={15}
                   color={isPlanned ? tokens.ink : tokens.primaryInk}
                 />
                 <Text
                   style={{
                     fontFamily: fonts.sansBold,
                     fontSize: 13,
+                    letterSpacing: 0.2,
                     color: isPlanned ? tokens.ink : tokens.primaryInk,
                   }}
                 >
-                  {isPlanned ? 'In your plan ✓' : '+ Plan this recipe'}
+                  {isPlanned ? 'In your plan' : 'Plan this recipe'}
                 </Text>
               </Pressable>
             )}
@@ -538,7 +559,7 @@ export default function RecipeDetailScreen() {
                   flex: 1,
                 }}
               >
-                Stage photos for this recipe are coming soon — we're shooting them shortly.
+                Stage-by-stage photos are on the way — we'll photograph this recipe soon.
               </Text>
             </View>
           </View>
