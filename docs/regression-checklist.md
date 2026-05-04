@@ -44,8 +44,9 @@ snaps cleanly to one card per view — partial cards from adjacent entries are v
 5. **Fail:** partial cards are visible on either edge, or the snap lands between two cards.
 **Fixed in:** Session 29 April 2026 — `pagingEnabled` prop set on the `FlatList`/`ScrollView`; card width set to `Dimensions.get('window').width - [horizontal margins]` so exactly one card fills the viewport.
 **Regressed in:** Pantry v2 redesign (Pantry v2 dark-direction restyle) — the `pagingEnabled` prop or the card-width calculation was dropped during the rewrite.
-**Check:** 🔴 *Update to ✅ after on-device verification*
-**Guard:** When touching `pantry.tsx` carousel: verify `pagingEnabled={true}` is present AND that `cardWidth` is computed from `Dimensions.get('window').width` minus the horizontal padding, not a hardcoded pixel value. A hardcoded width breaks snap on all non-standard screen sizes.
+**Re-fixed in:** Session 4 May 2026 (builds #61–#62, commit `0b7ebe609142`) — replaced `pagingEnabled` with `snapToInterval` + `snapToAlignment="start"` and replaced the hardcoded `CARD_WIDTH = 260` constant with `cardWidth = screenWidth - CAROUSEL_PADDING*2 - CARD_GAP - PEEK_WIDTH` using `useWindowDimensions`. Snap math verified: at snap position N, card N always starts exactly `CAROUSEL_PADDING`dp from viewport left on every screen size. Removed `disableIntervalMomentum`; changed `decelerationRate="fast"` → `decelerationRate={0.92}` for natural momentum with snap.
+**Check:** ✅ *Fixed — awaiting on-device confirmation from Patrick*
+**Guard:** When touching `pantry.tsx` carousel: (1) `snapToInterval` must equal `cardWidth + CARD_GAP`, computed from `useWindowDimensions()` — never hardcoded. (2) Do NOT add `disableIntervalMomentum` — it kills momentum and makes swipe feel robotic. (3) `decelerationRate` must be `{0.92}` or `"normal"`, not `"fast"`. A hardcoded width breaks snap on non-standard screen sizes; `disableIntervalMomentum` breaks the feel.
 
 ---
 
@@ -58,34 +59,4 @@ snaps cleanly to one card per view — partial cards from adjacent entries are v
 **Diagnosed in:** Session 28 April 2026. `plan.tsx` was found with 1,045 null bytes appended; `recipe/[id].tsx` was truncated mid-code. Fixed by stripping null bytes from `plan.tsx` and restoring `recipe/[id].tsx` from commit `4bca5c6`.
 **Regressed in:** Not a code regression — a process regression. Recurs whenever files are edited via the OneDrive path instead of the workspace mount.
 **Check:** ✅ *Process fix in place — write via GitHub API or workspace mount only*
-**Guard:** Always write source files via the GitHub API (`PUT /repos/.../contents/...`) or via the `/sessions/.../mnt/hone/` workspace mount. Never write through the OneDrive-synced Documents path. If a build fails with an unexpected-character error near the end of a file, run `grep -cP '\x00' <file>` — a count > 0 confirms null-byte corruption; strip with `tr -d '\000' < broken.tsx > fixed.tsx`.
-
----
-
-### [REGN-003] — pantry.tsx file-write truncation (Pantry v3)
-**Description:** Large file writes via shell heredoc or Python base64 push can silently truncate mid-expression. Pantry v3 was cut at `{undo` (line 1219), then a reconstruction attempt missed the `>` closing the `<Text>` opening tag. Metro bundler caught it only at bundle time as either `Unexpected token, expected "}"` or `Unexpected token, expected "..."`.
-**Repro steps:**
-1. Push any file > 40 KB via the GitHub API.
-2. Trigger a build.
-3. **Fail:** Metro reports a `SyntaxError` near the end of the file or mid-expression in a component.
-4. **Pass:** clean APK builds, Metro bundles with no syntax errors.
-**Fixed in:** Session 3 May 2026 — built a validation script (brace balance + line-count check) before pushing. Rebuilt pantry.tsx and pantry-helpers.ts from known-good git base commits `f7cb9e0` (pantry.tsx) and `f7cb9e0` (pantry-helpers.ts); pushed ingredient-derivations.ts for the first time.
-**Regressed in:** Not a code regression — a process regression. Can recur on any large API write without the validation gate.
-**Check:** ✅ *REGN-003 script (`scripts/validate-before-push.sh`) in place*
-**Guard:** Before any GitHub API file push > 20 KB: (1) count braces/parens in the local buffer, (2) confirm line count matches expected, (3) download the pushed file and re-validate. Never reconstruct a truncated file by appending a manually-written tail — always download → edit → re-validate → push.
-
----
-
-### [REGN-004] — Pantry search focus dumps full ingredient catalog (v3)
-**Description:** Tapping the Pantry search input immediately rendered the entire INGREDIENT_CATALOG (every ingredient grouped by category) as a full-screen SectionList, because `isSearchActive = addName.length > 0 || isFocused`. The result looked identical to the deleted IngredientSearchOverlay and dismissed when the user tapped away.
-**Repro steps:**
-1. Open the Pantry tab.
-2. Tap the "Search or add an ingredient…" input without typing anything.
-3. **Fail:** the entire ingredient catalog appears as a categorised full-screen list.
-4. **Pass:** tapping the input leaves the browse view unchanged; the catalog only appears after 2+ characters are typed.
-**Fixed in:** Commit `c917965` — Session 4 May 2026.
-  - `isSearchActive = addName.trim().length > 0` (removed `|| isFocused`)
-  - `autocompleteSections` returns `[]` when query < 2 chars (removed full-catalog fallback)
-  - Empty state distinguishes 1-char "keep typing" from 2+ "no match + add" CTAs
-**Check:** 🔴 *Update to ✅ after on-device verification in build #57*
-**Guard:** When touching the `isSearchActive` or `autocompleteSections` logic in `pantry.tsx`: confirm the condition does NOT include bare `isFocused` — focus state is only for border styling and the Cancel button. Never use `isFocused` as the trigger to show catalog content.
+**Guard:** Always write source files via the GitHub API (`PUT /repos/.../contents/...`) or via the `/sessions/.../mnt/hone/` workspace mount. Never write through the OneDrive-synced Documents path. If a build fails with an unexpe
