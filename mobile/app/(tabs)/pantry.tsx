@@ -139,6 +139,10 @@ export default function PantryTab() {
   const [addName, setAddName] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  // Debounce ref: Android fires onBlur spuriously during keyboard-resize
+  // re-renders. A 150 ms window absorbs the fake blur without the user
+  // noticing the delay when they genuinely tap away.
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Search is active whenever the input has text — results stay visible while
   // the user picks items without the view snapping back on each selection.
@@ -337,6 +341,11 @@ export default function PantryTab() {
   );
 
   const handleSearchCancel = useCallback(() => {
+    // Clear any pending blur debounce so Cancel fires immediately
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current);
+      blurTimerRef.current = null;
+    }
     setAddName('');
     setIsFocused(false);
     Keyboard.dismiss();
@@ -610,8 +619,19 @@ export default function PantryTab() {
               ref={inputRef}
               value={addName}
               onChangeText={setAddName}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
+              onFocus={() => {
+                if (blurTimerRef.current) {
+                  clearTimeout(blurTimerRef.current);
+                  blurTimerRef.current = null;
+                }
+                setIsFocused(true);
+              }}
+              onBlur={() => {
+                blurTimerRef.current = setTimeout(() => {
+                  blurTimerRef.current = null;
+                  setIsFocused(false);
+                }, 150);
+              }}
               placeholder="Search or add an ingredient…"
               placeholderTextColor={tokens.muted}
               style={{
@@ -646,26 +666,27 @@ export default function PantryTab() {
             ) : null}
           </View>
 
-          {/* Cancel button — only when focused */}
-          {isFocused ? (
-            <Pressable
-              onPress={handleSearchCancel}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Cancel search"
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          {/* Cancel button — always in layout; opacity-hidden when not focused.
+               Conditional render caused a layout shift at focus-time which
+               triggered spurious onBlur on Android (REGN-004 follow-up). */}
+          <Pressable
+            onPress={handleSearchCancel}
+            hitSlop={8}
+            disabled={!isFocused}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel search"
+            style={{ opacity: isFocused ? 1 : 0 }}
+          >
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 14,
+                color: tokens.primary,
+              }}
             >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 14,
-                  color: tokens.primary,
-                }}
-              >
-                Cancel
-              </Text>
-            </Pressable>
-          ) : null}
+              Cancel
+            </Text>
+          </Pressable>
         </View>
 
         {/* Have-it pills card — frozen above results in both modes */}
