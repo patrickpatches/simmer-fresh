@@ -1325,7 +1325,7 @@
     <div class="doc-card-title">Risks & open questions</div>
     <div class="risk-row">
       <div class="risk-badge risk-low">RESOLVED</div>
-      <div class="risk-text"><strong>Mise en place length — expand pattern confirmed.</strong> Patrick confirmed the truncate-at-5 + expand chip pattern (2026-05-04). Show first 5 items; if more exist, show an ochre "Show N more prep tasks" chip below. Tap reveals remaining items with a short fade. Progress counter counts all items, including hidden ones. Prototype above demonstrates this live with 7 tasks (4 visible + 3 behind the expand chip).</div>
+      <div class="risk-text"><strong>Mise en place length — expand pattern confirmed.</strong> Patrick confirmed the expand chip pattern (2026-05-04). Designer set threshold at 4: show first 4 items; if more exist, show an ochre "Show N more prep tasks" chip below item 4. Tap reveals remaining items with a short fade. Chip disappears — no re-collapse. Progress counter counts all items including hidden ones. Rationale for 4 not 5: keeps "Start cooking" CTA above the fold after the ingredients section; 4 is the comfortable single-glance load for prep-mode reading. Prototype demonstrates this live with 7 tasks (4 visible + 3 behind expand chip).</div>
     </div>
     <div class="risk-row">
       <div class="risk-badge risk-med">MED</div>
@@ -1353,7 +1353,7 @@
       <li><strong>At-a-glance row</strong> — render below the recipe header, above the servings selector. Use <span class="code-inline">total_time_minutes</span>, <span class="code-inline">active_time_minutes</span>, <span class="code-inline">difficulty</span>, first cuisine category, and <span class="code-inline">leftover_mode !== 'none'</span> for the leftover indicator.</li>
       <li><strong>What to know block</strong> — render from <span class="code-inline">before_you_start: string[]</span>. Only render if the array has at least 1 item. Max 3 items per schema; if the array is empty, render nothing (no blank card).</li>
       <li><strong>Equipment row</strong> — render from <span class="code-inline">equipment: string[]</span>. Horizontal <span class="code-inline">ScrollView</span> of pills. Conditionally rendered — if array empty, omit the section entirely.</li>
-      <li><strong>Mise en place</strong> — render from <span class="code-inline">mise_en_place: string[]</span>. Each item is a tappable row with a circular checkbox. Tap toggles local state (<span class="code-inline">useState&lt;Set&lt;number&gt;&gt;</span>, session-only, no SQLite write). Progress counter counts <em>all</em> items including collapsed ones. <strong>Expand pattern:</strong> show first 5 items; if <span class="code-inline">mise_en_place.length &gt; 5</span>, render an ochre chip below the 5th item: "Show N more prep tasks" where N = total − 5. Tapping the chip reveals remaining items with a short opacity animation (150ms). Once expanded, the chip disappears — there is no re-collapse. Conditionally rendered if array non-empty.</li>
+      <li><strong>Mise en place</strong> — render from <span class="code-inline">mise_en_place: string[]</span>. Each item is a tappable row with a circular checkbox. Tap toggles local state (<span class="code-inline">useState&lt;Set&lt;number&gt;&gt;</span>, session-only, no SQLite write). Progress counter counts <em>all</em> items including collapsed ones. <strong>Expand pattern — threshold is 4:</strong> show first 4 items; if <span class="code-inline">mise_en_place.length &gt; 4</span>, render an ochre chip below item 4: "Show N more prep tasks" where N = total − 4. Tapping the chip reveals remaining items with a 150ms opacity animation. Once expanded, the chip disappears — no re-collapse. Rationale: 4 keeps the "Start cooking" CTA above the fold on standard phone screens after scrolling through ingredients and equipment. Conditionally rendered if array non-empty.</li>
       <li><strong>Finishing & tasting block</strong> — render from <span class="code-inline">finishing_note?: string</span>. If undefined/empty, render nothing.</li>
       <li><strong>Leftovers & storage block</strong> — render from <span class="code-inline">leftovers_note?: string</span>. If undefined/empty, render nothing.</li>
     </ol>
@@ -1361,7 +1361,4 @@
     <h4>Sections that do NOT change</h4>
     <p>Ingredients, SubstitutionSheet, ServingsSelector, cook steps, hero, back button, favourite/plan/share controls — no changes in this pass.</p>
 
-    <h4>Mise en place checkbox state</h4>
-    <p>Local component state only — <span class="code-inline">const [miseChecked, setMiseChecked] = useState&lt;Set&lt;number&gt;&gt;(new Set())</span>. No SQLite writes. The check state resets when the user navigates away. This is intentional — mise en place is re-run every cook session.</p>
-
-    <h4>Visual
+    <h4>Mise en place

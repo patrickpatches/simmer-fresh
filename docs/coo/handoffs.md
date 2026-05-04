@@ -41,7 +41,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 3. **Equipment row** — from `equipment: string[]`. Horizontal `ScrollView` of pills. Conditionally rendered.
 
-4. **Mise en place** — from `mise_en_place: string[]`. Tappable rows with circular checkboxes, progress counter. State: `useState<Set<number>>(new Set())`, **session-only** (no SQLite write). Left accent `#F2D896` (ochre, existing token). Conditionally rendered. **Expand pattern (confirmed by Patrick 2026-05-04):** show first 5 items; if array length > 5, render an ochre "Show N more prep tasks" chip below item 5 (N = total − 5). Tap reveals remaining items (150ms opacity fade). Chip disappears once expanded — no re-collapse. Progress counter counts all items including hidden ones.
+4. **Mise en place** — from `mise_en_place: string[]`. Tappable rows with circular checkboxes, progress counter. State: `useState<Set<number>>(new Set())`, **session-only** (no SQLite write). Left accent `#F2D896` (ochre, existing token). Conditionally rendered. **Expand pattern — threshold 4 (Designer decision, 2026-05-04):** show first 4 items; if array length > 4, render an ochre "Show N more prep tasks" chip below item 4 (N = total − 4). Tap reveals remaining items (150ms opacity fade). Chip disappears once expanded — no re-collapse. Progress counter counts all items including hidden ones. Threshold is 4 not 5: keeps "Start cooking" CTA above the fold on standard phones after scrolling ingredients and equipment.
 
 5. **Finishing & tasting block** — from `finishing_note?: string`. Left border `#C4A882` (inline only). Conditionally rendered.
 
@@ -515,6 +515,4 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 **From:** Patrick (via COO)
 **Subject:** Stylistic refresh — propose 3 genuinely different directions with mockups
 **What's done by Designer (this session, 30 Apr):**
-Patrick found the original three levels (Refinement / Medium / Alternative) too visually similar. Designer pivoted to three fundamentally distinct aesthetic worlds:
-
-1. **Direction 1 — Pastel Cool** (`docs/prototypes/dir
+Patrick found the original three levels (Refinement / Medium / Alternative) too vis
