@@ -143,9 +143,14 @@ export default function PantryTab() {
   // update mid-gesture to cause a race condition.
   const [searchMode, setSearchMode] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  // Blur debounce — gives suggestion taps 200 ms to fire before
+  // search mode exits. handleSearchSelect clears this on each tap.
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Search is active whenever the user has explicitly entered search mode.
-  const isSearchActive = searchMode;
+  // showDropdown: show the inline suggestion list when the user has typed
+  // ≥1 character. Browse content (pills, banner, carousel) is ALWAYS
+  // visible underneath — no full-screen mode switch.
+  const showDropdown = searchMode && addName.trim().length >= 1;
 
   const [addedAt, setAddedAt] = useState<Record<string, number>>({});
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
@@ -330,23 +335,32 @@ export default function PantryTab() {
 
   const handleSearchSelect = useCallback(
     (entry: CatalogEntry) => {
+      // Cancel pending blur dismissal so search mode stays open
+      if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
       addByName(entry.name, entry.category);
-      setAddName(''); // Clear for next add — search mode stays open
+      setAddName('');
+      // Keep keyboard open for rapid multi-add
+      requestAnimationFrame(() => inputRef.current?.focus());
     },
     [addByName],
   );
 
-  const handleSearchCancel = useCallback(() => {
-    setAddName('');
-    setSearchMode(false);
-    Keyboard.dismiss();
+  // handleSearchBlur — fires when TextInput loses focus.
+  // Debounced 200 ms so suggestion taps can fire first.
+  const handleSearchBlur = useCallback(() => {
+    blurTimerRef.current = setTimeout(() => {
+      setSearchMode(false);
+      setAddName('');
+    }, 200);
   }, []);
 
   const handleAddCustom = useCallback(() => {
     const trimmed = addName.trim();
     if (!trimmed) return;
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
     addByName(trimmed);
     setAddName('');
+    requestAnimationFrame(() => inputRef.current?.focus());
   }, [addName, addByName]);
 
   const removeItem = useCallback(
@@ -571,13 +585,12 @@ export default function PantryTab() {
           ) : null}
         </View>
 
-        {/* Search bar — real TextInput (v3: no more tappable Pressable → overlay) */}
+        {/* Search bar — v4: full-width, no Cancel, blur exits search mode */}
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 10,
-            marginBottom: 14,
+            marginBottom: 8,
           }}
         >
           <View
@@ -647,6 +660,7 @@ export default function PantryTab() {
                 spellCheck={false}
                 returnKeyType="done"
                 onSubmitEditing={handleAddCustom}
+                onBlur={handleSearchBlur}
               />
             )}
             {/* Android clear button — only in search mode */}
@@ -667,26 +681,6 @@ export default function PantryTab() {
               </Pressable>
             ) : null}
           </View>
-
-          {/* Cancel button — always in layout so no width shift on mode change */}
-          <Pressable
-            onPress={handleSearchCancel}
-            hitSlop={8}
-            disabled={!searchMode}
-            accessibilityRole="button"
-            accessibilityLabel="Cancel search"
-            style={{ opacity: searchMode ? 1 : 0 }}
-          >
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 14,
-                color: tokens.primary,
-              }}
-            >
-              Cancel
-            </Text>
-          </Pressable>
         </View>
 
         {/* Have-it pills card — frozen above results in both modes */}
@@ -715,76 +709,27 @@ export default function PantryTab() {
         ) : null}
       </View>
 
-      {/* ── Content: browse mode or inline autocomplete ─────────────── */}
-      {isSearchActive ? (
-        /* ── Autocomplete results ────────────────────────────────────── */
-        autocompleteSections.length === 0 ? (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 28,
-              paddingBottom: insets.bottom + 60,
-            }}
-          >
-            {addName.trim().length < 2 ? (
-              /* 1-char state — catalog needs 2+ chars to filter meaningfully */
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 14,
-                  color: tokens.muted,
-                  textAlign: 'center',
-                }}
-              >
-                Type an ingredient to add it to your pantry…
-              </Text>
-            ) : (
-              /* 2+ chars with no match — offer to add as custom */
-              <>
-                <Text
-                  style={{
-                    fontFamily: fonts.sans,
-                    fontSize: 14,
-                    color: tokens.muted,
-                    textAlign: 'center',
-                    marginBottom: 16,
-                  }}
-                >
-                  No match — press Enter or tap "+" to add it anyway.
-                </Text>
-                <Pressable
-                  onPress={handleAddCustom}
-                  style={({ pressed }) => ({
-                    paddingVertical: 11,
-                    paddingHorizontal: 20,
-                    backgroundColor: tokens.primaryLight,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: 'rgba(232,184,48,0.35)',
-                    opacity: pressed ? 0.75 : 1,
-                  })}
-                >
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 14,
-                      color: tokens.primary,
-                    }}
-                  >
-                    + Add "{addName.trim()}"
-                  </Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        ) : (
+      {/* ── Inline suggestion dropdown ─────────────────────────────────── */}
+      {/* Appears between search bar and pills — browse content always stays  */}
+      {/* visible. blurTimerRef gives 200 ms for a suggestion tap to land.   */}
+      {showDropdown && autocompleteSections.length > 0 ? (
+        <View
+          style={{
+            maxHeight: 280,
+            marginHorizontal: 20,
+            marginBottom: 12,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(232,184,48,0.28)',
+            backgroundColor: tokens.cream,
+            overflow: 'hidden',
+          }}
+        >
           <SectionList<CatalogEntry, AutocompleteSection>
             sections={autocompleteSections}
             keyExtractor={(item, idx) => item.name + idx}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
+            keyboardDismissMode="none"
             stickySectionHeadersEnabled
             renderSectionHeader={({ section: { title } }) => (
               <View
@@ -793,8 +738,8 @@ export default function PantryTab() {
                   alignItems: 'center',
                   gap: 7,
                   backgroundColor: tokens.bg,
-                  paddingHorizontal: 20,
-                  paddingVertical: 9,
+                  paddingHorizontal: 16,
+                  paddingVertical: 7,
                   borderBottomWidth: 1,
                   borderBottomColor: tokens.line,
                 }}
@@ -819,7 +764,6 @@ export default function PantryTab() {
               const alias = matchedAlias(item, addName.trim());
               const alreadyAdded = inPantrySet.has(item.name.toLowerCase().trim());
               const isLast = index === section.data.length - 1;
-
               return (
                 <Pressable
                   onPress={() => !alreadyAdded && handleSearchSelect(item)}
@@ -832,9 +776,9 @@ export default function PantryTab() {
                   style={({ pressed }) => ({
                     flexDirection: 'row',
                     alignItems: 'center',
-                    paddingHorizontal: 20,
-                    paddingVertical: 11,
-                    minHeight: 46,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    minHeight: 44,
                     backgroundColor: tokens.cream,
                     borderBottomWidth: isLast ? 0 : 1,
                     borderBottomColor: tokens.line,
@@ -842,15 +786,14 @@ export default function PantryTab() {
                     opacity: alreadyAdded ? 0.45 : pressed ? 0.8 : 1,
                   })}
                 >
-                  {/* Emoji inline with name — same flex row, no reflow risk */}
-                  <Text style={{ fontSize: 18, width: 26, textAlign: 'center', lineHeight: 22 }}>
+                  <Text style={{ fontSize: 17, width: 26, textAlign: 'center', lineHeight: 22 }}>
                     {CATEGORY_EMOJI[item.category] ?? '📦'}
                   </Text>
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
                         fontSize: 14,
-                        fontFamily: alreadyAdded ? fonts.sans : fonts.sans,
+                        fontFamily: fonts.sans,
                         color: alreadyAdded ? tokens.muted : tokens.ink,
                         lineHeight: 19,
                       }}
@@ -887,13 +830,88 @@ export default function PantryTab() {
                 </Pressable>
               );
             }}
-            contentContainerStyle={{
-              paddingBottom: insets.bottom + 60,
-            }}
+            ListFooterComponent={
+              addName.trim().length >= 1 ? (
+                <Pressable
+                  onPress={handleAddCustom}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 11,
+                    minHeight: 44,
+                    backgroundColor: pressed ? 'rgba(232,184,48,0.10)' : tokens.cream,
+                    gap: 10,
+                  })}
+                >
+                  <View style={{ width: 26, alignItems: 'center' }}>
+                    <Icon name="plus" size={16} color={tokens.primary} />
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontFamily: fonts.sans,
+                      color: tokens.primary,
+                    }}
+                  >
+                    Add "{addName.trim()}" as custom
+                  </Text>
+                </Pressable>
+              ) : null
+            }
           />
-        )
-      ) : (
-        /* ── Browse mode ─────────────────────────────────────────────── */
+        </View>
+      ) : showDropdown && autocompleteSections.length === 0 ? (
+        /* No catalog match — offer custom add inline */
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 12,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(232,184,48,0.22)',
+            backgroundColor: tokens.cream,
+            overflow: 'hidden',
+          }}
+        >
+          <Pressable
+            onPress={handleAddCustom}
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              backgroundColor: pressed ? 'rgba(232,184,48,0.10)' : tokens.cream,
+              gap: 10,
+            })}
+          >
+            <Icon name="plus" size={16} color={tokens.primary} />
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: fonts.sans,
+                  color: tokens.primary,
+                }}
+              >
+                Add "{addName.trim()}" as custom
+              </Text>
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontFamily: fonts.sans,
+                  color: tokens.muted,
+                  marginTop: 2,
+                }}
+              >
+                No match in catalog
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {/* ── Browse mode — always visible ─────────────────────────────────── */}
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
