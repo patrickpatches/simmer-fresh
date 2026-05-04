@@ -137,19 +137,15 @@ export default function PantryTab() {
 
   // Search state
   const [addName, setAddName] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  // searchMode is set by pressing the Pressable search bar (not by TextInput
+  // onFocus). This sidesteps Android's IME-resize → spurious-onBlur cycle
+  // entirely: the autoFocus TextInput opens already-focused, with no state
+  // update mid-gesture to cause a race condition.
+  const [searchMode, setSearchMode] = useState(false);
   const inputRef = useRef<TextInput>(null);
-  // Debounce ref: Android fires onBlur spuriously during keyboard-resize
-  // re-renders. A 150 ms window absorbs the fake blur without the user
-  // noticing the delay when they genuinely tap away.
-  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Search is active whenever the input has text — results stay visible while
-  // the user picks items without the view snapping back on each selection.
-  // NOTE: isFocused intentionally excluded — focus alone used to dump the
-  // entire INGREDIENT_CATALOG as a full-screen list, which looked like the
-  // old IngredientSearchOverlay and confused users (REGN-004).
-  const isSearchActive = addName.trim().length > 0;
+  // Search is active whenever the user has explicitly entered search mode.
+  const isSearchActive = searchMode;
 
   const [addedAt, setAddedAt] = useState<Record<string, number>>({});
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
@@ -335,19 +331,14 @@ export default function PantryTab() {
   const handleSearchSelect = useCallback(
     (entry: CatalogEntry) => {
       addByName(entry.name, entry.category);
-      // Don't collapse — let the user keep adding multiple items
+      setAddName(''); // Clear for next add — search mode stays open
     },
     [addByName],
   );
 
   const handleSearchCancel = useCallback(() => {
-    // Clear any pending blur debounce so Cancel fires immediately
-    if (blurTimerRef.current) {
-      clearTimeout(blurTimerRef.current);
-      blurTimerRef.current = null;
-    }
     setAddName('');
-    setIsFocused(false);
+    setSearchMode(false);
     Keyboard.dismiss();
   }, []);
 
@@ -598,12 +589,12 @@ export default function PantryTab() {
               backgroundColor: tokens.surface ?? tokens.cream,
               borderRadius: 14,
               borderWidth: 1.5,
-              borderColor: isFocused
+              borderColor: searchMode
                 ? tokens.primary
                 : 'rgba(232,184,48,0.22)',
               paddingHorizontal: 14,
               paddingVertical: 12,
-              ...(isFocused
+              ...(searchMode
                 ? {
                     shadowColor: tokens.primary,
                     shadowOffset: { width: 0, height: 0 },
@@ -615,40 +606,51 @@ export default function PantryTab() {
             }}
           >
             <Icon name="search" size={15} color={tokens.muted} />
-            <TextInput
-              ref={inputRef}
-              value={addName}
-              onChangeText={setAddName}
-              onFocus={() => {
-                if (blurTimerRef.current) {
-                  clearTimeout(blurTimerRef.current);
-                  blurTimerRef.current = null;
-                }
-                setIsFocused(true);
-              }}
-              onBlur={() => {
-                blurTimerRef.current = setTimeout(() => {
-                  blurTimerRef.current = null;
-                  setIsFocused(false);
-                }, 150);
-              }}
-              placeholder="Search or add an ingredient…"
-              placeholderTextColor={tokens.muted}
-              style={{
-                flex: 1,
-                fontFamily: fonts.sans,
-                fontSize: 15,
-                color: tokens.ink,
-                paddingVertical: 0,
-              }}
-              autoCorrect={false}
-              autoCapitalize="none"
-              spellCheck={false}
-              returnKeyType="done"
-              onSubmitEditing={handleAddCustom}
-            />
-            {/* Android clear button — iOS uses clearButtonMode */}
-            {addName.length > 0 && Platform.OS === 'android' ? (
+            {!searchMode ? (
+              /* Tappable placeholder — reliable Android entry point.
+                 autoFocus on the TextInput below handles keyboard open;
+                 no onFocus/onBlur state juggling needed. */
+              <Pressable
+                onPress={() => setSearchMode(true)}
+                style={{ flex: 1 }}
+                accessibilityRole="button"
+                accessibilityLabel="Search or add an ingredient"
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 15,
+                    color: tokens.muted,
+                    paddingVertical: 0,
+                  }}
+                >
+                  Search or add an ingredient…
+                </Text>
+              </Pressable>
+            ) : (
+              <TextInput
+                ref={inputRef}
+                autoFocus
+                value={addName}
+                onChangeText={setAddName}
+                placeholder="Search or add an ingredient…"
+                placeholderTextColor={tokens.muted}
+                style={{
+                  flex: 1,
+                  fontFamily: fonts.sans,
+                  fontSize: 15,
+                  color: tokens.ink,
+                  paddingVertical: 0,
+                }}
+                autoCorrect={false}
+                autoCapitalize="none"
+                spellCheck={false}
+                returnKeyType="done"
+                onSubmitEditing={handleAddCustom}
+              />
+            )}
+            {/* Android clear button — only in search mode */}
+            {addName.length > 0 && searchMode && Platform.OS === 'android' ? (
               <Pressable
                 onPress={() => setAddName('')}
                 hitSlop={10}
@@ -666,16 +668,14 @@ export default function PantryTab() {
             ) : null}
           </View>
 
-          {/* Cancel button — always in layout; opacity-hidden when not focused.
-               Conditional render caused a layout shift at focus-time which
-               triggered spurious onBlur on Android (REGN-004 follow-up). */}
+          {/* Cancel button — always in layout so no width shift on mode change */}
           <Pressable
             onPress={handleSearchCancel}
             hitSlop={8}
-            disabled={!isFocused}
+            disabled={!searchMode}
             accessibilityRole="button"
             accessibilityLabel="Cancel search"
-            style={{ opacity: isFocused ? 1 : 0 }}
+            style={{ opacity: searchMode ? 1 : 0 }}
           >
             <Text
               style={{
@@ -738,7 +738,7 @@ export default function PantryTab() {
                   textAlign: 'center',
                 }}
               >
-                Keep typing to search ingredients…
+                Type an ingredient to add it to your pantry…
               </Text>
             ) : (
               /* 2+ chars with no match — offer to add as custom */
