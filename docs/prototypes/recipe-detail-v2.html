@@ -1079,9 +1079,9 @@
             <div class="mise-title">Mise en place</div>
             <div class="mise-sub">Do this before you heat anything</div>
           </div>
-          <div class="mise-progress"><span id="miseCount">0</span> / 4 done</div>
+          <div class="mise-progress"><span id="miseCount">0</span> / 7 done</div>
         </div>
-        <div class="mise-items">
+        <div class="mise-items" id="miseItems">
           <div class="mise-item" onclick="toggleMise(this)">
             <div class="mise-check"></div>
             <div class="mise-text">Grate Pecorino Romano finely — not shredded, grated. Microplane preferred. Set aside.</div>
@@ -1098,6 +1098,31 @@
             <div class="mise-check"></div>
             <div class="mise-text">Get a large pot of water on to boil. Salt it generously — it should taste like the sea.</div>
           </div>
+          <!-- Collapsed items (shown after expand) -->
+          <div class="mise-item mise-hidden" onclick="toggleMise(this)" style="display:none">
+            <div class="mise-check"></div>
+            <div class="mise-text">Have a ladle or heatproof cup ready beside the pot — scoop 200ml of pasta water before you drain. Once the pasta is out, the water goes fast.</div>
+          </div>
+          <div class="mise-item mise-hidden" onclick="toggleMise(this)" style="display:none">
+            <div class="mise-check"></div>
+            <div class="mise-text">Set serving bowls on the bench. Warm them briefly under the hot tap and dry — cold plates set the sauce the moment it hits.</div>
+          </div>
+          <div class="mise-item mise-hidden" onclick="toggleMise(this)" style="display:none">
+            <div class="mise-check"></div>
+            <div class="mise-text">Have the rendered guanciale off-heat and ready to add back in. It goes into the pan with the pasta, before the egg mixture — don't skip this step.</div>
+          </div>
+        </div>
+        <!-- Expand chip -->
+        <div id="miseExpandRow" style="padding:4px 14px 12px">
+          <button id="miseExpandBtn" onclick="expandMise()" style="
+            display:flex; align-items:center; gap:6px;
+            background:rgba(242,216,150,0.09); border:1px solid rgba(242,216,150,0.22);
+            border-radius:20px; padding:7px 13px;
+            font-family:var(--font-sans); font-size:12px; color:var(--ochre);
+            cursor:pointer; width:100%; justify-content:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F2D896" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            Show 3 more prep tasks
+          </button>
         </div>
       </div>
 
@@ -1299,8 +1324,8 @@
   <div class="doc-card" style="margin-bottom:28px">
     <div class="doc-card-title">Risks & open questions</div>
     <div class="risk-row">
-      <div class="risk-badge risk-high">HIGH</div>
-      <div class="risk-text"><strong>Mise en place length.</strong> Some recipes (e.g. roast lamb) have 8–12 mise en place tasks. At that length the section needs either a collapse affordance or a max-visible+expand pattern. Carbonara has 4 which fits cleanly — do not assume 4 is the upper bound when designing the component.</div>
+      <div class="risk-badge risk-low">RESOLVED</div>
+      <div class="risk-text"><strong>Mise en place length — expand pattern confirmed.</strong> Patrick confirmed the truncate-at-5 + expand chip pattern (2026-05-04). Show first 5 items; if more exist, show an ochre "Show N more prep tasks" chip below. Tap reveals remaining items with a short fade. Progress counter counts all items, including hidden ones. Prototype above demonstrates this live with 7 tasks (4 visible + 3 behind the expand chip).</div>
     </div>
     <div class="risk-row">
       <div class="risk-badge risk-med">MED</div>
@@ -1328,7 +1353,7 @@
       <li><strong>At-a-glance row</strong> — render below the recipe header, above the servings selector. Use <span class="code-inline">total_time_minutes</span>, <span class="code-inline">active_time_minutes</span>, <span class="code-inline">difficulty</span>, first cuisine category, and <span class="code-inline">leftover_mode !== 'none'</span> for the leftover indicator.</li>
       <li><strong>What to know block</strong> — render from <span class="code-inline">before_you_start: string[]</span>. Only render if the array has at least 1 item. Max 3 items per schema; if the array is empty, render nothing (no blank card).</li>
       <li><strong>Equipment row</strong> — render from <span class="code-inline">equipment: string[]</span>. Horizontal <span class="code-inline">ScrollView</span> of pills. Conditionally rendered — if array empty, omit the section entirely.</li>
-      <li><strong>Mise en place</strong> — render from <span class="code-inline">mise_en_place: string[]</span>. Each item is a tappable row with a circular checkbox. Tap toggles local state (no persistence needed — this is session-only). Progress counter updates reactively. Conditionally rendered.</li>
+      <li><strong>Mise en place</strong> — render from <span class="code-inline">mise_en_place: string[]</span>. Each item is a tappable row with a circular checkbox. Tap toggles local state (<span class="code-inline">useState&lt;Set&lt;number&gt;&gt;</span>, session-only, no SQLite write). Progress counter counts <em>all</em> items including collapsed ones. <strong>Expand pattern:</strong> show first 5 items; if <span class="code-inline">mise_en_place.length &gt; 5</span>, render an ochre chip below the 5th item: "Show N more prep tasks" where N = total − 5. Tapping the chip reveals remaining items with a short opacity animation (150ms). Once expanded, the chip disappears — there is no re-collapse. Conditionally rendered if array non-empty.</li>
       <li><strong>Finishing & tasting block</strong> — render from <span class="code-inline">finishing_note?: string</span>. If undefined/empty, render nothing.</li>
       <li><strong>Leftovers & storage block</strong> — render from <span class="code-inline">leftovers_note?: string</span>. If undefined/empty, render nothing.</li>
     </ol>
@@ -1339,44 +1364,4 @@
     <h4>Mise en place checkbox state</h4>
     <p>Local component state only — <span class="code-inline">const [miseChecked, setMiseChecked] = useState&lt;Set&lt;number&gt;&gt;(new Set())</span>. No SQLite writes. The check state resets when the user navigates away. This is intentional — mise en place is re-run every cook session.</p>
 
-    <h4>Visual tokens (all existing)</h4>
-    <div class="tag-row">
-      <div class="tag gold">--gold #E8B830</div>
-      <div class="tag">--surface #1A1A1A</div>
-      <div class="tag">--surface-low #0D0D0D</div>
-      <div class="tag blue">blue framing #5B8FD4</div>
-      <div class="tag">warm-brown #C4A882</div>
-      <div class="tag">--ochre #F2D896 (mise accent)</div>
-    </div>
-    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not new tokens, just RGB values used inline for these two specific components. Do not add them to <span class="code-inline">tokens.ts</span>.</p>
-
-    <h4>Conditional rendering rule</h4>
-    <p>Every new section is conditionally rendered — if the data field is absent or empty, the section does not appear and does not leave a gap. The page degrades gracefully for recipes that haven't been expanded yet (i.e. most of the current seed library). A recipe with no <span class="code-inline">before_you_start</span>, <span class="code-inline">equipment</span>, <span class="code-inline">mise_en_place</span>, <span class="code-inline">finishing_note</span>, or <span class="code-inline">leftovers_note</span> should look exactly like the current page.</p>
-
-    <h4>Files to touch</h4>
-    <ul>
-      <li><span class="code-inline">mobile/app/recipe/[id].tsx</span> — add the 6 new section renderers</li>
-      <li><span class="code-inline">mobile/src/data/types.ts</span> — already done in the schema pass</li>
-      <li>No new component files required — all sections are small enough to live inline in the screen file</li>
-    </ul>
-
-    <h4>Sequencing</h4>
-    <p>Do not start this pass until: (1) schema pass is committed, (2) at least Carbonara's seed data has been expanded by the Culinary Verifier. You need real data to QA the new sections. Testing with empty fields (everything hidden) doesn't verify the layout.</p>
-  </div>
-</div>
-
-<script>
-  let servings = 2;
-  function changeServings(delta) {
-    servings = Math.max(1, Math.min(8, servings + delta));
-    document.getElementById('servCount').textContent = servings;
-  }
-
-  function toggleMise(el) {
-    el.classList.toggle('done');
-    const done = document.querySelectorAll('.mise-item.done').length;
-    document.getElementById('miseCount').textContent = done;
-  }
-</script>
-</body>
-</html>
+    <h4>Visual
