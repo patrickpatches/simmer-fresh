@@ -77,7 +77,7 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 
 ---
 
-### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (DECISION-009 — recipe schema expansion)
+### HANDOFF → Senior Engineer · 2026-05-05 · ✅ DONE (DECISION-009 — recipe schema expansion)
 **From:** Patrick (via COO)
 **Subject:** Add 8 new fields to the Recipe Zod schema for the full recipe template
 **Why:** DECISION-009 adopts a full 8-section recipe template across every recipe in the database. The cook authors content; you provide the schema fields; Designer designs the page; you implement the UI in a second pass after Designer ships. This is the additive schema work that unblocks both cook (long-running) and Designer (page redesign).
@@ -97,6 +97,8 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 5. Write an ADR (next number) covering the schema expansion.
 **Files touched:** `mobile/src/data/types.ts`, `docs/adr/NNN-recipe-template-expansion.md`
 **Cost:** ~1-2 hours.
+**Completed:** 2026-05-04. Commits: types.ts `1351e4a079b1`, seed-recipes.ts `b1a824c69b37`, ADR-002 `6a9fa6f0009d`.
+Notes: DifficultyLevel enum normalised (Easy→beginner, Intermediate→intermediate, Involved→advanced) in same commit. All 45 seed-recipe difficulty values migrated. time_min kept during migration — deprecation deferred to future ADR once all recipes have total_time_minutes populated.
 **Sequencing:** Can be done in any order relative to Pantry v3 work — additive schema doesn't conflict with Pantry refactor.
 **Blocks:** Cook's seed-recipes.ts repopulation (she can author into source `.md` files in `docs/coo/culinary-research/` in parallel; only the typed seed file blocks on this).
 
