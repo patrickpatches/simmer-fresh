@@ -25,6 +25,23 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (after Patrick flips repo private)
+**From:** Patrick (via COO)
+**Subject:** Rotate the GitHub PAT and update the embedded remote URL
+**Why:** Per DECISION-010, the repo just went private. The GitHub PAT embedded in `.git/config` remote URL was visible during the public period. Standard hygiene: rotate the token, update the remote, verify push/pull still works.
+**Pre-condition:** Patrick has flipped the repo to private on GitHub. Verify by visiting `github.com/patrickpatches/hone` in an incognito window — should show 404 or login prompt.
+**What's needed:**
+1. Patrick generates a new fine-grained PAT in GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens. Scopes: `repo` (read + write) + `workflow`. Expiry: ~365 days, enough to comfortably reach launch.
+2. Engineer (or Patrick) updates the `.git/config` remote URL with the new token, replacing the old one. The format is `https://<username>:<token>@github.com/patrickpatches/hone.git`.
+3. Engineer runs a test push (e.g., a tiny commit to `docs/` or a no-op trailing newline) to verify the new token works end-to-end.
+4. Patrick revokes the old PAT in GitHub Settings (so even if it was scraped during the public window, it's now dead).
+5. Update `CLAUDE.md` Part 3 with the new PAT expiry date if the previous date was hardcoded.
+**Files touched:** `.git/config` (local only — never committed), `CLAUDE.md` if expiry date is hardcoded
+**Cost:** ~10 minutes.
+**Blocks:** Nothing — current PAT keeps working until revoked. But should be done within the next session for hygiene.
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-04 · OPEN (DECISION-008 — recipe detail UI, second pass)
 **From:** Product Designer
 **Subject:** Implement the 6 new recipe-detail sections from `docs/prototypes/recipe-detail-v2.html`
@@ -102,10 +119,11 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 
 ---
 
-### HANDOFF → Product Designer · 2026-05-05 · DONE (delivered 2026-05-04)
-**Delivered:** `docs/prototypes/recipe-detail-v2.html` — full 8-section Carbonara prototype. At-a-glance row, before-you-start framing block (blue), equipment pills, mise en place checkboxes (ochre), cook steps unchanged, finishing block (warm-brown), leftovers block. Engineer handoff + conditional-rendering rules + risks section included.
+### HANDOFF → Product Designer · 2026-05-05 · DONE ✅ (delivered 2026-05-04 — verified by COO 5 May, no delta against DECISION-009)
+**Delivered:** `docs/prototypes/recipe-detail-v2.html` — full 10-section Carbonara prototype. Hero, title/tagline/attribution, at-a-glance row (5 facts horizontal, <2s read), before-you-start framing block (blue), servings selector, ingredients with swap chips, equipment (gold-tint pills), mise en place (ochre, lighter type, no photos, tappable checkboxes, expand chip at 4), start cooking CTA, cook steps (unchanged), finishing & tasting (warm-brown framing, italic chef voice), leftovers (low surface, muted), attribution footer. Engineer handoff + conditional-rendering rules + risks section included. Cognitive-mode distinction (mise = fridge-open, cook steps = hands-wet) is the core of the design.
+**Note:** COO's later "8-section template" wording was a counting error — referring to *new* sections being added, not total. Designer's prototype correctly shipped with all 10. Decision log corrected.
 **From:** Patrick (via COO)
-**Subject:** Redesign the recipe-detail page to display the new 8-section template
+**Subject:** Redesign the recipe-detail page to display the new 10-section template
 **Why:** DECISION-009 adopts a full recipe template. Each recipe now has additional sections — at-a-glance, before-you-start, equipment, mise en place, finishing & tasting, leftovers — that the current recipe page doesn't surface. The page needs to be redesigned with the right typographic and visual hierarchy. This is the page that defines whether Hone reads as a cookbook or as a recipe app.
 **What's needed:**
 1. Mockup the new recipe-detail page in `docs/prototypes/recipe-detail-v2.html`. Show one recipe end to end (use Pasta Carbonara since it's the canonical reference).
@@ -126,24 +144,51 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 
 ---
 
-### HANDOFF → Culinary Verifier · 2026-05-05 · OPEN (DECISION-009 — populate full template across the database)
+### HANDOFF → Culinary Verifier · 2026-05-05 · IN PROGRESS (DECISION-009 — Batch 1 DONE ✅, Batch 2 open)
 **From:** Patrick (via COO)
-**Subject:** Apply full 8-section recipe template to every recipe in the database
-**Why:** DECISION-009 expanded scope from the 17 priority recipes to every recipe in `mobile/src/data/seed-recipes.ts` plus the six new recipes you're currently writing in `docs/coo/culinary-research/`. Every recipe gets the full template treatment. Patrick: *"I prefer to fix every single recipe, everyone in my database."*
-**What's needed:**
-1. Re-read your updated brief at `docs/coo/specialists/culinary-verifier.md` — item 2 under "What you own" now defines the template structure with all 10 numbered points.
-2. **Six new recipes (in flight):** apply the full template to chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel as you write them. If any are already done in the old shape, expand them.
-3. **Existing seed library (~28 recipes):** walk through `mobile/src/data/seed-recipes.ts` and write expansion notes for each recipe in `docs/coo/culinary-research/<recipe-slug>.md` with the full template populated. Do these in priority order — the 11 launch recipes already in the seed library first (carbonara, bolognese, butter chicken, green curry, smash burger, roast chicken, pavlova, barramundi, shawarma, hummus, pad thai), then the others.
-4. For each recipe, the additions you're authoring:
-   - At-a-glance numbers (total time minutes, active time minutes, difficulty)
-   - 1-3 "what to know" framings
-   - Equipment list
-   - Mise en place tasks (discrete pre-heat prep)
-   - Finishing & tasting paragraph
-   - Leftovers & storage note
-5. Output to the per-recipe markdown files in `docs/coo/culinary-research/`. Engineer will move content into seed-recipes.ts in their second pass.
-**Cost:** ~30 min per recipe × ~30 recipes = ~15 hours of cook work, parallelisable across multiple sessions.
-**Sequencing:** This work CAN proceed before Engineer ships the schema and before Designer ships the page redesign — markdown source files are unstructured. Move at your pace.
+**Subject:** Apply full 10-section recipe template to every recipe in the database
+**Why:** DECISION-009 expanded scope from the 17 priority recipes to every recipe in `mobile/src/data/seed-recipes.ts` plus the six new recipes in `docs/coo/culinary-research/`. Every recipe gets the full template treatment. Patrick: *"I prefer to fix every single recipe, everyone in my database."*
+
+**BATCH 1 — Six new recipes — DONE ✅ (2026-05-05)**
+All six new recipe files written in `docs/coo/culinary-research/` with full 10-section template:
+- `chicken-schnitzel.md` ✅ — photography priority
+- `chicken-vegetable-stir-fry.md` ✅
+- `beef-lasagne.md` ✅ — after Marcella Hazan's Bolognese method
+- `roast-lamb-rosemary-garlic.md` ✅
+- `fish-and-chips.md` ✅
+- `falafel.md` ✅ — Levantine; Palestinian/Lebanese/Syrian/Jordanian attribution; no single chef fabricated
+
+Each carries: chef/traditional attribution, Australian English, metric units, substitutions with quality flags, per DECISION-007 every ingredient has `scales` flag + `scaling_note` where chef knowledge changes the answer, photography shot list.
+
+**BATCH 2 — Existing seed library — OPEN (next session)**
+Walk through `mobile/src/data/seed-recipes.ts` and write expansion notes for each recipe in `docs/coo/culinary-research/<recipe-slug>.md` with the full template populated.
+
+Priority order (11 launch-priority first):
+- [ ] carbonara
+- [ ] bolognese
+- [ ] butter-chicken
+- [ ] green-curry
+- [ ] smash-burger
+- [ ] roast-chicken
+- [ ] pavlova
+- [ ] barramundi
+- [ ] shawarma
+- [ ] hummus
+- [ ] pad-thai
+- [ ] (remaining ~17 recipes after launch priority set)
+
+For each recipe, additions to author:
+- At-a-glance numbers (total_time_minutes, active_time_minutes, difficulty)
+- 1–3 "what to know" framings
+- Equipment list
+- Mise en place tasks (discrete pre-heat prep)
+- Finishing & tasting paragraph
+- Leftovers & storage note
+- Ingredient `scales` flags + `scaling_note` where chef knowledge matters
+
+Output to per-recipe `.md` files in `docs/coo/culinary-research/`. Engineer migrates content into seed-recipes.ts in their second pass.
+**Cost remaining:** ~30 min per recipe × ~28 recipes = ~14 hours across multiple sessions.
+**Sequencing:** Proceeds independently — markdown is unstructured, no schema dependency.
 **Blocks:** Engineer's seed-recipes.ts repopulation. Launch quality.
 
 ---
@@ -380,7 +425,7 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 **Files touched:** `docs/prototypes/pantry-v3.html` (new) or update existing
 **Blocks:** Engineer's next Pantry-related work. Patrick reviews the mockup as soon as you ship.
 
-### HANDOFF → Patrick · 2026-05-02 · DONE ✅ (validated 2026-05-05 — REGN-001 + REGN-004 confirmed fixed)
+### HANDOFF → Patrick · 2026-05-02 · OPEN (awaiting on-device validation)
 **From:** Senior Engineer
 **Subject:** Pantry v0.5.0 redesign — install build #90 and smoke-test
 **Why:** Full pantry redesign delivered and committed to main. Build #90 running.
@@ -435,7 +480,7 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 
 **Patrick is offline for the weekend** — the Designer can ship a complete mockup with rationale today; Patrick reviews Monday morning. No live iteration needed mid-session.
 
-### HANDOFF → Culinary & Cultural Verifier · 2026-04-30 · DONE ✅ (six source recipes delivered — confirmed in SYNC NOTE 2026-05-03)
+### HANDOFF → Culinary & Cultural Verifier · 2026-04-30 · OPEN (URGENT — Senior Engineer blocked)
 **From:** Senior Engineer
 **Subject:** Deliver source recipes for 6 new dishes — Senior Engineer cannot proceed without them
 **Why:** Priority 2, Task 3 of the Senior Engineer multi-task handoff requires adding 6 new recipes to `mobile/src/data/seed-recipes.ts`. The original COO handoff (below) says Senior Engineer must block on Culinary Verifier to provide authoritative sources before populating chef attribution. As of 30 April 2026, `docs/coo/culinary-research/` does not exist — no source files have been delivered.
@@ -515,4 +560,151 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 **From:** Patrick (via COO)
 **Subject:** Stylistic refresh — propose 3 genuinely different directions with mockups
 **What's done by Designer (this session, 30 Apr):**
-Patrick found the original three levels (Refinement / Medium / Alternative) too vis
+Patrick found the original three levels (Refinement / Medium / Alternative) too visually similar. Designer pivoted to three fundamentally distinct aesthetic worlds:
+
+1. **Direction 1 — Pastel Cool** (`docs/prototypes/direction-1-pastel.html`)
+   Fraunces + Plus Jakarta Sans. Dulux Piglet blush, sage, lavender, butter, sky. Category-coloured card pills. Soft and tactile — the antithesis of recipe-app beige. Cost: ~2 engineer sessions.
+
+2. **Direction 2 — Bold Magazine** (`docs/prototypes/direction-2-magazine.html`)
+   Space Grotesk throughout. Deep cobalt (#0B1628) surfaces. Recipe titles overlaid directly on full-bleed food photos via gradient scrim — no text below the photo card. Amber (#F0A500) as the only accent. Cost: ~2 engineer sessions.
+
+3. **Direction 3 — Japanese Minimal** (`docs/prototypes/direction-3-minimal.html`)
+   Noto Serif Display + Noto Sans. Browse is a pure typographic list — no cards, no photos. Extreme whitespace. A single vermillion (#CC3311) reserved for the "Start Cooking" CTA only. Best launch story: browse screen looks complete with zero photos. Cost: ~1.5 engineer sessions.
+
+**What Patrick needs to do:** Pick one direction. Reply in the next session with "go with Direction N" and the Designer/Engineer pipeline picks up from there.
+**Files touched:** `docs/prototypes/direction-1-pastel.html`, `docs/prototypes/direction-2-magazine.html`, `docs/prototypes/direction-3-minimal.html`
+**Blocks resolved:** Photography weekend timing depends on Patrick's pick (see Photography Director handoff).
+
+### HANDOFF → Senior Engineer · 2026-05-02 · OPEN — Pantry redesign (new, do before existing multi-task)
+**From:** Product Designer (Patrick confirmed 2 May 2026)
+**Subject:** Implement pantry redesign v2 — search takeover, have-it pills, match card chips (Variant A)
+**Why:** Patrick confirmed Variant A (tap-to-add missing ingredient chips) on 2 May 2026. Pantry is the kill feature — this takes priority over the recipe-add task in the multi-task handoff below. Full spec in `docs/prototypes/pantry-redesign-v2.html` engineer handoff block — open in Chrome, not Cowork panel.
+**What's needed (in priority order):**
+1. **IngredientSearchOverlay** — new full-screen component replacing the broken floating dropdown. Mounts on add-ingredient input focus. Solid `tokens.bg` background, autocomplete SectionList grouped by category, added-this-session pills row at top. File: `mobile/src/components/IngredientSearchOverlay.tsx`.
+2. **Have-it pills row** — horizontal ScrollView of sage pills for `have_it === true` items, above search bar in `ListHeaderComponent`. × to toggle off.
+3. **Gold match banner** — replace the sage `Pressable` pill with a left-gold-accent card (`tokens.primary` left border, `tokens.surface` bg, `tokens.gold-border` outer border).
+4. **Variant A missing-ingredient chips** — reshape `RecipeMatchResult` to expose `missingIngredients: Array<{name, amount, unit, substitutions}>`. Cap at 4 chips visible, "+N more →" for overflow. On tap: chip disappears + 3-second undo banner. Sort substitution-available first. No hint caption. `hitSlop={8}` on each chip `Pressable`.
+5. **Remove percentage badge** from `MatchCard` entirely. "N of X ingredients" + progress bar is sufficient.
+**Files:** `mobile/app/(tabs)/pantry.tsx`, new `mobile/src/components/IngredientSearchOverlay.tsx`
+**Decision reference:** DECISION-008 in `docs/coo/decision-log.md`
+**Blocks:** Pantry is the kill feature — must land before Internal Alpha (22 May milestone).
+
+---
+
+### HANDOFF → Senior Engineer · 2026-04-29 · IN PROGRESS
+**From:** Patrick (via COO)
+**Subject:** Three priority tasks — bundle rename, substitution UI, add 6 new recipes
+**Why:** Patrick made multiple decisions on 29 April that all queue up to Senior Engineer. Sequenced because each unblocks downstream work.
+**Engineer update (30 Apr 2026):**
+- ✅ Task 1 (bundle ID rename) — COMPLETE. `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json`. ADR written at `docs/adr/001-bundle-id-rename.md`. Play Console steps in the ADR. `splash.backgroundColor` and `android.adaptiveIcon.backgroundColor` also updated to `#111111`.
+- ✅ Task 2 (Substitution UI + photo badge) — COMPLETE. `SubstitutionSheet.tsx` built with `@gorhom/bottom-sheet` `BottomSheetModal`. Wired into `recipe/[id].tsx` — ingredient rows show swap icon when substitutions exist, tap opens sheet. "Photos soon" badge added to `RecipeCard.tsx` (bottom-right, dark scrim). Stage notice banner added to recipe detail. Step photo placeholder added to each step. `BottomSheetModalProvider` added to root `_layout.tsx`.
+- 🔴 Task 3 (add 6 new recipes) — BLOCKED. `docs/coo/culinary-research/` does not exist. Culinary Verifier has not delivered source recipes. See new OPEN handoff below. Do not proceed until Culinary Verifier delivers.
+**What's done:** Patrick approvals + Product Designer specs.
+**What's needed (in this order):**
+
+1. **Rename bundle ID** `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json` and `mobile/package.json`. Verify clean APK build. Write ADR (`docs/adr/NNN-bundle-id-rename.md`). Tell Patrick the Play Console steps for the next AAB upload (new app entry under new package name auto-creates).
+
+2. **Implement Substitution UI + recipe-card photo-badge states** per Product Designer's specs at `docs/prototypes/substitution-sheet.html` and `docs/prototypes/recipe-card-states.html`. Use `@gorhom/bottom-sheet` (`BottomSheetModal`) for the SubstitutionSheet component. Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no schema change needed. Badge text "Photos soon" (not "Stage photos coming soon"). See the handoff block in those HTML files for full spec.
+
+**3a. (NEW per DECISION-007) Schema change — add `scaling_note` to Ingredient.** Do this BEFORE populating the 6 new recipes so cook's scaling annotations have a place to land:
+- In `mobile/src/data/types.ts`: add `scaling_note: z.string().optional()` to the `Ingredient` Zod schema. Update the TypeScript type accordingly.
+- In `mobile/src/data/scale.ts`: when scale.ts produces a scaled ingredient list, the `scaling_note` field passes through unchanged (it's plain English, not math).
+- UI surface: in `mobile/app/recipe/[id].tsx`, when the user changes serving count and an ingredient has a `scaling_note`, surface the note as a small icon/tooltip next to the amount (or in the ingredient row's secondary text). Designer hasn't speced this — use minimal styling consistent with v0.7 dark tokens (muted text, gold info icon if needed). Spec it lightly and ship; we'll iterate.
+- Purely additive change — no breaking effect on existing recipes that don't use the field.
+- Cost: ~1 hour of engineer.
+
+3. **Add 6 new recipes** to `mobile/src/data/seed-recipes.ts` per DECISION-004:
+   - Chicken schnitzel (Australian pub classic)
+   - Easy chicken & vegetable stir-fry (generic Australian weeknight)
+   - Beef lasagne (Australian household staple)
+   - Roast lamb with rosemary & garlic (Sunday roast)
+   - Fish & chips (Australian Friday classic)
+   - Falafel (Levantine)
+   Each must follow the standard schema (chef-attributed if possible — coordinate with Culinary Verifier on sources — substitutions populated with quality flags, `scales` flag set per ingredient, `scaling_note` populated where chef knowledge changes the answer, `whole_food_verified: true` where appropriate, Australian English, metric units, dual-axis categories). Block on Culinary Verifier to provide authoritative source recipes before populating chef attribution.
+
+**Files touched:** `mobile/app.json`, `mobile/package.json`, `mobile/app/recipe/[id].tsx`, `mobile/src/components/SubstitutionSheet.tsx` (new), `mobile/src/components/RecipeCard.tsx` (or equivalent), `mobile/src/data/seed-recipes.ts`, `docs/adr/`
+**Blocks:** All future AAB uploads (#1), v1 feature completeness (#2), photography of new showcase recipes (#3)
+
+### HANDOFF → Patrick · 2026-04-29 · DONE (✅ approved 29 Apr — DECISION-001)
+**From:** COO
+**Subject:** Confirm or amend launch date target
+**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for me unless we need more time." DECISION-001 logged. This handoff is closed — engineer reports referencing it as "still open" reflect stale awareness, not actual status.
+
+_(Substitution UI handoff superseded by the consolidated Senior Engineer multi-task handoff above.)_
+
+### HANDOFF → Product Designer · 2026-04-29 · DONE
+**From:** COO
+**Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
+**Why:** Engineer needs visual specs before building. Must respect terracotta/olive/gold tokens and Playfair/Source Sans 3 type scale. Per DECISION-003, the badge is needed for ~18 non-launch recipes.
+**What's done:** Both specs delivered 29 Apr 2026.
+- `docs/prototypes/substitution-sheet.html` — interactive bottom-sheet prototype. Full flow: ingredient tap → sheet open → substitution select → confirm. All quality pill states (perfect_swap / great_swap / good_swap / compromise), hard_to_find notice, all spacing/token annotations, engineering handoff block.
+- `docs/prototypes/recipe-card-states.html` — recipe card 3 states, recipe detail with/without stage photos, step placeholder, full spec tables. Badge is a dark-scrim pill ("Photos soon") bottom-right of card image — opposite corner from the existing difficulty badge. No collision.
+**Key design decisions:**
+- Badge text: "Photos soon" (not "Stage photos coming soon" — shorter, less internal-feeling)
+- Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no new schema field needed
+- Dark scrim on badge (not sky/blue) so it reads on any photo colour
+- Stage notice appears once in recipe detail (not repeated per step)
+**Files touched:** `docs/prototypes/substitution-sheet.html`, `docs/prototypes/recipe-card-states.html`
+
+---
+
+_(Designer-to-engineer handoff folded into the consolidated Senior Engineer multi-task handoff above. Specs remain at the prototype paths for engineer reference.)_
+
+### HANDOFF → Photography Director · 2026-04-29 · IN PROGRESS (all pre-shoot deliverables delivered 1 May)
+**From:** COO · **Direction update 30 Apr · Schedule update 1 May**
+**Subject:** Build shot lists for showcase 10 + hero-only for everything else
+
+⚠️ **SCHEDULE UPDATE (1 May 2026):** Photography weekend 1 (3–4 May) is **lost** — Patrick is away on personal commitments. Re-baselined: **weekend 2 (10–11 May) is now the de facto first shoot weekend.** Phase A buffer is consumed; no further weekends can slip without launch impact. Patrick is using this morning's window to push design and product work forward instead — see new Product Designer handoff for Pantry redesign.
+
+⚠️ **DIRECTION UPDATE (30 Apr 2026):** Patrick chose the **Dark Dramatic** visual direction. The app bg is now near-black `#111111`. This changes what good photography looks like in the UI — food shot against dark surfaces, dark boards, and dark plates will integrate far more powerfully than food on white or wood. Factor this into all surface and prop recommendations below.
+
+**Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
+**What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
+**What's needed:**
+1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
+2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
+3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable. **Include dark surface recommendations (dark slate, black board, charcoal linen) as preferred first-choice props for all dishes where they work aesthetically.**
+4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match). **For dark direction: slightly richer shadows, deeper blacks, food colours should feel saturated against the dark bg. Avoid over-brightening whites.**
+5. **Schedule recommendation** — propose which 2 showcase recipes to shoot each weekend, ordered by which are easiest to get right first (build Patrick's confidence) and which need most attention.
+**Coordination:** New showcase recipe (chicken schnitzel) needs to be in the seed library before its shoot weekend — coordinate with Senior Engineer on timing.
+**Dark surface prop notes:** The 2×2 browse grid in the approved prototype uses square crops. Props that disappear into the edges of the frame (dark plates, dark boards) look best — the food is the hero, not the surface. Avoid: white plates, bright-wood boards, busy printed linens. Prefer: matte black slate, charcoal/grey linen, raw dark timber, brushed steel.
+**Files touched:** `docs/coo/photography/shot-list-showcase.md`, `docs/coo/photography/shot-list-hero-only.md`, `docs/coo/photography/preflight-checklist.md`, `docs/coo/photography/post-processing-preset.md`
+**Blocks:** First photo weekend (3-4 May 2026)
+
+### HANDOFF → Culinary & Cultural Verifier · 2026-04-29 · OPEN (URGENT)
+**From:** COO
+**Subject:** Audit existing recipes + provide source recipes for 6 NEW additions
+**Why:** v1.0 launch library expanded per DECISION-004. Now ~34 recipes need audit, AND 6 new recipes need authoritative sources before Senior Engineer can populate them.
+**What's done:** Brief at `docs/coo/specialists/culinary-verifier.md`. Recipe library locked per DECISION-004.
+**What's needed:**
+
+1. **Provide source recipes for the 6 new dishes** that Senior Engineer needs to populate. For each, deliver: a chef-attributed source URL (or "traditional" framing if no chef is right), the ingredient list, the steps, plausible substitutions list, the cuisine and type categories, and Australian English check. Output to `docs/coo/culinary-research/<recipe-slug>.md`. The 6:
+   - Chicken schnitzel (consider Adam Liaw or another modern AU chef)
+   - Easy chicken & vegetable stir-fry (Bill Granger, RecipeTinEats Nagi, or "traditional Australian weeknight")
+   - Beef lasagne (consider Marcella Hazan classic or modern AU)
+   - Roast lamb with rosemary & garlic (consider Maggie Beer or "Sunday roast traditional")
+   - Fish & chips (likely "Australian Friday traditional")
+   - Falafel (Levantine — credit cuisine + region; specific chef optional)
+
+2. **Audit pass** on all priority 17 recipes per the format in your brief. Output to `docs/coo/culinary-audit.md`. Required before launch.
+
+3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everywhere.
+
+**Sequence:** Item 1 first (Senior Engineer is blocked on it). Items 2-3 can run in parallel after.
+**Files touched:** `docs/coo/culinary-research/`, `docs/coo/culinary-audit.md`, `mobile/src/data/seed-recipes.ts` (read-only), `docs/prototypes/hone.html` (read-only)
+**Blocks:** Senior Engineer's recipe-add task (#1 above), Photography Director's showcase shoot for chicken schnitzel
+
+### HANDOFF → QA Test Lead · 2026-04-29 · OPEN
+**From:** COO
+**Subject:** Stand up the smoke-test checklist v1
+**Why:** Currently `docs/SMOKE-TEST.md` exists but isn't owned. We need it to be the gate before every build.
+**What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
+**What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
+**Files touched:** `docs/SMOKE-TEST.md`
+**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
+
+---
+
+## Recently completed
+
+_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_
