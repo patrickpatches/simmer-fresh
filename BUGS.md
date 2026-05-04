@@ -11,7 +11,7 @@
 
 | ID | Title | Status | Build | Commit | Notes |
 |---|---|---|---|---|---|
-| REGN-004 | Pantry search flashes / requires multiple taps | FIX ATTEMPTED | #59 | `8c0db90873d7` | Awaiting Patrick on-device validation |
+| REGN-004 | Pantry search flashes / requires multiple taps | VALIDATED ✅ | #59 | `8c0db90873d7` | Patrick validated 2026-05-05 |
 
 ---
 
@@ -19,7 +19,7 @@
 
 | ID | Title | Status | Closed |
 |---|---|---|---|
-| REGN-001 | Recipe card carousel partial-snap | FIX ATTEMPTED | Build #61–#62 — awaiting Patrick validation |
+| REGN-001 | Recipe card carousel partial-snap | VALIDATED ✅ | Build #61–#62 — Patrick validated 2026-05-05 |
 | REGN-002 | OneDrive null-byte corruption | VALIDATED ✅ | Session 28 Apr 2026 — process fix; write via GitHub API only |
 | REGN-003 | pantry.tsx file-write truncation | VALIDATED ✅ | Session 3 May 2026 — full-file rebuild + Python assert validation before push |
 
