@@ -380,7 +380,7 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 **Files touched:** `docs/prototypes/pantry-v3.html` (new) or update existing
 **Blocks:** Engineer's next Pantry-related work. Patrick reviews the mockup as soon as you ship.
 
-### HANDOFF → Patrick · 2026-05-02 · OPEN (awaiting on-device validation)
+### HANDOFF → Patrick · 2026-05-02 · DONE ✅ (validated 2026-05-05 — REGN-001 + REGN-004 confirmed fixed)
 **From:** Senior Engineer
 **Subject:** Pantry v0.5.0 redesign — install build #90 and smoke-test
 **Why:** Full pantry redesign delivered and committed to main. Build #90 running.
