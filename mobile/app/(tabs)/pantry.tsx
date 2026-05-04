@@ -142,7 +142,10 @@ export default function PantryTab() {
 
   // Search is active whenever the input has text — results stay visible while
   // the user picks items without the view snapping back on each selection.
-  const isSearchActive = addName.length > 0 || isFocused;
+  // NOTE: isFocused intentionally excluded — focus alone used to dump the
+  // entire INGREDIENT_CATALOG as a full-screen list, which looked like the
+  // old IngredientSearchOverlay and confused users (REGN-004).
+  const isSearchActive = addName.trim().length > 0;
 
   const [addedAt, setAddedAt] = useState<Record<string, number>>({});
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
@@ -257,7 +260,7 @@ export default function PantryTab() {
     const entries =
       q.length >= 2
         ? INGREDIENT_CATALOG.filter((e) => fuzzyMatchCatalog(e, q))
-        : INGREDIENT_CATALOG;
+        : []; // Don't dump full catalog — wait for 2+ chars
 
     const inPantryNorms = new Set(pantryItems.map((p) => normalizeForMatch(p.name)));
 
@@ -704,39 +707,56 @@ export default function PantryTab() {
               paddingBottom: insets.bottom + 60,
             }}
           >
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 14,
-                color: tokens.muted,
-                textAlign: 'center',
-                marginBottom: 16,
-              }}
-            >
-              No match — press Enter or tap "+" to add it anyway.
-            </Text>
-            <Pressable
-              onPress={handleAddCustom}
-              style={({ pressed }) => ({
-                paddingVertical: 11,
-                paddingHorizontal: 20,
-                backgroundColor: tokens.primaryLight,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: 'rgba(232,184,48,0.35)',
-                opacity: pressed ? 0.75 : 1,
-              })}
-            >
+            {addName.trim().length < 2 ? (
+              /* 1-char state — catalog needs 2+ chars to filter meaningfully */
               <Text
                 style={{
-                  fontFamily: fonts.sansBold,
+                  fontFamily: fonts.sans,
                   fontSize: 14,
-                  color: tokens.primary,
+                  color: tokens.muted,
+                  textAlign: 'center',
                 }}
               >
-                + Add "{addName.trim()}"
+                Keep typing to search ingredients…
               </Text>
-            </Pressable>
+            ) : (
+              /* 2+ chars with no match — offer to add as custom */
+              <>
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 14,
+                    color: tokens.muted,
+                    textAlign: 'center',
+                    marginBottom: 16,
+                  }}
+                >
+                  No match — press Enter or tap "+" to add it anyway.
+                </Text>
+                <Pressable
+                  onPress={handleAddCustom}
+                  style={({ pressed }) => ({
+                    paddingVertical: 11,
+                    paddingHorizontal: 20,
+                    backgroundColor: tokens.primaryLight,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: 'rgba(232,184,48,0.35)',
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 14,
+                      color: tokens.primary,
+                    }}
+                  >
+                    + Add "{addName.trim()}"
+                  </Text>
+                </Pressable>
+              </>
+            )}
           </View>
         ) : (
           <SectionList<CatalogEntry, AutocompleteSection>
