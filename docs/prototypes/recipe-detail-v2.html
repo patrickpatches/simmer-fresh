@@ -953,6 +953,30 @@
         </div>
       </div>
 
+      <!-- CTA ROW -->
+      <div style="display:flex; gap:8px; padding:0 14px 18px;">
+        <button style="
+          flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+          background:var(--gold); border:none; border-radius:12px;
+          padding:12px 10px; font-family:var(--font-sans); font-size:13px;
+          font-weight:700; color:#111111; cursor:pointer; letter-spacing:-0.1px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Plan this recipe
+        </button>
+        <button style="
+          flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+          background:transparent; border:1.5px solid var(--gold); border-radius:12px;
+          padding:12px 10px; font-family:var(--font-sans); font-size:13px;
+          font-weight:600; color:var(--gold); cursor:pointer; letter-spacing:-0.1px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8B830" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="#E8B830" stroke="none"/>
+          </svg>
+          Watch original
+        </button>
+      </div>
+
       <!-- AT A GLANCE -->
       <div class="at-a-glance">
         <div class="glance-label">At a glance</div>
@@ -1361,4 +1385,23 @@
     <h4>Sections that do NOT change</h4>
     <p>Ingredients, SubstitutionSheet, ServingsSelector, cook steps, hero, back button, favourite/plan/share controls — no changes in this pass.</p>
 
-    <h4>Mise en place
+    <h4>Mise en place checkbox state</h4>
+    <p>Local component state only — <span class="code-inline">const [miseChecked, setMiseChecked] = useState&lt;Set&lt;number&gt;&gt;(new Set())</span>. No SQLite writes. The check state resets when the user navigates away. This is intentional — mise en place is re-run every cook session.</p>
+
+    <h4>Visual tokens (all existing)</h4>
+    <div class="tag-row">
+      <div class="tag gold">--gold #E8B830</div>
+      <div class="tag">--surface #1A1A1A</div>
+      <div class="tag">--surface-low #0D0D0D</div>
+      <div class="tag blue">blue framing #5B8FD4</div>
+      <div class="tag">warm-brown #C4A882</div>
+      <div class="tag">--ochre #F2D896 (mise accent)</div>
+    </div>
+    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not new tokens, just RGB values used inline for these two specific components. Do not add them to <span class="code-inline">tokens.ts</span>.</p>
+
+    <h4>Conditional rendering rule</h4>
+    <p>Every new section is conditionally rendered — if the data field is absent or empty, the section does not appear and does not leave a gap. The page degrades gracefully for recipes that haven't been expanded yet (i.e. most of the current seed library). A recipe with no <span class="code-inline">before_you_start</span>, <span class="code-inline">equipment</span>, <span class="code-inline">mise_en_place</span>, <span class="code-inline">finishing_note</span>, or <span class="code-inline">leftovers_note</span> should look exactly like the current page.</p>
+
+    <h4>Files to touch</h4>
+    <ul>
+      <li><span class="code-inline">mobile/app/recipe/[id]
