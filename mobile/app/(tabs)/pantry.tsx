@@ -42,6 +42,7 @@ import {
   SectionList,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Animated, {
@@ -93,9 +94,9 @@ const UNLOCK_MIN_PANTRY = 2;
 const UNLOCK_MIN_COUNT = 2;
 const UNDO_TIMEOUT_MS = 5000;
 const SHOP_UNDO_TIMEOUT_MS = 3000;
-const CARD_WIDTH = 260;
 const CARD_GAP = 12;
 const CAROUSEL_PADDING = 20;
+const PEEK_WIDTH = 44; // dp of next card to peek on right
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,16 @@ export default function PantryTab() {
   // ≥1 character. Browse content (pills, banner, carousel) is ALWAYS
   // visible underneath — no full-screen mode switch.
   const showDropdown = searchMode && addName.trim().length >= 1;
+
+  // Pill collapse — show first 5, expand on tap
+  const PILLS_SHOWN = 5;
+  const [pillsExpanded, setPillsExpanded] = useState(false);
+
+  // Dynamic card width: screen minus both paddings, one gap, and peek allowance
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = Math.floor(
+    screenWidth - CAROUSEL_PADDING * 2 - CARD_GAP - PEEK_WIDTH,
+  );
 
   const [addedAt, setAddedAt] = useState<Record<string, number>>({});
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
@@ -683,11 +694,11 @@ export default function PantryTab() {
           </View>
         </View>
 
-        {/* Have-it pills card — frozen above results in both modes */}
+        {/* Have-it pills card — collapsed to PILLS_SHOWN, expandable */}
         {havePills.length > 0 ? (
           <View
             style={{
-              marginBottom: 14,
+              marginBottom: 10,
               backgroundColor: tokens.cream,
               borderRadius: 14,
               borderWidth: 1,
@@ -696,7 +707,7 @@ export default function PantryTab() {
             }}
           >
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}>
-              {havePills.map((it) => (
+              {(pillsExpanded ? havePills : havePills.slice(0, PILLS_SHOWN)).map((it) => (
                 <Pill
                   key={it.id}
                   item={it}
@@ -704,7 +715,99 @@ export default function PantryTab() {
                   onRemove={() => removeItem(it)}
                 />
               ))}
+              {/* Expand / collapse chip */}
+              {havePills.length > PILLS_SHOWN ? (
+                <Pressable
+                  onPress={() => setPillsExpanded((x) => !x)}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 999,
+                    backgroundColor: pressed ? 'rgba(232,184,48,0.15)' : 'rgba(232,184,48,0.08)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(232,184,48,0.30)',
+                    gap: 4,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 11,
+                      color: tokens.primary,
+                    }}
+                  >
+                    {pillsExpanded
+                      ? 'Show less'
+                      : `+${havePills.length - PILLS_SHOWN} more`}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
+          </View>
+        ) : null}
+
+        {/* Match banner — pinned in header so it stays above fold */}
+        {ranked.length > 0 ? (
+          <View
+            style={{
+              marginBottom: 10,
+              backgroundColor: tokens.cream,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: 'rgba(232,184,48,0.35)',
+              paddingVertical: 11,
+              paddingHorizontal: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              overflow: 'hidden',
+            }}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                left: 0, top: 0, bottom: 0, width: 4,
+                backgroundColor: tokens.primary, borderRadius: 4,
+              }}
+            />
+            <View style={{ flex: 1, paddingLeft: 8 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.display,
+                  fontSize: 15,
+                  color: tokens.primary,
+                  lineHeight: 19,
+                  marginBottom: 2,
+                }}
+              >
+                {fullMatches > 0
+                  ? `${fullMatches} recipe${fullMatches === 1 ? '' : 's'} you can cook now`
+                  : `${ranked.length} match${ranked.length === 1 ? '' : 'es'} — keep adding`}
+              </Text>
+              <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+                {fullMatches > 0
+                  ? (ranked.length - fullMatches > 0
+                      ? `${ranked.length - fullMatches} more within 1–3 ingredients`
+                      : 'You have everything you need')
+                  : `${ranked.length} recipe${ranked.length === 1 ? '' : 's'} ranked by coverage`}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="See all matching recipes"
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? tokens.primary : tokens.primaryLight,
+                borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4,
+                borderWidth: 1,
+                borderColor: 'rgba(232,184,48,0.40)',
+              })}
+            >
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.primary }}>
+                See all
+              </Text>
+            </Pressable>
           </View>
         ) : null}
       </View>
@@ -922,91 +1025,6 @@ export default function PantryTab() {
             <EmptyPantry onAddFirst={() => inputRef.current?.focus()} />
           ) : null}
 
-          {/* Gold match summary banner */}
-          {ranked.length > 0 ? (
-            <View
-              style={{
-                marginHorizontal: 20,
-                marginBottom: 12,
-                backgroundColor: tokens.cream,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: 'rgba(232,184,48,0.35)',
-                paddingVertical: 13,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                overflow: 'hidden',
-              }}
-            >
-              {/* Gold left strip */}
-              <View
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 4,
-                  backgroundColor: tokens.primary,
-                  borderRadius: 4,
-                }}
-              />
-              <View style={{ flex: 1, paddingLeft: 8 }}>
-                <Text
-                  style={{
-                    fontFamily: fonts.display,
-                    fontSize: 15,
-                    color: tokens.primary,
-                    lineHeight: 19,
-                    marginBottom: 2,
-                  }}
-                >
-                  {fullMatches > 0
-                    ? `${fullMatches} recipe${fullMatches === 1 ? '' : 's'} you can cook now`
-                    : `${ranked.length} match${ranked.length === 1 ? '' : 'es'} — keep adding`}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.sans,
-                    fontSize: 11,
-                    color: tokens.muted,
-                  }}
-                >
-                  {fullMatches > 0
-                    ? `${ranked.length - fullMatches > 0
-                        ? `${ranked.length - fullMatches} more within 1–3 ingredients`
-                        : 'You have everything you need'}`
-                    : `${ranked.length} recipe${ranked.length === 1 ? '' : 's'} ranked by coverage`}
-                </Text>
-              </View>
-
-              {/* "See all" gold pill CTA — replaces bare → arrow */}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="See all matching recipes"
-                style={({ pressed }) => ({
-                  backgroundColor: pressed ? tokens.primary : tokens.primaryLight,
-                  borderRadius: 999,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderWidth: 1,
-                  borderColor: 'rgba(232,184,48,0.40)',
-                })}
-              >
-                <Text
-                  style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 11,
-                    color: tokens.primary,
-                  }}
-                >
-                  See all
-                </Text>
-              </Pressable>
-            </View>
-          ) : null}
-
           {/* Unlock nudge */}
           {unlock ? (
             <Pressable
@@ -1112,10 +1130,12 @@ export default function PantryTab() {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                decelerationRate="fast"
-                snapToInterval={CARD_WIDTH + CARD_GAP}
+                decelerationRate={0.92}
+                snapToInterval={cardWidth + CARD_GAP}
                 snapToAlignment="start"
-                disableIntervalMomentum
+                onMomentumScrollEnd={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                }
                 contentContainerStyle={{
                   paddingHorizontal: CAROUSEL_PADDING,
                   gap: CARD_GAP,
@@ -1125,6 +1145,7 @@ export default function PantryTab() {
                   <RecipeMatchCard
                     key={m.recipe.id}
                     match={m}
+                    cardWidth={cardWidth}
                     onOpenRecipe={() => router.push(`/recipe/${m.recipe.id}`)}
                     onAddToShoppingList={(ing) =>
                       addToShoppingList(ing, m.recipe.id)
@@ -1554,10 +1575,12 @@ function NoMatchesState() {
  */
 function RecipeMatchCard({
   match,
+  cardWidth,
   onOpenRecipe,
   onAddToShoppingList,
 }: {
   match: RecipeMatchResult;
+  cardWidth: number;
   onOpenRecipe: () => void;
   onAddToShoppingList: (ing: { name: string; amount: number; unit: string }) => void;
 }) {
@@ -1575,7 +1598,7 @@ function RecipeMatchCard({
     <Pressable
       onPress={onOpenRecipe}
       style={({ pressed }) => ({
-        width: CARD_WIDTH,
+        width: cardWidth,
         backgroundColor: tokens.cream,
         borderRadius: 18,
         borderWidth: 1,
