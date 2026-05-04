@@ -48,11 +48,16 @@ import {
 import Animated, {
   FadeIn,
   FadeOut,
+  interpolateColor,
   LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useScrollToTop } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Haptics from 'expo-haptics';
 
@@ -144,6 +149,9 @@ export default function PantryTab() {
   // update mid-gesture to cause a race condition.
   const [searchMode, setSearchMode] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  // Scroll-to-top when user taps the active Pantry tab button
+  const browseScrollRef = useRef<ScrollView>(null);
+  useScrollToTop(browseScrollRef);
   // Blur debounce — gives suggestion taps 200 ms to fire before
   // search mode exits. handleSearchSelect clears this on each tap.
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -156,6 +164,20 @@ export default function PantryTab() {
   // Pill collapse — show first 5, expand on tap
   const PILLS_SHOWN = 5;
   const [pillsExpanded, setPillsExpanded] = useState(false);
+
+  // Search bar border colour animates 150 ms between inactive/active gold
+  const searchFocusAnim = useSharedValue(0);
+  useEffect(() => {
+    searchFocusAnim.value = withTiming(searchMode ? 1 : 0, { duration: 150 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchMode]);
+  const animatedSearchBorderStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      searchFocusAnim.value,
+      [0, 1],
+      ['rgba(232,184,48,0.22)', tokens.primary],
+    ),
+  }));
 
   // Dynamic card width: screen minus both paddings, one gap, and peek allowance
   const { width: screenWidth } = useWindowDimensions();
@@ -189,6 +211,10 @@ export default function PantryTab() {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      // Clear all debounce/undo timers so no setState fires after unmount
+      if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      if (shopUndoTimerRef.current) clearTimeout(shopUndoTimerRef.current);
     };
   }, []);
 
@@ -574,15 +600,21 @@ export default function PantryTab() {
           {/* Right side: item count + trash (only when pantry has items) */}
           {haveCount > 0 ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingLeft: 8 }}>
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 11,
-                  color: tokens.muted,
-                }}
+              <Animated.View
+                key={haveCount}
+                entering={FadeIn.duration(250)}
+                accessibilityLabel={`${haveCount} ingredient${haveCount === 1 ? '' : 's'} stocked`}
               >
-                {haveCount} stocked
-              </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 11,
+                    color: tokens.muted,
+                  }}
+                >
+                  {haveCount} stocked
+                </Text>
+              </Animated.View>
               <Pressable
                 onPress={() => setShowClearModal(true)}
                 hitSlop={12}
@@ -604,8 +636,8 @@ export default function PantryTab() {
             marginBottom: 8,
           }}
         >
-          <View
-            style={{
+          <Animated.View
+            style={[animatedSearchBorderStyle, {
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
@@ -613,9 +645,6 @@ export default function PantryTab() {
               backgroundColor: tokens.surface ?? tokens.cream,
               borderRadius: 14,
               borderWidth: 1.5,
-              borderColor: searchMode
-                ? tokens.primary
-                : 'rgba(232,184,48,0.22)',
               paddingHorizontal: 14,
               paddingVertical: 12,
               ...(searchMode
@@ -627,7 +656,7 @@ export default function PantryTab() {
                     elevation: 2,
                   }
                 : {}),
-            }}
+            }]}
           >
             <Icon name="search" size={15} color={tokens.muted} />
             {!searchMode ? (
@@ -691,7 +720,7 @@ export default function PantryTab() {
                 <Icon name="x" size={11} color={tokens.muted} />
               </Pressable>
             ) : null}
-          </View>
+          </Animated.View>
         </View>
 
         {/* Have-it pills card — collapsed to PILLS_SHOWN, expandable */}
@@ -706,7 +735,10 @@ export default function PantryTab() {
               padding: 12,
             }}
           >
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}>
+            <Animated.View
+              layout={LinearTransition.springify().damping(18).stiffness(180)}
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}
+            >
               {(pillsExpanded ? havePills : havePills.slice(0, PILLS_SHOWN)).map((it) => (
                 <Pill
                   key={it.id}
@@ -719,6 +751,12 @@ export default function PantryTab() {
               {havePills.length > PILLS_SHOWN ? (
                 <Pressable
                   onPress={() => setPillsExpanded((x) => !x)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    pillsExpanded
+                      ? 'Show fewer ingredients'
+                      : `Show ${havePills.length - PILLS_SHOWN} more ingredient${havePills.length - PILLS_SHOWN === 1 ? '' : 's'}`
+                  }
                   style={({ pressed }) => ({
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -744,7 +782,7 @@ export default function PantryTab() {
                   </Text>
                 </Pressable>
               ) : null}
-            </View>
+            </Animated.View>
           </View>
         ) : null}
 
@@ -795,8 +833,9 @@ export default function PantryTab() {
               </Text>
             </View>
             <Pressable
+              onPress={() => router.navigate('/')}
               accessibilityRole="button"
-              accessibilityLabel="See all matching recipes"
+              accessibilityLabel="See all matching recipes in Kitchen tab"
               style={({ pressed }) => ({
                 backgroundColor: pressed ? tokens.primary : tokens.primaryLight,
                 borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4,
@@ -1016,6 +1055,7 @@ export default function PantryTab() {
 
       {/* ── Browse mode — always visible ─────────────────────────────────── */}
         <ScrollView
+          ref={browseScrollRef}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 160, paddingTop: 4 }}
@@ -1597,6 +1637,8 @@ function RecipeMatchCard({
   return (
     <Pressable
       onPress={onOpenRecipe}
+      accessibilityRole="button"
+      accessibilityLabel={`${match.recipe.title} — ${match.haveCount} of ${match.totalCount} ingredients matched`}
       style={({ pressed }) => ({
         width: cardWidth,
         backgroundColor: tokens.cream,
