@@ -107,3 +107,57 @@ See `docs/coo/handoffs.md`. As of 29 April 2026, the active item is:
 **Audit all 44 prototype recipes against Rules 1, 5, and the cultural rules.** Output the per-recipe report. Required before final launch recipe selection (which is required before photography starts in earnest).
 
 This is on the critical path. If the audit isn't done by 13 May, photography starts on unverified recipes and we risk shooting a recipe that needs to be pulled.
+
+---
+
+## DECISION-009 additions — full recipe template (added 2026-05-04)
+
+DECISION-009 expanded the recipe schema with 8 new fields. Your job as Culinary Verifier is now to populate the content for those fields across every recipe in the library. The Senior Engineer has shipped the schema and the UI — the sections render automatically when you populate them.
+
+### The template
+
+A per-recipe content template lives at `docs/coo/culinary-research/TEMPLATE.md`. Copy it for each recipe, fill it out, and save as `<recipe-slug>.md` in `docs/coo/culinary-research/`.
+
+### The new fields you own
+
+| Field | Your job |
+|---|---|
+| `total_time_minutes` | Total elapsed time, including hands-off (braise, rest, marinate) |
+| `active_time_minutes` | Time the cook is physically doing something |
+| `difficulty` | `beginner` / `intermediate` / `advanced` — lowercase, exact match |
+| `before_you_start` | Max 3 structural warnings. Not tips — things that change the outcome if missed |
+| `equipment` | Anything beyond knife + board + saucepan |
+| `mise_en_place` | Discrete prep tasks to complete before heat goes on. 4–8 items. Actions, not ingredient names. |
+| `finishing_note` | One paragraph, chef voice. What to look for before plating. |
+| `leftovers_note` | Storage, reheating, creative second use. Honest — if it doesn't keep, say so. |
+
+### Priority order
+
+Work through recipes in this order:
+
+**Priority 1 — launch recipes (do these first):**
+carbonara, bolognese, butter-chicken, green-curry, smash-burger, roast-chicken, pavlova, barramundi, chicken-shawarma, hummus, pad-thai
+
+**Priority 2 — extended seed library:**
+All remaining recipes in `mobile/src/data/seed-recipes.ts`
+
+**Priority 3 — new recipes in progress:**
+chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel
+
+### Output format
+
+One file per recipe: `docs/coo/culinary-research/<recipe-slug>.md`
+
+Use the template at `docs/coo/culinary-research/TEMPLATE.md` exactly. Do not invent a different format — the Senior Engineer parses these files mechanically.
+
+### What the Engineer does with your output
+
+Once you've completed a recipe's content file, the Engineer reads it and adds the fields to that recipe's entry in `mobile/src/data/seed-recipes.ts`. The UI sections (at-a-glance row, what-to-know block, equipment pills, mise en place checklist, finishing note, leftovers block) all render automatically — no further engineering work needed per recipe.
+
+### Quality bar
+
+- Australian English throughout — capsicum, coriander, spring onion, plain flour, caster sugar
+- No "simply", no "just", no "delicious", no food-blog voice
+- Mise en place items must be actions ("Grate 60g Pecorino finely") not ingredients ("60g Pecorino")
+- Finishing notes must give a doneness cue, not just a serving suggestion
+- Be honest about leftovers: "doesn't keep" is a useful note; a fake reheating tip is a liability
