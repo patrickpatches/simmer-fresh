@@ -45,7 +45,7 @@ snaps cleanly to one card per view — partial cards from adjacent entries are v
 **Fixed in:** Session 29 April 2026 — `pagingEnabled` prop set on the `FlatList`/`ScrollView`; card width set to `Dimensions.get('window').width - [horizontal margins]` so exactly one card fills the viewport.
 **Regressed in:** Pantry v2 redesign (Pantry v2 dark-direction restyle) — the `pagingEnabled` prop or the card-width calculation was dropped during the rewrite.
 **Re-fixed in:** Session 4 May 2026 (builds #61–#62, commit `0b7ebe609142`) — replaced `pagingEnabled` with `snapToInterval` + `snapToAlignment="start"` and replaced the hardcoded `CARD_WIDTH = 260` constant with `cardWidth = screenWidth - CAROUSEL_PADDING*2 - CARD_GAP - PEEK_WIDTH` using `useWindowDimensions`. Snap math verified: at snap position N, card N always starts exactly `CAROUSEL_PADDING`dp from viewport left on every screen size. Removed `disableIntervalMomentum`; changed `decelerationRate="fast"` → `decelerationRate={0.92}` for natural momentum with snap.
-**Check:** ✅ *Fixed — awaiting on-device confirmation from Patrick*
+**Check:** ✅ *VALIDATED by Patrick 2026-05-05*
 **Guard:** When touching `pantry.tsx` carousel: (1) `snapToInterval` must equal `cardWidth + CARD_GAP`, computed from `useWindowDimensions()` — never hardcoded. (2) Do NOT add `disableIntervalMomentum` — it kills momentum and makes swipe feel robotic. (3) `decelerationRate` must be `{0.92}` or `"normal"`, not `"fast"`. A hardcoded width breaks snap on non-standard screen sizes; `disableIntervalMomentum` breaks the feel.
 
 ---
