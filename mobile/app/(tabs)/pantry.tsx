@@ -878,17 +878,23 @@ export default function PantryTab() {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 7,
+                  gap: 8,
                   backgroundColor: tokens.bg,
                   paddingHorizontal: 16,
-                  paddingVertical: 7,
+                  paddingVertical: 6,
                   borderBottomWidth: 1,
                   borderBottomColor: tokens.line,
                 }}
               >
-                <Text style={{ fontSize: 12, lineHeight: 15 }}>
-                  {CATEGORY_EMOJI[title] ?? '📦'}
-                </Text>
+                <View
+                  style={{
+                    width: 3,
+                    height: 11,
+                    borderRadius: 2,
+                    backgroundColor: tokens.warmBrown,
+                    opacity: 0.45,
+                  }}
+                />
                 <Text
                   style={{
                     fontSize: 9,
@@ -896,6 +902,7 @@ export default function PantryTab() {
                     letterSpacing: 2,
                     color: tokens.warmBrown,
                     textTransform: 'uppercase',
+                    flex: 1,
                   }}
                 >
                   {title}
@@ -919,18 +926,16 @@ export default function PantryTab() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    minHeight: 44,
+                    paddingVertical: 11,
+                    minHeight: 46,
                     backgroundColor: tokens.cream,
                     borderBottomWidth: isLast ? 0 : 1,
                     borderBottomColor: tokens.line,
-                    gap: 10,
+                    gap: 12,
                     opacity: alreadyAdded ? 0.45 : pressed ? 0.8 : 1,
                   })}
                 >
-                  <Text style={{ fontSize: 17, width: 26, textAlign: 'center', lineHeight: 22 }}>
-                    {CATEGORY_EMOJI[item.category] ?? '📦'}
-                  </Text>
+
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
@@ -956,18 +961,32 @@ export default function PantryTab() {
                     ) : null}
                   </View>
                   {alreadyAdded ? (
-                    <Text
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <Icon name="check" size={11} color={tokens.sage} />
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontFamily: fonts.sansBold,
+                          color: tokens.sage,
+                          letterSpacing: 0.3,
+                        }}
+                      >
+                        In pantry
+                      </Text>
+                    </View>
+                  ) : (
+                    <View
                       style={{
-                        fontSize: 11,
-                        fontFamily: fonts.sansBold,
-                        color: tokens.sage,
-                        letterSpacing: 0.3,
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      ✓ In pantry
-                    </Text>
-                  ) : (
-                    <Icon name="plus" size={16} color={tokens.muted} />
+                      <Icon name="plus" size={14} color={tokens.muted} />
+                    </View>
                   )}
                 </Pressable>
               );
@@ -980,24 +999,52 @@ export default function PantryTab() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 16,
-                    paddingVertical: 11,
-                    minHeight: 44,
-                    backgroundColor: pressed ? 'rgba(232,184,48,0.10)' : tokens.cream,
-                    gap: 10,
+                    paddingVertical: 12,
+                    minHeight: 50,
+                    backgroundColor: pressed
+                      ? 'rgba(232,184,48,0.10)'
+                      : 'rgba(232,184,48,0.04)',
+                    gap: 12,
+                    borderTopWidth: 1,
+                    borderTopColor: 'rgba(232,184,48,0.22)',
                   })}
                 >
-                  <View style={{ width: 26, alignItems: 'center' }}>
-                    <Icon name="plus" size={16} color={tokens.primary} />
-                  </View>
-                  <Text
+                  <View
                     style={{
-                      fontSize: 14,
-                      fontFamily: fonts.sans,
-                      color: tokens.primary,
+                      width: 30,
+                      height: 30,
+                      borderRadius: 15,
+                      backgroundColor: 'rgba(232,184,48,0.14)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
                     }}
                   >
-                    Add "{addName.trim()}" as custom
-                  </Text>
+                    <Icon name="plus" size={14} color={tokens.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontFamily: fonts.sansBold,
+                        color: tokens.primary,
+                        lineHeight: 17,
+                      }}
+                      numberOfLines={1}
+                    >
+                      Add "{addName.trim()}"
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontFamily: fonts.sans,
+                        color: tokens.muted,
+                        marginTop: 1,
+                      }}
+                    >
+                      Save as a custom ingredient
+                    </Text>
+                  </View>
                 </Pressable>
               ) : null
             }
@@ -1011,8 +1058,8 @@ export default function PantryTab() {
             marginBottom: 12,
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: 'rgba(232,184,48,0.22)',
-            backgroundColor: tokens.cream,
+            borderColor: 'rgba(232,184,48,0.25)',
+            backgroundColor: 'rgba(232,184,48,0.04)',
             overflow: 'hidden',
           }}
         >
@@ -1023,20 +1070,34 @@ export default function PantryTab() {
               alignItems: 'center',
               paddingHorizontal: 16,
               paddingVertical: 14,
-              backgroundColor: pressed ? 'rgba(232,184,48,0.10)' : tokens.cream,
-              gap: 10,
+              backgroundColor: pressed ? 'rgba(232,184,48,0.10)' : 'transparent',
+              gap: 12,
             })}
           >
-            <Icon name="plus" size={16} color={tokens.primary} />
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: 'rgba(232,184,48,0.16)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="plus" size={15} color={tokens.primary} />
+            </View>
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontSize: 14,
-                  fontFamily: fonts.sans,
+                  fontFamily: fonts.sansBold,
                   color: tokens.primary,
+                  lineHeight: 18,
                 }}
+                numberOfLines={1}
               >
-                Add "{addName.trim()}" as custom
+                Add "{addName.trim()}"
               </Text>
               <Text
                 style={{
@@ -1046,7 +1107,7 @@ export default function PantryTab() {
                   marginTop: 2,
                 }}
               >
-                No match in catalog
+                No catalog match — save as custom
               </Text>
             </View>
           </Pressable>
