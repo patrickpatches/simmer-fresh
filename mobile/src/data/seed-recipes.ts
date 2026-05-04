@@ -3441,6 +3441,31 @@ const CHICKEN_SCHNITZEL: Recipe = {
   hero_fallback: fallback('#C8A96E'),
   whole_food_verified: true,
   leftover_mode: { extra_servings: 2, note: "Cold schnitzel sliced over a salad makes tomorrow's lunch" },
+  total_time_minutes: 35,
+  active_time_minutes: 25,
+  equipment: [
+    "Meat mallet or heavy rolling pin",
+    "Cling film or zip-lock bag (to contain splatter)",
+    "Three shallow dishes or trays (flour / egg / panko)",
+    "Large heavy-based frying pan — cast iron ideal",
+    "Instant-read cooking thermometer",
+    "Wire rack set over a baking tray",
+    "Tongs",
+  ],
+  before_you_start: [
+    "Pound it even — 1–1.5 cm throughout. The mallet is not optional; an uneven breast means one end is dry and rubbery before the other is cooked.",
+    "Shake off the flour before the egg. Let the egg drip before the panko. Excess at each stage creates heavy, doughy patches.",
+    "Oil temperature is the signal, not the clock. 175°C before the first schnitzel goes in — too cold and the crust absorbs oil, too hot and it burns before the chicken cooks through.",
+  ],
+  mise_en_place: [
+    "Place each breast between two sheets of cling film; pound to 1–1.5 cm throughout — about 60 seconds per breast working from the centre outwards.",
+    "Pat breasts dry with paper towel; season directly on both sides with salt and white pepper.",
+    "Set up breading station in order: Dish 1 plain flour / Dish 2 2 beaten eggs / Dish 3 panko spread flat.",
+    "Set a wire rack over a baking tray next to the hob.",
+    "Pour oil into the pan to 3–4 cm depth. Do not heat yet.",
+  ],
+  finishing_note: "Plate on warmed plates with two lemon quarters per person. Any gravy goes alongside in a jug — not poured over the top, which softens the crust. Taste the schnitzel plain first, then with lemon — the acid transforms it. The crust should shatter cleanly on a fork, not flex.",
+  leftovers_note: "Refrigerate on a rack (not stacked) for up to 2 days. Reheat at 180°C on a wire rack, uncovered, 10–12 minutes — do not microwave or re-fry. Cold schnitzel is brilliant in a crusty roll with shredded iceberg, sliced tomato, and mayo. Freeze raw breaded schnitzels between sheets of baking paper; fry from frozen at 160°C, 6–7 minutes per side.",
   ingredients: [
     {
       id: 'chicken_breast', name: 'Chicken breast fillets, butterflied', amount: 800, unit: 'g',
@@ -3591,6 +3616,30 @@ const CHICKEN_VEG_STIR_FRY: Recipe = {
   hero_fallback: fallback('#5C7A3E'),
   whole_food_verified: true,
   leftover_mode: { extra_servings: 2, note: 'Excellent next-day lunch — reheat fast in a hot pan, never the microwave or the chicken goes rubbery' },
+  total_time_minutes: 25,
+  active_time_minutes: 20,
+  equipment: [
+    "Wok (carbon steel preferred) or large heavy-based frying pan — not non-stick",
+    "Sharp knife and chopping board",
+    "Small bowl for the pre-mixed sauce",
+    "Small bowl for the cornflour slurry",
+    "Tongs or wok spatula",
+  ],
+  before_you_start: [
+    "Everything goes in fast once the heat is on — prep is everything. Have every vegetable cut, every sauce measured, and the cornflour slurry made before you turn on the heat.",
+    "High heat is the whole game. Work in smaller batches — crowding the pan drops the temperature and steams the vegetables instead of searing them.",
+    "Velveting makes the chicken silky. A 10-minute soak in cornflour and soy sauce keeps it tender rather than rubbery at high heat. Don't skip it.",
+  ],
+  mise_en_place: [
+    "Slice the chicken into 5 mm strips; toss with 1 tbsp cornflour and 1 tsp soy sauce. Set aside 10 minutes — this is the velveting step.",
+    "Cut all vegetables: broccoli into small florets, carrot into thin batons, capsicum into strips. Keep them grouped — they go in at different times.",
+    "Slice garlic. Grate ginger. Separate spring onion whites and greens into different piles.",
+    "Mix the sauce in a small bowl: oyster sauce + light soy + sugar + water. Stir to dissolve.",
+    "Mix the slurry in another small bowl: 1 tsp cornflour + 2 tbsp cold water. Stir until no lumps.",
+    "Start the rice if using — stir-fry moves fast and the rice needs to be ready when the wok finishes.",
+  ],
+  finishing_note: "Serve immediately over steamed rice. Taste before plating — the sauce should be savoury and slightly sweet with a background of sesame. If it tastes flat, add a few drops more soy sauce. If one-dimensional, a few drops of rice wine vinegar or a wedge of lime wakes it up. Vegetables should have colour and slight bite — not soft.",
+  leftovers_note: "Refrigerates well for up to 2 days. The sauce will absorb into the vegetables and texture softens — still good, just different. Reheat in a wok or frying pan over high heat with a splash of water, 2 minutes. Cold leftover stir-fry tossed through noodles or fried rice the next day is excellent — don't bin it.",
   ingredients: [
     {
       id: 'chicken_thigh', name: 'Chicken thigh fillets, boneless skinless', amount: 600, unit: 'g',
@@ -3766,6 +3815,30 @@ const BEEF_LASAGNE: Recipe = {
   hero_fallback: fallback('#8B3A2A'),
   whole_food_verified: true,
   leftover_mode: { extra_servings: 2, note: 'Lasagne is better the next day. The slices set firm overnight and reheat cleanly in a 180 °C oven for 15 minutes' },
+  total_time_minutes: 210,
+  active_time_minutes: 45,
+  equipment: [
+    "Large heavy-based pot or Dutch oven (for the ragù)",
+    "Medium saucepan (for the béchamel)",
+    "Deep baking dish, approximately 30 × 20 cm",
+    "Whisk (for béchamel)",
+    "Wooden spoon or spatula",
+  ],
+  before_you_start: [
+    "The ragù is the dish. A rushed 45-minute bolognese makes thin, acidic lasagne. Three hours on the lowest possible heat with milk added early — Marcella Hazan insisted on this and she was right.",
+    "Build in layers, not heaps — thin, even layers of sauce and béchamel between each pasta sheet. Even layers equal even cooking and clean cuts.",
+    "Rest before cutting. 15 minutes out of the oven minimum. The filling sets; the layers hold. Cut into hot lasagne and it collapses.",
+  ],
+  mise_en_place: [
+    "Finely dice onion, carrot, and celery into equal-sized pieces — the soffritto. Uniformity matters; uneven pieces mean some burn before others are soft.",
+    "Mince the garlic.",
+    "Open and hand-crush the tinned tomatoes into a bowl — squeeze through your fist. Discard the tin juice.",
+    "Measure milk and wine into separate jugs.",
+    "For the béchamel: weigh butter and flour, measure milk and keep on the bench — béchamel needs full attention for 10 minutes.",
+    "Grate the Parmigiano.",
+  ],
+  finishing_note: "Cut into squares with a sharp knife. Serve with a simple green salad and crusty bread. Taste a corner before plating — it should taste deeply savoury with a background sweetness from the soffritto. If it tastes flat, it needs salt and possibly a thread of good olive oil over the top. The layering should hold on the plate; if it collapses, it either didn't rest long enough or the ragù was too wet.",
+  leftovers_note: "This is better the next day — flavours meld overnight and it cuts into cleaner squares when cold. Refrigerate up to 4 days. Reheat covered with foil at 160°C for 20 minutes, or individual portions in the microwave with a splash of water. Freezes brilliantly in individual portions — thaw overnight in the fridge, reheat covered in the oven. The bolognese ragù also freezes separately; make a double batch and freeze half as pasta sauce.",
   ingredients: [
     // Ragù
     {
@@ -3973,6 +4046,29 @@ const ROAST_LAMB: Recipe = {
   hero_fallback: fallback('#7A4A2E'),
   whole_food_verified: true,
   leftover_mode: { extra_servings: 4, note: 'Pulled lamb is the gift the next day — sandwiches with chutney, or fold through pasta with the pan juices' },
+  total_time_minutes: 135,
+  active_time_minutes: 20,
+  equipment: [
+    "Roasting tin large enough to fit the leg without meat touching the sides",
+    "Paring knife or small boning knife (for making pockets)",
+    "Roasting rack (optional but recommended)",
+    "Instant-read thermometer",
+    "Basting brush or spoon",
+  ],
+  before_you_start: [
+    "One leg feeds 6–8 people — buy by weight, not by person count. A 2–2.5 kg bone-in leg is the right size. For more than 8 people, roast two legs side by side rather than one enormous one.",
+    "The resting period is not optional — it is part of the cooking. Twenty minutes minimum, uncovered (not under foil, which steams the crust).",
+    "Temperature beats timing. A probe thermometer removes all guesswork: 58–60°C at the thickest part for blushing pink; 65°C for medium; 70°C for well done.",
+  ],
+  mise_en_place: [
+    "Remove the lamb from the fridge 30 minutes before cooking — cold meat in a hot oven cooks unevenly.",
+    "Preheat oven to 220°C (200°C fan-forced).",
+    "Mix the marinade: olive oil + Dijon mustard + lemon juice + salt + pepper + half the chopped rosemary. Stir until combined.",
+    "Using a paring knife, cut 16 small deep pockets into the lamb (8 per side, in the thicker sections, angled toward the bone); push a sliver of garlic and a pinch of rosemary deep into each pocket.",
+    "Rub the marinade over the entire surface. Scatter remaining rosemary sprigs and whole garlic cloves in the base of the tin.",
+  ],
+  finishing_note: "Arrange slices on a warmed platter with the jus poured around — not over, which softens the crust. Scatter a few fresh rosemary sprigs and the roasted garlic cloves from the tin. Taste a slice: deeply savoury with a faint sweetness from the roasted garlic. If flat, add a pinch of flaky salt. Traditional accompaniments: roasted vegetables cooked alongside, and a mint sauce or fresh mint jelly.",
+  leftovers_note: "Refrigerate carved slices for up to 3 days, stored with the jus poured over to prevent drying. Reheat covered with foil, with a splash of water or stock, at 160°C for 10–12 minutes. Thinly sliced cold lamb in a sandwich with mint sauce and dijon on good bread is exceptional — better cold than many meals hot. Simmer the bone with onion, carrot, and celery for 2 hours to make a lamb stock. Freezes well sliced with jus for up to 3 months.",
   ingredients: [
     {
       id: 'lamb_shoulder', name: 'Lamb shoulder, bone-in', amount: 2000, unit: 'g',
@@ -4137,6 +4233,31 @@ const FISH_AND_CHIPS: Recipe = {
   },
   hero_fallback: fallback('#D4A832'),
   whole_food_verified: true,
+  total_time_minutes: 55,
+  active_time_minutes: 35,
+  equipment: [
+    "Large, deep heavy-based pot or deep fryer",
+    "Cooking thermometer — non-negotiable for this recipe",
+    "Wire rack set over a baking tray",
+    "Paper towel",
+    "Tongs",
+    "Shallow dish for flour dusting",
+  ],
+  before_you_start: [
+    "The batter needs to be cold and used immediately. Cold batter hitting hot oil, combined with the CO₂ in the beer, puffs the batter into a light shell. Warm batter or batter that has been resting makes a denser, heavier coating.",
+    "Chips are twice-cooked — this is not optional. Par-cook at 150°C to cook through without colour, rest, then fry at 190°C to crisp. Single-frying produces chips that are either pale in the centre or burnt on the outside.",
+    "Get the fish as dry as possible before battering. Moisture is the enemy of batter adhesion — pat dry thoroughly, then lightly dust with flour immediately before dipping.",
+  ],
+  mise_en_place: [
+    "Cut and rinse the potato chips. Dry very thoroughly — spread on a clean tea towel and pat, then leave uncovered for 10 minutes. Wet chips spit in hot oil and don't crisp.",
+    "Pat the fish fillets completely dry with paper towel. Refrigerate uncovered on a plate.",
+    "Set up the oil in the pot. Do not heat yet.",
+    "Measure flour and baking powder into a bowl for the batter. Do not add beer until immediately before frying.",
+    "Set up the draining station: wire rack over a tray next to the hob.",
+    "Make the tartare sauce if making from scratch — this takes 5 minutes and can be done any time.",
+  ],
+  finishing_note: "Serve immediately — fish and chips are a dish of minutes. Set on plates lined with paper (the traditional presentation; it absorbs oil and keeps everything crisp for the first few minutes). Lemon quarters, tartare sauce, malt vinegar on the side. Chips should be salty, crisp outside, fluffy inside. The batter should be crisp, light, with a faint yeasty note from the beer. Add more salt than you think you need.",
+  leftovers_note: "This dish does not keep — fish and chips must be eaten within 10–15 minutes of frying. Refrigerating and reheating battered fish produces a limp, pale shadow of the original. If you must reheat chips: 220°C oven, spread on a rack, 5–8 minutes. Leftover fish without the batter can be flaked and mixed with mayo, lemon, and diced cornichons for a fish sandwich — perfectly good the next day.",
   ingredients: [
     {
       id: 'potatoes_chips', name: 'Sebago potatoes (or other floury variety)', amount: 1200, unit: 'g',
@@ -4302,6 +4423,31 @@ const FALAFEL: Recipe = {
   hero_fallback: fallback('#4A7A2E'),
   whole_food_verified: true,
   leftover_mode: { extra_servings: 2, note: 'Reheat in a hot oven (200 °C, 8 minutes) — never the microwave, which steams the crust soft' },
+  total_time_minutes: 1560,
+  active_time_minutes: 45,
+  equipment: [
+    "Food processor — not a blender, which will over-smooth the mixture",
+    "Deep saucepan or Dutch oven — at least 6 cm oil depth",
+    "Kitchen thermometer (highly recommended)",
+    "Falafel scoop or two tablespoons",
+    "Slotted spoon or spider strainer",
+    "Wire rack or paper towel–lined tray for draining",
+  ],
+  before_you_start: [
+    "Dried chickpeas only — soaked overnight. Tinned or pre-cooked chickpeas hold too much moisture; the mixture won't bind and will fall apart in the oil. There is no shortcut here.",
+    "Grainy, not smooth. The blitz should give you a paste like damp sand with flecks of herb — if it looks like hummus, you've gone too far and the falafel will be dense.",
+    "Test fry one first. Before you cook the whole batch, drop one falafel into the oil. If it falls apart, the mixture needs more blitzing or a little more flour. Catch it in the pot, not on 24 falafel.",
+  ],
+  mise_en_place: [
+    "Soak the dried chickpeas in cold water for 24 hours (they'll double in size — use a big bowl). Drain and pat dry.",
+    "Roughly chop the onion; peel the garlic.",
+    "Wash and dry the parsley and coriander — excess moisture makes the mixture wet.",
+    "Measure all spices into one small bowl.",
+    "Set up the frying station: pot, thermometer, slotted spoon, rack or paper-lined tray nearby.",
+    "Have all serve ingredients prepped and laid out — falafel wait for nobody.",
+  ],
+  finishing_note: "Taste one falafel the moment it's cool enough to eat. It should be distinctly seasoned — the outside slightly salty from the fry, the inside fragrant from the cumin and coriander. If the spice isn't coming through, add a pinch more ground cumin to the next batch. A squeeze of lemon over the falafel as you serve is not optional — it cuts the oil and lifts the herb flavour. The crunch is perishable: serve immediately.",
+  leftovers_note: "Falafel is best eaten fresh. Cooked leftovers reheat in a 200°C oven for 8–10 minutes — they'll crisp back up. Do not microwave. Uncooked mixture refrigerates for up to 48 hours. Freezes well: portion into balls, freeze on a tray, then bag. Fry from frozen at 175°C for 5–6 minutes.",
   ingredients: [
     {
       id: 'chickpeas_dried', name: 'Dried chickpeas (never tinned)', amount: 250, unit: 'g',
