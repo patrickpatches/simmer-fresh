@@ -42,7 +42,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ---
 
-### HANDOFF → Senior Engineer · 2026-05-04 · OPEN (DECISION-008 — recipe detail UI, second pass)
+### HANDOFF → Senior Engineer · 2026-05-04 · DONE ✅ (2026-05-05 — all 6 sections implemented in recipe/[id].tsx)
 **From:** Product Designer
 **Subject:** Implement the 6 new recipe-detail sections from `docs/prototypes/recipe-detail-v2.html`
 **Why:** Schema pass (8 new fields) lands first. This UI pass lands after. Don't start until schema is committed and Carbonara's seed data has been expanded by the Culinary Verifier — you need real data to QA the new sections.
@@ -94,7 +94,7 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 
 ---
 
-### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (DECISION-009 — recipe schema expansion)
+### HANDOFF → Senior Engineer · 2026-05-05 · DONE ✅ (2026-05-05 — types.ts expanded, difficulty normalised, ADR-002 written)
 **From:** Patrick (via COO)
 **Subject:** Add 8 new fields to the Recipe Zod schema for the full recipe template
 **Why:** DECISION-009 adopts a full 8-section recipe template across every recipe in the database. The cook authors content; you provide the schema fields; Designer designs the page; you implement the UI in a second pass after Designer ships. This is the additive schema work that unblocks both cook (long-running) and Designer (page redesign).
@@ -323,7 +323,7 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 
 ---
 
-### HANDOFF → Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04 · DONE (2026-05-03)
+### HANDOFF → Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04 · DONE ✅ (Phase 1 ✅ 2026-05-03 · Phase 2 ✅ 2026-05-05 — pantry-helpers.ts already had full derivation matching implemented)
 **From:** Patrick (via COO)
 **Subject:** Pantry needs derivation-aware ingredient matching — "I have eggs" should match recipes calling for "egg yolks"
 **Why:** Patrick discovered on-device that the pantry-match algorithm treats every ingredient as atomic. He has eggs in his pantry. Pasta Carbonara wants egg yolks. The match misses entirely. This is one of many cases — chicken stock comes from a whole chicken, lemon zest from lemons, ground spices from whole spices, etc. The pantry-match feature is the kill feature; right now it's quietly under-counting matches and making the recipe library look thinner than it actually is.
@@ -701,10 +701,4 @@ _(Designer-to-engineer handoff folded into the consolidated Senior Engineer mult
 **What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
 **What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
 **Files touched:** `docs/SMOKE-TEST.md`
-**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
-
----
-
-## Recently completed
-
-_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_
+**Blocks:** Internal Alpha track g
