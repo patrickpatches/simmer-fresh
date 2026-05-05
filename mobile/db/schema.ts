@@ -13,7 +13,7 @@
  */
 
 /** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 /**
  * Full schema for a fresh install.
@@ -41,6 +41,13 @@ export const SCHEMA_SQL: string[] = [
     leftover_note          TEXT,
     categories             TEXT,
     whole_food_verified    INTEGER,
+    total_time_minutes     INTEGER,
+    active_time_minutes    INTEGER,
+    equipment              TEXT,
+    before_you_start       TEXT,
+    mise_en_place          TEXT,
+    finishing_note         TEXT,
+    leftovers_note         TEXT,
     created_at             TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
 
@@ -186,11 +193,4 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
       category        TEXT NOT NULL DEFAULT 'Pantry Staples',
       quantity        REAL,
       unit            TEXT,
-      notes           TEXT,
-      manually_added  INTEGER NOT NULL DEFAULT 0,
-      in_cart         INTEGER NOT NULL DEFAULT 0,
-      added_at        INTEGER NOT NULL DEFAULT 0,
-      sources_json    TEXT NOT NULL DEFAULT '[]'
-    )`,
-  ],
-};
+      
