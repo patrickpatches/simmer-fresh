@@ -66,22 +66,17 @@ export async function syncNewSeedRecipes(db: SQLiteDatabase): Promise<void> {
 }
 
 /**
- * Sync substitution data from seed recipes into the DB.
+ * Refresh DECISION-009 content fields on existing seed recipes.
  *
- * Runs every launch (idempotent UPDATE — no data loss). This ensures that
- * when swap data is added or updated in seed-recipes.ts, existing installs
- * get the new data without requiring a full re-seed (which would wipe meal
- * plan entries via cascade delete).
- */
-export async function updateSubstitutions(db: SQLiteDatabase): Promise<void> {
-  for (const recipe of SEED_RECIPES) {
-    for (const ing of recipe.ingredients) {
-      if (ing.substitutions && ing.substitutions.length > 0) {
-        await db.runAsync(
-          'UPDATE ingredients SET substitutions = ? WHERE id = ? AND recipe_id = ?',
-          [JSON.stringify(ing.substitutions), ing.id, recipe.id],
-        );
-      }
-    }
-  }
-}
+ * Runs every launch (cheap: one SELECT + one UPDATE per recipe, all on the
+ * same connection). Idempotent — running it again produces the same rows.
+ *
+ * This is the fix for the seeding-guard problem: once `app_meta.seeded = '1'`
+ * is set, seedDatabase never runs again. Any new content fields added to
+ * SEED_RECIPES after the initial install are invisible unless we explicitly
+ * UPDATE the existing rows. This function does that for all authored seed
+ * recipes on every launch, so new field data ships in the next APK with no
+ * reinstall required.
+ *
+ * Only updates rows where user_added = 0 and generated_by_claude = 0 —
+ * user recipes are never clobbered. Silently skips recipes
