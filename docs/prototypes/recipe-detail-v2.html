@@ -270,62 +270,60 @@
   /* ── WHAT TO KNOW section ──────────────────────────────────── */
   .framing-block {
     margin: 0 14px 20px;
-    background: var(--surface-mid);
     border-radius: 12px;
-    border: 1px solid var(--line);
-    border-left: 3px solid #5B8FD4;
     overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
-  .framing-block.finish { border-left-color: #8A6040; }
   .framing-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 14px 8px;
+    gap: 9px;
+    padding: 11px 14px 10px;
+    background: #DE5F4B;
   }
   .framing-icon {
-    width: 28px; height: 28px;
-    border-radius: 8px;
-    background: rgba(91,143,212,0.15);
-    border: 1px solid rgba(91,143,212,0.2);
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
     flex-shrink: 0;
   }
-  .framing-block.finish .framing-icon {
-    background: rgba(196,168,130,0.12);
-    border-color: rgba(196,168,130,0.2);
-  }
   .framing-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #2A5898;
+    color: #FAF3EE;
   }
-  .framing-block.finish .framing-title { color: #8A6040; }
+  .framing-body-wrap {
+    background: #FFF8F6;
+    border: 1px solid rgba(222,95,75,0.14);
+    border-top: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    padding: 13px 14px 14px;
+  }
   .framing-items {
-    padding: 0 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
   .framing-item {
     display: flex;
     gap: 10px;
     align-items: flex-start;
     font-size: 13px;
-    color: var(--ink-soft);
-    line-height: 1.5;
+    color: #3A2A22;
+    line-height: 1.52;
   }
   .framing-bullet {
     width: 5px; height: 5px;
     border-radius: 50%;
-    background: #5B8FD4;
-    margin-top: 6px;
+    background: #DE5F4B;
+    margin-top: 6.5px;
     flex-shrink: 0;
   }
-  .framing-block.finish .framing-bullet { background: #C4A882; }
 
   /* ── Section dividers ──────────────────────────────────────── */
   .section-head {
@@ -671,34 +669,39 @@
   /* ── FINISHING & TASTING ───────────────────────────────────── */
   .finish-block {
     margin: 0 14px 6px;
-    background: var(--surface-mid);
     border-radius: 12px;
-    border: 1px solid var(--line);
-    border-left: 3px solid #C4A882;
-    padding: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
   .finish-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 14px 10px;
+    background: #8A6040;
   }
   .finish-icon-box {
-    width: 28px; height: 28px;
-    border-radius: 8px;
-    background: rgba(196,168,130,0.12);
-    border: 1px solid rgba(196,168,130,0.2);
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
+    flex-shrink: 0;
   }
   .finish-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #8A6040;
+    color: #FAF3EE;
   }
   .finish-body {
+    background: #FDF7F2;
+    border: 1px solid rgba(138,96,64,0.14);
+    border-top: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    padding: 13px 14px 14px;
     font-size: 13px;
-    color: var(--ink-soft);
+    color: #3A2A18;
     line-height: 1.65;
     font-style: italic;
   }
@@ -1013,21 +1016,28 @@
       <!-- WHAT TO KNOW -->
       <div class="framing-block">
         <div class="framing-header">
-          <div class="framing-icon">⚠️</div>
-          <div class="framing-title">What to know before you start</div>
+          <div class="framing-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2c0 6-6 8-6 14a6 6 0 0 0 12 0c0-6-6-8-6-14z"/>
+              <path d="M12 12c0 3-2 4-2 7a2 2 0 0 0 4 0c0-3-2-4-2-7z" fill="#FAF3EE" stroke="none"/>
+            </svg>
+          </div>
+          <div class="framing-title">Before you start</div>
         </div>
-        <div class="framing-items">
-          <div class="framing-item">
-            <div class="framing-bullet"></div>
-            Carbonara scrambles above 70°C. The entire dish hinges on one moment — pasta off heat, sauce on immediately. Read the full recipe before you touch the stove.
-          </div>
-          <div class="framing-item">
-            <div class="framing-bullet"></div>
-            This is a two-person dish maximum in a home kitchen. Scaling up means more pasta mass, which holds heat longer and narrows your off-heat window.
-          </div>
-          <div class="framing-item">
-            <div class="framing-bullet"></div>
-            No cream. Not ever. Not a little. The sauce is eggs + cheese + pasta water. Cream is a different dish.
+        <div class="framing-body-wrap">
+          <div class="framing-items">
+            <div class="framing-item">
+              <div class="framing-bullet"></div>
+              Carbonara scrambles above 70°C. The entire dish hinges on one moment — pasta off heat, sauce on immediately. Read the full recipe before you touch the stove.
+            </div>
+            <div class="framing-item">
+              <div class="framing-bullet"></div>
+              This is a two-person dish maximum in a home kitchen. Scaling up means more pasta mass, which holds heat longer and narrows your off-heat window.
+            </div>
+            <div class="framing-item">
+              <div class="framing-bullet"></div>
+              No cream. Not ever. Not a little. The sauce is eggs + cheese + pasta water. Cream is a different dish.
+            </div>
           </div>
         </div>
       </div>
@@ -1274,7 +1284,11 @@
       <div class="section-divider"></div>
       <div class="finish-block">
         <div class="finish-header">
-          <div class="finish-icon-box">👅</div>
+          <div class="finish-icon-box">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 11l19-9-9 19-2-8-8-2z"/>
+            </svg>
+          </div>
           <div class="finish-title">Finishing & tasting</div>
         </div>
         <div class="finish-body">
@@ -1398,7 +1412,4 @@
       <div class="tag">warm-brown #C4A882</div>
       <div class="tag">--ochre #F2D896 (mise accent)</div>
     </div>
-    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not new tokens, just RGB values used inline for these two specific components. Do not add them to <span class="code-inline">tokens.ts</span>.</p>
-
-    <h4>Conditional rendering rule</h4>
-    <p>Every new section is conditionally rendered — if the data field is absent or empty, the section does not appear and does not leave a gap. The page degrades gracefully for recipes that haven't been expanded yet (i.e. most of the current seed library). A recipe with no <span class="code-inline">before_you_start</span>, <span class="code-inline">equipment</span>, <span class="code-inline">mise_en_place</span>, <span class="code-inline">finishing_note</span
+    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not
