@@ -25,6 +25,64 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-05 · OPEN
+**From:** Product Designer
+**Subject:** Two design additions to `recipe/[id].tsx` — "A note" truncation + recipe card v2 redesign
+**Why:** Patrick confirmed both items in the 05 May design session. Neither requires schema changes. Both can ship independently of each other and independently of the v2 section handoff already in this file.
+
+---
+
+**ITEM 1 — "A note" collapsible text block**
+
+The field is `recipe.description`. Currently it renders in full, no truncation, inside a `bgDeep` rounded box with a bold "A note: " label prefix (line 454 of `recipe/[id].tsx`).
+
+**What to change:**
+- Clamp the text to **3 lines** by default (`numberOfLines={3}` on the inner `<Text>`).
+- Below the clamped text, render a `<Pressable>` with label **"Read more"** in `tokens.primary` (rust), 12px, `fonts.sansBold`.
+- When expanded, show full text and change the label to **"Show less"**.
+- State: `const [noteExpanded, setNoteExpanded] = useState(false)` — local, no persistence.
+- Only render the toggle if the text actually overflows 3 lines. Use `onTextLayout` to measure — if `nativeEvent.lines.length <= 3`, hide the Pressable entirely.
+- The outer container and styling stay the same — no visual change to the box itself.
+
+**Microcopy:** "Read more" / "Show less" — lowercase, no ellipsis on the label itself. The clamped text naturally trails off with the OS ellipsis (`ellipsizeMode="tail"`).
+
+**Accessibility:** The Pressable needs `accessibilityLabel="Read full note"` when collapsed and `accessibilityLabel="Show less of note"` when expanded. `accessibilityRole="button"`.
+
+**Files to touch:** `mobile/app/recipe/[id].tsx` only.
+
+---
+
+**ITEM 2 — Recipe card redesign for Kitchen list**
+
+The v2 design language established in `docs/prototypes/recipe-detail-v2.html` needs to carry through to the browse cards on the Kitchen screen. Currently the cards use a simpler layout. The redesign should bring the card visual language into alignment without a full component rewrite — it's a style pass, not a structural change.
+
+**Spec (see `docs/prototypes/recipe-card-v2.html` for the visual reference):**
+
+Card surface: `tokens.surface` (`#FFFFFF`), `borderRadius: 14`, `border: 1px solid tokens.line` (`#D8E4D6`), subtle shadow `0 2px 8px rgba(0,0,0,0.06)`.
+
+Layout (top to bottom):
+1. **Hero image** — square crop, full card width, `borderTopLeftRadius: 14`, `borderTopRightRadius: 14`. "Photos soon" badge bottom-right if `hasStagePhotos === false` (existing logic — keep as-is).
+2. **Source chip** — overlaid bottom-left of the image (on top of hero scrim). `👨‍🍳 [Chef name]` in `tokens.primary` on a rust-tint pill (`rgba(184,64,48,0.10)` bg, `rgba(184,64,48,0.18)` border). Only render if `recipe.source?.chef` is present.
+3. **Card body** — padding `12px 14px 14px`.
+   - Recipe title: `fonts.display` (Playfair Display), 17px, `tokens.ink`, `letterSpacing: -0.3`. Single line, truncate with ellipsis.
+   - Tagline: `fonts.sans`, 12px, italic, `tokens.muted`. 2-line max, ellipsis.
+   - **At-a-glance strip** — horizontal row, `marginTop: 8`, separated by a thin `tokens.line` divider above. Three data points only: total time (⏱ `total_time_minutes` min), difficulty (📊 beginner/intermediate/advanced), and cuisine (first cuisine category tag). Font: `fonts.sans`, 11px, `tokens.muted`. If `total_time_minutes` is absent (old seed recipes), omit the strip entirely — don't show dashes.
+   - **Whole-food badge** — only if `recipe.whole_food_verified === true`. Small sage-green pill, same treatment as in the detail page. Sits below the at-a-glance strip.
+
+**What does NOT change:** card tap behaviour, favourite icon, match badge (pantry context), planned-recipe indicator. Those stay exactly as-is.
+
+**Conditional rendering rule:** At-a-glance strip and whole-food badge are both conditional — cards without those fields look like slightly simplified current cards, not broken.
+
+**Files to touch:** `mobile/src/components/RecipeCard.tsx` (or equivalent card component), `mobile/app/(tabs)/index.tsx` if card layout is inlined there.
+
+**Prototype reference:** `docs/prototypes/recipe-card-v2.html`
+
+---
+
+**Blocks:** Kitchen browse experience polish. At-a-glance strip also reinforces DECISION-009 data (gives Patrick a visible reason that the template expansion matters — the data shows up on the card).
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (after Patrick flips repo private)
 **From:** Patrick (via COO)
 **Subject:** Rotate the GitHub PAT and update the embedded remote URL
@@ -662,43 +720,4 @@ _(Designer-to-engineer handoff folded into the consolidated Senior Engineer mult
 **What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
 **What's needed:**
 1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
-2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
-3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable. **Include dark surface recommendations (dark slate, black board, charcoal linen) as preferred first-choice props for all dishes where they work aesthetically.**
-4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match). **For dark direction: slightly richer shadows, deeper blacks, food colours should feel saturated against the dark bg. Avoid over-brightening whites.**
-5. **Schedule recommendation** — propose which 2 showcase recipes to shoot each weekend, ordered by which are easiest to get right first (build Patrick's confidence) and which need most attention.
-**Coordination:** New showcase recipe (chicken schnitzel) needs to be in the seed library before its shoot weekend — coordinate with Senior Engineer on timing.
-**Dark surface prop notes:** The 2×2 browse grid in the approved prototype uses square crops. Props that disappear into the edges of the frame (dark plates, dark boards) look best — the food is the hero, not the surface. Avoid: white plates, bright-wood boards, busy printed linens. Prefer: matte black slate, charcoal/grey linen, raw dark timber, brushed steel.
-**Files touched:** `docs/coo/photography/shot-list-showcase.md`, `docs/coo/photography/shot-list-hero-only.md`, `docs/coo/photography/preflight-checklist.md`, `docs/coo/photography/post-processing-preset.md`
-**Blocks:** First photo weekend (3-4 May 2026)
-
-### HANDOFF → Culinary & Cultural Verifier · 2026-04-29 · OPEN (URGENT)
-**From:** COO
-**Subject:** Audit existing recipes + provide source recipes for 6 NEW additions
-**Why:** v1.0 launch library expanded per DECISION-004. Now ~34 recipes need audit, AND 6 new recipes need authoritative sources before Senior Engineer can populate them.
-**What's done:** Brief at `docs/coo/specialists/culinary-verifier.md`. Recipe library locked per DECISION-004.
-**What's needed:**
-
-1. **Provide source recipes for the 6 new dishes** that Senior Engineer needs to populate. For each, deliver: a chef-attributed source URL (or "traditional" framing if no chef is right), the ingredient list, the steps, plausible substitutions list, the cuisine and type categories, and Australian English check. Output to `docs/coo/culinary-research/<recipe-slug>.md`. The 6:
-   - Chicken schnitzel (consider Adam Liaw or another modern AU chef)
-   - Easy chicken & vegetable stir-fry (Bill Granger, RecipeTinEats Nagi, or "traditional Australian weeknight")
-   - Beef lasagne (consider Marcella Hazan classic or modern AU)
-   - Roast lamb with rosemary & garlic (consider Maggie Beer or "Sunday roast traditional")
-   - Fish & chips (likely "Australian Friday traditional")
-   - Falafel (Levantine — credit cuisine + region; specific chef optional)
-
-2. **Audit pass** on all priority 17 recipes per the format in your brief. Output to `docs/coo/culinary-audit.md`. Required before launch.
-
-3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everywhere.
-
-**Sequence:** Item 1 first (Senior Engineer is blocked on it). Items 2-3 can run in parallel after.
-**Files touched:** `docs/coo/culinary-research/`, `docs/coo/culinary-audit.md`, `mobile/src/data/seed-recipes.ts` (read-only), `docs/prototypes/hone.html` (read-only)
-**Blocks:** Senior Engineer's recipe-add task (#1 above), Photography Director's showcase shoot for chicken schnitzel
-
-### HANDOFF → QA Test Lead · 2026-04-29 · OPEN
-**From:** COO
-**Subject:** Stand up the smoke-test checklist v1
-**Why:** Currently `docs/SMOKE-TEST.md` exists but isn't owned. We need it to be the gate before every build.
-**What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
-**What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
-**Files touched:** `docs/SMOKE-TEST.md`
-**Blocks:** Internal Alpha track g
+2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-
