@@ -56,6 +56,30 @@ const SMASH_BURGER: Recipe = {
   emoji: '🍔',
   hero_fallback: fallback('#8B4513'),
   hero_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80',
+  total_time_minutes: 20,
+  active_time_minutes: 20,
+  equipment: [
+    "Cast iron skillet or heavy carbon steel pan (minimum 26cm)",
+    "Flat, rigid spatula — fish slice or burger spatula, not slotted",
+    "Baking paper cut into small squares — one per patty",
+    "Burger press or flat-bottomed heavy pan (alternative to spatula for the smash)",
+  ],
+  before_you_start: [
+    "Cast iron or heavy steel is not optional. Non-stick pans can't reach the temperature this needs and will warp. Stainless steel works if you don't own cast iron — preheat it longer.",
+    "80/20 beef only. The fat is not background flavour — it's the crust. Lean mince has no fat to render into crispy lace. If your mince says extra lean, use it for something else.",
+    "Season outside only, right before cooking. Salt on the ball draws moisture to the surface and kills the crust. Season the outside of the ball immediately before smashing — not in advance.",
+  ],
+  mise_en_place: [
+    "Weigh and roll the beef into 100g balls — don't overwork, just enough to form a rough sphere. Place on a plate. Do not pack tightly.",
+    "Mix burger sauce (mayo, ketchup, mustard — adjust ratios to taste).",
+    "Slice pickles; dice onion as finely as you can.",
+    "Cut baking paper squares — one per patty.",
+    "Slice the buns. Don't pre-toast — that happens in the pan.",
+    "Cast iron on maximum heat now — it needs 3 full minutes to reach the right temperature.",
+  ],
+  finishing_note: "There is no finishing. Stack it, eat it. The crust softens with every minute that passes and cannot be recovered. Cook them in sequence and eat as they come — don't hold them warm in an oven. The whole point of a smash burger is that 30-second window when the crust is still shatteringly crisp.",
+  leftovers_note: "No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes and cannot be revived. Make only what you'll eat.",
+
   ingredients: [
     {
       id: 'i1', name: 'Beef mince (80/20 fat)', amount: 200, unit: 'g', scales: 'linear',
@@ -176,7 +200,7 @@ const SMASH_BURGER: Recipe = {
     { id: 's6', title: 'Stack and serve', content: 'Sauce on the bottom bun, pickles, onion, patty (cheese-side up), top bun. Eat immediately — smash burgers do not improve with waiting.', why_note: 'Order matters: sauce on bottom bun protects it from moisture. Onion under the patty gets slightly warmed by the meat. Eat within 2 minutes before the crust softens.' },
   ],
   categories: { cuisines: ['american'], types: ['burgers', 'beef'] },
-  whole_food_verified: true,
+  whole_food_verified: false,
 };
 
 const CHICKEN_ADOBO: Recipe = {
@@ -260,6 +284,31 @@ const PASTA_CARBONARA: Recipe = {
   emoji: '🍝',
   hero_fallback: fallback('#C8963C'),
   hero_url: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80',
+  total_time_minutes: 25,
+  active_time_minutes: 25,
+  equipment: [
+    "Large pot for pasta",
+    "Heavy-based frying pan or skillet — NOT non-stick (you need the fond from the guanciale)",
+    "Whisk or fork",
+    "Tongs or pasta fork",
+    "A mug for pasta water reserve",
+  ],
+  before_you_start: [
+    "Make the egg sauce before anything goes on the stove. Once the guanciale fat is in the pan and the pasta is draining, you have about 60 seconds to work. Mix the eggs and cheese now, while everything is cold and calm.",
+    "Off heat means off heat. The pan comes fully off the burner before the egg mixture touches the pasta. The residual heat in the pan and pasta is exactly enough — the stove being on is not.",
+    "The pasta water is your safety net. Keep a full mug next to the stove. If the sauce tightens or starts to look scrambled, a splash of water and fast tossing fixes it. Have it ready.",
+  ],
+  mise_en_place: [
+    "Crack eggs into a bowl, separate the yolks.",
+    "Grate pecorino finely — microplane if you have it, smallest grater holes if not.",
+    "Whisk eggs, pecorino, and cracked pepper into a thick paste now, before anything goes on heat.",
+    "Cut guanciale into 1cm cubes or lardons.",
+    "Bring pasta water to the boil.",
+    "Set a mug next to the stove ready to catch pasta water before you drain.",
+  ],
+  finishing_note: "Taste before plating. The sauce should be savoury, peppery, and rich without being heavy. If it tastes flat, it needs more Pecorino — the cheese is both seasoning and sauce. Plate into warm bowls, top with more grated Pecorino and a fresh crack of pepper.",
+  leftovers_note: "Carbonara does not keep. The egg sauce continues to cook in the residual heat and reheating curdles it further. Make only what you'll eat. If you have leftover guanciale and egg mixture, refrigerate them separately (up to 2 days) and make a fresh batch.",
+
   ingredients: [
     {
       id: 'i1', name: 'Spaghetti', amount: 160, unit: 'g', scales: 'linear',
@@ -303,7 +352,7 @@ const PASTA_CARBONARA: Recipe = {
         },
       ],
     },
-    { id: 'i4', name: 'Whole egg', amount: 1, unit: '', scales: 'fixed' },
+    { id: 'i4', name: 'Whole egg', amount: 1, unit: '', scales: 'linear' },
     {
       id: 'i5', name: 'Pecorino Romano, finely grated', amount: 60, unit: 'g', scales: 'linear',
       substitutions: [
@@ -439,6 +488,29 @@ const ROAST_CHICKEN: Recipe = {
   emoji: '🐔',
   hero_fallback: fallback('#B8721A'),
   hero_url: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c8?w=600&q=80',
+  total_time_minutes: 205,
+  active_time_minutes: 25,
+  equipment: [
+    "Roasting pan or heavy oven dish (not too large — excess space causes drippings to burn)",
+    "Rack inside the roasting pan if available (air circulation = crispier skin)",
+    "Meat thermometer (target 72–74°C breast, 82°C thigh)",
+    "Basting brush (optional)",
+    "Carving board",
+  ],
+  before_you_start: [
+    "Dry brine the day before — or at minimum 2 hours ahead. The overnight salt rest seasons the meat through its full thickness, not just the surface, and desiccates the skin so it crisps instead of steams. Two hours is the minimum; overnight is the difference between good and memorable.",
+    "Butter under the skin, not just on top. The butter on the outside browns the skin; the butter under the skin bastes the breast meat directly as it melts. The breast is the first part of a chicken to dry out — this solves it.",
+    "Rest before carving, for real. Fifteen minutes minimum. Cutting into it early pours all the juices onto the board. A rested chicken carved properly pools its juice in the bowl, not on the cutting board.",
+  ],
+  mise_en_place: [
+    "Day before (or 2+ hours ahead): pat chicken completely dry inside and out with paper towel. Rub ¾ tsp salt per 500g chicken over all surfaces and inside the cavity. Place on a rack in the fridge, uncovered. Do NOT cover it.",
+    "45 minutes before cooking: take chicken out of fridge to temper.",
+    "Soften butter and mix with crushed garlic and thyme leaves.",
+    "Preheat oven to 230°C (fan 210°C) during the last 20 minutes of tempering.",
+  ],
+  finishing_note: "Carve the chicken and taste a piece of breast without any sauce. It should taste genuinely seasoned all the way through — not just salted on the surface. The skin should shatter slightly when you bite it. The pan drippings are the most flavourful thing in the whole dish — don't pour them away. Deglaze with a splash of water or white wine, scrape up all the fond, and pour it over the carved chicken as a simple jus.",
+  leftovers_note: "Roast chicken leftovers are excellent. Cold sliced chicken keeps 3 days refrigerated. Use the carcass for chicken stock — cover with cold water, add a halved onion, carrot, celery, and bay leaf, simmer 2 hours. The stock freezes perfectly.",
+
   ingredients: [
     {
       id: 'i1', name: 'Whole chicken', amount: 1.8, unit: 'kg', scales: 'fixed', prep: 'One chicken feeds 4 — buy a bigger bird for more people, not more chickens',
@@ -683,6 +755,30 @@ const HUMMUS: Recipe = {
   emoji: '🫘',
   hero_fallback: fallback('#C4A04A'),
   hero_url: 'https://images.unsplash.com/photo-1577805947697-89e18249d767?w=600&q=80',
+  total_time_minutes: 900,
+  active_time_minutes: 30,
+  equipment: [
+    "Large bowl or pot for soaking (chickpeas double in size)",
+    "Heavy pot for cooking",
+    "Food processor — NOT a blender (blender produces a gluey texture)",
+    "Microplane or fine grater for garlic",
+    "Shallow bowl for serving",
+  ],
+  before_you_start: [
+    "Soak the chickpeas the night before. Unsoaked dried chickpeas even after long cooking have a hard, grainy centre. 12 hours minimum, 24 is better. Discard the soak water.",
+    "Cook until they crush between two fingers with almost no pressure. This sounds extreme but it's correct. Under-cooked chickpeas produce grainy hummus no matter how long you blend. When in doubt, cook them longer.",
+    "Blend tahini with the lemon first, before the chickpeas go in. This creates the emulsion base that makes hummus silky rather than grainy. It will look broken and thick when you do it — this is correct.",
+  ],
+  mise_en_place: [
+    "Night before: rinse chickpeas and pick out any shrivelled ones or small stones. Cover with at least 3x their volume of cold water — they will double in size. Leave 12–24 hours.",
+    "Day of: drain and rinse the soaked chickpeas. Fill the pot with fresh cold water, add bicarbonate of soda.",
+    "Squeeze lemon juice and measure tahini before the chickpeas finish cooking — you want to start the food processor while they're still hot.",
+    "Peel garlic cloves.",
+    "Fill a small bowl with ice water and measure 60ml ice-cold liquid just before blending.",
+  ],
+  finishing_note: "Taste the hummus and adjust: salt, lemon, or water for consistency. The right texture is thick enough to hold a well in the centre when spread in a bowl — it should not run. Spread in a shallow bowl using the back of a spoon in one circular motion to create the well that catches the olive oil. Fill the well with extra virgin olive oil, scatter a few whole cooked chickpeas, dust with paprika or sumac. Serve with warm flatbread.",
+  leftovers_note: "Keeps 5 days refrigerated in an airtight container. It improves for the first 24 hours as the flavours integrate. It firms up when cold — take it out 20 minutes before serving, or reheat very gently in a pan with a splash of water. Don't microwave — it goes grainy. Drizzle fresh olive oil each time you serve.",
+
   ingredients: [
     { id: 'i1', name: 'Dried chickpeas', amount: 250, unit: 'g', scales: 'linear', prep: 'Tinned chickpeas make edible hummus. They do not make good hummus.',
       substitutions: [
@@ -1156,6 +1252,31 @@ const THAI_GREEN_CURRY: Recipe = {
   emoji: '🍛',
   hero_fallback: fallback('#3D7A3D'),
   hero_url: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80',
+  total_time_minutes: 35,
+  active_time_minutes: 30,
+  equipment: [
+    "Wok (preferred) or very wide, deep frying pan",
+    "Wooden spoon or wok spatula",
+    "Can opener (don't shake the coconut milk)",
+    "Rice cooker or pot for jasmine rice (start before the curry)",
+  ],
+  before_you_start: [
+    "Full-fat coconut milk only. The fat in the coconut cream is what carries the curry paste flavour through the whole dish. Light coconut milk breaks and goes watery — this is the one substitution in this recipe that genuinely changes the dish.",
+    "Cracking the coconut cream is the technique. When you add the thick cream from the top of the can, stir it with the hot paste until the oil separates — you'll see it pool visibly. This is correct and is the foundation of the dish's flavour depth.",
+    "Everything from the wok happens fast. Prep all your vegetables and protein before the wok goes on. Once the paste hits the oil, the dish moves at pace.",
+  ],
+  mise_en_place: [
+    "Slice chicken thighs into bite-sized pieces.",
+    "Open coconut milk without shaking — spoon the thick cream from the top into a separate bowl (roughly the top quarter of the can).",
+    "Halve the Thai eggplants (or prepare your chosen vegetable).",
+    "Measure fish sauce and palm sugar into a small bowl.",
+    "Tear kaffir lime leaves slightly to release their oils (leave whole — remove before eating).",
+    "Have Thai basil ready, leaves picked.",
+    "Start jasmine rice now — it takes 12–15 minutes and should be ready when the curry finishes.",
+  ],
+  finishing_note: "Taste before serving: Thai cooking is built on the balance of salty (fish sauce), sweet (palm sugar), sour (lime), and aromatic (kaffir lime, basil). These need to be in harmony. Add a squeeze of lime if it tastes flat. A little extra fish sauce if it needs salt. If it's too spicy, a teaspoon more palm sugar softens the heat. Serve in deep bowls over jasmine rice.",
+  leftovers_note: "Keeps 3 days refrigerated. The flavour actually deepens — the lime leaf and spices continue to infuse. Reheat gently on the stove (not microwave — the coconut milk can separate unevenly). Stir in a splash of water to loosen if it's thickened. Add the remaining fresh basil again on reheating.",
+
   ingredients: [
     {
       id: 'i1', name: 'Chicken thighs, sliced', amount: 600, unit: 'g', scales: 'linear',
@@ -1179,7 +1300,7 @@ const THAI_GREEN_CURRY: Recipe = {
         { ingredient: 'Yellow curry paste', changes: 'Milder and more turmeric-forward. Same technique but a gentler, more aromatic result.', quality: 'good_swap' },
       ],
     },
-    { id: 'i4', name: 'Thai aubergine', amount: 200, unit: 'g', scales: 'linear',
+    { id: 'i4', name: 'Thai eggplant', amount: 200, unit: 'g', scales: 'linear',
       substitutions: [
         { ingredient: 'Zucchini (courgette), cut in rounds', changes: 'Already in the recipe as an alternative — same technique, milder flavour. Widely available. Cooks slightly faster than eggplant.', quality: 'perfect_swap' },
         { ingredient: 'Broccolini, cut into florets', changes: 'More assertive, slightly bitter. Add in the last 5 minutes — broccolini overcooks fast. Holds its colour well.', quality: 'good_swap', quantity_note: 'add in the last 5 minutes of simmering' },
@@ -1326,6 +1447,31 @@ const PAD_THAI: Recipe = {
   emoji: '🍜',
   hero_fallback: fallback('#C87020'),
   hero_url: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=600&q=80',
+  total_time_minutes: 40,
+  active_time_minutes: 20,
+  equipment: [
+    "Wok (preferred) or the largest, heaviest pan you own",
+    "Tongs or wok spatula",
+    "Bowl for soaking noodles",
+    "Small bowl for pre-mixed sauce",
+  ],
+  before_you_start: [
+    "Soak the noodles in cold water before you start anything else. They need 20 minutes. Hot water or boiling makes them mush by the time they hit the wok.",
+    "The sauce ratio is the dish. Mix tamarind, fish sauce, and palm sugar before the wok goes on and taste it cold — sour leads, then salty, then a whisper of sweet. Adjust now, not mid-cook.",
+    "Maximum heat, always. Wok hei — the smokiness that makes restaurant pad thai different from home pad thai — only happens at very high temperature. Preheat the wok 3 full minutes. The oil should smoke the moment it hits.",
+  ],
+  mise_en_place: [
+    "Soak noodles in cold water NOW before anything else — they need 20 minutes.",
+    "Mix tamarind, fish sauce, and palm sugar in a small bowl — taste and adjust.",
+    "Peel and devein prawns, slice if large. Press tofu dry with paper towel, cut into 1.5cm cubes.",
+    "Crack eggs into a small bowl.",
+    "Slice spring onions, separating white and green ends (white ends go into the wok early, green ends garnish).",
+    "Measure and prepare all garnishes: peanuts, bean sprouts, lime wedges.",
+    "Wok on maximum heat for the last 3 minutes of your mise — it needs to be ripping hot before the oil goes in.",
+  ],
+  finishing_note: "Taste before plating: the noodles should be well-seasoned — slightly sweet-sour-salty from the caramelised sauce. Adjust with a small splash of fish sauce if needed. The bean sprouts and spring onions go on at plating — their job is freshness and crunch against the hot noodles. Squeeze lime generously over everything. The lime is not garnish; it's part of the dish.",
+  leftovers_note: "Pad thai does not keep well. The noodles absorb remaining sauce and stick together as they cool, and the bean sprouts go limp. If you have leftovers, reheat in a hot pan with a splash of water. Don't microwave — the noodles go gluey.",
+
   ingredients: [
     { id: 'i1', name: 'Flat rice noodles (5mm)', amount: 160, unit: 'g', scales: 'linear',
       substitutions: [
@@ -1337,8 +1483,9 @@ const PAD_THAI: Recipe = {
       id: 'i2', name: 'Prawns, sliced', amount: 200, unit: 'g', scales: 'linear',
       substitutions: [
         { ingredient: 'Pork belly, thinly sliced', changes: 'Richer and fattier — less traditional but deeply satisfying. Cook in the wok the same way.', quality: 'great_swap' },
-        { ingredient: 'Firm tofu only (no meat)', changes: 'Fully vegan version. Fry the tofu first until golden before adding to the wok.', quality: 'good_swap' },
-        { ingredient: 'Squid, cleaned and sliced', changes: 'Classic Thai market Pad Thai. Cook very fast — 60–90 seconds only or it turns rubbery.', quality: 'great_swap' },
+        { ingredient: 'Extra firm tofu, increase to 200g', changes: 'Vegetarian version — remove the prawns entirely and increase tofu to 200g. The dish reads as a complete vegetarian pad thai, not a compromise. Fry the tofu until golden before the noodles go in.', quality: 'good_swap' },
+        { ingredient: 'Chicken thigh, thinly sliced', changes: 'Cooks in the same time as prawns. Use 180g. Slightly richer and less sweet than prawn. Slice thin so it cooks in 90 seconds at high heat.', quality: 'great_swap', quantity_note: 'use 180g chicken thigh, thinly sliced' },
+        { ingredient: 'Squid, scored and sliced', changes: 'Traditional Thai market alternative. Needs the same high heat. Do not overcook — 60 seconds maximum or it turns rubbery.', quality: 'great_swap' },
       ],
     },
     { id: 'i3', name: 'Eggs', amount: 2, unit: '', scales: 'linear' },
@@ -1782,6 +1929,30 @@ const WEEKDAY_BOLOGNESE: Recipe = {
   },
   emoji: '🍝',
   hero_fallback: ['#8B3A2F', '#C44536', '#D4A574'],
+  total_time_minutes: 75,
+  active_time_minutes: 25,
+  equipment: [
+    "Heavy-based wide pan or Dutch oven",
+    "Wooden spoon or silicone spatula",
+    "Large pot for pasta",
+    "Fine grater or microplane for Parmigiano",
+  ],
+  before_you_start: [
+    "The soffritto is 30% of the final flavour. Twelve to fifteen minutes over medium heat, no shortcuts. If you rush it on high heat it browns — that's a different, less sweet, less complex base. You want the vegetables to dissolve into sweetness, not colour.",
+    "Milk goes in before wine and tomatoes — every time. It tenderises the meat proteins before the acid can tighten them. This is the step that separates weekday ragù from the full Sunday version.",
+    "A bare simmer, not a bubble. One small bubble every couple of seconds. A rolling simmer makes the meat tough and stringy. You're making collagen convert to gelatin — that only happens gently.",
+  ],
+  mise_en_place: [
+    "Fine dice the onion, carrot, and celery — all the same size so they cook evenly.",
+    "Mince or slice the garlic (it goes in late — with the wine).",
+    "Measure the milk and wine into separate containers — they go in sequentially and you don't want to be measuring mid-cook.",
+    "Open the tinned tomatoes and crush by squeezing through your fist, or use scissors in the tin.",
+    "Have the stock measured and warm — cold stock drops the simmer temperature.",
+    "Start the pasta water about 30 minutes before the ragù finishes.",
+  ],
+  finishing_note: "Before the pasta goes in, taste the ragù aggressively. It needs more salt than you think — the pasta and Parmigiano will dilute the seasoning. The flavour should be deep, meaty, slightly sweet from the carrot and the milk, with a clean red wine note. If it tastes flat, salt. If it tastes thin, reduce another 5 minutes. If it tastes acidic, a pinch of sugar or a small knob of butter will round it out. Finish with Parmigiano stirred through off-heat.",
+  leftovers_note: "The ragù improves significantly overnight. Make a double batch and refrigerate or freeze the extra ragù (without pasta). Freezes perfectly for 3 months. Reheat gently with a splash of water to loosen.",
+
   ingredients: [
     { id: 'oil', name: 'Olive oil', amount: 2, unit: 'tbsp', scales: 'linear' },
     { id: 'onion', name: 'Onion, fine dice', amount: 1, unit: 'medium', scales: 'linear',
@@ -2171,7 +2342,7 @@ const LAMB_SHAWARMA: Recipe = {
   id: 'lamb-shawarma',
   title: 'Home Oven Lamb Shawarma',
   tagline: 'Slow-roast shoulder with a spice bark — no rotisserie required',
-  description: 'Real shawarma meat drips off a vertical spit. You will not build one of those in a London kitchen. But shoulder cooked low-and-slow, rested, then blasted high, gets you about 90% of the way — and the leftover fat in the tray is a treasure.',
+  description: 'Real shawarma meat drips off a vertical spit. You will not build one of those in a home kitchen. But shoulder cooked low-and-slow, rested, then blasted high, gets you about 90% of the way — and the leftover fat in the tray is a treasure.',
   base_servings: 6,
   time_min: 300,
   difficulty: 'intermediate',
@@ -2185,6 +2356,30 @@ const LAMB_SHAWARMA: Recipe = {
   emoji: '🥩',
   hero_url: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600&q=80',
   hero_fallback: fallback('#6B3A2A'),
+  total_time_minutes: 420,
+  active_time_minutes: 35,
+  equipment: [
+    "Deep roasting tray (deep enough to hold the whole shoulder with clearance)",
+    "Baking paper AND foil (both needed — paper prevents foil touching the meat directly)",
+    "Two forks for shredding",
+    "Meat thermometer (target ~90°C internal for pull-apart collagen conversion)",
+  ],
+  before_you_start: [
+    "Start the marinade the night before. The yoghurt marinade needs at least 6 hours — overnight gives a noticeably better result. The salt seasons through the full thickness of the shoulder; less than 6 hours seasons the surface only.",
+    "Don't peek during the 4-hour low-and-slow. The sealed tray traps steam that keeps the meat from drying out. Opening it even once breaks the seal and you lose an hour of accumulated moisture. Set a timer and walk away.",
+    "The fat in the tray after cooking is the most flavourful thing in the dish. Don't drain it. Shred the meat directly into it so every piece gets coated before you serve.",
+  ],
+  mise_en_place: [
+    "Night before: combine all marinade ingredients (yoghurt, garlic, lemon, olive oil, all spices) into a thick paste. Score the shoulder in a few places. Coat every surface thoroughly, including under any skin flaps. Cover and refrigerate overnight.",
+    "Day of, 1 hour before roasting: take shoulder out of fridge to temper.",
+    "Preheat oven to 160°C (fan 140°C).",
+    "Cut baking paper to fit the tray, tear foil for the seal.",
+    "Warm the flatbreads in a dry pan just before serving.",
+    "Prepare the condiments: tahini sauce, pickled turnips.",
+  ],
+  finishing_note: "Taste a shred of lamb from the tray before serving. It should be deeply spiced, savoury, slightly caramelised at the edges. Season the assembled tray with a little extra salt if the meat needs it. The wrap needs three things to be balanced: fatty spiced lamb + creamy tahini + the sharp acid of pickled turnips. If the pickled turnips you bought are not actually sour, add a splash of white wine vinegar to sliced raw onion as a quick substitute.",
+  leftovers_note: "Built for leftovers. Shredded shawarma keeps 3 days in the fridge, freezes well, and reheats best in a pan with a splash of water — not the microwave.",
+
   ingredients: [
     { id: 'i1', name: 'Bone-in lamb shoulder', amount: 2, unit: 'kg', scales: 'fixed', prep: 'Bone-in — the bone keeps it from drying out during the long cook',
       substitutions: [
@@ -2702,7 +2897,7 @@ const BUTTER_CHICKEN: Recipe = {
   tagline: 'Tandoor-inspired chicken in a tomato-cream sauce — no jar',
   description: 'Butter chicken (murgh makhani) was invented in Delhi in the 1950s by Kundan Lal Gujral and Kundan Lal Jaggi — the story is that leftover tandoor chicken was simmered in a rich tomato and butter sauce to stop it drying out. A happy accident. This version does the whole thing from scratch, which takes time but tastes completely different from any commercial version you\'ve tried.',
   base_servings: 4,
-  time_min: 90,
+  time_min: 330,
   difficulty: 'intermediate',
   tags: ['indian', 'chicken', 'tomato', 'cream', 'curry'],
   user_added: false,
@@ -2716,6 +2911,30 @@ const BUTTER_CHICKEN: Recipe = {
   hero_fallback: fallback('#D4660A'),
   categories: { cuisines: ['indian'], types: ['chicken'] },
   whole_food_verified: true,
+  total_time_minutes: 330,
+  active_time_minutes: 45,
+  equipment: [
+    "Large ziplock bag or covered bowl for marinating",
+    "Oven rack set over a baking tray (essential for the grill step — a flat tray won't char the underside)",
+    "Heavy-based pot or Dutch oven for the sauce",
+    "Stick blender or countertop blender",
+    "Fine grater for ginger",
+  ],
+  before_you_start: [
+    "Start with the marinade — ideally the night before. The chicken needs at least 4 hours. Overnight gives a noticeably better result: the spices penetrate deeper and the lactic acid does more work on the texture.",
+    "The char on the chicken is not a mistake — it's the point. When you grill the marinated chicken, you want edges that look slightly burned. Those charred bits are the tikka quality that gives butter chicken its depth. A uniformly pale oven-roasted piece of chicken produces a flat result.",
+    "Blend the sauce completely smooth. A stick blender in the pot is fine. The silk is non-negotiable — chunks of onion in butter chicken sauce are a different dish.",
+  ],
+  mise_en_place: [
+    "Day before / 4+ hours ahead: combine all marinade ingredients into a paste, cut chicken thighs into large chunks (~5–6cm), coat thoroughly in marinade, cover and refrigerate.",
+    "Day of, 30 minutes before cooking: take chicken out of the fridge to temper.",
+    "Dice the onion finely; grate remaining ginger; slice remaining garlic.",
+    "Measure spices, have stock ready nearby.",
+    "Set oven rack to middle-high position for the grill step.",
+  ],
+  finishing_note: "Before plating, taste for three things: salt (it probably needs more), sweetness (an extra half teaspoon of honey if the tomatoes are acidic), and heat (a pinch of cayenne if it's too mild). The sauce should be thick enough to coat a spoon — if it's too thin, simmer uncovered 5 more minutes. Serve over basmati with naan alongside. A small swirl of extra cream on top cools the surface so the dish isn't scalding when it hits the table.",
+  leftovers_note: "The sauce genuinely improves overnight — the spices integrate and the sweetness rounds out. Refrigerate for up to 3 days or freeze (sauce only, not rice) for 3 months. Reheat gently — don't boil, the cream can split. Add a splash of water when reheating.",
+
   ingredients: [
     { id: 'i1', name: 'Chicken thighs, boneless skinless', amount: 800, unit: 'g', scales: 'linear', prep: 'Cut into large chunks — smaller pieces dry out in the oven',
       substitutions: [
@@ -3137,6 +3356,31 @@ const BARRAMUNDI: Recipe = {
   hero_fallback: fallback('#4A8090'),
   categories: { cuisines: ['australian'], types: ['seafood'] },
   whole_food_verified: true,
+  total_time_minutes: 50,
+  active_time_minutes: 15,
+  equipment: [
+    "Stainless steel or cast iron pan — NOT non-stick (you need direct contact heat)",
+    "Fish spatula (thin and flexible — for flipping without breaking the fillet)",
+    "Wire rack set over a baking tray (for skin drying)",
+    "Ladle or large spoon (for basting and spooning butter sauce)",
+    "Kitchen thermometer — optional, target 60°C internal",
+  ],
+  before_you_start: [
+    "Dry the skin 30 minutes before cooking. This is the whole technique. Wet skin steams against the pan and never crisps. Set a timer and put the fillets skin-side up on a rack in the fridge, uncovered.",
+    "Don't touch the fish while the skin is searing. It will stick initially, then release naturally when the skin is ready. Lifting it early tears the skin and ruins the crust. Set a timer for 5 minutes and step back.",
+    "Brown butter happens fast — watch it. The butter goes from golden to burnt in about 30 seconds at the end. Have your lemon juice measured and ready to stop the browning the moment you see the right colour.",
+  ],
+  mise_en_place: [
+    "30 minutes before cooking: pat fillets completely dry with paper towel, place skin-side up on a wire rack over a tray. Put in the fridge uncovered.",
+    "Just before cooking: pat skin one more time — any remaining moisture will pop and spit in the hot pan.",
+    "Season skin side with salt and white pepper immediately before placing in the pan — not before.",
+    "Squeeze lemon juice into a small bowl and have it ready — this stops the butter browning when you add it.",
+    "Pat capers completely dry — wet capers in hot butter spit violently.",
+    "Slice garlic thinly; roughly chop parsley.",
+  ],
+  finishing_note: "Taste the brown butter sauce before plating. It should be nutty, bright from the lemon, salty from the capers, and rounded from the garlic. If it's too sharp, a small extra knob of cold butter whisked in will soften it. Plate the fish skin-side up always — never rest the crispy skin on a plate. Spoon the sauce over generously and eat immediately.",
+  leftovers_note: "Pan-seared fish is not a leftover dish. The skin goes flabby within 10 minutes and cannot be revived. If you have leftover fish, flake it cold into a salad the next day — but the crispy skin experience is gone.",
+
   ingredients: [
     { id: 'i1', name: 'Barramundi fillets, skin-on', amount: 4, unit: '180g portions', scales: 'linear', prep: 'Pat completely dry with paper towel — the dryer the skin, the crispier it gets',
       substitutions: [
@@ -3209,6 +3453,33 @@ const PAVLOVA: Recipe = {
   hero_fallback: fallback('#F5F0E8'),
   categories: { cuisines: ['australian'], types: ['baking'] },
   whole_food_verified: true,
+  total_time_minutes: 210,
+  active_time_minutes: 30,
+  equipment: [
+    "Stand mixer or hand mixer — cannot be done by hand",
+    "Large glass or stainless steel bowl (NOT plastic — fat absorbs into plastic)",
+    "Cut lemon for wiping equipment",
+    "Baking tray lined with baking paper",
+    "Palette knife or large spoon for shaping",
+    "Sifter for cornflour",
+  ],
+  before_you_start: [
+    "Conventional oven, not fan. Fan creates uneven airflow that can brown the meringue unevenly or cause it to collapse. If your oven only has fan mode, reduce temperature by 10°C and watch closely.",
+    "Grease is the enemy. Any trace of fat — even residue from dish soap in the bowl or yolk in the whites — will prevent the egg white foam from forming. Wipe your bowl and whisk with a piece of cut lemon before you start, then dry thoroughly.",
+    "Don't make this on a humid day. Australian summer humidity and pavlova are enemies — the meringue absorbs moisture and weeps. Best made in dry weather. If it's muggy, run the air conditioning in the kitchen.",
+  ],
+  mise_en_place: [
+    "Separate eggs at least 30 minutes before — room temperature whites whip to greater volume than cold.",
+    "Wipe bowl and whisk with cut lemon, dry thoroughly.",
+    "Draw a 22cm circle on baking paper, flip ink-side down onto the tray.",
+    "Preheat conventional oven to 150°C (no fan).",
+    "Measure caster sugar into a bowl ready to add gradually.",
+    "Sift cornflour into a small bowl.",
+    "Have fruit washed and prepared — but don't hull strawberries or slice kiwi until just before serving.",
+  ],
+  finishing_note: "Taste the whipped cream before it goes on — it should be lightly sweet. The pavlova itself is very sweet; the cream needs to balance it. The final dish should have: sweetness (meringue), richness (cream), tang (passionfruit), freshness (strawberries), and slight earthiness (kiwi). Top no more than 30 minutes before serving — the cream begins to soften the shell underneath.",
+  leftovers_note: "Untopped meringue keeps in an airtight container for 2 days in dry conditions. Do not refrigerate — the moisture ruins the shell. Once topped with cream and fruit, serve within 1–2 hours. Make the meringue ahead; assemble just before serving.",
+
   ingredients: [
     { id: 'i1', name: 'Egg whites, at room temperature', amount: 6, unit: 'large', scales: 'linear', prep: 'Separated at least 30 minutes before — warm egg whites whip to greater volume than cold ones',
       substitutions: [
