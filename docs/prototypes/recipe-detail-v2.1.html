@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone · Recipe Detail v2.1 — Pasta Carbonara</title>
+<style>
+  /* ── Design tokens — Refresh C (Editorial Modern) ─────────── */
+  /* Colour-only swap from dark v0.7. Layout unchanged.          */
+  :root {
+    --bg:          #F7F1DE;   /* warm butter — cookbook paper */
+    --bg-deep:     #EDE5C8;
+    --surface:     #FFFFFF;
+    --surface-mid: #FAF5EA;
+    --surface-low: #F2EBDA;
+    --ink:         #111410;   /* deep, slightly warm black */
+    --ink-soft:    #3D3830;
+    --muted:       #7A766E;
+    --gold:        #B84030;   /* deep rust — primary accent */
+    --gold-deep:   #8E2E20;
+    --gold-tint:   rgba(184,64,48,0.08);
+    --gold-line:   rgba(184,64,48,0.18);
+    --sage:        #2E5E3E;   /* forest green — replaces sage */
+    --sage-tint:   rgba(46,94,62,0.10);
+    --ochre:       #A05C28;   /* warm amber — mise en place */
+    --line:        #E4DAC0;
+    --line-strong: #CEC4A8;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-sans:    -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+    --red:          #C03028;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0A0A0A;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+    color: var(--ink);
+  }
+
+  /* ── Page heading ──────────────────────────────────────────── */
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 48px;
+    text-align: center;
+  }
+
+  /* ── Section anatomy grid ──────────────────────────────────── */
+  .anatomy-grid {
+    display: flex;
+    gap: 24px;
+    max-width: 980px;
+    width: 100%;
+    margin-bottom: 60px;
+    align-items: flex-start;
+  }
+  .anatomy-legend {
+    flex: 0 0 220px;
+    position: sticky;
+    top: 20px;
+  }
+  .anatomy-legend h3 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-glance   { background: var(--gold); }
+  .dot-know     { background: #5B8FD4; }
+  .dot-equip    { background: rgba(232,184,48,0.4); }
+  .dot-ingred   { background: var(--sage); }
+  .dot-mise     { background: var(--ochre); }
+  .dot-steps    { background: var(--ink); }
+  .dot-finish   { background: #C4A882; }
+  .dot-leftover { background: var(--muted); }
+
+  /* ── Phone frame ───────────────────────────────────────────── */
+  .phone-frame {
+    width: 390px;
+    min-width: 390px;
+    background: var(--bg);
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .phone-scroll {
+    max-height: 820px;
+    overflow-y: auto;
+    border-radius: 44px;
+    scrollbar-width: none;
+  }
+  .phone-scroll::-webkit-scrollbar { display: none; }
+
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+  }
+  .hero img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, transparent 50%, rgba(8,8,8,0.85) 100%);
+  }
+  .hero-top-bar {
+    position: absolute;
+    top: 52px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 18px;
+  }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .icon-btn svg { opacity: 0.9; }
+  .hero-bottom {
+    position: absolute;
+    bottom: 14px; left: 18px; right: 18px;
+  }
+  .photos-soon-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    backdrop-filter: blur(6px);
+  }
+  .source-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--gold-tint);
+    border: 1px solid var(--gold-line);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  /* ── Recipe header ─────────────────────────────────────────── */
+  .recipe-header {
+    padding: 16px 18px 0;
+  }
+  .recipe-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.15;
+    letter-spacing: -0.4px;
+    margin-bottom: 5px;
+  }
+  .recipe-tagline {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 14px;
+  }
+  .whole-food-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--sage-tint);
+    border: 1px solid rgba(170,204,168,0.22);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--sage);
+    margin-bottom: 18px;
+  }
+
+  /* ── AT-A-GLANCE row ───────────────────────────────────────── */
+  .at-a-glance {
+    background: var(--surface);
+    border-radius: 14px;
+    margin: 0 14px 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+  }
+  .glance-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .glance-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .glance-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    border-right: 1px solid var(--line);
+  }
+  .glance-item:last-child { border-right: none; }
+  .glance-icon { font-size: 16px; }
+  .glance-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .glance-key {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .glance-no {
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  /* ── WHAT TO KNOW section ──────────────────────────────────── */
+  .framing-block {
+    margin: 0 14px 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .framing-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px 10px;
+    background: #DE5F4B;
+  }
+  .framing-icon {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .framing-title {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #FAF3EE;
+  }
+  .framing-body-wrap {
+    background: #FFF8F6;
+    border: 1px solid rgba(222,95,75,0.14);
+    border-top: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    padding: 13px 14px 14px;
+  }
+  .framing-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .framing-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: #3A2A22;
+    line-height: 1.52;
+  }
+  .framing-bullet {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #DE5F4B;
+    margin-top: 6.5px;
+    flex-shrink: 0;
+  }
+
+  /* ── Section dividers ──────────────────────────────────────── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .section-count {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 20px 18px 20px;
+  }
+
+  /* ── Servings selector ─────────────────────────────────────── */
+  .servings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: var(--surface);
+    margin: 0 14px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .servings-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .servings-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    overflow: hidden;
+  }
+  .servings-btn {
+    width: 34px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: var(--gold);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    font-family: var(--font-sans);
+  }
+  .servings-num {
+    width: 28px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    line-height: 32px;
+  }
+
+  /* ── Ingredients ───────────────────────────────────────────── */
+  .ingredient-list { padding: 0 14px; margin-bottom: 4px; }
+  .ingredient-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border: 1px solid var(--line);
+    gap: 8px;
+  }
+  .ingredient-name {
+    font-size: 14px;
+    color: var(--ink);
+    flex: 1;
+    line-height: 1.3;
+  }
+  .ingredient-amount {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .swap-chip {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    background: var(--gold-tint);
+    border: 1px solid var(--gold-line);
+    border-radius: 20px;
+    font-size: 10px;
+    color: var(--gold);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Equipment ─────────────────────────────────────────────── */
+  .equipment-row {
+    padding: 0 14px;
+    margin-bottom: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .equip-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    background: rgba(232,184,48,0.07);
+    border: 1px solid rgba(232,184,48,0.18);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .equip-icon { font-size: 14px; }
+
+  /* ── MISE EN PLACE ─────────────────────────────────────────── */
+  .mise-section {
+    margin: 0 14px 6px;
+    background: #FEF4E2;   /* pale amber — distinct prep zone */
+    border-radius: 12px;
+    border: 1px solid rgba(160,92,40,0.18);
+    overflow: hidden;
+  }
+  .mise-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid rgba(160,92,40,0.18);
+  }
+  .mise-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mise-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ochre);
+  }
+  .mise-sub {
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .mise-progress {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .mise-progress span { color: var(--ochre); }
+  .mise-items { padding: 10px 0; }
+  .mise-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .mise-item:hover { background: rgba(255,255,255,0.35); }
+  .mise-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .mise-item.done .mise-check {
+    background: var(--ochre);
+    border-color: var(--ochre);
+  }
+  .mise-item.done .mise-check::after {
+    content: '';
+    width: 10px; height: 6px;
+    border-left: 2px solid #FAFAF7;
+    border-bottom: 2px solid #FAFAF7;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+  .mise-text {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    flex: 1;
+  }
+  .mise-item.done .mise-text {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: rgba(138,126,114,0.6);
+  }
+
+  /* ── START COOKING CTA ─────────────────────────────────────── */
+  .start-cooking-bar {
+    margin: 20px 14px 8px;
+  }
+  .start-cooking-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--gold);
+    border-radius: 14px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    color: #FAFAF7;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+  }
+  .start-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ── COOK STEPS ────────────────────────────────────────────── */
+  .steps-section { padding: 0 14px; }
+  .step-card {
+    background: var(--surface);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid var(--line);
+  }
+  .step-photo {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    background: var(--surface-mid);
+    position: relative;
+  }
+  .step-photo-placeholder {
+    width: 100%; height: 160px;
+    background: linear-gradient(135deg, #1E1E1E 0%, #151515 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+  }
+  .step-photo-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .step-photo-soon {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 3px 7px;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .step-body { padding: 14px; }
+  .step-number-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .step-number {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    color: #FAFAF7;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    flex: 1;
+    line-height: 1.3;
+  }
+  .step-timer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-tint);
+    border: 1px solid var(--gold-line);
+    border-radius: 20px;
+    padding: 3px 8px;
+  }
+  .step-content {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .why-note {
+    display: flex;
+    gap: 8px;
+    background: rgba(232,184,48,0.06);
+    border-left: 2.5px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+  }
+  .why-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 3px;
+  }
+  .why-text {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  /* ── FINISHING & TASTING ───────────────────────────────────── */
+  .finish-block {
+    margin: 0 14px 6px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .finish-header {
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 14px 10px;
+    background: #8A6040;
+  }
+  .finish-icon-box {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .finish-title {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #FAF3EE;
+  }
+  .finish-body {
+    background: #FDF7F2;
+    border: 1px solid rgba(138,96,64,0.14);
+    border-top: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    padding: 13px 14px 14px;
+    font-size: 13px;
+    color: #3A2A18;
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  /* ── LEFTOVERS ─────────────────────────────────────────────── */
+  .leftovers-block {
+    margin: 0 14px 6px;
+    background: var(--surface-low);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    padding: 14px;
+  }
+  .leftovers-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .leftovers-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .leftovers-body {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── Footer attribution ────────────────────────────────────── */
+  .attribution-footer {
+    margin: 6px 14px 30px;
+    padding: 14px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .attribution-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .attribution-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--gold-tint);
+    border: 1px solid var(--gold-line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .attribution-text { flex: 1; }
+  .attribution-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1px;
+  }
+  .attribution-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .attribution-link {
+    font-size: 11px;
+    color: var(--gold);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── Rationale & handoff ───────────────────────────────────── */
+  .doc-section {
+    max-width: 740px;
+    width: 100%;
+    margin-top: 60px;
+  }
+  .doc-section h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .doc-section .lead {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.55;
+  }
+  .doc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 700px) { .doc-grid { grid-template-columns: 1fr; } }
+  .doc-card {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    padding: 16px;
+  }
+  .doc-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .doc-card p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .doc-card p:last-child { margin-bottom: 0; }
+  .handoff-block {
+    background: var(--surface-low);
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    padding: 22px;
+    margin-top: 14px;
+  }
+  .handoff-block h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .handoff-block h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 14px 0 6px;
+  }
+  .handoff-block p, .handoff-block li {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+  .handoff-block ul, .handoff-block ol {
+    padding-left: 18px;
+    margin-bottom: 8px;
+  }
+  .handoff-block li { margin-bottom: 5px; }
+  .code-inline {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.07);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ochre);
+  }
+  .tag-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0;
+  }
+  .tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line-strong);
+    color: var(--muted);
+  }
+  .tag.green { background: var(--sage-tint); border-color: rgba(170,204,168,0.2); color: var(--sage); }
+  .tag.gold  { background: var(--gold-tint); border-color: var(--gold-line); color: var(--gold); }
+  .tag.blue  { background: rgba(42,88,152,0.08); border-color: rgba(42,88,152,0.18); color: #2A5898; }
+  .risk-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .risk-row:last-child { border-bottom: none; }
+  .risk-badge {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .risk-high { background: rgba(224,82,82,0.15); color: var(--red); border: 1px solid rgba(224,82,82,0.2); }
+  .risk-med  { background: rgba(232,184,48,0.12); color: var(--gold); border: 1px solid var(--gold-line); }
+  .risk-low  { background: rgba(170,204,168,0.12); color: var(--sage); border: 1px solid rgba(170,204,168,0.2); }
+  .risk-text { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<p class="page-title" style="text-align:center">Recipe Detail v2 · Pasta Carbonara</p>
+<p class="page-sub">Full 8-section template · Dark v0.7 tokens locked · Open in Chrome for best rendering</p>
+
+<!-- ── LAYOUT ────────────────────────────────────────── -->
+<div class="anatomy-grid">
+
+  <!-- Legend -->
+  <div class="anatomy-legend">
+    <h3>Section anatomy</h3>
+    <div class="legend-item"><div class="legend-dot dot-glance"></div><strong>At a glance</strong> — compact horizontal row, &lt;2s read</div>
+    <div class="legend-item"><div class="legend-dot dot-know"></div><strong>What to know</strong> — framing block, blue-left border, before any heat</div>
+    <div class="legend-item"><div class="legend-dot dot-equip"></div><strong>Equipment</strong> — gold-tint pills, scannable</div>
+    <div class="legend-item"><div class="legend-dot dot-ingred"></div><strong>Ingredients</strong> — existing row style, swap chips</div>
+    <div class="legend-item"><div class="legend-dot dot-mise"></div><strong>Mise en place</strong> — ochre accent, lighter type, no photos, tappable checkboxes</div>
+    <div class="legend-item"><div class="legend-dot dot-steps"></div><strong>Cook steps</strong> — unchanged: photo + step + why-note</div>
+    <div class="legend-item"><div class="legend-dot dot-finish"></div><strong>Finishing & tasting</strong> — warm-brown border, italic chef voice</div>
+    <div class="legend-item"><div class="legend-dot dot-leftover"></div><strong>Leftovers</strong> — low surface, muted, conclusive</div>
+
+    <div style="margin-top:20px; padding:12px; background:rgba(232,184,48,0.07); border:1px solid var(--gold-line); border-radius:10px;">
+      <div style="font-size:10px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--gold); margin-bottom:6px;">Key distinction</div>
+      <div style="font-size:12px; color:var(--ink-soft); line-height:1.55;">Mise en place uses <strong style="color:var(--ochre)">lighter type + no photos</strong> — the cook reads it with the fridge open. Cook steps use full-weight type + photos — the cook reads with hands wet. Same page, different cognitive modes.</div>
+    </div>
+  </div>
+
+  <!-- Phone -->
+  <div class="phone-frame">
+    <div class="phone-scroll" id="phoneScroll">
+
+      <!-- HERO -->
+      <div class="hero">
+        <img src="https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80" alt="Pasta Carbonara" />
+        <div class="hero-scrim"></div>
+        <div class="hero-top-bar">
+          <div class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5EFE8" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </div>
+          <div style="display:flex;gap:8px">
+            <div class="icon-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5EFE8" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="icon-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5EFE8" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="hero-bottom">
+          <div class="photos-soon-badge">📷 Stage photos coming soon</div><br>
+          <div class="source-chip">👨‍🍳 Gordon Ramsay</div>
+        </div>
+      </div>
+
+      <!-- RECIPE HEADER -->
+      <div class="recipe-header">
+        <div class="recipe-title">Pasta Carbonara</div>
+        <div class="recipe-tagline">The Roman original — no cream, ever</div>
+        <div class="whole-food-badge">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#AACCA8" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 4" stroke="#AACCA8" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Whole food verified — no preservatives
+        </div>
+      </div>
+
+      <!-- CTA ROW -->
+      <div style="display:flex; gap:8px; padding:0 14px 18px;">
+        <button style="
+          flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+          background:var(--gold); border:none; border-radius:12px;
+          padding:12px 10px; font-family:var(--font-sans); font-size:13px;
+          font-weight:700; color:#FAFAF7; cursor:pointer; letter-spacing:-0.1px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          Plan this recipe
+        </button>
+        <button style="
+          flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+          background:transparent; border:1.5px solid var(--gold); border-radius:12px;
+          padding:12px 10px; font-family:var(--font-sans); font-size:13px;
+          font-weight:600; color:var(--gold); cursor:pointer; letter-spacing:-0.1px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+          </svg>
+          Watch original
+        </button>
+      </div>
+
+      <!-- AT A GLANCE -->
+      <div class="at-a-glance">
+        <div class="glance-label">At a glance</div>
+        <div class="glance-row">
+          <div class="glance-item">
+            <div class="glance-icon">⏱</div>
+            <div class="glance-value">35</div>
+            <div class="glance-key">total<br>min</div>
+          </div>
+          <div class="glance-item">
+            <div class="glance-icon">🔥</div>
+            <div class="glance-value">20</div>
+            <div class="glance-key">active<br>min</div>
+          </div>
+          <div class="glance-item">
+            <div class="glance-icon">📊</div>
+            <div class="glance-value" style="font-size:11px">Inter&shy;med</div>
+            <div class="glance-key">difficulty</div>
+          </div>
+          <div class="glance-item">
+            <div class="glance-icon">🇮🇹</div>
+            <div class="glance-value" style="font-size:11px">Italian</div>
+            <div class="glance-key">cuisine</div>
+          </div>
+          <div class="glance-item">
+            <div class="glance-icon">📦</div>
+            <div class="glance-no">no</div>
+            <div class="glance-key">leftovers</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHAT TO KNOW -->
+      <div class="framing-block">
+        <div class="framing-header">
+          <div class="framing-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2c0 6-6 8-6 14a6 6 0 0 0 12 0c0-6-6-8-6-14z"/>
+              <path d="M12 12c0 3-2 4-2 7a2 2 0 0 0 4 0c0-3-2-4-2-7z" fill="#FAF3EE" stroke="none"/>
+            </svg>
+          </div>
+          <div class="framing-title">Before you start</div>
+        </div>
+        <div class="framing-body-wrap">
+          <div class="framing-items">
+            <div class="framing-item">
+              <div class="framing-bullet"></div>
+              Carbonara scrambles above 70°C. The entire dish hinges on one moment — pasta off heat, sauce on immediately. Read the full recipe before you touch the stove.
+            </div>
+            <div class="framing-item">
+              <div class="framing-bullet"></div>
+              This is a two-person dish maximum in a home kitchen. Scaling up means more pasta mass, which holds heat longer and narrows your off-heat window.
+            </div>
+            <div class="framing-item">
+              <div class="framing-bullet"></div>
+              No cream. Not ever. Not a little. The sauce is eggs + cheese + pasta water. Cream is a different dish.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVINGS -->
+      <div class="servings-row">
+        <div class="servings-label">Servings</div>
+        <div class="servings-ctrl">
+          <button class="servings-btn" onclick="changeServings(-1)">−</button>
+          <div class="servings-num" id="servCount">2</div>
+          <button class="servings-btn" onclick="changeServings(1)">+</button>
+        </div>
+      </div>
+
+      <!-- INGREDIENTS -->
+      <div class="section-head">
+        <div class="section-title">Ingredients</div>
+        <div class="section-count">7 items</div>
+      </div>
+      <div class="ingredient-list">
+        <div class="ingredient-row">
+          <div class="ingredient-name">Spaghetti</div>
+          <div class="ingredient-amount">160 g</div>
+          <div class="swap-chip">⇄ 2</div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-name">Guanciale (or pancetta)</div>
+          <div class="ingredient-amount">100 g</div>
+          <div class="swap-chip">⇄ 2</div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-name">Egg yolks</div>
+          <div class="ingredient-amount">3</div>
+          <div class="swap-chip">⇄ 1</div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-name">Whole egg</div>
+          <div class="ingredient-amount">1</div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-name">Pecorino Romano, finely grated</div>
+          <div class="ingredient-amount">60 g</div>
+          <div class="swap-chip">⇄ 2</div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-name">Black pepper, freshly cracked</div>
+          <div class="ingredient-amount">1 tsp</div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ingredient-name">Salt (for pasta water)</div>
+          <div class="ingredient-amount">1 tbsp</div>
+        </div>
+      </div>
+
+      <!-- EQUIPMENT -->
+      <div class="section-divider"></div>
+      <div class="section-head">
+        <div class="section-title">Equipment</div>
+      </div>
+      <div class="equipment-row">
+        <div class="equip-pill"><span class="equip-icon">🍲</span> Large pot</div>
+        <div class="equip-pill"><span class="equip-icon">🥘</span> Wide skillet</div>
+        <div class="equip-pill"><span class="equip-icon">🥣</span> Mixing bowl</div>
+        <div class="equip-pill"><span class="equip-icon">🧀</span> Fine grater</div>
+        <div class="equip-pill"><span class="equip-icon">🥄</span> Tongs or pasta fork</div>
+      </div>
+      <div style="padding:6px 18px 0; font-size:11px; color:var(--muted); font-style:italic;">Avoid non-stick — you want the rendered fat to stay in the pan, not bead off.</div>
+
+      <!-- MISE EN PLACE -->
+      <div class="section-divider"></div>
+      <div class="mise-section">
+        <div class="mise-header">
+          <div class="mise-title-group">
+            <div class="mise-title">Mise en place</div>
+            <div class="mise-sub">Do this before you heat anything</div>
+          </div>
+          <div class="mise-progress"><span id="miseCount">0</span> / 7 done</div>
+        </div>
+        <div class="mise-items" id="miseItems">
+          <div class="mise-item" onclick="toggleMise(this)">
+            <div class="mise-check"></div>
+            <div class="mise-text">Grate Pecorino Romano finely — not shredded, grated. Microplane preferred. Set aside.</div>
+          </div>
+          <div class="mise-item" onclick="toggleMise(this)">
+            <div class="mise-check"></div>
+            <div class="mise-text">Separate 3 egg yolks + crack 1 whole egg into a bowl. Whisk with the Pecorino and cracked pepper until thick and pale. This is your sauce.</div>
+          </div>
+          <div class="mise-item" onclick="toggleMise(this)">
+            <div class="mise-check"></div>
+            <div class="mise-text">Cut guanciale into 1cm cubes or strips. Keep at room temperature — cold fat renders unevenly.</div>
+          </div>
+          <div class="mise-item" onclick="toggleMise(this)">
+            <div class="mise-check"></div>
+            <div class="mise-text">Get a large pot of water on to boil. Salt it generously — it should taste like the sea.</div>
+          </div>
+          <!-- Collapsed items (shown after expand) -->
+          <div class="mise-item mise-hidden" onclick="toggleMise(this)" style="display:none">
+            <div class="mise-check"></div>
+            <div class="mise-text">Have a ladle or heatproof cup ready beside the pot — scoop 200ml of pasta water before you drain. Once the pasta is out, the water goes fast.</div>
+          </div>
+          <div class="mise-item mise-hidden" onclick="toggleMise(this)" style="display:none">
+            <div class="mise-check"></div>
+            <div class="mise-text">Set serving bowls on the bench. Warm them briefly under the hot tap and dry — cold plates set the sauce the moment it hits.</div>
+          </div>
+          <div class="mise-item mise-hidden" onclick="toggleMise(this)" style="display:none">
+            <div class="mise-check"></div>
+            <div class="mise-text">Have the rendered guanciale off-heat and ready to add back in. It goes into the pan with the pasta, before the egg mixture — don't skip this step.</div>
+          </div>
+        </div>
+        <!-- Expand / collapse chip -->
+        <div id="miseExpandRow" style="padding:4px 14px 12px">
+          <button id="miseToggleBtn" onclick="toggleMiseExpand()" style="
+            display:flex; align-items:center; gap:6px;
+            background:rgba(242,216,150,0.09); border:1px solid rgba(242,216,150,0.22);
+            border-radius:20px; padding:7px 13px;
+            font-family:var(--font-sans); font-size:12px; color:var(--ochre);
+            cursor:pointer; width:100%; justify-content:center;">
+            <svg id="miseChevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F2D896" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
+            <span id="miseToggleLabel">Show 3 more prep tasks</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- START COOKING -->
+      <div class="start-cooking-bar">
+        <button class="start-cooking-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Start cooking
+        </button>
+        <div class="start-hint">Screen stays on · Dark mode activates</div>
+      </div>
+
+      <!-- COOK STEPS -->
+      <div class="section-divider"></div>
+      <div class="section-head">
+        <div class="section-title">Cook steps</div>
+        <div class="section-count">5 steps</div>
+      </div>
+      <div class="steps-section">
+
+        <div class="step-card">
+          <div class="step-photo-placeholder">
+            <div style="font-size:28px">🥚</div>
+            <div class="step-photo-label">Step 1 · Egg sauce</div>
+            <div class="step-photo-soon">📷 Photos soon</div>
+          </div>
+          <div class="step-body">
+            <div class="step-number-row">
+              <div class="step-number">1</div>
+              <div class="step-title">Mix the sauce off-heat</div>
+            </div>
+            <div class="step-content">Whisk yolks, whole egg, and Pecorino into a thick paste. Add cracked pepper. This is your sauce — make it before anything else.</div>
+            <div class="why-note">
+              <div>
+                <div class="why-label">Why</div>
+                <div class="why-text">Cold eggs mixed with cold cheese form a stable emulsion. Mixing it warm causes the eggs to start cooking before they hit the pasta, and you'll get scrambled eggs instead of silk.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-photo-placeholder">
+            <div style="font-size:28px">🥓</div>
+            <div class="step-photo-label">Step 2 · Render guanciale</div>
+            <div class="step-photo-soon">📷 Photos soon</div>
+          </div>
+          <div class="step-body">
+            <div class="step-number-row">
+              <div class="step-number">2</div>
+              <div class="step-title">Render the guanciale</div>
+              <div class="step-timer">⏱ 8 min</div>
+            </div>
+            <div class="step-content">Cook guanciale cubes in a cold, dry pan over medium heat. The fat renders slowly and the meat crisps without burning. Remove and leave the fat in the pan.</div>
+            <div class="why-note">
+              <div>
+                <div class="why-label">Why</div>
+                <div class="why-text">Starting cold renders the fat gradually — starting hot burns the outside before the inside renders. The rendered fat is your cooking medium for the whole dish.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-photo-placeholder">
+            <div style="font-size:28px">🍝</div>
+            <div class="step-photo-label">Step 3 · Pasta water</div>
+            <div class="step-photo-soon">📷 Photos soon</div>
+          </div>
+          <div class="step-body">
+            <div class="step-number-row">
+              <div class="step-number">3</div>
+              <div class="step-title">Cook pasta in well-salted water</div>
+            </div>
+            <div class="step-content">Cook pasta 2 minutes short of package time — it finishes cooking in the sauce. Reserve 200ml of pasta water before draining.</div>
+            <div class="why-note">
+              <div>
+                <div class="why-label">Why</div>
+                <div class="why-text">Pasta water is starch and salt. It's the only liquid that can loosen carbonara sauce without breaking it. Plain water dilutes and ruins it.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" style="border-color:rgba(232,184,48,0.25)">
+          <div class="step-photo-placeholder" style="background:linear-gradient(135deg,#1A1500 0%,#0D0D0D 100%)">
+            <div style="font-size:28px">⚡</div>
+            <div class="step-photo-label" style="color:var(--gold)">Step 4 · The critical step</div>
+            <div class="step-photo-soon">📷 Photos soon</div>
+          </div>
+          <div class="step-body">
+            <div class="step-number-row">
+              <div class="step-number" style="background:var(--gold)">4</div>
+              <div class="step-title">Combine off heat — this is the critical step</div>
+            </div>
+            <div class="step-content">Add drained pasta to the guanciale pan. Take the pan completely off heat. Add egg mixture, toss constantly, adding pasta water a splash at a time until you have a creamy sauce that coats every strand. If it seizes, add more water.</div>
+            <div class="why-note">
+              <div>
+                <div class="why-label">Why</div>
+                <div class="why-text">Eggs scramble above 70°C. Off heat, the pasta's residual heat (~65°C) is exactly right to cook the eggs without curdling. Adding water regulates the temperature and creates the emulsion. This is why carbonara has a reputation — the temperature window is narrow.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-photo-placeholder">
+            <div style="font-size:28px">🍽</div>
+            <div class="step-photo-label">Step 5 · Plate and serve</div>
+            <div class="step-photo-soon">📷 Photos soon</div>
+          </div>
+          <div class="step-body">
+            <div class="step-number-row">
+              <div class="step-number">5</div>
+              <div class="step-title">Serve immediately</div>
+            </div>
+            <div class="step-content">Plate immediately, top with extra Pecorino and more black pepper. Carbonara does not wait — it thickens rapidly as it cools.</div>
+          </div>
+        </div>
+
+      </div><!-- /steps -->
+
+      <!-- FINISHING & TASTING -->
+      <div class="section-divider"></div>
+      <div class="finish-block">
+        <div class="finish-header">
+          <div class="finish-icon-box">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 11l19-9-9 19-2-8-8-2z"/>
+            </svg>
+          </div>
+          <div class="finish-title">Finishing & tasting</div>
+        </div>
+        <div class="finish-body">
+          The sauce should coat the back of a spoon and flow slowly when you tip the plate. If it's too thick, it seized — add a splash of warm pasta water and toss off heat again. Taste for nothing: the guanciale and Pecorino carry all the salt this dish needs. More pepper is almost always the right call.
+        </div>
+      </div>
+
+      <!-- LEFTOVERS -->
+      <div class="leftovers-block">
+        <div class="leftovers-header">
+          <span style="font-size:16px">📦</span>
+          <div class="leftovers-title">Leftovers & storage</div>
+        </div>
+        <div class="leftovers-body">
+          Carbonara doesn't store or reheat gracefully — the egg sauce seizes in the fridge and reheating scrambles it. This is a cook-and-eat dish. If you have leftover pasta, use it in a frittata tomorrow: fry it in olive oil with a beaten egg and whatever's in the fridge.
+        </div>
+      </div>
+
+      <!-- ATTRIBUTION FOOTER -->
+      <div class="attribution-footer">
+        <div class="attribution-row">
+          <div class="attribution-avatar">👨‍🍳</div>
+          <div class="attribution-text">
+            <div class="attribution-name">Gordon Ramsay</div>
+            <div class="attribution-sub">Inspired by his Pasta Carbonara recipe</div>
+          </div>
+          <a href="#" class="attribution-link">Watch ↗</a>
+        </div>
+      </div>
+
+    </div><!-- /phone-scroll -->
+  </div><!-- /phone-frame -->
+</div><!-- /anatomy-grid -->
+
+<!-- ── RATIONALE ──────────────────────────────────────── -->
+<div class="doc-section">
+  <h2>Design rationale</h2>
+  <p class="lead">What changed, what stayed, and the cognitive reasoning behind each section treatment.</p>
+
+  <div class="doc-grid">
+    <div class="doc-card">
+      <div class="doc-card-title">At a glance — why this shape</div>
+      <p>Five facts, five icons, one horizontal scan. Under 2 seconds to read the whole row. The "leftovers: ✕" is low-prominence by design — it's a planning signal, not a warning. Gold is reserved for the start-cooking CTA; the glance row uses neutral weights.</p>
+      <p>The active vs total time split is important: total time (35 min) sets expectations; active time (20 min) tells you how much of that is hands-on. A 3-hour braise with 20 minutes active feels very different to a 3-hour braise with 2 hours active.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">What to know — blue, not gold</div>
+      <p>Blue (#5B8FD4) is used instead of gold deliberately. Gold = action (the CTA). Blue = information or caution. The "before you start" block is not something to tap — it's something to read. The left border signals: this is a different type of content from the ingredient rows.</p>
+      <p>Placement above the ingredient list is intentional — the cook needs to know the egg-temperature constraint before they even pick up the guanciale.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">Mise en place — different cognitive mode</div>
+      <p>The cook reads mise en place with the fridge door open and their hands free. They read cook steps with a pan on the stove and wet hands. Those are different contexts and the visual treatment reflects that: lighter type (--ink-soft not --ink), ochre accent (warm but not urgent), tappable checkboxes, no photos, compact line height.</p>
+      <p>The progress counter ("2 / 4 done") is a practical affordance — it answers "how far through prep am I?" without requiring the cook to read each item again.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">Cook steps — unchanged by design</div>
+      <p>The existing step card design (photo + numbered step + why-note callout) works. The why-notes are a genuine competitive differentiator — Yummly doesn't explain why; Hone does. The gold left-border on the why-note is correct: it's the brand's voice interjecting.</p>
+      <p>Step 4 gets a subtle gold border on the whole card because it's the critical step. That's the only step-specific exception — the rest are identical.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">Finishing & tasting — warm brown, not gold</div>
+      <p>The finishing block uses a warm-brown (#C4A882) accent instead of the blue used in "what to know." Blue is caution; warm brown is warmth and conclusion. The italic chef voice fits here — this is the chef telling you how to know the dish is right before you plate it.</p>
+    </div>
+    <div class="doc-card">
+      <div class="doc-card-title">Leftovers — low surface, muted copy</div>
+      <p>The leftovers block is deliberately quiet. Not every recipe has leftovers worth celebrating. For Carbonara, the honest note is "this doesn't keep — use it in a frittata." That's more useful than empty space, but it doesn't need to shout. Dark surface, muted text, no icon accents.</p>
+    </div>
+  </div>
+
+  <!-- Risks -->
+  <div class="doc-card" style="margin-bottom:28px">
+    <div class="doc-card-title">Risks & open questions</div>
+    <div class="risk-row">
+      <div class="risk-badge risk-low">RESOLVED</div>
+      <div class="risk-text"><strong>Mise en place length — expand pattern confirmed.</strong> Patrick confirmed the expand chip pattern (2026-05-04). Designer set threshold at 4: show first 4 items; if more exist, show an ochre "Show N more prep tasks" chip below item 4. Tap reveals remaining items with a short fade. Chip disappears — no re-collapse. Progress counter counts all items including hidden ones. Rationale for 4 not 5: keeps "Start cooking" CTA above the fold after the ingredients section; 4 is the comfortable single-glance load for prep-mode reading. Prototype demonstrates this live with 7 tasks (4 visible + 3 behind expand chip).</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-badge risk-med">MED</div>
+      <div class="risk-text"><strong>"What to know" count.</strong> The schema caps at 3 items (per DECISION-008 spec). If a cook writes 4, the UI needs a graceful overflow — truncate to 3 and show an expand chip, or simply allow 4 max. Needs a decision before schema locks.</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-badge risk-med">MED</div>
+      <div class="risk-text"><strong>Step photos absent.</strong> All 5 steps currently show "Photos soon" placeholders. The page still works — layout doesn't collapse — but the visual differentiator (stage photos) is the whole point of the section. Until photography lands, this page underperforms on the product's core promise.</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-badge risk-low">LOW</div>
+      <div class="risk-text"><strong>Scroll length.</strong> Full Carbonara end-to-end is ~1400px. That's fine for an engaged cook. If analytics later show drop-off mid-scroll, consider whether Equipment could be collapsible by default.</div>
+    </div>
+  </div>
+
+  <!-- Engineer handoff -->
+  <div class="handoff-block">
+    <h3>Engineer handoff — recipe detail v2</h3>
+
+    <h4>What this pass delivers (schema first, then UI)</h4>
+    <p>The schema expansion (8 new fields) lands in your first pass per the existing handoff. This page redesign lands in your <em>second</em> pass, after the schema is in. Don't implement UI before schema — you'll be typing into fields that don't exist yet.</p>
+
+    <h4>New sections to implement in <span class="code-inline">mobile/app/recipe/[id].tsx</span></h4>
+    <ol>
+      <li><strong>At-a-glance row</strong> — render below the recipe header, above the servings selector. Use <span class="code-inline">total_time_minutes</span>, <span class="code-inline">active_time_minutes</span>, <span class="code-inline">difficulty</span>, first cuisine category, and <span class="code-inline">leftover_mode !== 'none'</span> for the leftover indicator.</li>
+      <li><strong>What to know block</strong> — render from <span class="code-inline">before_you_start: string[]</span>. Only render if the array has at least 1 item. Max 3 items per schema; if the array is empty, render nothing (no blank card).</li>
+      <li><strong>Equipment row</strong> — render from <span class="code-inline">equipment: string[]</span>. Horizontal <span class="code-inline">ScrollView</span> of pills. Conditionally rendered — if array empty, omit the section entirely.</li>
+      <li><strong>Mise en place</strong> — render from <span class="code-inline">mise_en_place: string[]</span>. Each item is a tappable row with a circular checkbox. Tap toggles local state (<span class="code-inline">useState&lt;Set&lt;number&gt;&gt;</span>, session-only, no SQLite write). Progress counter counts <em>all</em> items including collapsed ones. <strong>Expand pattern — threshold is 4:</strong> show first 4 items; if <span class="code-inline">mise_en_place.length &gt; 4</span>, render an ochre chip below item 4: "Show N more prep tasks" where N = total − 4. Tapping the chip reveals remaining items with a 150ms opacity animation. Once expanded, the chip disappears — no re-collapse. Rationale: 4 keeps the "Start cooking" CTA above the fold on standard phone screens after scrolling through ingredients and equipment. Conditionally rendered if array non-empty.</li>
+      <li><strong>Finishing & tasting block</strong> — render from <span class="code-inline">finishing_note?: string</span>. If undefined/empty, render nothing.</li>
+      <li><strong>Leftovers & storage block</strong> — render from <span class="code-inline">leftovers_note?: string</span>. If undefined/empty, render nothing.</li>
+    </ol>
+
+    <h4>Sections that do NOT change</h4>
+    <p>Ingredients, SubstitutionSheet, ServingsSelector, cook steps, hero, back button, favourite/plan/share controls — no changes in this pass.</p>
+
+    <h4>Mise en place checkbox state</h4>
+    <p>Local component state only — <span class="code-inline">const [miseChecked, setMiseChecked] = useState&lt;Set&lt;number&gt;&gt;(new Set())</span>. No SQLite writes. The check state resets when the user navigates away. This is intentional — mise en place is re-run every cook session.</p>
+
+    <h4>Visual tokens (all existing)</h4>
+    <div class="tag-row">
+      <div class="tag gold">--gold #E8B830</div>
+      <div class="tag">--surface #1A1A1A</div>
+      <div class="tag">--surface-low #0D0D0D</div>
+      <div class="tag blue">blue framing #5B8FD4</div>
+      <div class="tag">warm-brown #C4A882</div>
+      <div class="tag">--ochre #F2D896 (mise accent)</div>
+    </div>
+    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border
