@@ -1232,6 +1232,7 @@ export default function PantryTab() {
               fontSize: 13,
               color: '#FFF',
             }}
+          >
             {undoSnapshot.label}
           </Text>
           <Pressable onPress={undoClear} hitSlop={8}>
@@ -1703,5 +1704,4 @@ function ChipAdd({
     : ing.name;
 
   return (
-    <Pressable
-      o
+    <Press
