@@ -202,7 +202,7 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
 
 ---
 
-### HANDOFF → Culinary Verifier · 2026-05-05 · IN PROGRESS (DECISION-009 — Batch 1 DONE ✅, Batch 2 open)
+### HANDOFF → Culinary Verifier · 2026-05-05 · IN PROGRESS (DECISION-009 — Batch 1 ✅ Batch 2 ✅, Batch 3 open)
 **From:** Patrick (via COO)
 **Subject:** Apply full 10-section recipe template to every recipe in the database
 **Why:** DECISION-009 expanded scope from the 17 priority recipes to every recipe in `mobile/src/data/seed-recipes.ts` plus the six new recipes in `docs/coo/culinary-research/`. Every recipe gets the full template treatment. Patrick: *"I prefer to fix every single recipe, everyone in my database."*
@@ -218,22 +218,71 @@ All six new recipe files written in `docs/coo/culinary-research/` with full 10-s
 
 Each carries: chef/traditional attribution, Australian English, metric units, substitutions with quality flags, per DECISION-007 every ingredient has `scales` flag + `scaling_note` where chef knowledge changes the answer, photography shot list.
 
-**BATCH 2 — Existing seed library — OPEN (next session)**
-Walk through `mobile/src/data/seed-recipes.ts` and write expansion notes for each recipe in `docs/coo/culinary-research/<recipe-slug>.md` with the full template populated.
+**BATCH 2 — 11 launch-priority existing recipes — DONE ✅ (2026-05-06)**
+All 11 launch-priority expansion files written in `docs/coo/culinary-research/` with full 10-section template + chef audit notes per recipe:
+- `carbonara.md` ✅ — whole egg scaling fix flagged for Engineer; attribution URL needs verification
+- `bolognese.md` ✅ — ATTRIBUTION FAIL flagged: channel URL not recipe URL; garlic timing why_note added
+- `butter-chicken.md` ✅ — time_min UX CRITICAL fix flagged (90 → 330 for overnight marinade)
+- `green-curry.md` ✅ — "Thai aubergine" → "Thai eggplant" fix flagged; attribution verification needed
+- `smash-burger.md` ✅ — whole_food_verified decision flagged for Patrick (American cheese)
+- `roast-chicken.md` ✅ — time_min fix flagged for overnight dry brine (14h+ commitment invisible)
+- `pavlova.md` ✅ — fan oven instruction moved to before-you-start; attribution verification needed
+- `barramundi.md` ✅ — salt/pepper ingredient split flagged; one of strongest recipes in library
+- `shawarma.md` ✅ — overnight marinade, "London kitchen" → "home kitchen", tags beef → lamb flagged
+- `hummus.md` ✅ — attribution URL → book citation fix flagged (Reem Kassis, *The Palestinian Table*)
+- `pad-thai.md` ✅ — tofu duplication decision flagged for Patrick; attribution verification needed
 
-Priority order (11 launch-priority first):
-- [ ] carbonara
-- [ ] bolognese
-- [ ] butter-chicken
-- [ ] green-curry
-- [ ] smash-burger
-- [ ] roast-chicken
-- [ ] pavlova
-- [ ] barramundi
-- [ ] shawarma
-- [ ] hummus
-- [ ] pad-thai
-- [ ] (remaining ~17 recipes after launch priority set)
+**Data fixes for Engineer (from Batch 2 audit):**
+- Carbonara: `whole egg → scales: 'linear'` + scaling_note
+- Butter chicken: `time_min` 90 → 330
+- Roast chicken: `time_min` update to reflect overnight brine commitment
+- Shawarma: `time_min` update; description "London kitchen" → "home kitchen"; tags `'beef'` → `'lamb'`
+- Green curry: `'Thai aubergine'` → `'Thai eggplant'`
+- Bolognese: `video_url` — find specific Andy Cooks video or change `source.chef` to 'Hone Kitchen'
+- Hummus: attribution URL → book citation "After Reem Kassis, *The Palestinian Table* (Phaidon, 2017)"
+
+**Patrick to decide:**
+- Smash burger: `whole_food_verified: true` — American cheese is processed. Remove claim or note whole-food version uses cheddar.
+- Pad Thai: `tofu` appears both as main ingredient (100g cubed) and as a substitution for prawns. Confirm if traditional (both in) or move tofu to substitution-only.
+
+**Attribution URLs to verify before ship (all 4 flagged):**
+- Carbonara: `https://www.youtube.com/watch?v=5t7JLjr1FxQ` (Gordon Ramsay)
+- Butter Chicken: `https://www.youtube.com/watch?v=mrDJ2K3JXsA` (Joshua Weissman)
+- Green Curry: `https://www.youtube.com/watch?v=lleTlMtbN8Q` (Andy Cooks)
+- Pad Thai: `https://www.youtube.com/watch?v=6Lb1PyJxVQM` (Andy Cooks)
+
+**BATCH 3 — Remaining ~25 existing seed library recipes — OPEN (next session)**
+Walk through `mobile/src/data/seed-recipes.ts` and write expansion notes in `docs/coo/culinary-research/<recipe-slug>.md` for each remaining recipe.
+
+Recipes remaining (in seed-recipes.ts order):
+- [ ] chicken-adobo
+- [ ] classic-beef-stew
+- [ ] musakhan
+- [ ] kafta-meshwi
+- [ ] fattoush
+- [ ] prawn-tacos-pineapple-salsa
+- [ ] sourdough-starter
+- [ ] sourdough-country-loaf
+- [ ] mushroom-risotto
+- [ ] baja-fish-tacos
+- [ ] french-onion-soup
+- [ ] red-wine-braised-short-ribs
+- [ ] shoyu-ramen
+- [ ] beef-wellington
+- [ ] tarka-dal
+- [ ] scrambled-eggs
+- [ ] spaghetti-aglio-e-olio
+- [ ] mujadara
+- [ ] sheet-pan-harissa-chicken
+- [ ] egg-fried-rice
+- [ ] nasi-lemak
+- [ ] beef-rendang
+- [ ] curry-laksa
+- [ ] char-kway-teow
+- [ ] saag-paneer
+- [ ] chicken-katsu
+- [ ] tom-yum-goong
+- [ ] flour-tortillas
 
 For each recipe, additions to author:
 - At-a-glance numbers (total_time_minutes, active_time_minutes, difficulty)
@@ -694,30 +743,4 @@ _(Substitution UI handoff superseded by the consolidated Senior Engineer multi-t
 **From:** COO
 **Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
 **Why:** Engineer needs visual specs before building. Must respect terracotta/olive/gold tokens and Playfair/Source Sans 3 type scale. Per DECISION-003, the badge is needed for ~18 non-launch recipes.
-**What's done:** Both specs delivered 29 Apr 2026.
-- `docs/prototypes/substitution-sheet.html` — interactive bottom-sheet prototype. Full flow: ingredient tap → sheet open → substitution select → confirm. All quality pill states (perfect_swap / great_swap / good_swap / compromise), hard_to_find notice, all spacing/token annotations, engineering handoff block.
-- `docs/prototypes/recipe-card-states.html` — recipe card 3 states, recipe detail with/without stage photos, step placeholder, full spec tables. Badge is a dark-scrim pill ("Photos soon") bottom-right of card image — opposite corner from the existing difficulty badge. No collision.
-**Key design decisions:**
-- Badge text: "Photos soon" (not "Stage photos coming soon" — shorter, less internal-feeling)
-- Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no new schema field needed
-- Dark scrim on badge (not sky/blue) so it reads on any photo colour
-- Stage notice appears once in recipe detail (not repeated per step)
-**Files touched:** `docs/prototypes/substitution-sheet.html`, `docs/prototypes/recipe-card-states.html`
-
----
-
-_(Designer-to-engineer handoff folded into the consolidated Senior Engineer multi-task handoff above. Specs remain at the prototype paths for engineer reference.)_
-
-### HANDOFF → Photography Director · 2026-04-29 · IN PROGRESS (all pre-shoot deliverables delivered 1 May)
-**From:** COO · **Direction update 30 Apr · Schedule update 1 May**
-**Subject:** Build shot lists for showcase 10 + hero-only for everything else
-
-⚠️ **SCHEDULE UPDATE (1 May 2026):** Photography weekend 1 (3–4 May) is **lost** — Patrick is away on personal commitments. Re-baselined: **weekend 2 (10–11 May) is now the de facto first shoot weekend.** Phase A buffer is consumed; no further weekends can slip without launch impact. Patrick is using this morning's window to push design and product work forward instead — see new Product Designer handoff for Pantry redesign.
-
-⚠️ **DIRECTION UPDATE (30 Apr 2026):** Patrick chose the **Dark Dramatic** visual direction. The app bg is now near-black `#111111`. This changes what good photography looks like in the UI — food shot against dark surfaces, dark boards, and dark plates will integrate far more powerfully than food on white or wood. Factor this into all surface and prop recommendations below.
-
-**Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
-**What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
-**What's needed:**
-1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
-2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-
+**What's done:** Both specs
