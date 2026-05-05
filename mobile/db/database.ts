@@ -10,7 +10,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Recipe, Ingredient, Step } from '../src/data/types';
 import { SCHEMA_SQL, SCHEMA_MIGRATIONS, SCHEMA_VERSION } from './schema';
-import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields } from './seed';
+import { seedDatabase } from './seed';
 
 // ── Row types mirror the DB columns exactly ──────────────────────────────────
 
@@ -206,15 +206,12 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
     await db.runAsync(
       "INSERT INTO app_meta (key, value) VALUES ('seeded', '1')",
     );
-  } else {
-    // Subsequent launches — two cheap idempotent passes:
-    //   1. Insert any seed recipes added since the initial seed.
-    //   2. Refresh content fields (DECISION-009 data) on existing seed rows.
-    //      This is what makes new field data (equipment, mise_en_place, etc.)
-    //      appear on devices that already have the seeded flag set.
-    await syncNewSeedRecipes(db);
-    await refreshSeedRecipeFields(db);
   }
+  // syncNewSeedRecipes and refreshSeedRecipeFields are called AFTER initDatabase
+  // returns, from the setupDatabase wrapper in _layout.tsx. They live there (not
+  // here) to avoid deepening the circular dependency: seed.ts already imports
+  // insertRecipe from database.ts, so database.ts must not import back from seed.ts
+  // beyond seedDatabase (which is only used on the first-launch path above).
 }
 
 // ── Recipes ───────────────────────────────────────────────────────────────────
@@ -546,4 +543,6 @@ export async function getAllMealPlan(
 
 export async function setMealPlanEntry(
   db: SQLiteDatabase,
-  entry:
+  entry: MealPlanEntry,
+): Promise<void> {
+  await db.runAsync('DELETE FROM meal_pl
