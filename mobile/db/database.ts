@@ -9,8 +9,8 @@
  */
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Recipe, Ingredient, Step } from '../src/data/types';
-import { SCHEMA_SQL } from './schema';
-import { seedDatabase } from './seed';
+import { SCHEMA_SQL, SCHEMA_MIGRATIONS, SCHEMA_VERSION } from './schema';
+import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields } from './seed';
 
 // ── Row types mirror the DB columns exactly ──────────────────────────────────
 
@@ -33,6 +33,14 @@ interface RecipeRow {
   generated_by_claude: number;
   leftover_extra_servings: number | null;
   leftover_note: string | null;
+  // DECISION-009 extended content fields
+  total_time_minutes: number | null;
+  active_time_minutes: number | null;
+  equipment: string | null;       // JSON string → string[]
+  before_you_start: string | null; // JSON string → string[]
+  mise_en_place: string | null;    // JSON string → string[]
+  finishing_note: string | null;
+  leftovers_note: string | null;
 }
 
 interface IngredientRow {
@@ -128,7 +136,48 @@ function rowToRecipe(
       row.leftover_extra_servings != null
         ? { extra_servings: row.leftover_extra_servings, note: row.leftover_note ?? '' }
         : undefined,
+    // DECISION-009 extended content fields
+    total_time_minutes: row.total_time_minutes ?? undefined,
+    active_time_minutes: row.active_time_minutes ?? undefined,
+    equipment: row.equipment ? (JSON.parse(row.equipment) as string[]) : undefined,
+    before_you_start: row.before_you_start ? (JSON.parse(row.before_you_start) as string[]) : undefined,
+    mise_en_place: row.mise_en_place ? (JSON.parse(row.mise_en_place) as string[]) : undefined,
+    finishing_note: row.finishing_note ?? undefined,
+    leftovers_note: row.leftovers_note ?? undefined,
   };
+}
+
+// ── Migration runner ──────────────────────────────────────────────────────────
+
+/**
+ * Apply any schema migrations that haven't run on this device yet.
+ *
+ * Uses PRAGMA user_version as the version counter (0 on a fresh install
+ * before any migration has ever run). Runs each migration in order from
+ * (currentVersion + 1) up to SCHEMA_VERSION, then sets user_version to the
+ * new target. Each migration step is idempotent where possible (IF NOT EXISTS,
+ * ADD COLUMN on SQLite is a no-op if the column exists).
+ */
+async function runMigrations(db: SQLiteDatabase): Promise<void> {
+  const result = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  const current = result?.user_version ?? 0;
+  if (current >= SCHEMA_VERSION) return;
+
+  for (let v = current + 1; v <= SCHEMA_VERSION; v++) {
+    const steps = SCHEMA_MIGRATIONS[v];
+    if (!steps) continue;
+    for (const sql of steps) {
+      try {
+        await db.execAsync(sql);
+      } catch (e: unknown) {
+        // ALTER TABLE ADD COLUMN throws if the column already exists on some
+        // SQLite builds. Treat "duplicate column" errors as non-fatal.
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!msg.toLowerCase().includes('duplicate column')) throw e;
+      }
+    }
+  }
+  await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -137,18 +186,34 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA journal_mode = WAL;');
   await db.execAsync('PRAGMA foreign_keys = ON;');
 
+  // Create tables for a fresh install (all CREATE TABLE IF NOT EXISTS — no-op
+  // on existing installs where the table already exists).
   for (const sql of SCHEMA_SQL) {
     await db.execAsync(sql);
   }
+
+  // Apply any pending schema migrations (adds new columns, creates new tables).
+  // Must run BEFORE the seed gate so migration 6 columns exist when we try to
+  // write DECISION-009 fields into them.
+  await runMigrations(db);
 
   const meta = await db.getFirstAsync<{ value: string }>(
     "SELECT value FROM app_meta WHERE key = 'seeded'",
   );
   if (!meta) {
+    // First launch — seed all recipes from scratch.
     await seedDatabase(db);
     await db.runAsync(
       "INSERT INTO app_meta (key, value) VALUES ('seeded', '1')",
     );
+  } else {
+    // Subsequent launches — two cheap idempotent passes:
+    //   1. Insert any seed recipes added since the initial seed.
+    //   2. Refresh content fields (DECISION-009 data) on existing seed rows.
+    //      This is what makes new field data (equipment, mise_en_place, etc.)
+    //      appear on devices that already have the seeded flag set.
+    await syncNewSeedRecipes(db);
+    await refreshSeedRecipeFields(db);
   }
 }
 
@@ -224,8 +289,10 @@ export async function insertRecipe(
     `INSERT OR REPLACE INTO recipes (
       id, title, tagline, description, base_servings, time_min, difficulty,
       tags, source_chef, source_video_url, source_notes, hero_url, hero_fallback,
-      emoji, user_added, generated_by_claude, leftover_extra_servings, leftover_note
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      emoji, user_added, generated_by_claude, leftover_extra_servings, leftover_note,
+      total_time_minutes, active_time_minutes, equipment, before_you_start,
+      mise_en_place, finishing_note, leftovers_note
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       recipe.id,
       recipe.title,
@@ -245,6 +312,13 @@ export async function insertRecipe(
       recipe.generated_by_claude ? 1 : 0,
       recipe.leftover_mode?.extra_servings ?? null,
       recipe.leftover_mode?.note ?? null,
+      recipe.total_time_minutes ?? null,
+      recipe.active_time_minutes ?? null,
+      recipe.equipment ? JSON.stringify(recipe.equipment) : null,
+      recipe.before_you_start ? JSON.stringify(recipe.before_you_start) : null,
+      recipe.mise_en_place ? JSON.stringify(recipe.mise_en_place) : null,
+      recipe.finishing_note ?? null,
+      recipe.leftovers_note ?? null,
     ],
   );
 
@@ -472,140 +546,3 @@ export async function getAllMealPlan(
 
 export async function setMealPlanEntry(
   db: SQLiteDatabase,
-  entry: MealPlanEntry,
-): Promise<void> {
-  await db.runAsync('DELETE FROM meal_plan WHERE date = ?', [entry.date]);
-  await db.runAsync(
-    'INSERT INTO meal_plan (id, date, recipe_id, servings) VALUES (?,?,?,?)',
-    [entry.id, entry.date, entry.recipe_id, entry.servings],
-  );
-}
-
-export async function deleteMealPlanEntry(
-  db: SQLiteDatabase,
-  id: string,
-): Promise<void> {
-  await db.runAsync('DELETE FROM meal_plan WHERE id = ?', [id]);
-}
-
-// ── Shopping list ─────────────────────────────────────────────────────────────
-//
-// Shopping list is a *derived view* over the meal plan plus user-typed items.
-// Every row tracks its sources (meals it came from, or 'manual') so that
-// removing a meal cleanly removes only the items that meal contributed —
-// unless the user also added them manually, in which case they survive.
-//
-// Schema: shopping_items.sources_json holds an array like
-//   [{kind:'meal', recipe_id:'r1', servings:4}, {kind:'manual'}]
-
-export type ShoppingSource =
-  | { kind: 'meal'; recipe_id: string; servings: number }
-  | { kind: 'manual' }
-  | { kind: 'pantry-suggestion'; recipe_id: string };
-
-export interface ShoppingItem {
-  id: string;
-  name: string;
-  category: string;
-  quantity: number | null;
-  unit: string | null;
-  notes: string | null;
-  manually_added: boolean;
-  in_cart: boolean;
-  added_at: number;
-  sources: ShoppingSource[];
-}
-
-interface ShoppingItemRow {
-  id: string;
-  name: string;
-  category: string;
-  quantity: number | null;
-  unit: string | null;
-  notes: string | null;
-  manually_added: number;
-  in_cart: number;
-  added_at: number;
-  sources_json: string;
-}
-
-function rowToShoppingItem(row: ShoppingItemRow): ShoppingItem {
-  let sources: ShoppingSource[] = [];
-  try {
-    const parsed = JSON.parse(row.sources_json);
-    if (Array.isArray(parsed)) sources = parsed as ShoppingSource[];
-  } catch {
-    // Corrupt sources_json (shouldn't happen, but be defensive). Treat as empty.
-    sources = [];
-  }
-  return {
-    id: row.id,
-    name: row.name,
-    category: row.category,
-    quantity: row.quantity,
-    unit: row.unit,
-    notes: row.notes,
-    manually_added: Boolean(row.manually_added),
-    in_cart: Boolean(row.in_cart),
-    added_at: row.added_at,
-    sources,
-  };
-}
-
-export async function getShoppingItems(
-  db: SQLiteDatabase,
-): Promise<ShoppingItem[]> {
-  const rows = await db.getAllAsync<ShoppingItemRow>(
-    'SELECT * FROM shopping_items ORDER BY added_at DESC',
-  );
-  return rows.map(rowToShoppingItem);
-}
-
-export async function upsertShoppingItem(
-  db: SQLiteDatabase,
-  item: ShoppingItem,
-): Promise<void> {
-  await db.runAsync(
-    `INSERT OR REPLACE INTO shopping_items
-       (id, name, category, quantity, unit, notes,
-        manually_added, in_cart, added_at, sources_json)
-     VALUES (?,?,?,?,?,?,?,?,?,?)`,
-    [
-      item.id,
-      item.name,
-      item.category,
-      item.quantity ?? null,
-      item.unit ?? null,
-      item.notes ?? null,
-      item.manually_added ? 1 : 0,
-      item.in_cart ? 1 : 0,
-      item.added_at,
-      JSON.stringify(item.sources ?? []),
-    ],
-  );
-}
-
-export async function deleteShoppingItem(
-  db: SQLiteDatabase,
-  id: string,
-): Promise<void> {
-  await db.runAsync('DELETE FROM shopping_items WHERE id = ?', [id]);
-}
-
-/** Replace the whole list atomically — used when applying a derivation. */
-export async function replaceShoppingItems(
-  db: SQLiteDatabase,
-  items: ShoppingItem[],
-): Promise<void> {
-  await db.execAsync('BEGIN TRANSACTION');
-  try {
-    await db.execAsync('DELETE FROM shopping_items');
-    for (const item of items) {
-      await upsertShoppingItem(db, item);
-    }
-    await db.execAsync('COMMIT');
-  } catch (e) {
-    await db.execAsync('ROLLBACK');
-    throw e;
-  }
-}
