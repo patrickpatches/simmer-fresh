@@ -169,7 +169,7 @@ async function runMigrations(db: SQLiteDatabase): Promise<void> {
     for (const sql of steps) {
       try {
         await db.execAsync(sql);
-      } catch (e: unknown) {
+      } catch (e) {
         // ALTER TABLE ADD COLUMN throws if the column already exists on some
         // SQLite builds. Treat "duplicate column" errors as non-fatal.
         const msg = e instanceof Error ? e.message : String(e);
@@ -546,3 +546,4 @@ export async function getAllMealPlan(
 
 export async function setMealPlanEntry(
   db: SQLiteDatabase,
+  entry:
