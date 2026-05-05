@@ -5,28 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hone · Recipe Detail v2 — Pasta Carbonara</title>
 <style>
-  /* ── Design tokens v0.7 ────────────────────────────────────── */
+  /* ── Design tokens — Refresh C (Editorial Modern) ─────────── */
+  /* Colour-only swap from dark v0.7. Layout unchanged.          */
   :root {
-    --bg:          #111111;
-    --bg-deep:     #080808;
-    --surface:     #1A1A1A;
-    --surface-mid: #161616;
-    --surface-low: #0D0D0D;
-    --ink:         #F5EFE8;
-    --ink-soft:    #C4B8A8;
-    --muted:       #8A7E72;
-    --gold:        #E8B830;
-    --gold-deep:   #C49820;
-    --gold-tint:   rgba(232,184,48,0.12);
-    --gold-line:   rgba(232,184,48,0.22);
-    --sage:        #AACCA8;
-    --sage-tint:   rgba(170,204,168,0.18);
-    --ochre:       #F2D896;
-    --line:        rgba(255,255,255,0.07);
-    --line-strong: rgba(255,255,255,0.12);
+    --bg:          #FAFAF7;   /* near-white — clean, not cold */
+    --bg-deep:     #F0EDE8;
+    --surface:     #FFFFFF;
+    --surface-mid: #F5F2EE;
+    --surface-low: #EEEBE4;
+    --ink:         #111410;   /* deep, slightly warm black */
+    --ink-soft:    #3D3830;
+    --muted:       #7A766E;
+    --gold:        #B84030;   /* deep rust — primary accent */
+    --gold-deep:   #8E2E20;
+    --gold-tint:   rgba(184,64,48,0.08);
+    --gold-line:   rgba(184,64,48,0.18);
+    --sage:        #2E5E3E;   /* forest green — replaces sage */
+    --sage-tint:   rgba(46,94,62,0.10);
+    --ochre:       #A05C28;   /* warm amber — mise en place */
+    --line:        #E4E0D8;
+    --line-strong: #C8C2B8;
     --font-display: 'Georgia', 'Times New Roman', serif;
     --font-sans:    -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
-    --red:          #E05252;
+    --red:          #C03028;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -275,7 +276,7 @@
     border-left: 3px solid #5B8FD4;
     overflow: hidden;
   }
-  .framing-block.finish { border-left-color: #C4A882; }
+  .framing-block.finish { border-left-color: #8A6040; }
   .framing-header {
     display: flex;
     align-items: center;
@@ -300,9 +301,9 @@
     font-weight: 700;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: #5B8FD4;
+    color: #2A5898;
   }
-  .framing-block.finish .framing-title { color: #C4A882; }
+  .framing-block.finish .framing-title { color: #8A6040; }
   .framing-items {
     padding: 0 14px 14px;
     display: flex;
@@ -519,8 +520,8 @@
   .mise-item.done .mise-check::after {
     content: '';
     width: 10px; height: 6px;
-    border-left: 2px solid #111;
-    border-bottom: 2px solid #111;
+    border-left: 2px solid #FAFAF7;
+    border-bottom: 2px solid #FAFAF7;
     transform: rotate(-45deg) translateY(-1px);
     display: block;
   }
@@ -553,7 +554,7 @@
     font-family: var(--font-sans);
     font-size: 15px;
     font-weight: 700;
-    color: #111;
+    color: #FAFAF7;
     cursor: pointer;
     letter-spacing: -0.2px;
   }
@@ -616,7 +617,7 @@
     background: var(--gold);
     font-size: 11px;
     font-weight: 700;
-    color: #111;
+    color: #FAFAF7;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
@@ -693,7 +694,7 @@
     font-weight: 700;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: #C4A882;
+    color: #8A6040;
   }
   .finish-body {
     font-size: 13px;
@@ -868,7 +869,7 @@
   }
   .tag.green { background: var(--sage-tint); border-color: rgba(170,204,168,0.2); color: var(--sage); }
   .tag.gold  { background: var(--gold-tint); border-color: var(--gold-line); color: var(--gold); }
-  .tag.blue  { background: rgba(91,143,212,0.12); border-color: rgba(91,143,212,0.2); color: #7AAEE8; }
+  .tag.blue  { background: rgba(42,88,152,0.08); border-color: rgba(42,88,152,0.18); color: #2A5898; }
   .risk-row {
     display: flex; align-items: flex-start; gap: 10px;
     padding: 10px 0;
@@ -959,9 +960,9 @@
           flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
           background:var(--gold); border:none; border-radius:12px;
           padding:12px 10px; font-family:var(--font-sans); font-size:13px;
-          font-weight:700; color:#111111; cursor:pointer; letter-spacing:-0.1px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          font-weight:700; color:#FAFAF7; cursor:pointer; letter-spacing:-0.1px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
           Plan this recipe
         </button>
@@ -970,8 +971,8 @@
           background:transparent; border:1.5px solid var(--gold); border-radius:12px;
           padding:12px 10px; font-family:var(--font-sans); font-size:13px;
           font-weight:600; color:var(--gold); cursor:pointer; letter-spacing:-0.1px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8B830" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="#E8B830" stroke="none"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
           </svg>
           Watch original
         </button>
@@ -1153,7 +1154,7 @@
       <!-- START COOKING -->
       <div class="start-cooking-bar">
         <button class="start-cooking-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Start cooking
         </button>
         <div class="start-hint">Screen stays on · Dark mode activates</div>
@@ -1400,4 +1401,4 @@
     <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not new tokens, just RGB values used inline for these two specific components. Do not add them to <span class="code-inline">tokens.ts</span>.</p>
 
     <h4>Conditional rendering rule</h4>
-    <p>Every new section is conditionally rendered — if the data field is absent or empty, the section does not appear and does not leave a gap. The page degrades gracefully for recipes that haven't been expanded yet (i.e. most of the current seed library). A recipe with no <span class="code-inline">before_you_start</span>, <span class="code-inline">equipment</span>, <span class="code-inline">mise_en_place</span>, <span class="code-inline">finishing_note</span>, or <span class="code-inline">leftovers_note</span> should look exactly like the current page
+    <p>Every new section is conditionally rendered — if the data field is absent or empty, the section does not appear and does not leave a gap. The page degrades gracefully for recipes that haven't been expanded yet (i.e. most of the current seed library). A recipe with no <span class="code-inline">before_you_start</span>, <span class="code-inline">equipment</span>, <span class="code-inline">mise_en_place</span>, <span class="code-inline">finishing_note</span
