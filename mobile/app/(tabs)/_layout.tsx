@@ -1,13 +1,13 @@
 /**
  * Bottom tab layout.
  *
- * Floating pill-shaped nav bar — matches hone.html's dock design.
- * Dark ink background, dusty terracotta active pill.
- * Primary actions in right thumb zone (Kitchen home is the exception —
+ * Floating pill-shaped nav bar -- matches hone.html's dock design.
+ * Sage palette: light cream dock on sage-green app bg.
+ * Primary actions in right thumb zone (Kitchen home is the exception --
  * it's leftmost because it's the app's anchor, not a "primary action").
  *
  * Ergonomics: 48dp minimum touch target per tab.
- * Shadow lifts the bar off the content — content scrolls under it,
+ * Shadow lifts the bar off the content -- content scrolls under it,
  * not behind a hard line.
  */
 import React from 'react';
@@ -51,10 +51,10 @@ export default function TabLayout() {
             backgroundColor: 'transparent',
           }}
         >
-          {/* Pill bg: tokens.cream (#FAFAF7) — warm near-white card surface.
+          {/* Pill bg: tokens.cream (#FAFAF7) -- warm near-white card surface.
               Sage palette: dock is light on a sage-green app bg.
               Active pill: rust primary with cream labels (tokens.onPrimary).
-              Inactive: dark ink at 52% opacity — legible on the light dock
+              Inactive: dark ink at 52% opacity -- legible on the light dock
               without competing with the active rust pill. */}
           <View
             style={{
@@ -101,7 +101,7 @@ export default function TabLayout() {
                     gap: 2,
                   }}
                 >
-                  {/* Focused: rust pill — cream label (tokens.onPrimary) for contrast.
+                  {/* Focused: rust pill -- cream label (tokens.onPrimary) for contrast.
                       Unfocused: dark ink at 52% opacity on the light dock.
                       Why 52% not lower: inactive tabs were disappearing into the
                       dock at 38%. 52% gives legibility without competing with
@@ -128,4 +128,9 @@ export default function TabLayout() {
         </View>
       )}
     >
-    
+      {TABS.map((t) => (
+        <Tabs.Screen key={t.name} name={t.name} options={{ title: t.label }} />
+      ))}
+    </Tabs>
+  );
+}
