@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone · What To Know — Block Concepts</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0D0D0D;
+  font-family: -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+  padding: 52px 24px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #F5EFE8;
+}
+
+h1 {
+  font-family: Georgia, serif;
+  font-size: 22px;
+  color: #F5EFE8;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.sub {
+  font-size: 13px;
+  color: #8A7E72;
+  text-align: center;
+  margin-bottom: 56px;
+  line-height: 1.6;
+}
+
+/* ── Layout ── */
+.row {
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1160px;
+  width: 100%;
+  margin-bottom: 64px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 320px;
+}
+
+.col-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8A7E72;
+}
+.col-name {
+  font-family: Georgia, serif;
+  font-size: 17px;
+  color: #F5EFE8;
+  text-align: center;
+}
+.col-blurb {
+  font-size: 11.5px;
+  color: #8A7E72;
+  text-align: center;
+  max-width: 270px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+/* ── App context strip (shows the block in context) ── */
+.app-context {
+  width: 320px;
+  background: #FAFAF7;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  padding: 16px 0 20px;
+}
+
+/* ── Section heading above the block ── */
+.context-section-hd {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2E5E3E;
+  padding: 0 14px 10px;
+}
+
+/* ══════════════════════════════════════════════
+   VARIANT A — CURRENT STATE (reference)
+   Light surface, blue left border, emoji icon
+══════════════════════════════════════════════ */
+.block-current {
+  margin: 0 14px;
+  background: #F5F2EE;
+  border-radius: 12px;
+  border: 1px solid #E4E0D8;
+  border-left: 3px solid #2A5898;
+  overflow: hidden;
+}
+.block-current .hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 8px;
+}
+.block-current .icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(42,88,152,0.1);
+  border: 1px solid rgba(42,88,152,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.block-current .title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #2A5898;
+}
+.block-current .items {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.block-current .item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  color: #3D3830;
+  line-height: 1.5;
+}
+.block-current .bullet {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #2A5898;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   VARIANT B — RUST HEADER BAND (#de5f4b)
+   Full-width coloured header, cream body
+══════════════════════════════════════════════ */
+.block-rust {
+  margin: 0 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.block-rust .hd {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px 10px;
+  background: #DE5F4B;
+}
+.block-rust .icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.block-rust .title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FAF3EE;
+}
+.block-rust .body {
+  background: #FFF8F6;
+  padding: 13px 14px 14px;
+  border: 1px solid rgba(222,95,75,0.15);
+  border-top: none;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+.block-rust .items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.block-rust .item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  color: #3A2A22;
+  line-height: 1.52;
+}
+.block-rust .bullet {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #DE5F4B;
+  margin-top: 6.5px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   VARIANT C — FINCH RETRO
+   Warm olive header band, parchment body,
+   70s natural-cookbook energy
+══════════════════════════════════════════════ */
+.block-finch {
+  margin: 0 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.block-finch .hd {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px 10px;
+  background: #5C7A4A;
+}
+.block-finch .icon {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.block-finch .title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #EEE8D5;
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: normal;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.block-finch .body {
+  background: #F7F0E4;
+  padding: 13px 14px 14px;
+  border: 1px solid rgba(92,122,74,0.2);
+  border-top: none;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+.block-finch .items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.block-finch .item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  color: #3A3220;
+  line-height: 1.52;
+}
+.block-finch .bullet {
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  background: #5C7A4A;
+  margin-top: 5.5px;
+  flex-shrink: 0;
+  transform: rotate(45deg);
+}
+
+/* ── Design notes ── */
+.notes-section {
+  max-width: 1000px;
+  width: 100%;
+  margin-top: 8px;
+}
+.notes-title {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  color: #F5EFE8;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.notes-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.note-card {
+  background: #1C1C1C;
+  border-radius: 12px;
+  padding: 16px 18px;
+  flex: 0 0 280px;
+  max-width: 300px;
+}
+.note-card .tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+.tag-fix { background: rgba(222,95,75,0.15); color: #E07060; }
+.tag-both { background: rgba(46,94,62,0.2); color: #6AAE82; }
+.note-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #F5EFE8;
+  margin-bottom: 5px;
+  line-height: 1.3;
+}
+.note-card p {
+  font-size: 11.5px;
+  color: #8A7E72;
+  line-height: 1.65;
+}
+</style>
+</head>
+<body>
+
+<h1>What To Know — Block Concepts</h1>
+<p class="sub">Two colour directions for the framing block.<br>All three shown in the Refresh C app context.</p>
+
+<div class="row">
+
+  <!-- ── CURRENT STATE ── -->
+  <div class="col">
+    <span class="col-label">Current</span>
+    <span class="col-name">Reference</span>
+    <p class="col-blurb">Light surface, blue left border, emoji icon. Works but blends into the page — doesn't signal urgency.</p>
+
+    <div class="app-context">
+      <div class="context-section-hd">Before you start</div>
+      <div class="block-current">
+        <div class="hd">
+          <div class="icon">⚠️</div>
+          <div class="title">What to know before you start</div>
+        </div>
+        <div class="items">
+          <div class="item"><div class="bullet"></div><div>Carbonara scrambles above 70°C. The entire dish hinges on one moment — pasta off heat, sauce on immediately. Read the full recipe before you touch the stove.</div></div>
+          <div class="item"><div class="bullet"></div><div>This is a two-person dish maximum in a home kitchen. Scaling up means more pasta mass, which holds heat longer and narrows your off-heat window.</div></div>
+          <div class="item"><div class="bullet"></div><div>No cream. Not ever. Not a little. The sauce is eggs + cheese + pasta water. Cream is a different dish.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#1C1C1C; border-radius:10px; padding:13px 15px; width:320px; font-size:11.5px; color:#8A7E72; line-height:1.65;">
+      <strong style="color:#C4B8A8; display:block; margin-bottom:4px;">Issues</strong>
+      The block reads like a sidebar note rather than a pre-flight warning. The emoji icon is inconsistent with the app's SVG-only icon language. "What to know before you start" in all-caps across the full header width is too many words in uppercase. Left border accent is too subtle at 3px.
+    </div>
+  </div>
+
+  <!-- ── RUST BAND ── -->
+  <div class="col">
+    <span class="col-label" style="color:#E8B830;">Option 1</span>
+    <span class="col-name">Rust Band</span>
+    <p class="col-blurb">Deep rust header (#DE5F4B) + cream body. Strong visual signal — you notice this before you scroll past it.</p>
+
+    <div class="app-context">
+      <div class="context-section-hd">Before you start</div>
+      <div class="block-rust">
+        <div class="hd">
+          <div class="icon">
+            <!-- flame SVG — more culinary than generic warning triangle -->
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2c0 6-6 8-6 14a6 6 0 0 0 12 0c0-6-6-8-6-14z"/>
+              <path d="M12 12c0 3-2 4-2 7a2 2 0 0 0 4 0c0-3-2-4-2-7z" fill="#FAF3EE" stroke="none"/>
+            </svg>
+          </div>
+          <div class="title">Before you start</div>
+        </div>
+        <div class="body">
+          <div class="items">
+            <div class="item"><div class="bullet"></div><div>Carbonara scrambles above 70°C. The entire dish hinges on one moment — pasta off heat, sauce on immediately. Read the full recipe before you touch the stove.</div></div>
+            <div class="item"><div class="bullet"></div><div>This is a two-person dish maximum in a home kitchen. Scaling up means more pasta mass, which holds heat longer and narrows your off-heat window.</div></div>
+            <div class="item"><div class="bullet"></div><div>No cream. Not ever. Not a little. The sauce is eggs + cheese + pasta water. Cream is a different dish.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#1C1C1C; border-radius:10px; padding:13px 15px; width:320px; font-size:11.5px; color:#8A7E72; line-height:1.65;">
+      <strong style="color:#C4B8A8; display:block; margin-bottom:4px;">Why this works</strong>
+      The rust band creates a clear "stop and read this" visual moment without feeling like an app error. Full-bleed colour is more confident than a 3px border. Flame icon is culinary-specific — more appropriate than the generic warning triangle. Label shortened to "Before you start" — still clear, much less cluttered in caps.
+    </div>
+  </div>
+
+  <!-- ── FINCH RETRO ── -->
+  <div class="col">
+    <span class="col-label">Option 2</span>
+    <span class="col-name">Finch Retro</span>
+    <p class="col-blurb">Warm olive header + parchment body. 1970s natural cookbook energy. Cozy, editorial, unhurried.</p>
+
+    <div class="app-context">
+      <div class="context-section-hd">Before you start</div>
+      <div class="block-finch">
+        <div class="hd">
+          <div class="icon">
+            <!-- leaf/herb icon — natural foods cookbook feel -->
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EEE8D5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="title">A note before you begin</div>
+        </div>
+        <div class="body">
+          <div class="items">
+            <div class="item"><div class="bullet"></div><div>Carbonara scrambles above 70°C. The entire dish hinges on one moment — pasta off heat, sauce on immediately. Read the full recipe before you touch the stove.</div></div>
+            <div class="item"><div class="bullet"></div><div>This is a two-person dish maximum in a home kitchen. Scaling up means more pasta mass, which holds heat longer and narrows your off-heat window.</div></div>
+            <div class="item"><div class="bullet"></div><div>No cream. Not ever. Not a little. The sauce is eggs + cheese + pasta water. Cream is a different dish.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#1C1C1C; border-radius:10px; padding:13px 15px; width:320px; font-size:11.5px; color:#8A7E72; line-height:1.65;">
+      <strong style="color:#C4B8A8; display:block; margin-bottom:4px;">Why this works</strong>
+      The olive-green header signals "important culinary context" without alarm — fitting for the chef-guide voice which warns before, not after, but stays calm. Diamond bullets (rotated square) add a tactile retro character. "A note before you begin" in serif italic matches the chef-guide tone exactly. The parchment body feels like a handwritten recipe card note.
+    </div>
+  </div>
+
+</div>
+
+<!-- ── DESIGN IMPROVEMENT NOTES ── -->
+<div class="notes-section">
+  <p class="notes-title">Design improvements — regardless of colour direction</p>
+  <div class="notes-grid">
+
+    <div class="note-card">
+      <span class="tag tag-fix">Fix now</span>
+      <h4>Replace the emoji icon</h4>
+      <p>⚠️ is an OS-rendered emoji — it looks different on every Android device and breaks the app's SVG-only icon language. Options 1 and 2 both replace it: a flame (culinary-specific, signals heat/care), or an herb/leaf (natural, calm). Both are custom SVGs at 13px, consistent with everything else in the prototype.</p>
+    </div>
+
+    <div class="note-card">
+      <span class="tag tag-fix">Fix now</span>
+      <h4>Shorten the header label</h4>
+      <p>"WHAT TO KNOW BEFORE YOU START" is 7 words in all-caps at 10.5px — the longest uppercase label in the app. It creates visual noise before you've read a single word. "BEFORE YOU START" or "A note before you begin" (serif italic) both communicate the same thing with half the weight.</p>
+    </div>
+
+    <div class="note-card">
+      <span class="tag tag-both">Both directions</span>
+      <h4>Full-width colour band > left border</h4>
+      <p>A 3px left border is a whisper. A full-width colour band is a statement. The block contains genuinely important information — scrambled eggs ruin the dish. The design should match the stakes. Both options use a coloured header band so the visual weight matches the content weight.</p>
+    </div>
+
+    <div class="note-card">
+      <span class="tag tag-both">Both directions</span>
+      <h4>Bullet spacing + contrast</h4>
+      <p>The current 8px gap between items reads tight at 12.5px body text. Both new variants use 10px. Also: the current bullet dots at 5px on a very light surface are barely visible — both new variants use higher-contrast bullets (rust or olive) that actually guide the eye between items.</p>
+    </div>
+
+  </div>
+</div>
+
+<p style="text-align:center; font-size:11px; color:#8A7E72; margin-top:48px; max-width:560px; line-height:1.7;">
+  Open in Chrome — Cowork panel does not render HTML prototypes correctly.<br>
+  The same block pattern applies to the Finishing &amp; Tasting section (same structure, different colour).
+</p>
+
+</body>
+</html>
