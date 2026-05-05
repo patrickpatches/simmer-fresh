@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone · Recipe Card v2</title>
+<style>
+  :root {
+    --bg:          #E8F0E6;
+    --bg-deep:     #DEEADB;
+    --surface:     #FFFFFF;
+    --surface-mid: #EFF5EE;
+    --ink:         #111410;
+    --ink-soft:    #3D3830;
+    --muted:       #7A766E;
+    --primary:     #B84030;
+    --primary-tint: rgba(184,64,48,0.08);
+    --primary-line: rgba(184,64,48,0.18);
+    --sage:        #2E5E3E;
+    --sage-tint:   rgba(46,94,62,0.10);
+    --line:        #D8E4D6;
+    --line-strong: #C0D4BE;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-sans:    -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111410;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+    color: var(--ink);
+  }
+
+  /* ── Page chrome ─────────────────────────────────── */
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: #F5F0EB;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .page-sub {
+    font-size: 12px;
+    color: #6A6460;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  /* ── Section labels ──────────────────────────────── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6A6460;
+    margin-bottom: 16px;
+    margin-top: 40px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  /* ── Phone frame ─────────────────────────────────── */
+  .phone-frame {
+    width: 390px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 44px;
+    padding: 52px 0 40px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-header {
+    padding: 0 18px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .phone-screen-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.4px;
+  }
+  .phone-screen-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* ── Filter chips row ────────────────────────────── */
+  .chips-row {
+    padding: 0 14px 16px;
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .chip {
+    padding: 7px 13px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .chip-active {
+    background: var(--primary);
+    color: #FAFAF7;
+    border: 1.5px solid var(--primary);
+  }
+  .chip-idle {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--line-strong);
+  }
+
+  /* ── 2-col grid ──────────────────────────────────── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 14px;
+  }
+
+  /* ── Recipe card ─────────────────────────────────── */
+  .recipe-card {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    cursor: pointer;
+    position: relative;
+  }
+
+  /* Image zone */
+  .card-image-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* square */
+    overflow: hidden;
+    background: var(--surface-mid);
+  }
+  .card-image-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-image-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    background: linear-gradient(135deg, var(--surface-mid) 0%, var(--bg-deep) 100%);
+  }
+  /* Hero scrim */
+  .card-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(8,8,8,0.55) 100%);
+    pointer-events: none;
+  }
+  /* "Photos soon" badge */
+  .photos-soon {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-size: 9px;
+    color: #9A9690;
+    backdrop-filter: blur(4px);
+  }
+  /* Chef attribution chip — overlaid on image bottom-left */
+  .source-chip {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(184,64,48,0.82);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: #FAFAF7;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Planned indicator — top-right */
+  .planned-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--sage);
+    border: 2px solid #FAFAF7;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Card body */
+  .card-body {
+    padding: 10px 12px 12px;
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+    margin-bottom: 3px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .card-tagline {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 8px;
+  }
+
+  /* At-a-glance strip */
+  .card-strip {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .strip-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .strip-item:not(:last-child) {
+    border-right: 1px solid var(--line);
+    margin-right: 6px;
+    padding-right: 6px;
+  }
+  .strip-icon { font-size: 10px; flex-shrink: 0; }
+  .strip-text { overflow: hidden; text-overflow: ellipsis; }
+
+  /* Whole-food badge */
+  .whole-food-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--sage-tint);
+    border: 1px solid rgba(170,204,168,0.22);
+    border-radius: 20px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--sage);
+    margin-top: 7px;
+  }
+
+  /* Pantry match badge — sits inside card, top-left of image */
+  .match-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.60);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 6px;
+    padding: 3px 7px;
+    font-size: 10px;
+    color: #FAFAF7;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Favourite icon */
+  .fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Annotation callouts ─────────────────────────── */
+  .annotation {
+    position: absolute;
+    background: #FFF8E1;
+    border: 1.5px solid #F0C040;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 11px;
+    color: #5A4010;
+    line-height: 1.4;
+    max-width: 160px;
+    z-index: 10;
+  }
+  .annotation::before {
+    content: '';
+    position: absolute;
+    width: 8px; height: 8px;
+    background: #FFF8E1;
+    border-left: 1.5px solid #F0C040;
+    border-bottom: 1.5px solid #F0C040;
+    transform: rotate(-45deg);
+  }
+  .ann-left::before  { right: -5px; top: 12px; border-left: none; border-bottom: none; border-right: 1.5px solid #F0C040; border-top: 1.5px solid #F0C040; }
+  .ann-right::before { left: -5px; top: 12px; }
+
+  /* ── Comparison table ────────────────────────────── */
+  .comparison {
+    max-width: 860px;
+    margin: 60px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .compare-col h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6A6460;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* ── Rationale ───────────────────────────────────── */
+  .rationale {
+    max-width: 740px;
+    margin: 60px auto 0;
+  }
+  .rationale h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: #F0EBE4;
+    margin-bottom: 6px;
+  }
+  .rationale .lead {
+    font-size: 13px;
+    color: #6A6460;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .rat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .rat-card {
+    background: #1A1A18;
+    border-radius: 12px;
+    border: 1px solid #2A2A28;
+    padding: 16px;
+  }
+  .rat-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .rat-card p {
+    font-size: 13px;
+    color: #B0A898;
+    line-height: 1.65;
+    margin-bottom: 6px;
+  }
+  .rat-card p:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<p class="page-title">Recipe Card v2 — Kitchen browse grid</p>
+<p class="page-sub">Sage palette · v2 design language · Open in Chrome</p>
+
+<!-- ── PHONE FRAME ─────────────────────────────────────────── -->
+<div class="phone-frame">
+
+  <!-- Header -->
+  <div class="phone-header">
+    <div>
+      <div class="phone-screen-title">Kitchen</div>
+      <div class="phone-screen-sub">32 recipes · chef-inspired, honestly adapted</div>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7A766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="chips-row">
+    <div class="chip chip-active">All</div>
+    <div class="chip chip-idle">Quick</div>
+    <div class="chip chip-idle">Weekend</div>
+    <div class="chip chip-idle">Favourites</div>
+    <div class="chip chip-idle">Yours</div>
+  </div>
+
+  <!-- Card grid -->
+  <div class="card-grid">
+
+    <!-- Card 1: Full data, chef attributed, whole food, planned -->
+    <div class="recipe-card">
+      <div class="card-image-wrap">
+        <img src="https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400&q=75" alt="Pasta Carbonara" />
+        <div class="card-scrim"></div>
+        <div class="source-chip">👨‍🍳 G. Ramsay</div>
+        <div class="planned-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Pasta Carbonara</div>
+        <div class="card-tagline">The Roman original — no cream, ever</div>
+        <div class="card-strip">
+          <div class="strip-item">
+            <span class="strip-icon">⏱</span>
+            <span class="strip-text">35 min</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">📊</span>
+            <span class="strip-text">Inter.</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">🇮🇹</span>
+            <span class="strip-text">Italian</span>
+          </div>
+        </div>
+        <div class="whole-food-badge">
+          <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#AACCA8" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 4" stroke="#AACCA8" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Whole food
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Pantry match context, photos soon badge -->
+    <div class="recipe-card">
+      <div class="card-image-wrap">
+        <img src="https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=400&q=75" alt="Butter Chicken" />
+        <div class="card-scrim"></div>
+        <div class="source-chip">👨‍🍳 Marion Grasby</div>
+        <div class="photos-soon">📷 Soon</div>
+        <div class="match-badge">5 of 9</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Butter Chicken</div>
+        <div class="card-tagline">Rich, mild, and better than the jar</div>
+        <div class="card-strip">
+          <div class="strip-item">
+            <span class="strip-icon">⏱</span>
+            <span class="strip-text">50 min</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">📊</span>
+            <span class="strip-text">Easy</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">🇮🇳</span>
+            <span class="strip-text">Indian</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: No chef, no at-a-glance (old seed recipe — graceful degradation) -->
+    <div class="recipe-card">
+      <div class="card-image-wrap">
+        <div class="card-image-placeholder">🥗</div>
+        <div class="card-scrim"></div>
+        <div class="photos-soon">📷 Soon</div>
+        <div class="fav-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F5EFE8" stroke-width="2" stroke-linecap="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Fattoush</div>
+        <div class="card-tagline">Lebanese bread salad, bright and crisp</div>
+        <!-- No at-a-glance strip — old recipe, fields absent. Card still looks clean. -->
+      </div>
+    </div>
+
+    <!-- Card 4: Favourited, full data -->
+    <div class="recipe-card">
+      <div class="card-image-wrap">
+        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=75" alt="Smash Burger" />
+        <div class="card-scrim"></div>
+        <div class="source-chip">👨‍🍳 J. Kenji López</div>
+        <div class="fav-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#FAFAF7" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Smash Burger</div>
+        <div class="card-tagline">The crust is the point — thin, caramelised, aggressive</div>
+        <div class="card-strip">
+          <div class="strip-item">
+            <span class="strip-icon">⏱</span>
+            <span class="strip-text">20 min</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">📊</span>
+            <span class="strip-text">Easy</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">🇺🇸</span>
+            <span class="strip-text">American</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /card-grid -->
+</div><!-- /phone-frame -->
+
+<!-- ── RATIONALE ─────────────────────────────────────────────── -->
+<div class="rationale">
+  <h2>Design rationale</h2>
+  <p class="lead">What changed from the current card, what stayed, and why each decision was made.</p>
+
+  <div class="rat-grid">
+    <div class="rat-card">
+      <div class="rat-card-title">Chef chip on the image, not below it</div>
+      <p>The chef attribution is moved onto the hero image (bottom-left, over the scrim) rather than appearing as a text line in the card body. This does two things: it frees vertical space in the body (the card doesn't grow taller), and it places attribution in visual dialogue with the food photo — the food and its author are one unit.</p>
+      <p>The chip uses a rust-filled pill on the image rather than the rust-tint-on-white treatment used in the detail page — because it needs legibility against any photo colour. Semi-transparent dark blur is the correct pattern here (same as iOS control centre chips).</p>
+    </div>
+    <div class="rat-card">
+      <div class="rat-card-title">At-a-glance strip — three facts only</div>
+      <p>The detail page shows five at-a-glance facts. The card is ~160px wide and can carry three comfortably. The three chosen are total time, difficulty, and cuisine — the three decision-making signals a user needs when scanning the grid: "how long?", "can I actually do this?", "what kind of food?".</p>
+      <p>If <code>total_time_minutes</code> is absent (current seed library), the whole strip is omitted. The card degrades cleanly to title + tagline, which is what users see today. No broken dashes, no "—" placeholders.</p>
+    </div>
+    <div class="rat-card">
+      <div class="rat-card-title">Display serif for the title</div>
+      <p>Georgia (the stand-in for Playfair Display) at 14px on a 160px card is readable and gives the card a cookbook quality that sans-serif titles don't. The title is the primary hierarchy — it gets the display font. Tagline gets sans italic, muted — a clear second tier.</p>
+      <p>Two-line clamp on the title prevents tall cards in the grid. If a recipe title is longer than two lines it truncates with ellipsis — users can read the full title on the detail page.</p>
+    </div>
+    <div class="rat-card">
+      <div class="rat-card-title">Whole-food badge conditional rendering</div>
+      <p>The sage-green "Whole food" badge only appears when <code>whole_food_verified === true</code>. This makes the badge meaningful — if it always appeared, it would become wallpaper. Cards without it aren't visually broken; they simply end at the at-a-glance strip.</p>
+      <p>Sage green is correct here: the primary accent (rust) is for actions and planned states. Whole-food is a quality signal, not an action — it gets the secondary sage.</p>
+    </div>
+    <div class="rat-card">
+      <div class="rat-card-title">Planned vs favourited vs pantry-matched — three independent layers</div>
+      <p>The card supports three simultaneous overlay states, all designed to coexist without collision. Planned: sage circle with tick, top-right. Favourite: ghost heart icon (unfilled idle, filled when active), top-right (replaces planned if both — planned takes priority). Pantry match: dark pill "N of X", top-left.</p>
+      <p>These were all present in some form in the current card — the v2 pass tidies their placement and ensures they don't overlap the chef chip (bottom-left) or the "Photos soon" badge (bottom-right).</p>
+    </div>
+    <div class="rat-card">
+      <div class="rat-card-title">White surface card on sage-green background</div>
+      <p>The background is now <code>tokens.bg</code> (light sage <code>#E8F0E6</code>), not dark. Cards are white (<code>tokens.surface</code>). This matches the detail page's light context — the browse grid and the detail page feel like the same app, same moment.</p>
+      <p>The current app used a dark browse context. The Sage palette direction (confirmed earlier this session) inverted this. The card design here is the correct response to that palette change — white cards sit naturally on sage green, not on near-black.</p>
+    </div>
+  </div>
+
+  <!-- Engineer handoff -->
+  <div style="background:#1A1A18; border:1px solid #2A2A28; border-radius:14px; padding:22px; margin-top:24px;">
+    <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--primary); margin-bottom:16px;">Engineer handoff</div>
+
+    <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">Files to touch</div>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:8px;"><code style="background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:3px; color:#C0A878; font-size:11px;">mobile/src/components/RecipeCard.tsx</code> — primary file. All visual changes live here.</p>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:8px;"><code style="background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:3px; color:#C0A878; font-size:11px;">mobile/app/(tabs)/index.tsx</code> — only if card layout is currently inlined there rather than in RecipeCard.tsx.</p>
+
+    <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">New props / data access</div>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:4px;">At-a-glance strip requires: <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.total_time_minutes</code>, <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.difficulty</code>, <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.categories.cuisines[0]</code>. All three are optional — if any one is absent, omit the strip. Don't show a partial strip.</p>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:4px;">Chef chip requires: <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.source?.chef</code>. Conditionally rendered — omit if absent.</p>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:4px;">Whole-food badge requires: <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.whole_food_verified === true</code>. Conditionally rendered.</p>
+
+    <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">What does NOT change</div>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65;">Card tap → recipe detail navigation. Favourite toggle logic. Planned-recipe indicator logic. Pantry match badge logic. Card dimensions and grid layout. "Photos soon" badge logic. All of these already work — only the visual treatment changes, not the behaviour.</p>
+
+    <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">Tokens (all existing)</div>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65;"><code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.surface</code> card bg · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.line</code> border · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.primary</code> source chip · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.sage</code> planned badge + whole-food · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.ink</code> title · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.muted</code> tagline + strip. No new tokens required.</p>
+
+    <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">Sequencing</div>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65;">COO to confirm priority relative to other open engineer handoffs. The at-a-glance strip is only useful once DECISION-009 seed data is populated — implementing the card before the data exists means the strip stays hidden on all cards. Visual impact only materialises after Culinary Verifier's Batch 2 completes. COO may choose to defer card visual work until data exists.</p>
+  </div>
+</div>
+
+</body>
+</html>
