@@ -3,933 +3,862 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hone · App Flow v2 — All Tabs</title>
+<title>Hone — App Flow v2 (Sage Colour Tokens)</title>
 <style>
-/* ── Tokens (v2 — sage green) ──────────────────────────────── */
-:root {
-  --bg:           #E8F0E6;
-  --bg-deep:      #DEEADB;
-  --surface:      #FFFFFF;
-  --surface-mid:  #EFF5EE;
-  --surface-low:  #E2EDE0;
-  --ink:          #111410;
-  --ink-soft:     #3D3830;
-  --muted:        #7A766E;
-  --rust:         #B84030;
-  --rust-deep:    #8E2E20;
-  --rust-tint:    rgba(184,64,48,0.08);
-  --rust-line:    rgba(184,64,48,0.18);
-  --forest:       #2E5E3E;
-  --forest-tint:  rgba(46,94,62,0.10);
-  --ochre:        #A05C28;
-  --ochre-tint:   rgba(160,92,40,0.10);
-  --line:         #D8E4D6;
-  --line-strong:  #C0D4BE;
-  --font-serif:   Georgia, 'Times New Roman', serif;
-  --font-sans:    -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
-}
+  /* ─────────────────────────────────────────────────────────────────
+     V2 SAGE COLOUR TOKENS
+     Source: tokens.ts dark dramatic palette, remapped to sage/light.
+     Only colours change — every layout dimension, font size, radius,
+     spacing, and component structure mirrors the live source code.
+  ─────────────────────────────────────────────────────────────────── */
+  :root {
+    --bg:           #E8F0E6;   /* tokens.bg      #111111  */
+    --bg-deep:      #DEEADB;   /* tokens.bgDeep  #080808  */
+    --surface:      #FFFFFF;   /* tokens.cream   #1A1A1A  */
+    --ink:          #111410;   /* tokens.ink     #F5EFE8  */
+    --ink-soft:     #3D3830;   /* tokens.inkSoft #C4B8A8  */
+    --muted:        #7A766E;   /* tokens.muted   #8A7E72  */
+    --rust:         #B84030;   /* tokens.primary #E8B830  */
+    --rust-deep:    #8E2E20;   /* tokens.primaryDeep     */
+    --rust-light:   rgba(184,64,48,0.09); /* tokens.primaryLight */
+    --forest:       #2E5E3E;   /* tokens.sage    #AACCA8  */
+    --forest-deep:  #1E4E2E;   /* tokens.sageDeep        */
+    --forest-light: rgba(46,94,62,0.10);  /* tokens.sageLight    */
+    --ochre:        #A05C28;   /* tokens.warmBrown        */
+    --line:         #D8E4D6;   /* tokens.line             */
+    --line-strong:  #C0D4BE;   /* tokens.lineDark         */
+  }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  background: #0A0A0A;
-  font-family: var(--font-sans);
-  padding: 48px 24px 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--ink);
-}
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #D4DECE;
+    padding: 40px 24px 60px;
+    min-height: 100vh;
+  }
 
-h1 {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  color: #F5EFE8;
-  text-align: center;
-  margin-bottom: 6px;
-  letter-spacing: -0.3px;
-}
-.page-sub {
-  font-size: 13px;
-  color: #8A7E72;
-  text-align: center;
-  margin-bottom: 52px;
-  line-height: 1.6;
-}
+  .page-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a6e56;
+    margin-bottom: 8px;
+  }
+  .page-subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #7a8e76;
+    margin-bottom: 40px;
+  }
 
-/* ── 4-phone row ──────────────────────────────────────────── */
-.phones-row {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  max-width: 1300px;
-  width: 100%;
-}
+  .row {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
 
-.phone-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
+  /* ── Phone shell ─────────────────────────────────────────────── */
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a6e56;
+  }
+  .phone {
+    width: 320px;
+    height: 680px;
+    background: var(--bg);
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 2px rgba(0,0,0,0.12),
+      0 20px 60px rgba(0,0,0,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.35);
+    display: flex;
+    flex-direction: column;
+  }
 
-.tab-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #8A7E72;
-}
+  /* Status bar */
+  .status-bar {
+    height: 44px;
+    padding: 14px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+  .status-time {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .status-icons svg { display: block; }
 
-/* ── Phone shell ──────────────────────────────────────────── */
-.phone {
-  width: 300px;
-  height: 620px;
-  border-radius: 36px;
-  overflow: hidden;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-  border: 2px solid rgba(255,255,255,0.06);
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
-  position: relative;
-}
+  /* Screen content scrolls */
+  .screen {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: relative;
+  }
+  .screen::-webkit-scrollbar { display: none; }
 
-/* ── Shared: status bar ───────────────────────────────────── */
-.statusbar {
-  background: var(--bg);
-  padding: 13px 18px 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-.sb-time { font-size: 13px; font-weight: 700; color: var(--ink); }
-.sb-icons { display: flex; align-items: center; gap: 5px; opacity: 0.65; }
+  /* ── Bottom tab bar ──────────────────────────────────────────── */
+  /* Exact structure from _layout.tsx:
+     - Floating pill bar, background = tokens.cream (#1A1A1A → --surface)
+     - Active tab = solid primary pill (--rust), light labels on it
+     - Inactive = dim labels on the dock
+  */
+  .tab-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px 14px;
+    background: transparent;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  .tab-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 4px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border-radius: 999px;
+    min-height: 48px;
+  }
+  .tab-item.active {
+    background: var(--rust);
+  }
+  .tab-item svg { display: block; }
+  .tab-item-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .tab-item.active .tab-item-label { color: #FAFAF7; }
+  .tab-item:not(.active) .tab-item-label { color: rgba(17,20,16,0.38); }
 
-/* ── Shared: scrollable content area ─────────────────────── */
-.screen-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: none;
-  background: var(--bg);
-}
-.screen-scroll::-webkit-scrollbar { display: none; }
+  /* ── Typography utilities ────────────────────────────────────── */
+  .display { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; }
+  .display-italic { font-family: Georgia, serif; font-style: italic; font-weight: 500; }
+  .sans { font-family: 'Inter', -apple-system, sans-serif; font-weight: 400; }
+  .sans-bold { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; }
 
-/* ── Shared: bottom nav ───────────────────────────────────── */
-.bottom-nav {
-  flex-shrink: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 4px 14px;
-}
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex: 1;
-  padding: 4px 0;
-}
-.nav-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.nav-item.active .nav-label { color: var(--rust); }
-.nav-item.active svg { stroke: var(--rust); }
-.nav-item svg { stroke: var(--muted); }
+  /* ── Shared component styles ─────────────────────────────────── */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 4px;
+  }
+  .hero-headline {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.13;
+    color: var(--ink);
+  }
+  .hero-headline em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--rust);
+  }
+  .hero-headline.sage-italic em { color: var(--forest); }
+  .headline-sub {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
 
-/* ── Shared: section heading ──────────────────────────────── */
-.sec-hd {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--forest);
-  padding: 0 14px 8px;
-}
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-top: 16px;
+  }
+  .search-bar input {
+    border: none; outline: none; flex: 1;
+    font-size: 13px; color: var(--muted);
+    background: transparent; font-family: inherit;
+  }
 
-/* ── Shared: surface card wrapper ─────────────────────────── */
-.card {
-  background: var(--surface);
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  overflow: hidden;
-}
+  /* Filter chips */
+  .chip-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .chip-row::-webkit-scrollbar { display: none; }
+  .chip {
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+  }
+  .chip.active {
+    background: var(--rust);
+    border-color: var(--rust);
+    color: #FAFAF7;
+    box-shadow: 0 2px 6px rgba(184,64,48,0.22);
+  }
 
-/* ── Shared: rust pill button ─────────────────────────────── */
-.btn-rust {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  background: var(--rust);
-  border: none; border-radius: 12px;
-  padding: 12px 14px;
-  font-family: var(--font-sans); font-size: 13px; font-weight: 700;
-  color: #FAF3EE; cursor: pointer; width: 100%;
-  letter-spacing: -0.1px;
-}
-.btn-outline {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  background: transparent;
-  border: 1.5px solid var(--rust); border-radius: 12px;
-  padding: 11px 14px;
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
-  color: var(--rust); cursor: pointer; width: 100%;
-}
+  /* ── Recipe card (RecipeCard.tsx) ─────────────────────────────── */
+  .recipe-card {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--line-strong);
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .recipe-card-image {
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #5a8a6a 0%, #8aaa7a 50%, #2E5E3E 100%);
+  }
+  .recipe-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rc-heart {
+    position: absolute; top: 10px; right: 10px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(26,19,14,0.42);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rc-difficulty {
+    position: absolute; bottom: 10px; left: 10px;
+    background: rgba(0,0,0,0.62);
+    padding: 3px 9px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; color: #F5EFE8;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .rc-camera {
+    position: absolute; bottom: 10px; right: 10px;
+    background: rgba(26,19,14,0.62);
+    padding: 3px 8px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.92);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .recipe-card-body { padding: 14px 16px 16px; }
+  .rc-title {
+    font-family: Georgia, serif; font-weight: 700;
+    font-size: 20px; line-height: 1.22; color: var(--ink);
+  }
+  .rc-tagline { margin-top: 4px; font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+  .rc-meta { display: flex; align-items: center; gap: 14px; margin-top: 11px; }
+  .rc-meta-chip { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+  .rc-chef {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 700; color: var(--rust);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
 
-/* ════════════════════════════════════════════════════════════
-   TAB 1 — RECIPES
-════════════════════════════════════════════════════════════ */
+  /* ── Pantry ─────────────────────────────────────────────────── */
+  .pantry-search {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1.5px solid var(--line-strong);
+    border-radius: 14px; padding: 11px 14px; margin-bottom: 13px;
+  }
+  .pantry-search input {
+    border: none; outline: none; background: transparent;
+    font-size: 14px; color: var(--muted); flex: 1; font-family: inherit;
+  }
+  .pills-card {
+    background: var(--surface); border: 1px solid var(--line-strong);
+    border-radius: 14px; padding: 11px 12px; margin-bottom: 13px;
+    display: flex; flex-wrap: wrap; gap: 7px;
+  }
+  .pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 7px 12px; border-radius: 999px;
+    background: var(--forest-light); border: 1px solid rgba(46,94,62,0.22);
+    font-size: 13px; font-weight: 700; color: var(--forest-deep); min-height: 33px;
+  }
+  .pill-x {
+    width: 17px; height: 17px; border-radius: 50%;
+    background: rgba(46,94,62,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--forest-deep);
+    line-height: 1; flex-shrink: 0;
+  }
+  .match-banner {
+    background: var(--surface); border: 1px solid rgba(184,64,48,0.22);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .match-banner-strip {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--rust); border-radius: 4px;
+  }
+  .match-banner-text { flex: 1; padding-left: 10px; }
+  .match-banner-title {
+    font-family: Georgia, serif; font-weight: 700;
+    font-size: 14px; color: var(--rust); line-height: 1.3; margin-bottom: 2px;
+  }
+  .match-banner-sub { font-size: 11px; color: var(--muted); }
+  .match-see-all {
+    background: var(--rust-light); border: 1px solid rgba(184,64,48,0.22);
+    border-radius: 999px; padding: 4px 10px;
+    font-size: 11px; font-weight: 700; color: var(--rust); flex-shrink: 0;
+  }
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 0 0 9px;
+  }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft); }
+  .section-count { font-size: 11px; color: var(--muted); }
 
-/* App header */
-.recipes-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 14px 10px;
-}
-.app-wordmark {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.5px;
-}
-.app-wordmark span { color: var(--rust); }
+  /* Match carousel card */
+  .match-card {
+    width: 240px; background: var(--surface);
+    border-radius: 18px; border: 1px solid var(--line-strong);
+    overflow: hidden; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .match-card-img {
+    height: 120px;
+    background: linear-gradient(135deg, #5a8a6a, #A05C28);
+    position: relative; overflow: hidden;
+  }
+  .match-card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .match-badge {
+    position: absolute; bottom: 8px; left: 8px;
+    background: rgba(26,19,14,0.7); padding: 4px 8px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: #fff;
+  }
+  .match-card-body { padding: 12px 14px; }
+  .match-card-title {
+    font-family: Georgia, serif; font-weight: 700;
+    font-size: 14px; line-height: 1.3; color: var(--ink); margin-bottom: 9px;
+  }
+  .tap-to-cook {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 12px; background: var(--forest); border-radius: 999px;
+    font-size: 12px; font-weight: 700; color: #FAFAF7;
+  }
+  .still-need-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  }
+  .missing-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .missing-chip {
+    padding: 4px 9px; background: var(--rust-light);
+    border: 1px solid rgba(184,64,48,0.22); border-radius: 999px;
+    font-size: 11px; font-weight: 700; color: var(--rust);
+  }
+  .carousel {
+    display: flex; gap: 11px; overflow-x: auto;
+    scrollbar-width: none; padding-bottom: 4px;
+  }
+  .carousel::-webkit-scrollbar { display: none; }
 
-/* Search bar */
-.search-bar {
-  margin: 0 14px 12px;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: 12px;
-  display: flex; align-items: center; gap: 9px;
-  padding: 11px 12px;
-}
-.search-placeholder {
-  font-size: 13px; color: var(--muted); flex: 1;
-}
+  /* ── Shop ───────────────────────────────────────────────────── */
+  .plan-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 13px; }
+  .plan-chip { padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .plan-chip.sage { background: var(--forest-light); color: var(--forest-deep); }
+  .plan-chip.rust { background: var(--rust-light); color: var(--rust-deep); }
 
-/* Category chips */
-.chip-row {
-  display: flex; gap: 7px;
-  overflow-x: auto; scrollbar-width: none;
-  padding: 0 14px 14px;
-}
-.chip-row::-webkit-scrollbar { display: none; }
-.chip {
-  flex-shrink: 0;
-  font-size: 12px; font-weight: 600;
-  padding: 6px 12px; border-radius: 20px;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  color: var(--ink-soft);
-  white-space: nowrap;
-}
-.chip.active {
-  background: var(--rust); border-color: var(--rust);
-  color: #FAF3EE;
-}
+  .aisle-section { margin-bottom: 4px; }
+  .aisle-header { display: flex; align-items: center; gap: 7px; padding: 6px 0; }
+  .aisle-emoji { font-size: 13px; }
+  .aisle-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+  .aisle-count { font-size: 11px; color: var(--muted); }
+  .aisle-card {
+    background: var(--surface); border-radius: 14px;
+    border: 1px solid var(--line-strong); overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .shop-row {
+    display: flex; align-items: center; gap: 11px;
+    padding: 13px 14px; min-height: 52px;
+    border-bottom: 1px solid var(--line);
+  }
+  .shop-row:last-child { border-bottom: none; }
+  .shop-row.ticked { opacity: 0.55; }
+  .shop-checkbox {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--line-strong); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 900; color: #FAFAF7;
+  }
+  .shop-checkbox.checked { background: var(--forest); border-color: var(--forest); }
+  .shop-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .shop-name.ticked { text-decoration: line-through; }
+  .shop-qty { font-size: 12px; color: var(--muted); }
+  .shop-x { padding: 5px; opacity: 0.45; color: var(--ink); font-size: 13px; }
+  .clear-ticked {
+    margin-top: 8px; padding: 13px 0; border-radius: 14px;
+    border: 1px solid var(--line-strong); text-align: center;
+    font-size: 13px; font-weight: 700; color: var(--ink-soft);
+  }
 
-/* Featured recipe card */
-.featured-card {
-  margin: 0 14px 18px;
-  border-radius: 14px; overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  position: relative;
-}
-.featured-img {
-  width: 100%; height: 180px;
-  object-fit: cover; display: block;
-}
-.featured-body {
-  background: var(--surface);
-  padding: 12px 14px 14px;
-}
-.featured-chef {
-  font-size: 10.5px; font-weight: 600;
-  color: var(--forest); letter-spacing: 0.02em;
-  margin-bottom: 3px;
-}
-.featured-title {
-  font-family: var(--font-serif);
-  font-size: 19px; font-weight: 700;
-  color: var(--ink); line-height: 1.2;
-  margin-bottom: 8px; letter-spacing: -0.3px;
-}
-.featured-meta {
-  display: flex; gap: 12px;
-}
-.meta-pill {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 11px; color: var(--muted); font-weight: 500;
-}
+  /* ── Profile ────────────────────────────────────────────────── */
+  .profile-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--rust); display: flex; align-items: center;
+    justify-content: center; font-family: Georgia, serif;
+    font-size: 28px; font-weight: 700; color: #FAFAF7; margin-bottom: 12px;
+  }
+  .stats-row {
+    display: flex; background: var(--surface); border-radius: 16px;
+    border: 1px solid var(--line-strong); overflow: hidden;
+    margin-top: 16px; margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .stat-cell {
+    flex: 1; padding: 14px 8px; text-align: center;
+    border-right: 1px solid var(--line);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-num { font-family: Georgia, serif; font-weight: 700; font-size: 22px; color: var(--rust); line-height: 1; margin-bottom: 4px; }
+  .stat-lbl { font-size: 11px; color: var(--muted); }
+  .settings-group {
+    background: var(--surface); border-radius: 16px;
+    border: 1px solid var(--line-strong); overflow: hidden;
+    margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .settings-group-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); padding: 10px 16px 6px;
+  }
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; border-top: 1px solid var(--line);
+  }
+  .settings-row-label { font-size: 14px; color: var(--ink); }
+  .settings-toggle {
+    width: 42px; height: 24px; border-radius: 999px;
+    background: var(--forest); position: relative; flex-shrink: 0;
+  }
+  .settings-toggle::after {
+    content: ''; position: absolute; width: 20px; height: 20px;
+    border-radius: 50%; background: #fff;
+    top: 2px; right: 2px; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .settings-toggle.off { background: var(--line-strong); }
+  .settings-toggle.off::after { right: auto; left: 2px; }
+  .settings-chevron { font-size: 12px; color: var(--muted); }
 
-/* Small recipe card */
-.recipe-card-sm {
-  display: flex; gap: 10px; align-items: center;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--line);
-}
-.recipe-card-sm:last-child { border-bottom: none; }
-.rc-img {
-  width: 52px; height: 52px;
-  border-radius: 8px; object-fit: cover; flex-shrink: 0;
-}
-.rc-body { flex: 1; }
-.rc-chef { font-size: 10px; color: var(--forest); font-weight: 600; margin-bottom: 1px; }
-.rc-title { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.25; margin-bottom: 3px; }
-.rc-meta { font-size: 11px; color: var(--muted); }
-.rc-arrow { color: var(--muted); }
+  /* Screen padding: paddingHorizontal 20, paddingTop insets+20, paddingBottom 140 */
+  .screen-pad { padding: 44px 18px 100px; }
 
-/* ════════════════════════════════════════════════════════════
-   TAB 2 — PANTRY
-════════════════════════════════════════════════════════════ */
-.pantry-header {
-  padding: 6px 14px 12px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.pantry-title { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
-.pantry-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+  /* Shop header row */
+  .shop-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .share-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--line-strong);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px;
+  }
 
-.match-banner {
-  margin: 0 14px 14px;
-  background: var(--rust);
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 10px;
-}
-.match-num {
-  font-family: var(--font-serif); font-size: 28px; font-weight: 700;
-  color: #FAF3EE; line-height: 1;
-}
-.match-text { font-size: 12px; color: rgba(250,243,238,0.85); line-height: 1.4; }
-.match-arrow {
-  margin-left: auto;
-  width: 28px; height: 28px;
-  background: rgba(255,255,255,0.18); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-
-.add-bar {
-  margin: 0 14px 14px;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: 12px;
-  display: flex; align-items: center; gap: 9px;
-  padding: 10px 12px;
-}
-.add-placeholder { font-size: 13px; color: var(--muted); flex: 1; }
-
-.pantry-group { margin: 0 14px 14px; }
-.pantry-group-hd {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--forest); margin-bottom: 6px; padding-left: 2px;
-}
-.pantry-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 10px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-  font-size: 13px; color: var(--ink-soft);
-}
-.pantry-item:first-of-type { border-radius: 10px 10px 0 0; }
-.pantry-item:last-of-type { border-radius: 0 0 10px 10px; border-bottom: none; }
-.pantry-item:only-of-type { border-radius: 10px; border-bottom: none; }
-.pantry-item-name { flex: 1; }
-.pantry-remove {
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--surface-low); border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-
-/* ════════════════════════════════════════════════════════════
-   TAB 3 — SHOP
-════════════════════════════════════════════════════════════ */
-.shop-header {
-  padding: 6px 14px 10px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.shop-title { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
-
-.recipe-chips {
-  display: flex; gap: 7px;
-  padding: 0 14px 12px; overflow-x: auto; scrollbar-width: none;
-}
-.recipe-chips::-webkit-scrollbar { display: none; }
-.recipe-chip {
-  flex-shrink: 0; font-size: 11px; font-weight: 600;
-  padding: 5px 10px; border-radius: 20px;
-  background: var(--rust-tint); border: 1px solid var(--rust-line);
-  color: var(--rust); white-space: nowrap;
-}
-
-.aisle-group { margin: 0 14px 14px; }
-.aisle-hd {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--forest); margin-bottom: 6px; padding-left: 2px;
-}
-.shop-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 10px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-}
-.shop-item:first-of-type { border-radius: 10px 10px 0 0; }
-.shop-item:last-of-type { border-radius: 0 0 10px 10px; border-bottom: none; }
-.shop-check {
-  width: 20px; height: 20px; border-radius: 6px;
-  border: 1.5px solid var(--line-strong); flex-shrink: 0;
-}
-.shop-check.done {
-  background: var(--forest); border-color: var(--forest);
-  display: flex; align-items: center; justify-content: center;
-}
-.shop-item-name { flex: 1; font-size: 13px; color: var(--ink-soft); }
-.shop-item-name.done { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(122,118,110,0.5); }
-.shop-item-amt { font-size: 12px; color: var(--muted); font-weight: 500; }
-
-.shop-clear {
-  margin: 0 14px 14px;
-  font-size: 12px; font-weight: 600;
-  color: var(--rust); text-align: center;
-  padding: 10px;
-}
-
-/* ════════════════════════════════════════════════════════════
-   TAB 4 — PROFILE
-════════════════════════════════════════════════════════════ */
-.profile-hero {
-  background: var(--surface);
-  padding: 20px 14px 16px;
-  display: flex; align-items: center; gap: 14px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 14px;
-}
-.avatar {
-  width: 54px; height: 54px; border-radius: 50%;
-  background: var(--rust);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-serif); font-size: 22px; font-weight: 700;
-  color: #FAF3EE; flex-shrink: 0;
-}
-.profile-name { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
-.profile-since { font-size: 11.5px; color: var(--muted); }
-
-.stats-row {
-  display: flex;
-  margin: 0 14px 16px;
-  background: var(--surface);
-  border-radius: 12px; border: 1px solid var(--line);
-  overflow: hidden;
-}
-.stat-item {
-  flex: 1; text-align: center; padding: 10px 4px;
-  border-right: 1px solid var(--line);
-}
-.stat-item:last-child { border-right: none; }
-.stat-val { font-size: 18px; font-weight: 700; color: var(--rust); line-height: 1; margin-bottom: 3px; }
-.stat-key { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-
-.settings-group { margin: 0 14px 14px; }
-.settings-group-hd {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--forest);
-  margin-bottom: 6px; padding-left: 2px;
-}
-.setting-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 11px 12px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-  font-size: 13px;
-}
-.setting-row:first-of-type { border-radius: 10px 10px 0 0; }
-.setting-row:last-of-type { border-radius: 0 0 10px 10px; border-bottom: none; }
-.setting-label { color: var(--ink-soft); }
-.setting-val { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
-.toggle {
-  width: 34px; height: 20px; border-radius: 10px;
-  background: var(--forest); position: relative; flex-shrink: 0;
-}
-.toggle::after {
-  content: ''; width: 16px; height: 16px;
-  background: white; border-radius: 50%;
-  position: absolute; top: 2px; right: 2px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.toggle.off { background: var(--line-strong); }
-.toggle.off::after { right: auto; left: 2px; }
+  /* Pantry title row */
+  .title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .title-row-right { display: flex; align-items: center; gap: 12px; }
+  .stocked-count { font-size: 11px; color: var(--muted); }
 </style>
 </head>
 <body>
 
-<h1>Hone · App Flow v2</h1>
-<p class="page-sub">All 4 tabs · Sage green bg · Refresh C tokens · Same design language throughout<br>Open in Chrome — Cowork panel does not render HTML prototypes correctly</p>
+<p class="page-title">Hone — App Flow v2</p>
+<p class="page-subtitle">Live app layout · v2 sage colour tokens · Kitchen · Pantry · Shop · Profile</p>
 
-<div class="phones-row">
+<div class="row">
 
-<!-- ════════════════════════════════════════════════
-     TAB 1 — RECIPES
-════════════════════════════════════════════════ -->
-<div class="phone-col">
-  <span class="tab-label">Recipes</span>
-  <div class="phone">
-
-    <!-- Status bar -->
-    <div class="statusbar">
-      <span class="sb-time">9:41</span>
-      <div class="sb-icons">
-        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
-        <svg width="15" height="12" viewBox="0 0 24 18" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1.5" fill="var(--ink)" stroke="none"/></svg>
-        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
-      </div>
-    </div>
-
-    <div class="screen-scroll">
-
-      <!-- Header -->
-      <div class="recipes-header">
-        <div class="app-wordmark">hon<span>e</span></div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  <!-- ════════════════════════════════════════════════════════════
+       TAB 1 — KITCHEN (index.tsx)
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="phone-wrap">
+    <span class="phone-label">Kitchen</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="var(--ink)" opacity=".35"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="var(--ink)" opacity=".55"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="var(--ink)" opacity=".75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--ink)"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.4 2.4 12.56 3.44 14.04 5.12L15.2 3.84C13.36 1.76 10.84.48 8 .48S2.64 1.76.8 3.84L1.96 5.12C3.44 3.44 5.6 2.4 8 2.4Z" fill="var(--ink)" opacity=".5"/><path d="M8 5.28C9.68 5.28 11.2 6 12.24 7.2L13.4 5.92C12.04 4.4 10.12 3.44 8 3.44S3.96 4.4 2.6 5.92L3.76 7.2C4.8 6 6.32 5.28 8 5.28Z" fill="var(--ink)" opacity=".7"/><path d="M8 8.16C9.04 8.16 9.96 8.64 10.56 9.44L11.72 8.16C10.76 6.96 9.44 6.16 8 6.16S5.24 6.96 4.28 8.16L5.44 9.44C6.04 8.64 6.96 8.16 8 8.16Z" fill="var(--ink)"/><circle cx="8" cy="11.04" r="1.12" fill="var(--ink)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="16" height="9" rx="2.5" fill="var(--ink)" opacity=".85"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="var(--ink)" opacity=".4"/></svg>
+        </div>
       </div>
 
-      <!-- Search -->
-      <div class="search-bar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span class="search-placeholder">Search recipes or ingredients…</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
-      </div>
+      <div class="screen">
+        <div class="screen-pad">
 
-      <!-- Category chips -->
-      <div class="chip-row">
-        <div class="chip active">All</div>
-        <div class="chip">Italian</div>
-        <div class="chip">Lebanese</div>
-        <div class="chip">Japanese</div>
-        <div class="chip">Chicken</div>
-        <div class="chip">Seafood</div>
-      </div>
+          <p class="eyebrow">A cooking companion</p>
+          <h1 class="hero-headline">What are you<br><em>cooking</em> tonight?</h1>
+          <p class="headline-sub sans">24 recipes · chef-inspired, honestly adapted</p>
 
-      <!-- Featured -->
-      <div class="featured-card">
-        <img class="featured-img" src="https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80" alt="Pasta Carbonara">
-        <div class="featured-body">
-          <div class="featured-chef">↗ Gordon Ramsay</div>
-          <div class="featured-title">Pasta Carbonara</div>
-          <div class="featured-meta">
-            <div class="meta-pill">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              35 min
+          <div class="search-bar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search recipes, chefs, ingredients…" disabled>
+          </div>
+
+          <div class="chip-row">
+            <div class="chip active">All</div>
+            <div class="chip">Quick</div>
+            <div class="chip">Weekend</div>
+            <div class="chip">Favourites</div>
+            <div class="chip">Yours</div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <div class="recipe-card">
+              <div class="recipe-card-image">
+                <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=640&q=80" alt="Pasta Carbonara">
+                <div class="rc-heart">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                </div>
+                <div class="rc-difficulty">Medium</div>
+                <div class="rc-camera">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Photos soon
+                </div>
+              </div>
+              <div class="recipe-card-body">
+                <p class="rc-title">Pasta Carbonara</p>
+                <p class="rc-tagline sans">Rich, silky, no cream — made properly with eggs and guanciale.</p>
+                <div class="rc-meta">
+                  <div class="rc-meta-chip sans">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    25 min
+                  </div>
+                  <div class="rc-meta-chip sans">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    2
+                  </div>
+                  <div class="rc-chef">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Kenji López-Alt
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="meta-pill">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              Serves 2
+
+            <div class="recipe-card">
+              <div class="recipe-card-image">
+                <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=640&q=80" alt="Chicken Shawarma">
+                <div class="rc-heart">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--rust)" stroke="var(--rust)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                </div>
+                <div class="rc-difficulty">Easy</div>
+                <div class="rc-camera">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Photos soon
+                </div>
+              </div>
+              <div class="recipe-card-body">
+                <p class="rc-title">Chicken Shawarma</p>
+                <p class="rc-tagline sans">Levantine street food — heavy spice, char on the edges, tahini sauce.</p>
+                <div class="rc-meta">
+                  <div class="rc-meta-chip sans">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    45 min
+                  </div>
+                  <div class="rc-meta-chip sans">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    4
+                  </div>
+                  <div class="rc-chef">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Sami Tamimi
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="meta-pill">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              Intermediate
+          </div>
+
+        </div>
+      </div>
+
+      <div class="tab-bar"><div class="tab-bar-inner">
+        <div class="tab-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="tab-item-label">Kitchen</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".5"/><circle cx="12" cy="11" r="3"/></svg>
+          <span class="tab-item-label">Pantry</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
+          <span class="tab-item-label">Shop</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-item-label">Profile</span>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       TAB 2 — PANTRY (pantry.tsx)
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="phone-wrap">
+    <span class="phone-label">Pantry</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="var(--ink)" opacity=".35"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="var(--ink)" opacity=".55"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="var(--ink)" opacity=".75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--ink)"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.4 2.4 12.56 3.44 14.04 5.12L15.2 3.84C13.36 1.76 10.84.48 8 .48S2.64 1.76.8 3.84L1.96 5.12C3.44 3.44 5.6 2.4 8 2.4Z" fill="var(--ink)" opacity=".5"/><path d="M8 5.28C9.68 5.28 11.2 6 12.24 7.2L13.4 5.92C12.04 4.4 10.12 3.44 8 3.44S3.96 4.4 2.6 5.92L3.76 7.2C4.8 6 6.32 5.28 8 5.28Z" fill="var(--ink)" opacity=".7"/><path d="M8 8.16C9.04 8.16 9.96 8.64 10.56 9.44L11.72 8.16C10.76 6.96 9.44 6.16 8 6.16S5.24 6.96 4.28 8.16L5.44 9.44C6.04 8.64 6.96 8.16 8 8.16Z" fill="var(--ink)"/><circle cx="8" cy="11.04" r="1.12" fill="var(--ink)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="16" height="9" rx="2.5" fill="var(--ink)" opacity=".85"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="var(--ink)" opacity=".4"/></svg>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-pad">
+
+          <p class="eyebrow">Cook with what you have</p>
+
+          <div class="title-row">
+            <h1 class="hero-headline sage-italic">Your <em>Pantry</em></h1>
+            <div class="title-row-right">
+              <span class="stocked-count">7 stocked</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Recently added -->
-      <div class="sec-hd">Recently added</div>
-      <div class="card" style="margin: 0 14px 16px;">
-        <div class="recipe-card-sm">
-          <img class="rc-img" src="https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=200&q=80" alt="Shawarma">
-          <div class="rc-body">
-            <div class="rc-chef">Lebanese</div>
-            <div class="rc-title">Chicken Shawarma</div>
-            <div class="rc-meta">45 min · Serves 4</div>
+          <div class="pantry-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search or add an ingredient…" disabled>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-        <div class="recipe-card-sm">
-          <img class="rc-img" src="https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=200&q=80" alt="Ramen">
-          <div class="rc-body">
-            <div class="rc-chef">Japanese</div>
-            <div class="rc-title">Tonkotsu Ramen</div>
-            <div class="rc-meta">3 hrs · Serves 2</div>
+
+          <div class="pills-card">
+            <div class="pill">eggs<span class="pill-x">×</span></div>
+            <div class="pill">pasta<span class="pill-x">×</span></div>
+            <div class="pill">olive oil<span class="pill-x">×</span></div>
+            <div class="pill">garlic<span class="pill-x">×</span></div>
+            <div class="pill">chicken<span class="pill-x">×</span></div>
+            <div class="pill">cumin<span class="pill-x">×</span></div>
+            <div class="pill">onion<span class="pill-x">×</span></div>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-        <div class="recipe-card-sm">
-          <img class="rc-img" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=200&q=80" alt="Pizza">
-          <div class="rc-body">
-            <div class="rc-chef">Italian</div>
-            <div class="rc-title">Margherita Pizza</div>
-            <div class="rc-meta">90 min · Serves 2–3</div>
+
+          <div class="match-banner">
+            <div class="match-banner-strip"></div>
+            <div class="match-banner-text">
+              <p class="match-banner-title">3 recipes you can cook now</p>
+              <p class="match-banner-sub sans">4 more within 1–3 ingredients</p>
+            </div>
+            <div class="match-see-all sans-bold">See all</div>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+
+          <div class="section-header">
+            <span class="section-label sans-bold">Ready to cook</span>
+            <span class="section-count sans">3 ready · 4 close</span>
+          </div>
+
+          <div class="carousel">
+            <div class="match-card">
+              <div class="match-card-img">
+                <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=400&q=80" alt="">
+              </div>
+              <div class="match-card-body">
+                <p class="match-card-title">Pasta Carbonara</p>
+                <div class="tap-to-cook sans-bold">✓ Tap to cook</div>
+              </div>
+            </div>
+            <div class="match-card">
+              <div class="match-card-img">
+                <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&q=80" alt="">
+                <div class="match-badge">2 of 8 matched</div>
+              </div>
+              <div class="match-card-body">
+                <p class="match-card-title">Chicken Shawarma</p>
+                <p class="still-need-label sans-bold">Still need</p>
+                <div class="missing-chips">
+                  <div class="missing-chip sans-bold">+ coriander</div>
+                  <div class="missing-chip sans-bold">+ lemon</div>
+                  <div class="missing-chip sans-bold">+ yoghurt</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-    </div><!-- /screen-scroll -->
-
-    <!-- Bottom nav -->
-    <nav class="bottom-nav">
-      <div class="nav-item active">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span class="nav-label" style="color:var(--rust)">Recipes</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
-        <span class="nav-label">Pantry</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span class="nav-label">Shop</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span class="nav-label">Profile</span>
-      </div>
-    </nav>
-
+      <div class="tab-bar"><div class="tab-bar-inner">
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="tab-item-label">Kitchen</span>
+        </div>
+        <div class="tab-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".6"/><circle cx="12" cy="11" r="3"/></svg>
+          <span class="tab-item-label">Pantry</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
+          <span class="tab-item-label">Shop</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-item-label">Profile</span>
+        </div>
+      </div></div>
+    </div>
   </div>
-</div>
 
 
-<!-- ════════════════════════════════════════════════
-     TAB 2 — PANTRY
-════════════════════════════════════════════════ -->
-<div class="phone-col">
-  <span class="tab-label">Pantry</span>
-  <div class="phone">
-
-    <div class="statusbar">
-      <span class="sb-time">9:41</span>
-      <div class="sb-icons">
-        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
-        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
+  <!-- ════════════════════════════════════════════════════════════
+       TAB 3 — SHOP (shop.tsx)
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="phone-wrap">
+    <span class="phone-label">Shop</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="var(--ink)" opacity=".35"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="var(--ink)" opacity=".55"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="var(--ink)" opacity=".75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--ink)"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.4 2.4 12.56 3.44 14.04 5.12L15.2 3.84C13.36 1.76 10.84.48 8 .48S2.64 1.76.8 3.84L1.96 5.12C3.44 3.44 5.6 2.4 8 2.4Z" fill="var(--ink)" opacity=".5"/><path d="M8 5.28C9.68 5.28 11.2 6 12.24 7.2L13.4 5.92C12.04 4.4 10.12 3.44 8 3.44S3.96 4.4 2.6 5.92L3.76 7.2C4.8 6 6.32 5.28 8 5.28Z" fill="var(--ink)" opacity=".7"/><path d="M8 8.16C9.04 8.16 9.96 8.64 10.56 9.44L11.72 8.16C10.76 6.96 9.44 6.16 8 6.16S5.24 6.96 4.28 8.16L5.44 9.44C6.04 8.64 6.96 8.16 8 8.16Z" fill="var(--ink)"/><circle cx="8" cy="11.04" r="1.12" fill="var(--ink)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="16" height="9" rx="2.5" fill="var(--ink)" opacity=".85"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="var(--ink)" opacity=".4"/></svg>
+        </div>
       </div>
+
+      <div class="screen">
+        <div class="screen-pad">
+
+          <div class="shop-header-row">
+            <div style="flex:1;">
+              <p class="eyebrow">Cook with what you'll buy</p>
+              <h1 class="hero-headline sage-italic">Your <em>Shop</em></h1>
+              <p class="headline-sub sans">11 items · 3 ticked</p>
+            </div>
+            <div style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </div>
+          </div>
+
+          <div class="search-bar" style="margin-top:14px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Add anything — milk, capsicum, toilet paper…" disabled>
+            <span style="font-size:14px;opacity:.5;">🎙️</span>
+          </div>
+
+          <div class="plan-chips" style="margin-top:12px;">
+            <div class="plan-chip sage">2 meals planned</div>
+            <div class="plan-chip sage">9 from meals</div>
+            <div class="plan-chip rust">2 added</div>
+          </div>
+
+          <div class="aisle-section">
+            <div class="aisle-header">
+              <span class="aisle-emoji">🥬</span>
+              <span class="aisle-label sans-bold">Produce</span>
+              <span class="aisle-count sans">(4)</span>
+            </div>
+            <div class="aisle-card">
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Lemons</span><span class="shop-qty sans">3</span><span class="shop-x">×</span></div>
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Flat-leaf parsley</span><span class="shop-x">×</span></div>
+              <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name sans-bold ticked">Garlic</span><span class="shop-qty sans">1 bulb</span><span class="shop-x">×</span></div>
+              <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name sans-bold ticked">Brown onions</span><span class="shop-qty sans">2</span><span class="shop-x">×</span></div>
+            </div>
+          </div>
+
+          <div class="aisle-section">
+            <div class="aisle-header">
+              <span class="aisle-emoji">🥩</span>
+              <span class="aisle-label sans-bold">Meat &amp; Seafood</span>
+              <span class="aisle-count sans">(3)</span>
+            </div>
+            <div class="aisle-card">
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Chicken thighs</span><span class="shop-qty sans">800 g</span><span class="shop-x">×</span></div>
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Guanciale</span><span class="shop-qty sans">150 g</span><span class="shop-x">×</span></div>
+              <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name sans-bold ticked">Pancetta</span><span class="shop-qty sans">100 g</span><span class="shop-x">×</span></div>
+            </div>
+          </div>
+
+          <div class="aisle-section">
+            <div class="aisle-header">
+              <span class="aisle-emoji">🫙</span>
+              <span class="aisle-label sans-bold">Pantry Staples</span>
+              <span class="aisle-count sans">(4)</span>
+            </div>
+            <div class="aisle-card">
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Spaghetti</span><span class="shop-qty sans">400 g</span><span class="shop-x">×</span></div>
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Ground cumin</span><span class="shop-qty sans">2 tsp</span><span class="shop-x">×</span></div>
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Smoked paprika</span><span class="shop-x">×</span></div>
+              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Tahini</span><span class="shop-x">×</span></div>
+            </div>
+          </div>
+
+          <div class="clear-ticked sans-bold">Clear 3 ticked items</div>
+
+        </div>
+      </div>
+
+      <div class="tab-bar"><div class="tab-bar-inner">
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="tab-item-label">Kitchen</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".5"/><circle cx="12" cy="11" r="3"/></svg>
+          <span class="tab-item-label">Pantry</span>
+        </div>
+        <div class="tab-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
+          <span class="tab-item-label">Shop</span>
+        </div>
+        <div class="tab-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-item-label">Profile</span>
+        </div>
+      </div></div>
     </div>
-
-    <div class="screen-scroll">
-
-      <div class="pantry-header">
-        <div>
-          <div class="pantry-title">Your Pantry</div>
-          <div class="pantry-count">14 ingredients</div>
-        </div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      </div>
-
-      <!-- Match banner -->
-      <div class="match-banner">
-        <div>
-          <div class="match-num">9</div>
-        </div>
-        <div class="match-text">recipes you can<br>make right now</div>
-        <div class="match-arrow">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </div>
-
-      <!-- Add bar -->
-      <div class="add-bar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span class="add-placeholder">Add an ingredient…</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </div>
-
-      <!-- Produce -->
-      <div class="pantry-group">
-        <div class="pantry-group-hd">Produce</div>
-        <div class="pantry-item"><span class="pantry-item-name">Garlic</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Lemon</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Brown onion</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      </div>
-
-      <!-- Protein -->
-      <div class="pantry-group">
-        <div class="pantry-group-hd">Protein</div>
-        <div class="pantry-item"><span class="pantry-item-name">Chicken thighs</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Eggs</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      </div>
-
-      <!-- Pantry staples -->
-      <div class="pantry-group">
-        <div class="pantry-group-hd">Pantry staples</div>
-        <div class="pantry-item"><span class="pantry-item-name">Spaghetti</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Extra virgin olive oil</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Canned tomatoes</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Jasmine rice</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      </div>
-
-      <!-- Dairy -->
-      <div class="pantry-group">
-        <div class="pantry-group-hd">Dairy</div>
-        <div class="pantry-item"><span class="pantry-item-name">Pecorino Romano</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="pantry-item"><span class="pantry-item-name">Unsalted butter</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      </div>
-
-    </div>
-
-    <nav class="bottom-nav">
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span class="nav-label">Recipes</span>
-      </div>
-      <div class="nav-item active">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
-        <span class="nav-label" style="color:var(--rust)">Pantry</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span class="nav-label">Shop</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span class="nav-label">Profile</span>
-      </div>
-    </nav>
-
   </div>
-</div>
 
 
-<!-- ════════════════════════════════════════════════
-     TAB 3 — SHOP
-════════════════════════════════════════════════ -->
-<div class="phone-col">
-  <span class="tab-label">Shop</span>
-  <div class="phone">
-
-    <div class="statusbar">
-      <span class="sb-time">9:41</span>
-      <div class="sb-icons">
-        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
-        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
-      </div>
-    </div>
-
-    <div class="screen-scroll">
-
-      <div class="shop-header">
-        <div>
-          <div class="shop-title">Shopping List</div>
-          <div style="font-size:12px; color:var(--muted); margin-top:1px;">11 items · 3 done</div>
-        </div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-      </div>
-
-      <!-- Recipe source chips -->
-      <div class="recipe-chips">
-        <div class="recipe-chip">Pasta Carbonara</div>
-        <div class="recipe-chip">Chicken Shawarma</div>
-      </div>
-
-      <!-- Produce -->
-      <div class="aisle-group">
-        <div class="aisle-hd">Produce</div>
-        <div class="shop-item">
-          <div class="shop-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <span class="shop-item-name done">Garlic</span>
-          <span class="shop-item-amt">4 cloves</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Lemon</span>
-          <span class="shop-item-amt">2</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Fresh flat-leaf parsley</span>
-          <span class="shop-item-amt">1 bunch</span>
-        </div>
-      </div>
-
-      <!-- Meat & Seafood -->
-      <div class="aisle-group">
-        <div class="aisle-hd">Meat &amp; Seafood</div>
-        <div class="shop-item">
-          <div class="shop-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <span class="shop-item-name done">Guanciale</span>
-          <span class="shop-item-amt">100g</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Chicken thighs, bone-in</span>
-          <span class="shop-item-amt">800g</span>
-        </div>
-      </div>
-
-      <!-- Pantry -->
-      <div class="aisle-group">
-        <div class="aisle-hd">Pantry</div>
-        <div class="shop-item">
-          <div class="shop-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <span class="shop-item-name done">Spaghetti</span>
-          <span class="shop-item-amt">200g</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Ground cumin</span>
-          <span class="shop-item-amt">2 tsp</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Smoked paprika</span>
-          <span class="shop-item-amt">1 tsp</span>
-        </div>
-      </div>
-
-      <!-- Dairy -->
-      <div class="aisle-group">
-        <div class="aisle-hd">Dairy &amp; Eggs</div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Pecorino Romano</span>
-          <span class="shop-item-amt">60g</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Eggs</span>
-          <span class="shop-item-amt">4</span>
-        </div>
-        <div class="shop-item">
-          <div class="shop-check"></div>
-          <span class="shop-item-name">Greek yoghurt</span>
-          <span class="shop-item-amt">200ml</span>
-        </div>
-      </div>
-
-      <div class="shop-clear">Clear 3 completed items</div>
-
-    </div>
-
-    <nav class="bottom-nav">
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span class="nav-label">Recipes</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
-        <span class="nav-label">Pantry</span>
-      </div>
-      <div class="nav-item active">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span class="nav-label" style="color:var(--rust)">Shop</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span class="nav-label">Profile</span>
-      </div>
-    </nav>
-
-  </div>
-</div>
-
-
-<!-- ════════════════════════════════════════════════
-     TAB 4 — PROFILE
-════════════════════════════════════════════════ -->
-<div class="phone-col">
-  <span class="tab-label">Profile</span>
-  <div class="phone">
-
-    <div class="statusbar">
-      <span class="sb-time">9:41</span>
-      <div class="sb-icons">
-        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
-        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
-      </div>
-    </div>
-
-    <div class="screen-scroll">
-
-      <!-- Profile hero -->
-      <div class="profile-hero">
-        <div class="avatar">P</div>
-        <div>
-          <div class="profile-name">Patrick</div>
-          <div class="profile-since">Member since April 2026</div>
-        </div>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-row">
-        <div class="stat-item">
-          <div class="stat-val">24</div>
-          <div class="stat-key">Saved</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val">8</div>
-          <div class="stat-key">Cooked</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val">3</div>
-          <div class="stat-key">Planned</div>
-        </div>
-      </div>
-
-      <!-- Preferences -->
-      <div class="settings-group">
-        <div class="settings-group-hd">Preferences</div>
-        <div class="setting-row"><span class="setting-label">Default serves</span><span class="setting-val">2 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-        <div class="setting-row"><span class="setting-label">Dietary</span><span class="setting-val">None set <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-        <div class="setting-row"><span class="setting-label">Australian mode</span><div class="toggle"></div></div>
-      </div>
-
-      <!-- App -->
-      <div class="settings-group">
-        <div class="settings-group-hd">App</div>
-        <div class="setting-row"><span class="setting-label">Theme</span><span class="setting-val">System <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-        <div class="setting-row"><span class="setting-label">Cook mode</span><span class="setting-val" style="font-size:11px; color:var(--forest)">Always dark</span></div>
-        <div class="setting-row"><span class="setting-label">Notifications</span><div class="toggle"></div></div>
-        <div class="setting-row"><span class="setting-label">Keep screen on</span><div class="toggle"></div></div>
-      </div>
-
-      <!-- About -->
-      <div class="settings-group">
-        <div class="settings-group-hd">About</div>
-        <div class="setting-row"><span class="setting-label">Version</span><span class="setting-val">0.9.0 (build 90)</span></div>
-        <div class="setting-row"><span class="setting-label">Rate Hone</span><span class="setting-val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-        <div class="setting-row"><span class="setting-label">Share Hone</span><span class="setting-val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
-      </div>
-
-      <div style="height:16px"></div>
-
-    </div>
-
-    <nav class="bottom-nav">
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span class="nav-label">Recipes</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
-        <span class="nav-label">Pantry</span>
-      </div>
-      <div class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span class="nav-label">Shop</span>
-      </div>
-      <div class="nav-item active">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span class="nav-label" style="color:var(--rust)">Profile</span>
-      </div>
-    </nav>
-
-  </div>
-</div>
-
-</div><!-- /phones-row -->
-
-<p style="max-width:700px; text-align:center; font-size:11.5px; color:#8A7E72; line-height:1.7; margin-top:52px;">
-  All 4 tabs use identical tokens, bottom nav, and type scale. Cook mode (entered from Recipe Detail) overrides to true black regardless of tab.<br>
-  Recipe Detail prototype: <strong style="color:#C4B8A8">docs/prototypes/recipe-detail-v2.html</strong>
-</p>
-
-</body>
-</html>
+  <!-- ════════════════════════════════════════════════════════════
+       TAB 4 — PROFILE
+       (Same eyebrow+headline language as other tabs)
+  ═══════════════════════════════�
