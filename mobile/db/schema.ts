@@ -109,7 +109,7 @@ export const SCHEMA_SQL: string[] = [
     created_at  INTEGER NOT NULL
   )`,
 
-    `CREATE TABLE IF NOT EXISTS favorites (
+  `CREATE TABLE IF NOT EXISTS favorites (
     recipe_id  TEXT PRIMARY KEY,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
@@ -154,6 +154,9 @@ export const SCHEMA_SQL: string[] = [
  * Version 1 = original schema (no explicit user_version set).
  * Version 2 = Phase 2 additions: categories, whole_food_verified, substitutions.
  * Version 3 = ingredient_swaps table for persistent cross-screen swap state.
+ * Version 4 = shopping_extras table.
+ * Version 5 = source-tracked shopping_items table.
+ * Version 6 = DECISION-009 extended recipe content fields.
  */
 export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
   2: [
@@ -184,13 +187,26 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
     )`,
   ],
   5: [
-    // Source-tracked shopping list. Replaces shopping_extras going forward;
-    // shopping_extras stays in the schema for backwards compatibility but
-    // is no longer written to. New code reads/writes shopping_items.
     `CREATE TABLE IF NOT EXISTS shopping_items (
       id              TEXT PRIMARY KEY,
       name            TEXT NOT NULL,
       category        TEXT NOT NULL DEFAULT 'Pantry Staples',
       quantity        REAL,
       unit            TEXT,
-      
+      notes           TEXT,
+      manually_added  INTEGER NOT NULL DEFAULT 0,
+      in_cart         INTEGER NOT NULL DEFAULT 0,
+      added_at        INTEGER NOT NULL DEFAULT 0,
+      sources_json    TEXT NOT NULL DEFAULT '[]'
+    )`,
+  ],
+  6: [
+    `ALTER TABLE recipes ADD COLUMN total_time_minutes INTEGER`,
+    `ALTER TABLE recipes ADD COLUMN active_time_minutes INTEGER`,
+    `ALTER TABLE recipes ADD COLUMN equipment TEXT`,
+    `ALTER TABLE recipes ADD COLUMN before_you_start TEXT`,
+    `ALTER TABLE recipes ADD COLUMN mise_en_place TEXT`,
+    `ALTER TABLE recipes ADD COLUMN finishing_note TEXT`,
+    `ALTER TABLE recipes ADD COLUMN leftovers_note TEXT`,
+  ],
+};
