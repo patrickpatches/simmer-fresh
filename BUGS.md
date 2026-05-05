@@ -24,6 +24,19 @@
 
 ---
 
+## Session log — 6 May 2026 (Report 2)
+
+### Builds dispatched this session
+| Build | Commit | Summary |
+|---|---|---|
+| (queued) | `de86d257` + `e253b0e7` | DECISION-009 data for 12 chef recipes + retire 28 incomplete recipes to holding |
+
+### UI fixes pushed (commit `3a9da3ca3cf8`, earlier today)
+- Equipment section: horizontal ScrollView → flex-wrap View (long items now wrap)
+- Mise en place: paddingHorizontal 16 → 20 (Android border-radius clipping fix)
+
+---
+
 ## Session log — 5 May 2026
 
 ### Builds dispatched this session
@@ -62,10 +75,4 @@
 - Lesson: Search should overlay, not replace. Browse content should stay visible; dropdown overlays it.
 
 **Failure 4 — Carousel robotic snap**
-- Pattern: `disableIntervalMomentum` + `decelerationRate="fast"` on carousel ScrollView
-- Why it breaks: `disableIntervalMomentum` hard-stops at nearest snap point ignoring velocity — feels like hitting a wall
-- Lesson: Natural snap = `snapToInterval` + `decelerationRate={0.92}`. The snap grid handles alignment; momentum handles feel.
-
-**Failure 5 — Static CARD_WIDTH on different screen sizes**
-- Pattern: `const CARD_WIDTH = 260` hardcoded constant
-- Why it breaks: On large-screen Android devic
+- Pattern: `disableIntervalMom
