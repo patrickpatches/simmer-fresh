@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone · App Flow v2 — All Tabs</title>
+<style>
+/* ── Tokens (v2 — sage green) ──────────────────────────────── */
+:root {
+  --bg:           #E8F0E6;
+  --bg-deep:      #DEEADB;
+  --surface:      #FFFFFF;
+  --surface-mid:  #EFF5EE;
+  --surface-low:  #E2EDE0;
+  --ink:          #111410;
+  --ink-soft:     #3D3830;
+  --muted:        #7A766E;
+  --rust:         #B84030;
+  --rust-deep:    #8E2E20;
+  --rust-tint:    rgba(184,64,48,0.08);
+  --rust-line:    rgba(184,64,48,0.18);
+  --forest:       #2E5E3E;
+  --forest-tint:  rgba(46,94,62,0.10);
+  --ochre:        #A05C28;
+  --ochre-tint:   rgba(160,92,40,0.10);
+  --line:         #D8E4D6;
+  --line-strong:  #C0D4BE;
+  --font-serif:   Georgia, 'Times New Roman', serif;
+  --font-sans:    -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0A0A0A;
+  font-family: var(--font-sans);
+  padding: 48px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--ink);
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: #F5EFE8;
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+.page-sub {
+  font-size: 13px;
+  color: #8A7E72;
+  text-align: center;
+  margin-bottom: 52px;
+  line-height: 1.6;
+}
+
+/* ── 4-phone row ──────────────────────────────────────────── */
+.phones-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  max-width: 1300px;
+  width: 100%;
+}
+
+.phone-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.tab-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8A7E72;
+}
+
+/* ── Phone shell ──────────────────────────────────────────── */
+.phone {
+  width: 300px;
+  height: 620px;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+}
+
+/* ── Shared: status bar ───────────────────────────────────── */
+.statusbar {
+  background: var(--bg);
+  padding: 13px 18px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.sb-time { font-size: 13px; font-weight: 700; color: var(--ink); }
+.sb-icons { display: flex; align-items: center; gap: 5px; opacity: 0.65; }
+
+/* ── Shared: scrollable content area ─────────────────────── */
+.screen-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  background: var(--bg);
+}
+.screen-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Shared: bottom nav ───────────────────────────────────── */
+.bottom-nav {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px 14px;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  padding: 4px 0;
+}
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.nav-item.active .nav-label { color: var(--rust); }
+.nav-item.active svg { stroke: var(--rust); }
+.nav-item svg { stroke: var(--muted); }
+
+/* ── Shared: section heading ──────────────────────────────── */
+.sec-hd {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--forest);
+  padding: 0 14px 8px;
+}
+
+/* ── Shared: surface card wrapper ─────────────────────────── */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+/* ── Shared: rust pill button ─────────────────────────────── */
+.btn-rust {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--rust);
+  border: none; border-radius: 12px;
+  padding: 12px 14px;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+  color: #FAF3EE; cursor: pointer; width: 100%;
+  letter-spacing: -0.1px;
+}
+.btn-outline {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: transparent;
+  border: 1.5px solid var(--rust); border-radius: 12px;
+  padding: 11px 14px;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  color: var(--rust); cursor: pointer; width: 100%;
+}
+
+/* ════════════════════════════════════════════════════════════
+   TAB 1 — RECIPES
+════════════════════════════════════════════════════════════ */
+
+/* App header */
+.recipes-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 14px 10px;
+}
+.app-wordmark {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+.app-wordmark span { color: var(--rust); }
+
+/* Search bar */
+.search-bar {
+  margin: 0 14px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 11px 12px;
+}
+.search-placeholder {
+  font-size: 13px; color: var(--muted); flex: 1;
+}
+
+/* Category chips */
+.chip-row {
+  display: flex; gap: 7px;
+  overflow-x: auto; scrollbar-width: none;
+  padding: 0 14px 14px;
+}
+.chip-row::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  font-size: 12px; font-weight: 600;
+  padding: 6px 12px; border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.chip.active {
+  background: var(--rust); border-color: var(--rust);
+  color: #FAF3EE;
+}
+
+/* Featured recipe card */
+.featured-card {
+  margin: 0 14px 18px;
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  position: relative;
+}
+.featured-img {
+  width: 100%; height: 180px;
+  object-fit: cover; display: block;
+}
+.featured-body {
+  background: var(--surface);
+  padding: 12px 14px 14px;
+}
+.featured-chef {
+  font-size: 10.5px; font-weight: 600;
+  color: var(--forest); letter-spacing: 0.02em;
+  margin-bottom: 3px;
+}
+.featured-title {
+  font-family: var(--font-serif);
+  font-size: 19px; font-weight: 700;
+  color: var(--ink); line-height: 1.2;
+  margin-bottom: 8px; letter-spacing: -0.3px;
+}
+.featured-meta {
+  display: flex; gap: 12px;
+}
+.meta-pill {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--muted); font-weight: 500;
+}
+
+/* Small recipe card */
+.recipe-card-sm {
+  display: flex; gap: 10px; align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.recipe-card-sm:last-child { border-bottom: none; }
+.rc-img {
+  width: 52px; height: 52px;
+  border-radius: 8px; object-fit: cover; flex-shrink: 0;
+}
+.rc-body { flex: 1; }
+.rc-chef { font-size: 10px; color: var(--forest); font-weight: 600; margin-bottom: 1px; }
+.rc-title { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.25; margin-bottom: 3px; }
+.rc-meta { font-size: 11px; color: var(--muted); }
+.rc-arrow { color: var(--muted); }
+
+/* ════════════════════════════════════════════════════════════
+   TAB 2 — PANTRY
+════════════════════════════════════════════════════════════ */
+.pantry-header {
+  padding: 6px 14px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pantry-title { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
+.pantry-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+.match-banner {
+  margin: 0 14px 14px;
+  background: var(--rust);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.match-num {
+  font-family: var(--font-serif); font-size: 28px; font-weight: 700;
+  color: #FAF3EE; line-height: 1;
+}
+.match-text { font-size: 12px; color: rgba(250,243,238,0.85); line-height: 1.4; }
+.match-arrow {
+  margin-left: auto;
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.18); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.add-bar {
+  margin: 0 14px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 12px;
+}
+.add-placeholder { font-size: 13px; color: var(--muted); flex: 1; }
+
+.pantry-group { margin: 0 14px 14px; }
+.pantry-group-hd {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--forest); margin-bottom: 6px; padding-left: 2px;
+}
+.pantry-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px; color: var(--ink-soft);
+}
+.pantry-item:first-of-type { border-radius: 10px 10px 0 0; }
+.pantry-item:last-of-type { border-radius: 0 0 10px 10px; border-bottom: none; }
+.pantry-item:only-of-type { border-radius: 10px; border-bottom: none; }
+.pantry-item-name { flex: 1; }
+.pantry-remove {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface-low); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+/* ════════════════════════════════════════════════════════════
+   TAB 3 — SHOP
+════════════════════════════════════════════════════════════ */
+.shop-header {
+  padding: 6px 14px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.shop-title { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
+
+.recipe-chips {
+  display: flex; gap: 7px;
+  padding: 0 14px 12px; overflow-x: auto; scrollbar-width: none;
+}
+.recipe-chips::-webkit-scrollbar { display: none; }
+.recipe-chip {
+  flex-shrink: 0; font-size: 11px; font-weight: 600;
+  padding: 5px 10px; border-radius: 20px;
+  background: var(--rust-tint); border: 1px solid var(--rust-line);
+  color: var(--rust); white-space: nowrap;
+}
+
+.aisle-group { margin: 0 14px 14px; }
+.aisle-hd {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--forest); margin-bottom: 6px; padding-left: 2px;
+}
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.shop-item:first-of-type { border-radius: 10px 10px 0 0; }
+.shop-item:last-of-type { border-radius: 0 0 10px 10px; border-bottom: none; }
+.shop-check {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 1.5px solid var(--line-strong); flex-shrink: 0;
+}
+.shop-check.done {
+  background: var(--forest); border-color: var(--forest);
+  display: flex; align-items: center; justify-content: center;
+}
+.shop-item-name { flex: 1; font-size: 13px; color: var(--ink-soft); }
+.shop-item-name.done { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(122,118,110,0.5); }
+.shop-item-amt { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+.shop-clear {
+  margin: 0 14px 14px;
+  font-size: 12px; font-weight: 600;
+  color: var(--rust); text-align: center;
+  padding: 10px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   TAB 4 — PROFILE
+════════════════════════════════════════════════════════════ */
+.profile-hero {
+  background: var(--surface);
+  padding: 20px 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+.avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--rust);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-serif); font-size: 22px; font-weight: 700;
+  color: #FAF3EE; flex-shrink: 0;
+}
+.profile-name { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.profile-since { font-size: 11.5px; color: var(--muted); }
+
+.stats-row {
+  display: flex;
+  margin: 0 14px 16px;
+  background: var(--surface);
+  border-radius: 12px; border: 1px solid var(--line);
+  overflow: hidden;
+}
+.stat-item {
+  flex: 1; text-align: center; padding: 10px 4px;
+  border-right: 1px solid var(--line);
+}
+.stat-item:last-child { border-right: none; }
+.stat-val { font-size: 18px; font-weight: 700; color: var(--rust); line-height: 1; margin-bottom: 3px; }
+.stat-key { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+.settings-group { margin: 0 14px 14px; }
+.settings-group-hd {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--forest);
+  margin-bottom: 6px; padding-left: 2px;
+}
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.setting-row:first-of-type { border-radius: 10px 10px 0 0; }
+.setting-row:last-of-type { border-radius: 0 0 10px 10px; border-bottom: none; }
+.setting-label { color: var(--ink-soft); }
+.setting-val { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.toggle {
+  width: 34px; height: 20px; border-radius: 10px;
+  background: var(--forest); position: relative; flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; width: 16px; height: 16px;
+  background: white; border-radius: 50%;
+  position: absolute; top: 2px; right: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.off { background: var(--line-strong); }
+.toggle.off::after { right: auto; left: 2px; }
+</style>
+</head>
+<body>
+
+<h1>Hone · App Flow v2</h1>
+<p class="page-sub">All 4 tabs · Sage green bg · Refresh C tokens · Same design language throughout<br>Open in Chrome — Cowork panel does not render HTML prototypes correctly</p>
+
+<div class="phones-row">
+
+<!-- ════════════════════════════════════════════════
+     TAB 1 — RECIPES
+════════════════════════════════════════════════ -->
+<div class="phone-col">
+  <span class="tab-label">Recipes</span>
+  <div class="phone">
+
+    <!-- Status bar -->
+    <div class="statusbar">
+      <span class="sb-time">9:41</span>
+      <div class="sb-icons">
+        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
+        <svg width="15" height="12" viewBox="0 0 24 18" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1.5" fill="var(--ink)" stroke="none"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
+      </div>
+    </div>
+
+    <div class="screen-scroll">
+
+      <!-- Header -->
+      <div class="recipes-header">
+        <div class="app-wordmark">hon<span>e</span></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="search-placeholder">Search recipes or ingredients…</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+      </div>
+
+      <!-- Category chips -->
+      <div class="chip-row">
+        <div class="chip active">All</div>
+        <div class="chip">Italian</div>
+        <div class="chip">Lebanese</div>
+        <div class="chip">Japanese</div>
+        <div class="chip">Chicken</div>
+        <div class="chip">Seafood</div>
+      </div>
+
+      <!-- Featured -->
+      <div class="featured-card">
+        <img class="featured-img" src="https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80" alt="Pasta Carbonara">
+        <div class="featured-body">
+          <div class="featured-chef">↗ Gordon Ramsay</div>
+          <div class="featured-title">Pasta Carbonara</div>
+          <div class="featured-meta">
+            <div class="meta-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              35 min
+            </div>
+            <div class="meta-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              Serves 2
+            </div>
+            <div class="meta-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Intermediate
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recently added -->
+      <div class="sec-hd">Recently added</div>
+      <div class="card" style="margin: 0 14px 16px;">
+        <div class="recipe-card-sm">
+          <img class="rc-img" src="https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=200&q=80" alt="Shawarma">
+          <div class="rc-body">
+            <div class="rc-chef">Lebanese</div>
+            <div class="rc-title">Chicken Shawarma</div>
+            <div class="rc-meta">45 min · Serves 4</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="recipe-card-sm">
+          <img class="rc-img" src="https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=200&q=80" alt="Ramen">
+          <div class="rc-body">
+            <div class="rc-chef">Japanese</div>
+            <div class="rc-title">Tonkotsu Ramen</div>
+            <div class="rc-meta">3 hrs · Serves 2</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="recipe-card-sm">
+          <img class="rc-img" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=200&q=80" alt="Pizza">
+          <div class="rc-body">
+            <div class="rc-chef">Italian</div>
+            <div class="rc-title">Margherita Pizza</div>
+            <div class="rc-meta">90 min · Serves 2–3</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+    </div><!-- /screen-scroll -->
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <div class="nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label" style="color:var(--rust)">Recipes</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
+        <span class="nav-label">Pantry</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label">Shop</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="nav-label">Profile</span>
+      </div>
+    </nav>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════
+     TAB 2 — PANTRY
+════════════════════════════════════════════════ -->
+<div class="phone-col">
+  <span class="tab-label">Pantry</span>
+  <div class="phone">
+
+    <div class="statusbar">
+      <span class="sb-time">9:41</span>
+      <div class="sb-icons">
+        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
+      </div>
+    </div>
+
+    <div class="screen-scroll">
+
+      <div class="pantry-header">
+        <div>
+          <div class="pantry-title">Your Pantry</div>
+          <div class="pantry-count">14 ingredients</div>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      </div>
+
+      <!-- Match banner -->
+      <div class="match-banner">
+        <div>
+          <div class="match-num">9</div>
+        </div>
+        <div class="match-text">recipes you can<br>make right now</div>
+        <div class="match-arrow">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FAF3EE" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <!-- Add bar -->
+      <div class="add-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="add-placeholder">Add an ingredient…</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+
+      <!-- Produce -->
+      <div class="pantry-group">
+        <div class="pantry-group-hd">Produce</div>
+        <div class="pantry-item"><span class="pantry-item-name">Garlic</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Lemon</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Brown onion</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      </div>
+
+      <!-- Protein -->
+      <div class="pantry-group">
+        <div class="pantry-group-hd">Protein</div>
+        <div class="pantry-item"><span class="pantry-item-name">Chicken thighs</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Eggs</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      </div>
+
+      <!-- Pantry staples -->
+      <div class="pantry-group">
+        <div class="pantry-group-hd">Pantry staples</div>
+        <div class="pantry-item"><span class="pantry-item-name">Spaghetti</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Extra virgin olive oil</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Canned tomatoes</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Jasmine rice</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      </div>
+
+      <!-- Dairy -->
+      <div class="pantry-group">
+        <div class="pantry-group-hd">Dairy</div>
+        <div class="pantry-item"><span class="pantry-item-name">Pecorino Romano</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="pantry-item"><span class="pantry-item-name">Unsalted butter</span><button class="pantry-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      </div>
+
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Recipes</span>
+      </div>
+      <div class="nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
+        <span class="nav-label" style="color:var(--rust)">Pantry</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label">Shop</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="nav-label">Profile</span>
+      </div>
+    </nav>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════
+     TAB 3 — SHOP
+════════════════════════════════════════════════ -->
+<div class="phone-col">
+  <span class="tab-label">Shop</span>
+  <div class="phone">
+
+    <div class="statusbar">
+      <span class="sb-time">9:41</span>
+      <div class="sb-icons">
+        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
+      </div>
+    </div>
+
+    <div class="screen-scroll">
+
+      <div class="shop-header">
+        <div>
+          <div class="shop-title">Shopping List</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:1px;">11 items · 3 done</div>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+      </div>
+
+      <!-- Recipe source chips -->
+      <div class="recipe-chips">
+        <div class="recipe-chip">Pasta Carbonara</div>
+        <div class="recipe-chip">Chicken Shawarma</div>
+      </div>
+
+      <!-- Produce -->
+      <div class="aisle-group">
+        <div class="aisle-hd">Produce</div>
+        <div class="shop-item">
+          <div class="shop-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="shop-item-name done">Garlic</span>
+          <span class="shop-item-amt">4 cloves</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Lemon</span>
+          <span class="shop-item-amt">2</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Fresh flat-leaf parsley</span>
+          <span class="shop-item-amt">1 bunch</span>
+        </div>
+      </div>
+
+      <!-- Meat & Seafood -->
+      <div class="aisle-group">
+        <div class="aisle-hd">Meat &amp; Seafood</div>
+        <div class="shop-item">
+          <div class="shop-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="shop-item-name done">Guanciale</span>
+          <span class="shop-item-amt">100g</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Chicken thighs, bone-in</span>
+          <span class="shop-item-amt">800g</span>
+        </div>
+      </div>
+
+      <!-- Pantry -->
+      <div class="aisle-group">
+        <div class="aisle-hd">Pantry</div>
+        <div class="shop-item">
+          <div class="shop-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="shop-item-name done">Spaghetti</span>
+          <span class="shop-item-amt">200g</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Ground cumin</span>
+          <span class="shop-item-amt">2 tsp</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Smoked paprika</span>
+          <span class="shop-item-amt">1 tsp</span>
+        </div>
+      </div>
+
+      <!-- Dairy -->
+      <div class="aisle-group">
+        <div class="aisle-hd">Dairy &amp; Eggs</div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Pecorino Romano</span>
+          <span class="shop-item-amt">60g</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Eggs</span>
+          <span class="shop-item-amt">4</span>
+        </div>
+        <div class="shop-item">
+          <div class="shop-check"></div>
+          <span class="shop-item-name">Greek yoghurt</span>
+          <span class="shop-item-amt">200ml</span>
+        </div>
+      </div>
+
+      <div class="shop-clear">Clear 3 completed items</div>
+
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Recipes</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
+        <span class="nav-label">Pantry</span>
+      </div>
+      <div class="nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label" style="color:var(--rust)">Shop</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="nav-label">Profile</span>
+      </div>
+    </nav>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════
+     TAB 4 — PROFILE
+════════════════════════════════════════════════ -->
+<div class="phone-col">
+  <span class="tab-label">Profile</span>
+  <div class="phone">
+
+    <div class="statusbar">
+      <span class="sb-time">9:41</span>
+      <div class="sb-icons">
+        <svg width="15" height="10" viewBox="0 0 24 12" fill="var(--ink)"><rect x="0" y="3" width="4" height="9" rx="1" opacity=".4"/><rect x="5.5" y="2" width="4" height="10" rx="1" opacity=".6"/><rect x="11" y="0" width="4" height="12" rx="1" opacity=".8"/><rect x="16.5" y="0" width="4" height="12" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".3"/><rect x="2" y="2" width="14" height="8" rx="2" fill="var(--rust)"/><path d="M23 4.5v3a2 2 0 0 0 0-3z" fill="var(--ink)" fill-opacity=".35"/></svg>
+      </div>
+    </div>
+
+    <div class="screen-scroll">
+
+      <!-- Profile hero -->
+      <div class="profile-hero">
+        <div class="avatar">P</div>
+        <div>
+          <div class="profile-name">Patrick</div>
+          <div class="profile-since">Member since April 2026</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-val">24</div>
+          <div class="stat-key">Saved</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">8</div>
+          <div class="stat-key">Cooked</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">3</div>
+          <div class="stat-key">Planned</div>
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="settings-group">
+        <div class="settings-group-hd">Preferences</div>
+        <div class="setting-row"><span class="setting-label">Default serves</span><span class="setting-val">2 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
+        <div class="setting-row"><span class="setting-label">Dietary</span><span class="setting-val">None set <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
+        <div class="setting-row"><span class="setting-label">Australian mode</span><div class="toggle"></div></div>
+      </div>
+
+      <!-- App -->
+      <div class="settings-group">
+        <div class="settings-group-hd">App</div>
+        <div class="setting-row"><span class="setting-label">Theme</span><span class="setting-val">System <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
+        <div class="setting-row"><span class="setting-label">Cook mode</span><span class="setting-val" style="font-size:11px; color:var(--forest)">Always dark</span></div>
+        <div class="setting-row"><span class="setting-label">Notifications</span><div class="toggle"></div></div>
+        <div class="setting-row"><span class="setting-label">Keep screen on</span><div class="toggle"></div></div>
+      </div>
+
+      <!-- About -->
+      <div class="settings-group">
+        <div class="settings-group-hd">About</div>
+        <div class="setting-row"><span class="setting-label">Version</span><span class="setting-val">0.9.0 (build 90)</span></div>
+        <div class="setting-row"><span class="setting-label">Rate Hone</span><span class="setting-val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
+        <div class="setting-row"><span class="setting-label">Share Hone</span><span class="setting-val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>
+      </div>
+
+      <div style="height:16px"></div>
+
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Recipes</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 17 4 20 2c0 5-2 10-8 10zM12 12C12 7 7 4 4 2c0 5 2 10 8 10z"/></svg>
+        <span class="nav-label">Pantry</span>
+      </div>
+      <div class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label">Shop</span>
+      </div>
+      <div class="nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="nav-label" style="color:var(--rust)">Profile</span>
+      </div>
+    </nav>
+
+  </div>
+</div>
+
+</div><!-- /phones-row -->
+
+<p style="max-width:700px; text-align:center; font-size:11.5px; color:#8A7E72; line-height:1.7; margin-top:52px;">
+  All 4 tabs use identical tokens, bottom nav, and type scale. Cook mode (entered from Recipe Detail) overrides to true black regardless of tab.<br>
+  Recipe Detail prototype: <strong style="color:#C4B8A8">docs/prototypes/recipe-detail-v2.html</strong>
+</p>
+
+</body>
+</html>
