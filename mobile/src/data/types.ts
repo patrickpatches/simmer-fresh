@@ -14,15 +14,6 @@
  *                                     `substitutions` captures honest tradeoff notes.
  *
  * Phase 2 additions (2026-04-22):
- *
- * Phase 3 additions (2026-05-04) — DECISION-009:
- *   - DifficultyLevel normalised: 'Easy'→'beginner', 'Intermediate'→'intermediate',
- *     'Involved'→'advanced' (lowercase, consistent with JSON convention)
- *   - total_time_minutes + active_time_minutes (supersede time_min, kept during migration)
- *   - equipment[], before_you_start[] (max 3), mise_en_place[]
- *   - finishing_note, leftovers_note
- *   All new fields are optional or have empty-array defaults — existing seed
- *   recipes compile without modification (difficulty values migrated in same commit).
  *   - CuisineId + TypeId enums — the dual-axis category taxonomy
  *   - SwapQuality + Substitution — ingredient-level swap data
  *   - `substitutions[]` on Ingredient
@@ -169,6 +160,14 @@ export const Ingredient = z.object({
   /** Short prep instruction — "fine dice", "room temp", etc. */
   prep: z.string().optional(),
   /**
+   * Chef-knowledge note about how this ingredient scales non-obviously.
+   * Populated per DECISION-007 when naïve multiplication misleads —
+   * concentration limits (brine salt), coverage quantities (dusting flour),
+   * depth-driven volumes (frying oil), surface-area constraints (lasagne sheets).
+   * Rendered as a subtle tooltip on the ingredient line in cook mode.
+   */
+  scaling_note: z.string().optional(),
+  /**
    * Swap options for this ingredient.
    * Optional field — absence means swaps haven't been researched yet,
    * not that no swaps exist. Phase 5 renders this as a tap-to-expand
@@ -234,7 +233,20 @@ export type LeftoverMode = z.infer<typeof LeftoverMode>;
 // Recipe — the full object
 // ---------------------------------------------------------------------------
 
-export const DifficultyLevel = z.enum(['beginner', 'intermediate', 'advanced']);
+/**
+ * Accepted difficulty values.
+ *
+ * New recipes use lowercase ('beginner', 'intermediate', 'advanced').
+ * Legacy seed recipes written before DECISION-009 use the old capitalised
+ * values ('Easy', 'Intermediate', 'Involved') — both sets are valid so
+ * existing DB rows don't break. refreshSeedRecipeFields normalises seed
+ * recipes to lowercase on every launch; user-added recipes keep whatever
+ * the UI wrote. Display label mapping lives in recipe/[id].tsx.
+ */
+export const DifficultyLevel = z.enum([
+  'beginner', 'intermediate', 'advanced',
+  'Easy', 'Intermediate', 'Involved',
+]);
 export type DifficultyLevel = z.infer<typeof DifficultyLevel>;
 
 export const Recipe = z.object({
@@ -263,44 +275,7 @@ export const Recipe = z.object({
   fixed_yield: z.boolean().optional(),
 
   time_min: z.number().int().positive(),
-
-  /**
-   * Total elapsed time in minutes (hands-off included).
-   * This supersedes `time_min` — both are kept during migration.
-   * DECISION-009: additive field, optional so existing seed recipes compile.
-   */
-  total_time_minutes: z.number().int().positive().optional(),
-
-  /**
-   * Active cook/prep time the user is hands-on.
-   * Combined with `total_time_minutes` to compute hands-off wait time.
-   */
-  active_time_minutes: z.number().int().positive().optional(),
-
   difficulty: DifficultyLevel,
-
-  /**
-   * Equipment required beyond a standard kitchen (mortar + pestle, wok,
-   * stand mixer, etc.). Displayed in the "Before you start" section.
-   * DECISION-009 field.
-   */
-  equipment: z.array(z.string()).default([]),
-
-  /**
-   * Up to 3 bullets shown at the top of the recipe — temperature warnings,
-   * long-marinate heads-up, "start this the day before" type notes.
-   * Keep to three maximum: users don't read walls of caveats.
-   * DECISION-009 field.
-   */
-  before_you_start: z.array(z.string()).max(3).default([]),
-
-  /**
-   * Everything to weigh, chop, and pre-measure before heat goes on.
-   * Mirrors the professional mise en place list.
-   * DECISION-009 field.
-   */
-  mise_en_place: z.array(z.string()).default([]),
-
   /** Freeform search keywords. Structured taxonomy lives in `categories`. */
   tags: z.array(z.string()),
 
@@ -333,62 +308,34 @@ export const Recipe = z.object({
 
   leftover_mode: LeftoverMode.optional(),
 
+  // ── DECISION-009: Extended recipe content fields ──────────────────────────
   /**
-   * Optional closing note shown at the bottom of the recipe —
-   * "Pairs beautifully with a cold Pilsner" or "Squeeze of lemon finishes it."
-   * Keep it short. One sentence. Chef's voice.
-   * DECISION-009 field.
+   * Total elapsed time in minutes (including passive time such as soaking,
+   * marinating, proofing). Shown in the "At a glance" strip.
    */
-  finishing_note: z.string().optional(),
-
+  total_time_minutes: z.number().int().positive().optional(),
   /**
-   * How to store, reheat, and use leftovers — plain language.
-   * E.g. "Keeps three days in the fridge. Reheat in a dry pan on medium."
-   * DECISION-009 field.
+   * Hands-on time only — excludes waiting, soaking, oven time.
+   * Shown alongside total_time_minutes so users can plan their day.
    */
-  leftovers_note: z.string().optional(),
-
+  active_time_minutes: z.number().int().positive().optional(),
   /**
-   * Confirms every ingredient is whole and unprocessed.
-   * No preservatives, no stock cubes, no packaged seasoning mixes.
-   * Required true for all authored recipes. Non-negotiable product position.
-   * User-added recipes are exempt — the app shows a disclaimer instead.
+   * Physical tools and vessels required. Rendered before ingredients so the
+   * user can check their kitchen before they start shopping.
    */
-  whole_food_verified: z.boolean().optional(),
-
-  /** True for recipes a user added in-app. Exempt from source requirement. */
-  user_added: z.boolean().default(false),
-  /** True for recipes generated by the pantry "invent a recipe" feature. */
-  generated_by_claude: z.boolean().default(false),
-}).refine(
-  (r) => r.user_added || r.generated_by_claude || r.source !== undefined,
-  { message: 'Recipe requires `source` unless user_added or generated_by_claude' },
-).refine(
-  (r) => r.user_added || r.generated_by_claude || r.whole_food_verified === true,
-  { message: 'Authored recipe is missing `whole_food_verified: true` — check no preservatives are used' },
-).refine(
-  (r) => r.user_added || r.generated_by_claude || r.categories !== undefined,
-  { message: 'Authored recipe is missing `categories` — add cuisines[] and types[] for discoverability' },
-);
-export type Recipe = z.infer<typeof Recipe>;
-
-// ---------------------------------------------------------------------------
-// Validation helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Parse and validate a raw object as a Recipe.
- * Returns the validated recipe or throws a ZodError with field-level messages.
- * Use this at the database ingestion boundary, not in hot UI code.
- */
-export function parseRecipe(raw: unknown): Recipe {
-  return Recipe.parse(raw);
-}
-
-/**
- * Validate a raw object as a Recipe without throwing.
- * Returns { success: true, data } or { success: false, error }.
- */
-export function safeParseRecipe(raw: unknown) {
-  return Recipe.safeParse(raw);
-}
+  equipment: z.array(z.string()).optional(),
+  /**
+   * 2–4 non-obvious things to know before starting. Critical gotchas only —
+   * not a summary of the recipe. Rendered as a "What to know" block.
+   */
+  before_you_start: z.array(z.string()).optional(),
+  /**
+   * Ordered prep steps: what to have ready before the first cook step.
+   * Rendered as the "Mise en place" block — one of the six DECISION-008 sections.
+   */
+  mise_en_place: z.array(z.string()).optional(),
+  /**
+   * Finishing cue — taste, adjust, plate. One paragraph.
+   * Rendered as "Finishing & tasting" after the method steps.
+   */
+  finishing_note: z.string().optional(
