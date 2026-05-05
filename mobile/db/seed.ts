@@ -3,7 +3,7 @@
  * flag set inside `initDatabase`.
  *
  * The job here is deliberately thin:
- *   1. iterate `SEED_RECIPES`
+ *   1. iterate SEED_RECIPES
  *   2. validate each one at runtime against the Zod schema
  *   3. write it through the same `insertRecipe` CRUD path user-added recipes use
  *
@@ -79,4 +79,66 @@ export async function syncNewSeedRecipes(db: SQLiteDatabase): Promise<void> {
  * reinstall required.
  *
  * Only updates rows where user_added = 0 and generated_by_claude = 0 —
- * user recipes are never clobbered. Silently skips recipes
+ * user recipes are never clobbered. Silently skips recipes that fail
+ * validation (safeParse) so a broken seed entry cannot crash the launch.
+ */
+export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void> {
+  for (const raw of SEED_RECIPES) {
+    const recipeId = (raw as { id: string }).id;
+
+    const existing = await db.getFirstAsync<{ id: string }>(
+      'SELECT id FROM recipes WHERE id = ? AND user_added = 0 AND generated_by_claude = 0',
+      [recipeId],
+    );
+    if (!existing) continue;
+
+    const parsed = RecipeSchema.safeParse(raw);
+    if (!parsed.success) continue;
+
+    const r = parsed.data;
+    await db.runAsync(
+      `UPDATE recipes SET
+        total_time_minutes = ?,
+        active_time_minutes = ?,
+        equipment = ?,
+        before_you_start = ?,
+        mise_en_place = ?,
+        finishing_note = ?,
+        leftovers_note = ?,
+        difficulty = ?
+       WHERE id = ? AND user_added = 0`,
+      [
+        r.total_time_minutes ?? null,
+        r.active_time_minutes ?? null,
+        r.equipment ? JSON.stringify(r.equipment) : null,
+        r.before_you_start ? JSON.stringify(r.before_you_start) : null,
+        r.mise_en_place ? JSON.stringify(r.mise_en_place) : null,
+        r.finishing_note ?? null,
+        r.leftovers_note ?? null,
+        r.difficulty,
+        r.id,
+      ],
+    );
+  }
+}
+
+/**
+ * Sync substitution data from seed recipes into the DB.
+ *
+ * Runs every launch (idempotent UPDATE — no data loss). This ensures that
+ * when swap data is added or updated in seed-recipes.ts, existing installs
+ * get the new data without requiring a full re-seed (which would wipe meal
+ * plan entries via cascade delete).
+ */
+export async function updateSubstitutions(db: SQLiteDatabase): Promise<void> {
+  for (const recipe of SEED_RECIPES) {
+    for (const ing of recipe.ingredients) {
+      if (ing.substitutions && ing.substitutions.length > 0) {
+        await db.runAsync(
+          'UPDATE ingredients SET substitutions = ? WHERE id = ? AND recipe_id = ?',
+          [JSON.stringify(ing.substitutions), ing.id, recipe.id],
+        );
+      }
+    }
+  }
+}
