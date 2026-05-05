@@ -9,9 +9,7 @@
 
 ## Active tickets
 
-| ID | Title | Status | Build | Commit | Notes |
-|---|---|---|---|---|---|
-| REGN-004 | Pantry search flashes / requires multiple taps | VALIDATED ✅ | #59 | `8c0db90873d7` | Patrick validated 2026-05-05 |
+*No open bug tickets.* REGN-001 and REGN-004 validated by Patrick on 5 May 2026.
 
 ---
 
@@ -19,9 +17,19 @@
 
 | ID | Title | Status | Closed |
 |---|---|---|---|
-| REGN-001 | Recipe card carousel partial-snap | VALIDATED ✅ | Build #61–#62 — Patrick validated 2026-05-05 |
-| REGN-002 | OneDrive null-byte corruption | VALIDATED ✅ | Session 28 Apr 2026 — process fix; write via GitHub API only |
-| REGN-003 | pantry.tsx file-write truncation | VALIDATED ✅ | Session 3 May 2026 — full-file rebuild + Python assert validation before push |
+| REGN-004 | Pantry search flashes / requires multiple taps | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
+| REGN-001 | Recipe card carousel partial-snap | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
+| REGN-002 | OneDrive null-byte corruption | VALIDATED ✅ | 28 Apr 2026 — process fix; write via GitHub API only |
+| REGN-003 | pantry.tsx file-write truncation | VALIDATED ✅ | 3 May 2026 — full-file rebuild + Python assert validation before push |
+
+---
+
+## Session log — 5 May 2026
+
+### Builds dispatched this session
+| Build | Commit | Summary |
+|---|---|---|
+| #68 | `a5acbb2a50c3` | DECISION-011 — Sage palette (tokens.ts, _layout.tsx, pantry.tsx, shop.tsx) |
 
 ---
 
@@ -60,5 +68,4 @@
 
 **Failure 5 — Static CARD_WIDTH on different screen sizes**
 - Pattern: `const CARD_WIDTH = 260` hardcoded constant
-- Why it breaks: On large-screen Android devices (tablets, foldables, large phones), peek width becomes enormous and snap math breaks
-- Lesson: All layout dimensions that depend on viewport must derive from `useWindowDimensions()`.
+- Why it breaks: On large-screen Android devic
