@@ -150,4 +150,4 @@ export const fonts = {
   sansXBold:     'Inter_800ExtraBold',
 } as const;
 
-export type TokenName = keyof typeof tokens
+export type TokenName = keyof typeof tokens;
