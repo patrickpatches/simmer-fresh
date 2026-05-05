@@ -10,7 +10,10 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Recipe, Ingredient, Step } from '../src/data/types';
 import { SCHEMA_SQL, SCHEMA_MIGRATIONS, SCHEMA_VERSION } from './schema';
-import { seedDatabase } from './seed';
+// seed.ts is intentionally NOT imported here — seed.ts imports insertRecipe
+// from this file, so any import back creates a circular dependency that
+// corrupts Metro's TypeScript stripping. All seeding is orchestrated from
+// setupDatabase in _layout.tsx, which imports both sides independently.
 
 // ── Row types mirror the DB columns exactly ──────────────────────────────────
 
@@ -36,7 +39,7 @@ interface RecipeRow {
   // DECISION-009 extended content fields
   total_time_minutes: number | null;
   active_time_minutes: number | null;
-  equipment: string | null;       // JSON string → string[]
+  equipment: string | null;        // JSON string → string[]
   before_you_start: string | null; // JSON string → string[]
   mise_en_place: string | null;    // JSON string → string[]
   finishing_note: string | null;
@@ -150,13 +153,13 @@ function rowToRecipe(
 // ── Migration runner ──────────────────────────────────────────────────────────
 
 /**
- * Apply any schema migrations that haven't run on this device yet.
+ * Apply any schema migrations that have not run on this device yet.
  *
- * Uses PRAGMA user_version as the version counter (0 on a fresh install
- * before any migration has ever run). Runs each migration in order from
+ * Uses PRAGMA user_version as the version counter (0 on a fresh install before
+ * any migration has ever run). Runs each migration in order from
  * (currentVersion + 1) up to SCHEMA_VERSION, then sets user_version to the
  * new target. Each migration step is idempotent where possible (IF NOT EXISTS,
- * ADD COLUMN on SQLite is a no-op if the column exists).
+ * ADD COLUMN on SQLite is a no-op if the column already exists).
  */
 async function runMigrations(db: SQLiteDatabase): Promise<void> {
   const result = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
@@ -193,25 +196,12 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   }
 
   // Apply any pending schema migrations (adds new columns, creates new tables).
-  // Must run BEFORE the seed gate so migration 6 columns exist when we try to
-  // write DECISION-009 fields into them.
+  // Must run before seeding so migration 6 columns exist when DECISION-009
+  // fields are written.
   await runMigrations(db);
 
-  const meta = await db.getFirstAsync<{ value: string }>(
-    "SELECT value FROM app_meta WHERE key = 'seeded'",
-  );
-  if (!meta) {
-    // First launch — seed all recipes from scratch.
-    await seedDatabase(db);
-    await db.runAsync(
-      "INSERT INTO app_meta (key, value) VALUES ('seeded', '1')",
-    );
-  }
-  // syncNewSeedRecipes and refreshSeedRecipeFields are called AFTER initDatabase
-  // returns, from the setupDatabase wrapper in _layout.tsx. They live there (not
-  // here) to avoid deepening the circular dependency: seed.ts already imports
-  // insertRecipe from database.ts, so database.ts must not import back from seed.ts
-  // beyond seedDatabase (which is only used on the first-launch path above).
+  // Seeding (first-launch and subsequent-launch refresh) is handled by
+  // setupDatabase in _layout.tsx so that seed.ts is never imported here.
 }
 
 // ── Recipes ───────────────────────────────────────────────────────────────────
@@ -545,4 +535,138 @@ export async function setMealPlanEntry(
   db: SQLiteDatabase,
   entry: MealPlanEntry,
 ): Promise<void> {
-  await db.runAsync('DELETE FROM meal_pl
+  await db.runAsync('DELETE FROM meal_plan WHERE date = ?', [entry.date]);
+  await db.runAsync(
+    'INSERT INTO meal_plan (id, date, recipe_id, servings) VALUES (?,?,?,?)',
+    [entry.id, entry.date, entry.recipe_id, entry.servings],
+  );
+}
+
+export async function deleteMealPlanEntry(
+  db: SQLiteDatabase,
+  id: string,
+): Promise<void> {
+  await db.runAsync('DELETE FROM meal_plan WHERE id = ?', [id]);
+}
+
+// ── Shopping list ─────────────────────────────────────────────────────────────
+//
+// Shopping list is a *derived view* over the meal plan plus user-typed items.
+// Every row tracks its sources (meals it came from, or 'manual') so that
+// removing a meal cleanly removes only the items that meal contributed —
+// unless the user also added them manually, in which case they survive.
+//
+// Schema: shopping_items.sources_json holds an array like
+//   [{kind:'meal', recipe_id:'r1', servings:4}, {kind:'manual'}]
+
+export type ShoppingSource =
+  | { kind: 'meal'; recipe_id: string; servings: number }
+  | { kind: 'manual' }
+  | { kind: 'pantry-suggestion'; recipe_id: string };
+
+export interface ShoppingItem {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number | null;
+  unit: string | null;
+  notes: string | null;
+  manually_added: boolean;
+  in_cart: boolean;
+  added_at: number;
+  sources: ShoppingSource[];
+}
+
+interface ShoppingItemRow {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number | null;
+  unit: string | null;
+  notes: string | null;
+  manually_added: number;
+  in_cart: number;
+  added_at: number;
+  sources_json: string;
+}
+
+function rowToShoppingItem(row: ShoppingItemRow): ShoppingItem {
+  let sources: ShoppingSource[] = [];
+  try {
+    const parsed = JSON.parse(row.sources_json);
+    if (Array.isArray(parsed)) sources = parsed as ShoppingSource[];
+  } catch {
+    // Corrupt sources_json (should not happen, but be defensive). Treat as empty.
+    sources = [];
+  }
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    quantity: row.quantity,
+    unit: row.unit,
+    notes: row.notes,
+    manually_added: Boolean(row.manually_added),
+    in_cart: Boolean(row.in_cart),
+    added_at: row.added_at,
+    sources,
+  };
+}
+
+export async function getShoppingItems(
+  db: SQLiteDatabase,
+): Promise<ShoppingItem[]> {
+  const rows = await db.getAllAsync<ShoppingItemRow>(
+    'SELECT * FROM shopping_items ORDER BY added_at DESC',
+  );
+  return rows.map(rowToShoppingItem);
+}
+
+export async function upsertShoppingItem(
+  db: SQLiteDatabase,
+  item: ShoppingItem,
+): Promise<void> {
+  await db.runAsync(
+    `INSERT OR REPLACE INTO shopping_items
+       (id, name, category, quantity, unit, notes,
+        manually_added, in_cart, added_at, sources_json)
+     VALUES (?,?,?,?,?,?,?,?,?,?)`,
+    [
+      item.id,
+      item.name,
+      item.category,
+      item.quantity ?? null,
+      item.unit ?? null,
+      item.notes ?? null,
+      item.manually_added ? 1 : 0,
+      item.in_cart ? 1 : 0,
+      item.added_at,
+      JSON.stringify(item.sources ?? []),
+    ],
+  );
+}
+
+export async function deleteShoppingItem(
+  db: SQLiteDatabase,
+  id: string,
+): Promise<void> {
+  await db.runAsync('DELETE FROM shopping_items WHERE id = ?', [id]);
+}
+
+/** Replace the whole list atomically — used when applying a derivation. */
+export async function replaceShoppingItems(
+  db: SQLiteDatabase,
+  items: ShoppingItem[],
+): Promise<void> {
+  await db.execAsync('BEGIN TRANSACTION');
+  try {
+    await db.execAsync('DELETE FROM shopping_items');
+    for (const item of items) {
+      await upsertShoppingItem(db, item);
+    }
+    await db.execAsync('COMMIT');
+  } catch (e) {
+    await db.execAsync('ROLLBACK');
+    throw e;
+  }
+}
