@@ -51,11 +51,11 @@ export default function TabLayout() {
             backgroundColor: 'transparent',
           }}
         >
-          {/* Pill bg: tokens.cream (#1A1A1A) — dark card surface, sits as a
-              floating dark dock on the near-black app bg. tokens.ink was
-              previously the dark label colour used here, but in the v0.7 Dark
-              Dramatic palette tokens.ink is now warm off-white (#F5EFE8).
-              Using tokens.cream keeps the dock dark as designed. */}
+          {/* Pill bg: tokens.cream (#FAFAF7) — warm near-white card surface.
+              Sage palette: dock is light on a sage-green app bg.
+              Active pill: rust primary with cream labels (tokens.onPrimary).
+              Inactive: dark ink at 52% opacity — legible on the light dock
+              without competing with the active rust pill. */}
           <View
             style={{
               flexDirection: 'row',
@@ -101,17 +101,19 @@ export default function TabLayout() {
                     gap: 2,
                   }}
                 >
-                  {/* Focused: gold pill — use tokens.bgDeep (near-black) for
-                      the icon/label. Per tokens.ts: gold bg = dark label.
-                      Unfocused: semi-transparent white on the dark pill. */}
+                  {/* Focused: rust pill — cream label (tokens.onPrimary) for contrast.
+                      Unfocused: dark ink at 52% opacity on the light dock.
+                      Why 52% not lower: inactive tabs were disappearing into the
+                      dock at 38%. 52% gives legibility without competing with
+                      the active rust pill. */}
                   <Icon
                     name={spec.icon}
                     size={16}
-                    color={focused ? tokens.bgDeep : 'rgba(255,255,255,0.55)'}
+                    color={focused ? tokens.onPrimary : 'rgba(17,20,16,0.52)'}
                   />
                   <Text
                     style={{
-                      color: focused ? tokens.bgDeep : 'rgba(255,255,255,0.55)',
+                      color: focused ? tokens.onPrimary : 'rgba(17,20,16,0.52)',
                       fontFamily: fonts.sansBold,
                       fontSize: 10,
                       letterSpacing: 0.2,
@@ -126,9 +128,4 @@ export default function TabLayout() {
         </View>
       )}
     >
-      {TABS.map((t) => (
-        <Tabs.Screen key={t.name} name={t.name} options={{ title: t.label }} />
-      ))}
-    </Tabs>
-  );
-}
+    

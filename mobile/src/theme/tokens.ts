@@ -1,97 +1,98 @@
 /**
- * Design tokens — Hone v0.7 Dark Dramatic palette.
+ * Design tokens — Hone Sage palette.
  *
- * Direction chosen by Patrick on 30 April 2026.
- * Prototype reference: docs/prototypes/concept-dark-dramatic.html
+ * DECISION-011 · 2026-05-05. Direction: Sage.
+ * Prototype reference: docs/prototypes/app-flow-v2.html
  *
- * FULL DIRECTION CHANGE FROM v0.6:
- *   v0.6 was Medium Iteration (warm cream #F6F0E8 bg, deep terracotta #C04A2E primary).
- *   v0.7 is Dark Dramatic — OLED-dark surfaces, gold accent, inverted ink values.
+ * DIRECTION CHANGE FROM v0.7 Dark Dramatic:
+ *   v0.7 Dark Dramatic: near-black surfaces, warm off-white text, gold primary.
+ *   Sage: natural sage-green surfaces, dark text, rust primary, forest secondary.
  *
  * THREE CHANGES:
- *   1. Surfaces inverted: warm linen → near-black #111111. Cards → #1A1A1A.
- *   2. Ink inverted: near-black text → warm off-white #F5EFE8.
- *   3. Primary colour: deep terracotta #C04A2E → gold #E8B830.
- *      Gold is the single accent colour — used for CTAs, active states,
- *      and the typographic grid labels on the browse screen.
+ *   1. Surfaces returned to light: near-black → sage green #E8F0E6. Cards → #FAFAF7.
+ *   2. Ink returned to dark: off-white → near-black #111410.
+ *   3. Primary: gold #E8B830 → rust #B84030. Forest green #2E5E3E as second accent.
+ *      Kitchen eyebrow = rust. Pantry / Shop eyebrow = forest.
+ *      Buttons with `backgroundColor: primary` use `color: tokens.onPrimary` (#FAFAF7).
  *
- * Font pairing is unchanged: Playfair Display (display) + Inter (body).
- * Token NAMES are unchanged — no component rename pass required.
+ * Font pairing unchanged: Playfair Display (display) + Inter (body).
+ * Token NAMES unchanged — no component rename pass required (except one addition:
+ * `onPrimary` — text/icon colour to use on solid rust primary surfaces).
  *
- * Contrast notes (against bg #111111):
- *   ink         #F5EFE8   ~18:1   AAA body
- *   inkSoft     #C4B8A8   ~9.5:1  AAA body
- *   muted       #8A7E72   ~4.5:1  AA body
- *   primary     #E8B830   ~9.8:1  AAA — gold reads very well on dark; use freely
+ * Contrast notes (against bg #E8F0E6):
+ *   ink         #111410   ~16:1   AAA body
+ *   inkSoft     #3D3830   ~10:1   AAA body
+ *   muted       #7A766E   ~4.6:1  AA body (passes large text + UI components)
+ *   primary     #B84030   ~4.7:1  AA — rust on sage passes AA for large text and UI
+ *   sage/forest #2E5E3E   ~6.1:1  AA+ — forest on sage, use for text freely
  *
- * Buttons with `backgroundColor: primary` (gold) use `color: tokens.bgDeep`
- * (dark), not tokens.ink — gold is light, label must be dark for contrast.
- *
- * Cook mode (CLAUDE.md mandate: dark, OLED-friendly true blacks) uses
- * true #000000 to be visually distinct from the dark app bg (#111111).
- * The recipe screen swaps surfaces to cookMode while `cooking` is true.
+ * Cook mode (CLAUDE.md mandate: dark, OLED-friendly true blacks) stays OLED black
+ * — visually distinct from the now-light app surfaces (#E8F0E6).
  */
 
 export const tokens = {
-  // Surfaces — dark dramatic
-  bg:      '#111111',   // near-black — primary background
-  bgDeep:  '#080808',   // section headers, pressed states, label panels
-  cream:   '#1A1A1A',   // card surfaces, inputs (legacy name kept for compat)
+  // Surfaces — sage
+  bg:      '#E8F0E6',   // sage green — primary background
+  bgDeep:  '#DEEADB',   // deeper sage — section headers, pressed states
+  cream:   '#FAFAF7',   // warm near-white — card surfaces, inputs
 
-  // Ink — inverted for dark surfaces
-  ink:     '#F5EFE8',   // warm off-white — primary text
-  inkSoft: '#C4B8A8',   // softer warm — secondary text
-  muted:   '#8A7E72',   // warm taupe — captions, hints, placeholders
+  // Ink — dark on light
+  ink:     '#111410',   // near-black — primary text
+  inkSoft: '#3D3830',   // warm dark — secondary text
+  muted:   '#7A766E',   // warm taupe — captions, hints, placeholders
 
-  // Primary — gold (buttons, links, active states, typographic accents).
-  // v0.7 change: deep terracotta #C04A2E → gold #E8B830.
-  // Gold reads AAA on dark surfaces. Use freely.
-  // Buttons with `backgroundColor: primary` use `color: tokens.bgDeep` (dark label).
-  // For inline text links use `primaryInk` — same gold, same AA on dark.
-  primary:      '#E8B830',
-  primaryDeep:  '#C49820',                    // pressed states / borders
-  primaryInk:   '#E8B830',                    // primary-as-text on dark surfaces
-  primaryLight: 'rgba(232,184,48,0.18)',      // tints for chips, selected states
+  // Primary — rust (buttons, links, Kitchen eyebrow, active states, step numbers).
+  // Buttons with `backgroundColor: primary` use `color: tokens.onPrimary` (#FAFAF7).
+  // For inline text: `primaryInk` — same rust, reads AA on sage bg.
+  primary:      '#B84030',
+  primaryDeep:  '#8E2E20',                   // pressed states / borders
+  primaryInk:   '#B84030',                   // primary-as-text on light surfaces
+  primaryLight: 'rgba(184,64,48,0.09)',      // tint for chips, selected states
+  onPrimary:    '#FAFAF7',                   // text/icon on solid rust surfaces
 
-  // Secondary — sage (success, checked states).
-  // Lifted slightly for readability on dark bg. Text on solid sage = tokens.bgDeep.
-  sage:      '#AACCA8',
-  sageDeep:  '#8AAE88',
-  sageLight: 'rgba(170,204,168,0.20)',
+  // Secondary — forest green (Pantry/Shop eyebrow, "See all" chip, "why" callouts,
+  //   step completion, checked states).
+  // Text on solid forest = tokens.onPrimary (#FAFAF7).
+  sage:      '#2E5E3E',
+  sageDeep:  '#1E4E2E',
+  sageLight: 'rgba(46,94,62,0.11)',
 
-  // Tertiary — ochre/butter (badges, highlights).
-  ochre:     '#F2D896',
-  ochreDeep: '#D4B860',
+  // Tertiary — amber/ochre (mise en place zone, badges, highlights).
+  ochre:     '#A05C28',
+  ochreDeep: '#7C4420',
 
-  // Warm brown — category headers, labels. Lightened for AA on dark bg.
-  warmBrown: '#C4A882',
+  // Warm brown — recipe detail framing headers (Finishing & tasting band).
+  warmBrown: '#8A6040',
 
-  // Sky — soft info/filter accent.
-  // Use as a tint background; for text on solid sky use tokens.bgDeep.
-  sky:      '#A8C4D0',
-  skyDeep:  '#7AAABB',
-  skyLight: 'rgba(168,196,208,0.20)',
+  // Amber — mise en place zone background + border.
+  amber:     '#FEF4E2',
+  amberLine: 'rgba(160,92,40,0.18)',
 
-  // Structural — subtle on dark surfaces
-  line:     'rgba(255,255,255,0.08)',   // dividers, light borders
-  lineDark: 'rgba(255,255,255,0.14)',   // stronger borders on card surfaces
+  // Sky — soft info/filter accent (filter chips, informational states).
+  sky:      '#7AAABB',
+  skyDeep:  '#5A8A9B',
+  skyLight: 'rgba(122,170,187,0.18)',
+
+  // Structural — sage-tinted on light surfaces
+  line:     '#D8E4D6',   // sage-tinted dividers
+  lineDark: '#C0D4BE',   // stronger sage-tinted borders
 
   // Cook-mode surfaces. CLAUDE.md mandate: dark, OLED true blacks.
-  // True #000000 to be visually distinct from the dark app bg (#111111).
+  // True #000000 to be visually distinct from the now-light app bg (#E8F0E6).
   // The recipe screen pulls from this group while `cooking` is true.
   cookMode: {
-    screenBg: '#000000',   // true OLED black — visually distinct from app bg
+    screenBg: '#000000',   // true OLED black — visually distinct from light app bg
     cardBg:   '#0D0D0D',   // raised card surface
     bgDeep:   '#161616',   // callouts, leftover note
-    ink:      '#F5EFE8',   // warm cream — primary text (unchanged from app layer)
+    ink:      '#F5EFE8',   // warm cream — primary text
     inkSoft:  '#C4B8A8',   // softer cream for body
     muted:    '#8A7E72',   // warm taupe for captions
     line:     'rgba(255,255,255,0.06)',
     lineDark: 'rgba(255,255,255,0.12)',
-    // Accents — gold and sage read well on true black without adjustment.
-    primary:  '#E8B830',   // gold — same as app primary, reads AAA on #000000
-    sage:     '#AACCA8',   // sage — unchanged
-    ochre:    '#F2D896',   // ochre — unchanged
+    // Accents — rust and forest read well on true black.
+    primary:  '#B84030',   // rust — same as app primary
+    sage:     '#2E5E3E',   // forest — same as app sage
+    ochre:    '#A05C28',   // amber ochre
   },
 } as const;
 
@@ -149,4 +150,4 @@ export const fonts = {
   sansXBold:     'Inter_800ExtraBold',
 } as const;
 
-export type TokenName = keyof typeof tokens;
+export type TokenName = keyof typeof tokens

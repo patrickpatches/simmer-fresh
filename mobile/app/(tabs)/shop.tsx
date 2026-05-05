@@ -437,13 +437,16 @@ export default function ShopTab() {
           }}
         >
           <View style={{ flex: 1 }}>
+            {/* Eyebrow — forest (tokens.sage). Shop = secondary utility tab.
+                Same reasoning as Pantry: forest eyebrow prevents competing
+                with the rust "Shop" italic in the headline below. */}
             <Text
               style={{
                 fontFamily: fonts.sansBold,
                 fontSize: 11,
                 letterSpacing: 2,
                 textTransform: 'uppercase',
-                color: tokens.primary,
+                color: tokens.sage,
                 marginBottom: 4,
               }}
             >
@@ -1326,16 +1329,4 @@ function SourceBreakdown({
               fontFamily: fonts.sansBold,
               fontSize: 14,
               color: tokens.ink,
-            }}
-          >
-            You added this manually
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
-function capitalize(s: string): string {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
+  
