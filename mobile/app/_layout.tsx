@@ -13,7 +13,7 @@
  *
  * Font pairing: Playfair Display (display/headings) + Inter (body/UI).
  * v0.7 change: Source Sans 3 → Inter. Inter is more architectural at UI
- * sizes (12–15sp) and suits the dark dramatic palette better.
+ * sizes (12-15sp) and suits the dark dramatic palette better.
  *
  * StatusBar: style="light" (light icons on the near-black #111111 bg).
  *
@@ -21,6 +21,13 @@
  * routes. This file is boilerplate for the whole app's shell and should
  * not grow unless we're adding cross-cutting concerns like error boundaries,
  * analytics wrapper (later), or a context provider.
+ *
+ * Database bootstrap note:
+ * All seed orchestration is in setupDatabase (below), not in initDatabase.
+ * seed.ts imports insertRecipe from database.ts — if database.ts also imported
+ * from seed.ts the cycle would corrupt Metro's TypeScript stripping. By keeping
+ * database.ts free of any seed.ts import, both modules resolve cleanly and
+ * setupDatabase imports from each side independently.
  */
 import '../global.css';
 import React, { useEffect } from 'react';
@@ -29,6 +36,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SystemUI from 'expo-system-ui';
 import { SQLiteProvider } from 'expo-sqlite';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -42,27 +50,35 @@ import {
   Inter_800ExtraBold,
 } from '@expo-google-fonts/inter';
 import { tokens } from '../src/theme/tokens';
-import type { SQLiteDatabase } from 'expo-sqlite';
 import { initDatabase } from '../db/database';
-import { syncNewSeedRecipes, refreshSeedRecipeFields } from '../db/seed';
+import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields } from '../db/seed';
 
 /**
- * Database bootstrap — called once by SQLiteProvider on open.
+ * Full database bootstrap sequence, called once by SQLiteProvider on open.
  *
- * Split into three sequential steps deliberately:
- *   1. initDatabase  — schema creation + migration runner + first-launch seed
- *   2. syncNewSeedRecipes  — insert any seed recipes added since first launch
- *   3. refreshSeedRecipeFields — UPDATE DECISION-009 content fields on existing
- *                               seed rows so new data ships without reinstall
- *
- * syncNewSeedRecipes and refreshSeedRecipeFields live here (not inside
- * initDatabase) to avoid a circular dependency: seed.ts imports insertRecipe
- * from database.ts, so database.ts cannot import back from seed.ts on the
- * hot path without Metro's bundler giving seed.ts an incomplete view of
- * database.ts, which corrupts Babel's TypeScript stripping.
+ *   1. initDatabase        — WAL + FK pragmas, CREATE TABLE IF NOT EXISTS, migrations.
+ *                            No seed.ts import here (circular dep prevention).
+ *   2. seedDatabase        — First launch only: write all SEED_RECIPES via insertRecipe.
+ *   3. syncNewSeedRecipes  — Every launch: insert seed recipes added after first install.
+ *   4. refreshSeedRecipeFields — Every launch: UPDATE DECISION-009 fields on seed rows
+ *                                so new content data ships without requiring a reinstall.
  */
 async function setupDatabase(db: SQLiteDatabase): Promise<void> {
+  // Step 1: tables + migrations only — no seeding.
   await initDatabase(db);
+
+  // Step 2: first-launch seed gate.
+  const meta = await db.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'seeded'",
+  );
+  if (!meta) {
+    await seedDatabase(db);
+    await db.runAsync(
+      "INSERT INTO app_meta (key, value) VALUES ('seeded', '1')",
+    );
+  }
+
+  // Steps 3 & 4: idempotent passes on every launch — cheap, safe to repeat.
   await syncNewSeedRecipes(db);
   await refreshSeedRecipeFields(db);
 }
@@ -80,3 +96,34 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_800ExtraBold,
   });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
+  // If fonts fail to load we still render — the app won't crash, it'll just
+  // fall back to system fonts until the user relaunches.
+  if (!fontsLoaded && !fontError) return null;
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* BottomSheetModalProvider must be inside GestureHandlerRootView and
+          wrap the entire nav tree so BottomSheetModal portals render correctly. */}
+      <BottomSheetModalProvider>
+        <SQLiteProvider databaseName="hone.db" onInit={setupDatabase}>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: tokens.bg },
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </SQLiteProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
+  );
+}
