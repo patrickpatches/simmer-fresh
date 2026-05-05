@@ -6,27 +6,32 @@
 <title>Hone — App Flow v2 (Sage Colour Tokens)</title>
 <style>
   /* ─────────────────────────────────────────────────────────────────
-     V2 SAGE COLOUR TOKENS
-     Source: tokens.ts dark dramatic palette, remapped to sage/light.
-     Only colours change — every layout dimension, font size, radius,
-     spacing, and component structure mirrors the live source code.
+     V2 SAGE COLOUR TOKENS — REVISED
+     Fix 1: eyebrow colour logic (Kitchen=rust, Pantry/Shop=forest)
+     Fix 2: card surfaces #FAFAF7 not pure white
+     Fix 3: tab inactive opacity 0.52 (was 0.38 — too faint)
+     Fix 4: match banner — "See all" forest chip, title in ink
+     Fix 5: recipe detail phone added as 5th screen
   ─────────────────────────────────────────────────────────────────── */
   :root {
-    --bg:           #E8F0E6;   /* tokens.bg      #111111  */
-    --bg-deep:      #DEEADB;   /* tokens.bgDeep  #080808  */
-    --surface:      #FFFFFF;   /* tokens.cream   #1A1A1A  */
-    --ink:          #111410;   /* tokens.ink     #F5EFE8  */
-    --ink-soft:     #3D3830;   /* tokens.inkSoft #C4B8A8  */
-    --muted:        #7A766E;   /* tokens.muted   #8A7E72  */
-    --rust:         #B84030;   /* tokens.primary #E8B830  */
-    --rust-deep:    #8E2E20;   /* tokens.primaryDeep     */
-    --rust-light:   rgba(184,64,48,0.09); /* tokens.primaryLight */
-    --forest:       #2E5E3E;   /* tokens.sage    #AACCA8  */
-    --forest-deep:  #1E4E2E;   /* tokens.sageDeep        */
-    --forest-light: rgba(46,94,62,0.10);  /* tokens.sageLight    */
-    --ochre:        #A05C28;   /* tokens.warmBrown        */
-    --line:         #D8E4D6;   /* tokens.line             */
-    --line-strong:  #C0D4BE;   /* tokens.lineDark         */
+    --bg:           #E8F0E6;
+    --bg-deep:      #DEEADB;
+    --surface:      #FAFAF7;   /* FIX 2: was #FFFFFF — too stark on sage bg */
+    --ink:          #111410;
+    --ink-soft:     #3D3830;
+    --muted:        #7A766E;
+    --rust:         #B84030;
+    --rust-deep:    #8E2E20;
+    --rust-light:   rgba(184,64,48,0.09);
+    --forest:       #2E5E3E;
+    --forest-deep:  #1E4E2E;
+    --forest-light: rgba(46,94,62,0.11);
+    --ochre:        #A05C28;
+    --amber:        #FEF4E2;   /* mise en place zone bg */
+    --amber-line:   rgba(160,92,40,0.18);
+    --line:         #D8E4D6;
+    --line-strong:  #C0D4BE;
+    --tab-inactive: rgba(17,20,16,0.52); /* FIX 3: was 0.38 — barely visible */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,483 +44,266 @@
   }
 
   .page-title {
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #5a6e56;
-    margin-bottom: 8px;
+    text-align: center; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: #5a6e56; margin-bottom: 8px;
   }
   .page-subtitle {
-    text-align: center;
-    font-size: 12px;
-    color: #7a8e76;
-    margin-bottom: 40px;
+    text-align: center; font-size: 12px; color: #7a8e76; margin-bottom: 10px;
+  }
+  .fix-note {
+    text-align: center; font-size: 11px; color: #8a9e86;
+    background: rgba(46,94,62,0.08); border-radius: 8px;
+    padding: 6px 16px; display: inline-block;
+    margin: 0 auto 36px; display: block; max-width: 560px;
   }
 
   .row {
-    display: flex;
-    gap: 28px;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    display: flex; gap: 24px; justify-content: center;
+    flex-wrap: wrap; align-items: flex-start;
   }
 
   /* ── Phone shell ─────────────────────────────────────────────── */
-  .phone-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .phone-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #5a6e56;
-  }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .phone-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #5a6e56; }
   .phone {
-    width: 320px;
-    height: 680px;
-    background: var(--bg);
-    border-radius: 40px;
-    overflow: hidden;
-    position: relative;
-    box-shadow:
-      0 0 0 2px rgba(0,0,0,0.12),
-      0 20px 60px rgba(0,0,0,0.22),
+    width: 310px; height: 670px; background: var(--bg);
+    border-radius: 40px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.12), 0 20px 60px rgba(0,0,0,0.22),
       inset 0 1px 0 rgba(255,255,255,0.35);
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
   }
 
   /* Status bar */
   .status-bar {
-    height: 44px;
-    padding: 14px 20px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    background: var(--bg);
+    height: 44px; padding: 14px 20px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; background: var(--bg);
   }
-  .status-time {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-  }
-  .status-icons {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .status-icons svg { display: block; }
+  .status-time { font-size: 12px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+  .status-icons { display: flex; align-items: center; gap: 5px; }
 
-  /* Screen content scrolls */
-  .screen {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    position: relative;
-  }
+  /* Screen */
+  .screen { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
   .screen::-webkit-scrollbar { display: none; }
+  .screen-pad { padding: 40px 18px 96px; }
 
-  /* ── Bottom tab bar ──────────────────────────────────────────── */
-  /* Exact structure from _layout.tsx:
-     - Floating pill bar, background = tokens.cream (#1A1A1A → --surface)
-     - Active tab = solid primary pill (--rust), light labels on it
-     - Inactive = dim labels on the dock
-  */
+  /* ── Tab bar (_layout.tsx) ───────────────────────────────────── */
   .tab-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 8px 12px 14px;
-    background: transparent;
-    z-index: 100;
-    flex-shrink: 0;
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 8px 12px 14px; background: transparent; z-index: 100;
   }
   .tab-bar-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    background: var(--surface);
-    border-radius: 999px;
-    padding: 4px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: space-around;
+    background: var(--surface); border-radius: 999px; padding: 4px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.07);
   }
   .tab-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    padding: 8px 4px;
-    border-radius: 999px;
-    min-height: 48px;
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; padding: 8px 4px;
+    border-radius: 999px; min-height: 48px;
   }
-  .tab-item.active {
-    background: var(--rust);
-  }
-  .tab-item svg { display: block; }
-  .tab-item-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
+  .tab-item.active { background: var(--rust); }
+  .tab-item-label { font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
   .tab-item.active .tab-item-label { color: #FAFAF7; }
-  .tab-item:not(.active) .tab-item-label { color: rgba(17,20,16,0.38); }
+  .tab-item:not(.active) .tab-item-label { color: var(--tab-inactive); } /* FIX 3 */
 
-  /* ── Typography utilities ────────────────────────────────────── */
-  .display { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; }
-  .display-italic { font-family: Georgia, serif; font-style: italic; font-weight: 500; }
-  .sans { font-family: 'Inter', -apple-system, sans-serif; font-weight: 400; }
-  .sans-bold { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; }
-
-  /* ── Shared component styles ─────────────────────────────────── */
+  /* ── Typography ─────────────────────────────────────────────── */
   .eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--rust);
-    margin-bottom: 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 4px;
   }
-  .hero-headline {
-    font-family: Georgia, serif;
-    font-weight: 700;
-    font-size: 30px;
-    line-height: 1.13;
-    color: var(--ink);
-  }
-  .hero-headline em {
-    font-style: italic;
-    font-weight: 500;
-    color: var(--rust);
-  }
-  .hero-headline.sage-italic em { color: var(--forest); }
-  .headline-sub {
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--muted);
-  }
+  /* FIX 1: Kitchen eyebrow = rust, Pantry/Shop eyebrow = forest */
+  .eyebrow.rust { color: var(--rust); }
+  .eyebrow.forest { color: var(--forest); }
+
+  .hero-headline { font-family: Georgia, serif; font-weight: 700; font-size: 29px; line-height: 1.13; color: var(--ink); }
+  .hero-headline em { font-style: italic; font-weight: 500; }
+  .hero-headline .rust-word { color: var(--rust); }
+  .hero-headline .forest-word { color: var(--forest); }
+
+  .headline-sub { margin-top: 6px; font-size: 12px; color: var(--muted); }
 
   /* Search bar */
   .search-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface);
-    border: 1px solid var(--line-strong);
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin-top: 16px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line-strong);
+    border-radius: 14px; padding: 12px 14px; margin-top: 16px;
   }
   .search-bar input {
-    border: none; outline: none; flex: 1;
-    font-size: 13px; color: var(--muted);
-    background: transparent; font-family: inherit;
+    border: none; outline: none; flex: 1; font-size: 13px;
+    color: var(--muted); background: transparent; font-family: inherit;
   }
 
   /* Filter chips */
-  .chip-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
+  .chip-row { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .chip-row::-webkit-scrollbar { display: none; }
-  .chip {
-    padding: 7px 13px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-    flex-shrink: 0;
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    color: var(--ink-soft);
-  }
-  .chip.active {
-    background: var(--rust);
-    border-color: var(--rust);
-    color: #FAFAF7;
-    box-shadow: 0 2px 6px rgba(184,64,48,0.22);
-  }
+  .chip { padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-soft); }
+  .chip.active { background: var(--rust); border-color: var(--rust); color: #FAFAF7; box-shadow: 0 2px 6px rgba(184,64,48,0.20); }
 
   /* ── Recipe card (RecipeCard.tsx) ─────────────────────────────── */
-  .recipe-card {
-    background: var(--surface);
-    border-radius: 20px;
-    border: 1px solid var(--line-strong);
-    overflow: hidden;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
-  .recipe-card-image {
-    height: 180px;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(180deg, #5a8a6a 0%, #8aaa7a 50%, #2E5E3E 100%);
-  }
+  .recipe-card { background: var(--surface); border-radius: 20px; border: 1px solid var(--line-strong); overflow: hidden; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .recipe-card-image { height: 178px; position: relative; overflow: hidden; background: linear-gradient(180deg,#5a8a6a,#2E5E3E); }
   .recipe-card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .rc-heart {
-    position: absolute; top: 10px; right: 10px;
-    width: 34px; height: 34px; border-radius: 50%;
-    background: rgba(26,19,14,0.42);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .rc-difficulty {
-    position: absolute; bottom: 10px; left: 10px;
-    background: rgba(0,0,0,0.62);
-    padding: 3px 9px; border-radius: 999px;
-    font-size: 10px; font-weight: 700; color: #F5EFE8;
-    letter-spacing: 0.05em; text-transform: uppercase;
-  }
-  .rc-camera {
-    position: absolute; bottom: 10px; right: 10px;
-    background: rgba(26,19,14,0.62);
-    padding: 3px 8px; border-radius: 999px;
-    font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.92);
-    display: flex; align-items: center; gap: 4px;
-  }
+  .rc-heart { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(26,19,14,0.42); display: flex; align-items: center; justify-content: center; }
+  .rc-difficulty { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.62); padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; color: #F5EFE8; letter-spacing: 0.05em; text-transform: uppercase; }
+  .rc-camera { position: absolute; bottom: 10px; right: 10px; background: rgba(26,19,14,0.62); padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.92); display: flex; align-items: center; gap: 4px; }
   .recipe-card-body { padding: 14px 16px 16px; }
-  .rc-title {
-    font-family: Georgia, serif; font-weight: 700;
-    font-size: 20px; line-height: 1.22; color: var(--ink);
-  }
+  .rc-title { font-family: Georgia, serif; font-weight: 700; font-size: 19px; line-height: 1.22; color: var(--ink); }
   .rc-tagline { margin-top: 4px; font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
   .rc-meta { display: flex; align-items: center; gap: 14px; margin-top: 11px; }
   .rc-meta-chip { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
-  .rc-chef {
-    display: flex; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 700; color: var(--rust);
-    text-transform: uppercase; letter-spacing: 0.04em;
-  }
+  .rc-chef { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--rust); text-transform: uppercase; letter-spacing: 0.04em; }
 
   /* ── Pantry ─────────────────────────────────────────────────── */
-  .pantry-search {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--surface); border: 1.5px solid var(--line-strong);
-    border-radius: 14px; padding: 11px 14px; margin-bottom: 13px;
-  }
-  .pantry-search input {
-    border: none; outline: none; background: transparent;
-    font-size: 14px; color: var(--muted); flex: 1; font-family: inherit;
-  }
-  .pills-card {
-    background: var(--surface); border: 1px solid var(--line-strong);
-    border-radius: 14px; padding: 11px 12px; margin-bottom: 13px;
-    display: flex; flex-wrap: wrap; gap: 7px;
-  }
-  .pill {
-    display: flex; align-items: center; gap: 5px;
-    padding: 7px 12px; border-radius: 999px;
-    background: var(--forest-light); border: 1px solid rgba(46,94,62,0.22);
-    font-size: 13px; font-weight: 700; color: var(--forest-deep); min-height: 33px;
-  }
-  .pill-x {
-    width: 17px; height: 17px; border-radius: 50%;
-    background: rgba(46,94,62,0.18);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700; color: var(--forest-deep);
-    line-height: 1; flex-shrink: 0;
-  }
-  .match-banner {
-    background: var(--surface); border: 1px solid rgba(184,64,48,0.22);
-    border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 12px;
-    position: relative; overflow: hidden;
-  }
-  .match-banner-strip {
-    position: absolute; left: 0; top: 0; bottom: 0;
-    width: 4px; background: var(--rust); border-radius: 4px;
-  }
+  .pantry-search { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1.5px solid var(--line-strong); border-radius: 14px; padding: 11px 14px; margin-bottom: 13px; }
+  .pantry-search input { border: none; outline: none; background: transparent; font-size: 14px; color: var(--muted); flex: 1; font-family: inherit; }
+
+  .pills-card { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 14px; padding: 11px 12px; margin-bottom: 13px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill { display: flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 999px; background: var(--forest-light); border: 1px solid rgba(46,94,62,0.22); font-size: 13px; font-weight: 700; color: var(--forest-deep); min-height: 33px; }
+  .pill-x { width: 17px; height: 17px; border-radius: 50%; background: rgba(46,94,62,0.18); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--forest-deep); line-height: 1; flex-shrink: 0; }
+
+  /* FIX 4: Match banner — title in ink (not all rust), "See all" → forest */
+  .match-banner { background: var(--surface); border: 1px solid rgba(46,94,62,0.18); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden; }
+  .match-banner-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--rust); border-radius: 4px; }
   .match-banner-text { flex: 1; padding-left: 10px; }
-  .match-banner-title {
-    font-family: Georgia, serif; font-weight: 700;
-    font-size: 14px; color: var(--rust); line-height: 1.3; margin-bottom: 2px;
-  }
+  .match-banner-title { font-family: Georgia, serif; font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.3; margin-bottom: 2px; } /* FIX 4: was rust, now ink */
+  .match-banner-num { color: var(--rust); } /* rust only on the number */
   .match-banner-sub { font-size: 11px; color: var(--muted); }
-  .match-see-all {
-    background: var(--rust-light); border: 1px solid rgba(184,64,48,0.22);
-    border-radius: 999px; padding: 4px 10px;
-    font-size: 11px; font-weight: 700; color: var(--rust); flex-shrink: 0;
-  }
-  .section-header {
-    display: flex; align-items: baseline; justify-content: space-between;
-    padding: 0 0 9px;
-  }
+  .match-see-all { background: var(--forest-light); border: 1px solid rgba(46,94,62,0.22); border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--forest); flex-shrink: 0; } /* FIX 4: was rust */
+
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; padding: 0 0 9px; }
   .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft); }
   .section-count { font-size: 11px; color: var(--muted); }
 
-  /* Match carousel card */
-  .match-card {
-    width: 240px; background: var(--surface);
-    border-radius: 18px; border: 1px solid var(--line-strong);
-    overflow: hidden; flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
-  .match-card-img {
-    height: 120px;
-    background: linear-gradient(135deg, #5a8a6a, #A05C28);
-    position: relative; overflow: hidden;
-  }
+  .match-card { width: 230px; background: var(--surface); border-radius: 18px; border: 1px solid var(--line-strong); overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .match-card-img { height: 115px; background: linear-gradient(135deg,#5a8a6a,#A05C28); position: relative; overflow: hidden; }
   .match-card-img img { width: 100%; height: 100%; object-fit: cover; }
-  .match-badge {
-    position: absolute; bottom: 8px; left: 8px;
-    background: rgba(26,19,14,0.7); padding: 4px 8px; border-radius: 999px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-    text-transform: uppercase; color: #fff;
-  }
-  .match-card-body { padding: 12px 14px; }
-  .match-card-title {
-    font-family: Georgia, serif; font-weight: 700;
-    font-size: 14px; line-height: 1.3; color: var(--ink); margin-bottom: 9px;
-  }
-  .tap-to-cook {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 6px 12px; background: var(--forest); border-radius: 999px;
-    font-size: 12px; font-weight: 700; color: #FAFAF7;
-  }
-  .still-need-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
-  }
+  .match-badge { position: absolute; bottom: 8px; left: 8px; background: rgba(26,19,14,0.7); padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #fff; letter-spacing: 0.04em; }
+  .match-card-body { padding: 11px 13px; }
+  .match-card-title { font-family: Georgia, serif; font-weight: 700; font-size: 14px; line-height: 1.3; color: var(--ink); margin-bottom: 8px; }
+  .tap-to-cook { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: var(--forest); border-radius: 999px; font-size: 12px; font-weight: 700; color: #FAFAF7; }
+  .still-need-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .missing-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .missing-chip {
-    padding: 4px 9px; background: var(--rust-light);
-    border: 1px solid rgba(184,64,48,0.22); border-radius: 999px;
-    font-size: 11px; font-weight: 700; color: var(--rust);
-  }
-  .carousel {
-    display: flex; gap: 11px; overflow-x: auto;
-    scrollbar-width: none; padding-bottom: 4px;
-  }
+  .missing-chip { padding: 4px 9px; background: var(--rust-light); border: 1px solid rgba(184,64,48,0.20); border-radius: 999px; font-size: 11px; font-weight: 700; color: var(--rust); }
+  .carousel { display: flex; gap: 11px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
   .carousel::-webkit-scrollbar { display: none; }
 
   /* ── Shop ───────────────────────────────────────────────────── */
   .plan-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 13px; }
   .plan-chip { padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; }
   .plan-chip.sage { background: var(--forest-light); color: var(--forest-deep); }
-  .plan-chip.rust { background: var(--rust-light); color: var(--rust-deep); }
+  .plan-chip.rust-tint { background: var(--rust-light); color: var(--rust-deep); }
 
   .aisle-section { margin-bottom: 4px; }
   .aisle-header { display: flex; align-items: center; gap: 7px; padding: 6px 0; }
-  .aisle-emoji { font-size: 13px; }
   .aisle-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
   .aisle-count { font-size: 11px; color: var(--muted); }
-  .aisle-card {
-    background: var(--surface); border-radius: 14px;
-    border: 1px solid var(--line-strong); overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  .shop-row {
-    display: flex; align-items: center; gap: 11px;
-    padding: 13px 14px; min-height: 52px;
-    border-bottom: 1px solid var(--line);
-  }
+  .aisle-card { background: var(--surface); border-radius: 14px; border: 1px solid var(--line-strong); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .shop-row { display: flex; align-items: center; gap: 11px; padding: 13px 14px; min-height: 50px; border-bottom: 1px solid var(--line); }
   .shop-row:last-child { border-bottom: none; }
   .shop-row.ticked { opacity: 0.55; }
-  .shop-checkbox {
-    width: 24px; height: 24px; border-radius: 50%;
-    border: 2px solid var(--line-strong); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 900; color: #FAFAF7;
-  }
+  .shop-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #FAFAF7; }
   .shop-checkbox.checked { background: var(--forest); border-color: var(--forest); }
   .shop-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--ink); }
   .shop-name.ticked { text-decoration: line-through; }
-  .shop-qty { font-size: 12px; color: var(--muted); }
-  .shop-x { padding: 5px; opacity: 0.45; color: var(--ink); font-size: 13px; }
-  .clear-ticked {
-    margin-top: 8px; padding: 13px 0; border-radius: 14px;
-    border: 1px solid var(--line-strong); text-align: center;
-    font-size: 13px; font-weight: 700; color: var(--ink-soft);
-  }
+  .shop-qty { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .shop-x { padding: 5px; opacity: 0.38; color: var(--ink); font-size: 13px; }
+  .clear-ticked { margin-top: 8px; padding: 13px 0; border-radius: 14px; border: 1px solid var(--line-strong); text-align: center; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
 
   /* ── Profile ────────────────────────────────────────────────── */
-  .profile-avatar {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: var(--rust); display: flex; align-items: center;
-    justify-content: center; font-family: Georgia, serif;
-    font-size: 28px; font-weight: 700; color: #FAFAF7; margin-bottom: 12px;
-  }
-  .stats-row {
-    display: flex; background: var(--surface); border-radius: 16px;
-    border: 1px solid var(--line-strong); overflow: hidden;
-    margin-top: 16px; margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  .stat-cell {
-    flex: 1; padding: 14px 8px; text-align: center;
-    border-right: 1px solid var(--line);
-  }
+  .stats-row { display: flex; background: var(--surface); border-radius: 16px; border: 1px solid var(--line-strong); overflow: hidden; margin-top: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .stat-cell { flex: 1; padding: 14px 8px; text-align: center; border-right: 1px solid var(--line); }
   .stat-cell:last-child { border-right: none; }
   .stat-num { font-family: Georgia, serif; font-weight: 700; font-size: 22px; color: var(--rust); line-height: 1; margin-bottom: 4px; }
   .stat-lbl { font-size: 11px; color: var(--muted); }
-  .settings-group {
-    background: var(--surface); border-radius: 16px;
-    border: 1px solid var(--line-strong); overflow: hidden;
-    margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  }
-  .settings-group-label {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--muted); padding: 10px 16px 6px;
-  }
-  .settings-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 13px 16px; border-top: 1px solid var(--line);
-  }
+  .settings-group { background: var(--surface); border-radius: 16px; border: 1px solid var(--line-strong); overflow: hidden; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .settings-group-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 10px 16px 6px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-top: 1px solid var(--line); }
   .settings-row-label { font-size: 14px; color: var(--ink); }
-  .settings-toggle {
-    width: 42px; height: 24px; border-radius: 999px;
-    background: var(--forest); position: relative; flex-shrink: 0;
-  }
-  .settings-toggle::after {
-    content: ''; position: absolute; width: 20px; height: 20px;
-    border-radius: 50%; background: #fff;
-    top: 2px; right: 2px; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-  }
+  .settings-toggle { width: 42px; height: 24px; border-radius: 999px; background: var(--forest); position: relative; flex-shrink: 0; }
+  .settings-toggle::after { content: ''; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #fff; top: 2px; right: 2px; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
   .settings-toggle.off { background: var(--line-strong); }
   .settings-toggle.off::after { right: auto; left: 2px; }
   .settings-chevron { font-size: 12px; color: var(--muted); }
 
-  /* Screen padding: paddingHorizontal 20, paddingTop insets+20, paddingBottom 140 */
-  .screen-pad { padding: 44px 18px 100px; }
+  /* ── Recipe Detail (FIX 5) ───────────────────────────────────── */
+  /* Mirrors recipe-detail-v2.html structure: hero → framing block →
+     mise en place zone → cook steps → start cooking pill */
+  .rd-hero { height: 180px; position: relative; overflow: hidden; background: linear-gradient(160deg,#3a6a4a,#1e3e2a); flex-shrink: 0; }
+  .rd-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rd-hero-back { position: absolute; top: 12px; left: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
+  .rd-hero-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px 14px; background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%); }
+  .rd-hero-title { font-family: Georgia, serif; font-weight: 700; font-size: 19px; color: #FAFAF7; line-height: 1.2; }
+  .rd-hero-sub { font-size: 11px; color: rgba(250,250,247,0.72); margin-top: 3px; }
 
-  /* Shop header row */
-  .shop-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .share-btn {
-    width: 38px; height: 38px; border-radius: 50%;
-    background: var(--surface); border: 1px solid var(--line-strong);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px;
-  }
+  .rd-body { padding: 16px 14px 96px; }
+
+  /* Servings row */
+  .rd-servings-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .rd-servings-label { font-size: 12px; color: var(--muted); }
+  .rd-servings-ctrl { display: flex; align-items: center; gap: 10px; }
+  .rd-servings-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--rust); }
+  .rd-servings-num { font-family: Georgia, serif; font-weight: 700; font-size: 18px; color: var(--ink); min-width: 20px; text-align: center; }
+
+  /* Framing block — "Before you start" — rust band header */
+  .framing-block { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 16px; }
+  .framing-header { padding: 10px 13px 9px; display: flex; align-items: center; gap: 8px; }
+  .framing-header.rust-band { background: #DE5F4B; }
+  .framing-header.brown-band { background: #8A6040; }
+  .framing-icon { font-size: 13px; }
+  .framing-title { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #FAF3EE; }
+  .framing-body { padding: 12px 13px 13px; }
+  .framing-body.rust-body { background: #FFF8F6; border: 1px solid rgba(222,95,75,0.14); border-top: none; }
+  .framing-body.brown-body { background: #FDF8F4; border: 1px solid rgba(138,96,64,0.14); border-top: none; }
+  .framing-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+  .framing-item:last-child { margin-bottom: 0; }
+  .framing-bullet { width: 5px; height: 5px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .framing-bullet.rust { background: #DE5F4B; }
+  .framing-bullet.brown { background: #8A6040; }
+
+  /* Mise en place zone — distinct amber background */
+  .mise-zone { background: var(--amber); border-radius: 14px; border: 1px solid var(--amber-line); padding: 13px; margin-bottom: 16px; }
+  .mise-label { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ochre); margin-bottom: 10px; }
+  .mise-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--amber-line); }
+  .mise-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .mise-ing { font-size: 13px; color: var(--ink); font-weight: 500; }
+  .mise-amount { font-size: 13px; color: var(--ochre); font-weight: 700; }
+
+  /* Cook steps */
+  .step-label { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px; margin-top: 4px; }
+  .step-card { background: var(--surface); border-radius: 14px; border: 1px solid var(--line-strong); padding: 13px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--rust); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #FAFAF7; flex-shrink: 0; }
+  .step-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .step-body { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .step-why { margin-top: 8px; padding: 8px 10px; background: rgba(46,94,62,0.07); border-left: 3px solid var(--forest); border-radius: 0 6px 6px 0; font-size: 11px; color: var(--forest-deep); line-height: 1.4; }
+
+  /* Start cooking pill */
+  .start-cooking { margin-top: 6px; background: var(--rust); border-radius: 16px; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .start-cooking-text { font-size: 15px; font-weight: 700; color: #FAFAF7; }
+  .start-hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 8px; }
 
   /* Pantry title row */
   .title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .title-row-right { display: flex; align-items: center; gap: 12px; }
   .stocked-count { font-size: 11px; color: var(--muted); }
+
+  /* Shop header */
+  .shop-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .share-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
 </style>
 </head>
 <body>
 
-<p class="page-title">Hone — App Flow v2</p>
-<p class="page-subtitle">Live app layout · v2 sage colour tokens · Kitchen · Pantry · Shop · Profile</p>
+<p class="page-title">Hone — App Flow v2 · Revised</p>
+<p class="page-subtitle">Live app layout · v2 sage colour tokens · 4 design fixes applied</p>
+<p class="fix-note">Fix 1: eyebrow colours split (Kitchen=rust / Pantry+Shop=forest) &nbsp;·&nbsp; Fix 2: cards #FAFAF7 not white &nbsp;·&nbsp; Fix 3: tab labels more visible &nbsp;·&nbsp; Fix 4: match banner less monochrome &nbsp;·&nbsp; Fix 5: recipe detail added</p>
 
 <div class="row">
 
   <!-- ════════════════════════════════════════════════════════════
-       TAB 1 — KITCHEN (index.tsx)
+       KITCHEN (index.tsx)
   ════════════════════════════════════════════════════════════════ -->
   <div class="phone-wrap">
     <span class="phone-label">Kitchen</span>
@@ -524,124 +312,81 @@
         <span class="status-time">9:41</span>
         <div class="status-icons">
           <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="var(--ink)" opacity=".35"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="var(--ink)" opacity=".55"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="var(--ink)" opacity=".75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--ink)"/></svg>
-          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.4 2.4 12.56 3.44 14.04 5.12L15.2 3.84C13.36 1.76 10.84.48 8 .48S2.64 1.76.8 3.84L1.96 5.12C3.44 3.44 5.6 2.4 8 2.4Z" fill="var(--ink)" opacity=".5"/><path d="M8 5.28C9.68 5.28 11.2 6 12.24 7.2L13.4 5.92C12.04 4.4 10.12 3.44 8 3.44S3.96 4.4 2.6 5.92L3.76 7.2C4.8 6 6.32 5.28 8 5.28Z" fill="var(--ink)" opacity=".7"/><path d="M8 8.16C9.04 8.16 9.96 8.64 10.56 9.44L11.72 8.16C10.76 6.96 9.44 6.16 8 6.16S5.24 6.96 4.28 8.16L5.44 9.44C6.04 8.64 6.96 8.16 8 8.16Z" fill="var(--ink)"/><circle cx="8" cy="11.04" r="1.12" fill="var(--ink)"/></svg>
           <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="16" height="9" rx="2.5" fill="var(--ink)" opacity=".85"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="var(--ink)" opacity=".4"/></svg>
         </div>
       </div>
+      <div class="screen"><div class="screen-pad">
 
-      <div class="screen">
-        <div class="screen-pad">
+        <!-- FIX 1: Kitchen eyebrow is rust -->
+        <p class="eyebrow rust">A cooking companion</p>
+        <h1 class="hero-headline">What are you<br><em class="rust-word">cooking</em> tonight?</h1>
+        <p class="headline-sub">24 recipes · chef-inspired, honestly adapted</p>
 
-          <p class="eyebrow">A cooking companion</p>
-          <h1 class="hero-headline">What are you<br><em>cooking</em> tonight?</h1>
-          <p class="headline-sub sans">24 recipes · chef-inspired, honestly adapted</p>
-
-          <div class="search-bar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search recipes, chefs, ingredients…" disabled>
-          </div>
-
-          <div class="chip-row">
-            <div class="chip active">All</div>
-            <div class="chip">Quick</div>
-            <div class="chip">Weekend</div>
-            <div class="chip">Favourites</div>
-            <div class="chip">Yours</div>
-          </div>
-
-          <div style="margin-top:18px;">
-            <div class="recipe-card">
-              <div class="recipe-card-image">
-                <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=640&q=80" alt="Pasta Carbonara">
-                <div class="rc-heart">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                </div>
-                <div class="rc-difficulty">Medium</div>
-                <div class="rc-camera">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  Photos soon
-                </div>
-              </div>
-              <div class="recipe-card-body">
-                <p class="rc-title">Pasta Carbonara</p>
-                <p class="rc-tagline sans">Rich, silky, no cream — made properly with eggs and guanciale.</p>
-                <div class="rc-meta">
-                  <div class="rc-meta-chip sans">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    25 min
-                  </div>
-                  <div class="rc-meta-chip sans">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                    2
-                  </div>
-                  <div class="rc-chef">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    Kenji López-Alt
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="recipe-card">
-              <div class="recipe-card-image">
-                <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=640&q=80" alt="Chicken Shawarma">
-                <div class="rc-heart">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--rust)" stroke="var(--rust)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                </div>
-                <div class="rc-difficulty">Easy</div>
-                <div class="rc-camera">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  Photos soon
-                </div>
-              </div>
-              <div class="recipe-card-body">
-                <p class="rc-title">Chicken Shawarma</p>
-                <p class="rc-tagline sans">Levantine street food — heavy spice, char on the edges, tahini sauce.</p>
-                <div class="rc-meta">
-                  <div class="rc-meta-chip sans">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    45 min
-                  </div>
-                  <div class="rc-meta-chip sans">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                    4
-                  </div>
-                  <div class="rc-chef">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    Sami Tamimi
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div class="search-bar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search recipes, chefs, ingredients…" disabled>
         </div>
-      </div>
 
+        <div class="chip-row">
+          <div class="chip active">All</div>
+          <div class="chip">Quick</div>
+          <div class="chip">Weekend</div>
+          <div class="chip">Favourites</div>
+          <div class="chip">Yours</div>
+        </div>
+
+        <div style="margin-top:18px;">
+          <!-- FIX 2: cards now #FAFAF7 via --surface -->
+          <div class="recipe-card">
+            <div class="recipe-card-image">
+              <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=640&q=80" alt="">
+              <div class="rc-heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+              <div class="rc-difficulty">Medium</div>
+              <div class="rc-camera"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>Photos soon</div>
+            </div>
+            <div class="recipe-card-body">
+              <p class="rc-title">Pasta Carbonara</p>
+              <p class="rc-tagline">Rich, silky, no cream — made properly with eggs and guanciale.</p>
+              <div class="rc-meta">
+                <div class="rc-meta-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>25 min</div>
+                <div class="rc-meta-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>2</div>
+                <div class="rc-chef"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Kenji López-Alt</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="recipe-card">
+            <div class="recipe-card-image">
+              <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=640&q=80" alt="">
+              <div class="rc-heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--rust)" stroke="var(--rust)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+              <div class="rc-difficulty">Easy</div>
+              <div class="rc-camera"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>Photos soon</div>
+            </div>
+            <div class="recipe-card-body">
+              <p class="rc-title">Chicken Shawarma</p>
+              <p class="rc-tagline">Levantine street food — heavy spice, char on the edges, tahini sauce.</p>
+              <div class="rc-meta">
+                <div class="rc-meta-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>45 min</div>
+                <div class="rc-meta-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>4</div>
+                <div class="rc-chef"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Sami Tamimi</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
       <div class="tab-bar"><div class="tab-bar-inner">
-        <div class="tab-item active">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span class="tab-item-label">Kitchen</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".5"/><circle cx="12" cy="11" r="3"/></svg>
-          <span class="tab-item-label">Pantry</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-          <span class="tab-item-label">Shop</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="tab-item-label">Profile</span>
-        </div>
+        <div class="tab-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-item-label">Kitchen</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".5"/><circle cx="12" cy="11" r="3"/></svg><span class="tab-item-label">Pantry</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg><span class="tab-item-label">Shop</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-item-label">Profile</span></div>
       </div></div>
     </div>
   </div>
 
 
   <!-- ════════════════════════════════════════════════════════════
-       TAB 2 — PANTRY (pantry.tsx)
+       PANTRY (pantry.tsx)
   ════════════════════════════════════════════════════════════════ -->
   <div class="phone-wrap">
     <span class="phone-label">Pantry</span>
@@ -650,107 +395,89 @@
         <span class="status-time">9:41</span>
         <div class="status-icons">
           <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="var(--ink)" opacity=".35"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="var(--ink)" opacity=".55"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="var(--ink)" opacity=".75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--ink)"/></svg>
-          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.4 2.4 12.56 3.44 14.04 5.12L15.2 3.84C13.36 1.76 10.84.48 8 .48S2.64 1.76.8 3.84L1.96 5.12C3.44 3.44 5.6 2.4 8 2.4Z" fill="var(--ink)" opacity=".5"/><path d="M8 5.28C9.68 5.28 11.2 6 12.24 7.2L13.4 5.92C12.04 4.4 10.12 3.44 8 3.44S3.96 4.4 2.6 5.92L3.76 7.2C4.8 6 6.32 5.28 8 5.28Z" fill="var(--ink)" opacity=".7"/><path d="M8 8.16C9.04 8.16 9.96 8.64 10.56 9.44L11.72 8.16C10.76 6.96 9.44 6.16 8 6.16S5.24 6.96 4.28 8.16L5.44 9.44C6.04 8.64 6.96 8.16 8 8.16Z" fill="var(--ink)"/><circle cx="8" cy="11.04" r="1.12" fill="var(--ink)"/></svg>
           <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="16" height="9" rx="2.5" fill="var(--ink)" opacity=".85"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="var(--ink)" opacity=".4"/></svg>
         </div>
       </div>
+      <div class="screen"><div class="screen-pad">
 
-      <div class="screen">
-        <div class="screen-pad">
-
-          <p class="eyebrow">Cook with what you have</p>
-
-          <div class="title-row">
-            <h1 class="hero-headline sage-italic">Your <em>Pantry</em></h1>
-            <div class="title-row-right">
-              <span class="stocked-count">7 stocked</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-            </div>
+        <!-- FIX 1: Pantry eyebrow is forest (italic heading word is also forest) -->
+        <p class="eyebrow forest">Cook with what you have</p>
+        <div class="title-row">
+          <h1 class="hero-headline">Your <em class="forest-word">Pantry</em></h1>
+          <div class="title-row-right">
+            <span class="stocked-count">7 stocked</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           </div>
-
-          <div class="pantry-search">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search or add an ingredient…" disabled>
-          </div>
-
-          <div class="pills-card">
-            <div class="pill">eggs<span class="pill-x">×</span></div>
-            <div class="pill">pasta<span class="pill-x">×</span></div>
-            <div class="pill">olive oil<span class="pill-x">×</span></div>
-            <div class="pill">garlic<span class="pill-x">×</span></div>
-            <div class="pill">chicken<span class="pill-x">×</span></div>
-            <div class="pill">cumin<span class="pill-x">×</span></div>
-            <div class="pill">onion<span class="pill-x">×</span></div>
-          </div>
-
-          <div class="match-banner">
-            <div class="match-banner-strip"></div>
-            <div class="match-banner-text">
-              <p class="match-banner-title">3 recipes you can cook now</p>
-              <p class="match-banner-sub sans">4 more within 1–3 ingredients</p>
-            </div>
-            <div class="match-see-all sans-bold">See all</div>
-          </div>
-
-          <div class="section-header">
-            <span class="section-label sans-bold">Ready to cook</span>
-            <span class="section-count sans">3 ready · 4 close</span>
-          </div>
-
-          <div class="carousel">
-            <div class="match-card">
-              <div class="match-card-img">
-                <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=400&q=80" alt="">
-              </div>
-              <div class="match-card-body">
-                <p class="match-card-title">Pasta Carbonara</p>
-                <div class="tap-to-cook sans-bold">✓ Tap to cook</div>
-              </div>
-            </div>
-            <div class="match-card">
-              <div class="match-card-img">
-                <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&q=80" alt="">
-                <div class="match-badge">2 of 8 matched</div>
-              </div>
-              <div class="match-card-body">
-                <p class="match-card-title">Chicken Shawarma</p>
-                <p class="still-need-label sans-bold">Still need</p>
-                <div class="missing-chips">
-                  <div class="missing-chip sans-bold">+ coriander</div>
-                  <div class="missing-chip sans-bold">+ lemon</div>
-                  <div class="missing-chip sans-bold">+ yoghurt</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
-      </div>
 
+        <div class="pantry-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search or add an ingredient…" disabled>
+        </div>
+
+        <div class="pills-card">
+          <div class="pill">eggs<span class="pill-x">×</span></div>
+          <div class="pill">pasta<span class="pill-x">×</span></div>
+          <div class="pill">olive oil<span class="pill-x">×</span></div>
+          <div class="pill">garlic<span class="pill-x">×</span></div>
+          <div class="pill">chicken<span class="pill-x">×</span></div>
+          <div class="pill">cumin<span class="pill-x">×</span></div>
+          <div class="pill">onion<span class="pill-x">×</span></div>
+        </div>
+
+        <!-- FIX 4: left strip stays rust (signal), title = ink, "See all" = forest -->
+        <div class="match-banner">
+          <div class="match-banner-strip"></div>
+          <div class="match-banner-text">
+            <p class="match-banner-title"><span class="match-banner-num">3 recipes</span> you can cook now</p>
+            <p class="match-banner-sub">4 more within 1–3 ingredients</p>
+          </div>
+          <div class="match-see-all">See all</div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-label">Ready to cook</span>
+          <span class="section-count">3 ready · 4 close</span>
+        </div>
+
+        <div class="carousel">
+          <div class="match-card">
+            <div class="match-card-img"><img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=400&q=80" alt=""></div>
+            <div class="match-card-body">
+              <p class="match-card-title">Pasta Carbonara</p>
+              <div class="tap-to-cook">✓ Tap to cook</div>
+            </div>
+          </div>
+          <div class="match-card">
+            <div class="match-card-img">
+              <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&q=80" alt="">
+              <div class="match-badge">2 of 8 matched</div>
+            </div>
+            <div class="match-card-body">
+              <p class="match-card-title">Chicken Shawarma</p>
+              <p class="still-need-label">Still need</p>
+              <div class="missing-chips">
+                <div class="missing-chip">+ coriander</div>
+                <div class="missing-chip">+ lemon</div>
+                <div class="missing-chip">+ yoghurt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
       <div class="tab-bar"><div class="tab-bar-inner">
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span class="tab-item-label">Kitchen</span>
-        </div>
-        <div class="tab-item active">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".6"/><circle cx="12" cy="11" r="3"/></svg>
-          <span class="tab-item-label">Pantry</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-          <span class="tab-item-label">Shop</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="tab-item-label">Profile</span>
-        </div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-item-label">Kitchen</span></div>
+        <div class="tab-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".65"/><circle cx="12" cy="11" r="3"/></svg><span class="tab-item-label">Pantry</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg><span class="tab-item-label">Shop</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-item-label">Profile</span></div>
       </div></div>
     </div>
   </div>
 
 
   <!-- ════════════════════════════════════════════════════════════
-       TAB 3 — SHOP (shop.tsx)
+       SHOP (shop.tsx)
   ════════════════════════════════════════════════════════════════ -->
   <div class="phone-wrap">
     <span class="phone-label">Shop</span>
@@ -759,106 +486,77 @@
         <span class="status-time">9:41</span>
         <div class="status-icons">
           <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="var(--ink)" opacity=".35"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="var(--ink)" opacity=".55"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="var(--ink)" opacity=".75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--ink)"/></svg>
-          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.4 2.4 12.56 3.44 14.04 5.12L15.2 3.84C13.36 1.76 10.84.48 8 .48S2.64 1.76.8 3.84L1.96 5.12C3.44 3.44 5.6 2.4 8 2.4Z" fill="var(--ink)" opacity=".5"/><path d="M8 5.28C9.68 5.28 11.2 6 12.24 7.2L13.4 5.92C12.04 4.4 10.12 3.44 8 3.44S3.96 4.4 2.6 5.92L3.76 7.2C4.8 6 6.32 5.28 8 5.28Z" fill="var(--ink)" opacity=".7"/><path d="M8 8.16C9.04 8.16 9.96 8.64 10.56 9.44L11.72 8.16C10.76 6.96 9.44 6.16 8 6.16S5.24 6.96 4.28 8.16L5.44 9.44C6.04 8.64 6.96 8.16 8 8.16Z" fill="var(--ink)"/><circle cx="8" cy="11.04" r="1.12" fill="var(--ink)"/></svg>
           <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="var(--ink)" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="16" height="9" rx="2.5" fill="var(--ink)" opacity=".85"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="var(--ink)" opacity=".4"/></svg>
         </div>
       </div>
+      <div class="screen"><div class="screen-pad">
 
-      <div class="screen">
-        <div class="screen-pad">
-
-          <div class="shop-header-row">
-            <div style="flex:1;">
-              <p class="eyebrow">Cook with what you'll buy</p>
-              <h1 class="hero-headline sage-italic">Your <em>Shop</em></h1>
-              <p class="headline-sub sans">11 items · 3 ticked</p>
-            </div>
-            <div style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </div>
+        <div class="shop-header-row">
+          <div style="flex:1;">
+            <!-- FIX 1: Shop eyebrow is forest -->
+            <p class="eyebrow forest">Cook with what you'll buy</p>
+            <h1 class="hero-headline">Your <em class="forest-word">Shop</em></h1>
+            <p class="headline-sub">11 items · 3 ticked</p>
           </div>
-
-          <div class="search-bar" style="margin-top:14px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Add anything — milk, capsicum, toilet paper…" disabled>
-            <span style="font-size:14px;opacity:.5;">🎙️</span>
+          <div class="share-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </div>
-
-          <div class="plan-chips" style="margin-top:12px;">
-            <div class="plan-chip sage">2 meals planned</div>
-            <div class="plan-chip sage">9 from meals</div>
-            <div class="plan-chip rust">2 added</div>
-          </div>
-
-          <div class="aisle-section">
-            <div class="aisle-header">
-              <span class="aisle-emoji">🥬</span>
-              <span class="aisle-label sans-bold">Produce</span>
-              <span class="aisle-count sans">(4)</span>
-            </div>
-            <div class="aisle-card">
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Lemons</span><span class="shop-qty sans">3</span><span class="shop-x">×</span></div>
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Flat-leaf parsley</span><span class="shop-x">×</span></div>
-              <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name sans-bold ticked">Garlic</span><span class="shop-qty sans">1 bulb</span><span class="shop-x">×</span></div>
-              <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name sans-bold ticked">Brown onions</span><span class="shop-qty sans">2</span><span class="shop-x">×</span></div>
-            </div>
-          </div>
-
-          <div class="aisle-section">
-            <div class="aisle-header">
-              <span class="aisle-emoji">🥩</span>
-              <span class="aisle-label sans-bold">Meat &amp; Seafood</span>
-              <span class="aisle-count sans">(3)</span>
-            </div>
-            <div class="aisle-card">
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Chicken thighs</span><span class="shop-qty sans">800 g</span><span class="shop-x">×</span></div>
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Guanciale</span><span class="shop-qty sans">150 g</span><span class="shop-x">×</span></div>
-              <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name sans-bold ticked">Pancetta</span><span class="shop-qty sans">100 g</span><span class="shop-x">×</span></div>
-            </div>
-          </div>
-
-          <div class="aisle-section">
-            <div class="aisle-header">
-              <span class="aisle-emoji">🫙</span>
-              <span class="aisle-label sans-bold">Pantry Staples</span>
-              <span class="aisle-count sans">(4)</span>
-            </div>
-            <div class="aisle-card">
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Spaghetti</span><span class="shop-qty sans">400 g</span><span class="shop-x">×</span></div>
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Ground cumin</span><span class="shop-qty sans">2 tsp</span><span class="shop-x">×</span></div>
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Smoked paprika</span><span class="shop-x">×</span></div>
-              <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name sans-bold">Tahini</span><span class="shop-x">×</span></div>
-            </div>
-          </div>
-
-          <div class="clear-ticked sans-bold">Clear 3 ticked items</div>
-
         </div>
-      </div>
 
+        <div class="search-bar" style="margin-top:14px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Add anything — milk, capsicum, toilet paper…" disabled>
+          <span style="font-size:14px;opacity:.45;">🎙️</span>
+        </div>
+
+        <div class="plan-chips" style="margin-top:12px;">
+          <div class="plan-chip sage">2 meals planned</div>
+          <div class="plan-chip sage">9 from meals</div>
+          <div class="plan-chip rust-tint">2 added</div>
+        </div>
+
+        <div class="aisle-section">
+          <div class="aisle-header"><span style="font-size:13px;">🥬</span><span class="aisle-label">Produce</span><span class="aisle-count">(4)</span></div>
+          <div class="aisle-card">
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Lemons</span><span class="shop-qty">3</span><span class="shop-x">×</span></div>
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Flat-leaf parsley</span><span class="shop-x">×</span></div>
+            <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name ticked">Garlic</span><span class="shop-qty">1 bulb</span><span class="shop-x">×</span></div>
+            <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name ticked">Brown onions</span><span class="shop-qty">2</span><span class="shop-x">×</span></div>
+          </div>
+        </div>
+
+        <div class="aisle-section">
+          <div class="aisle-header"><span style="font-size:13px;">🥩</span><span class="aisle-label">Meat &amp; Seafood</span><span class="aisle-count">(3)</span></div>
+          <div class="aisle-card">
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Chicken thighs</span><span class="shop-qty">800 g</span><span class="shop-x">×</span></div>
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Guanciale</span><span class="shop-qty">150 g</span><span class="shop-x">×</span></div>
+            <div class="shop-row ticked"><div class="shop-checkbox checked">✓</div><span class="shop-name ticked">Pancetta</span><span class="shop-qty">100 g</span><span class="shop-x">×</span></div>
+          </div>
+        </div>
+
+        <div class="aisle-section">
+          <div class="aisle-header"><span style="font-size:13px;">🫙</span><span class="aisle-label">Pantry Staples</span><span class="aisle-count">(4)</span></div>
+          <div class="aisle-card">
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Spaghetti</span><span class="shop-qty">400 g</span><span class="shop-x">×</span></div>
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Ground cumin</span><span class="shop-qty">2 tsp</span><span class="shop-x">×</span></div>
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Smoked paprika</span><span class="shop-x">×</span></div>
+            <div class="shop-row"><div class="shop-checkbox"></div><span class="shop-name">Tahini</span><span class="shop-x">×</span></div>
+          </div>
+        </div>
+
+        <div class="clear-ticked" style="font-weight:700;">Clear 3 ticked items</div>
+
+      </div></div>
       <div class="tab-bar"><div class="tab-bar-inner">
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span class="tab-item-label">Kitchen</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".5"/><circle cx="12" cy="11" r="3"/></svg>
-          <span class="tab-item-label">Pantry</span>
-        </div>
-        <div class="tab-item active">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-          <span class="tab-item-label">Shop</span>
-        </div>
-        <div class="tab-item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(17,20,16,0.38)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="tab-item-label">Profile</span>
-        </div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-item-label">Kitchen</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 00-9 9c0 4.97 9 13 9 13s9-8.03 9-13a9 9 0 00-9-9z" opacity=".5"/><circle cx="12" cy="11" r="3"/></svg><span class="tab-item-label">Pantry</span></div>
+        <div class="tab-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FAFAF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg><span class="tab-item-label">Shop</span></div>
+        <div class="tab-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tab-inactive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-item-label">Profile</span></div>
       </div></div>
     </div>
   </div>
 
 
   <!-- ════════════════════════════════════════════════════════════
-       TAB 4 — PROFILE
-       (Same eyebrow+headline language as other tabs)
-  ═══════════════════════════════�
+       PROFILE
+  ════════════════════
