@@ -87,6 +87,8 @@ export default function RecipeDetailScreen() {
     setMiseChecked(new Set());
     setMiseExpanded(false);
     miseExpandOpacity.setValue(0);
+    setNoteExpanded(false);
+    setNoteOverflows(false);
   }, [recipe?.id]);
 
   // Cook mode
@@ -102,6 +104,8 @@ export default function RecipeDetailScreen() {
   // Mise en place state — session-only, no persistence (DECISION-008)
   const [miseChecked, setMiseChecked] = useState<Set<number>>(new Set());
   const [miseExpanded, setMiseExpanded] = useState(false);
+  const [noteExpanded, setNoteExpanded] = useState(false);
+  const [noteOverflows, setNoteOverflows] = useState(false);
   const miseExpandOpacity = useRef(new Animated.Value(0)).current;
   const [activeSwaps, setActiveSwaps]         = useState<Record<string, Substitution | null>>({});
 
@@ -490,10 +494,38 @@ export default function RecipeDetailScreen() {
                   marginTop: 14,
                 }}
               >
-                <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}>
+                {/* Offscreen measurement pass — counts natural line count */}
+                <Text
+                  style={{ opacity: 0, position: 'absolute', pointerEvents: 'none',
+                    fontFamily: fonts.sans, fontSize: 13, lineHeight: 18 }}
+                  onTextLayout={(e) => {
+                    if (e.nativeEvent.lines.length > 3) setNoteOverflows(true);
+                  }}
+                >
                   <Text style={{ fontFamily: fonts.sansBold, color: c.ink }}>A note: </Text>
                   {recipe.description}
                 </Text>
+                {/* Visible text — clamped at 3 lines unless expanded */}
+                <Text
+                  style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}
+                  numberOfLines={noteExpanded ? undefined : 3}
+                  ellipsizeMode="tail"
+                >
+                  <Text style={{ fontFamily: fonts.sansBold, color: c.ink }}>A note: </Text>
+                  {recipe.description}
+                </Text>
+                {noteOverflows ? (
+                  <Pressable
+                    onPress={() => setNoteExpanded(v => !v)}
+                    accessibilityRole="button"
+                    accessibilityLabel={noteExpanded ? 'Show less of note' : 'Read full note'}
+                    style={{ marginTop: 4 }}
+                  >
+                    <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primary }}>
+                      {noteExpanded ? 'Show less' : 'Read more'}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
 
