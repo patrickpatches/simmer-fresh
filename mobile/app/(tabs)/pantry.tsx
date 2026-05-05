@@ -42,16 +42,22 @@ import {
   SectionList,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
+  interpolateColor,
   LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useScrollToTop } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Haptics from 'expo-haptics';
 
@@ -93,9 +99,9 @@ const UNLOCK_MIN_PANTRY = 2;
 const UNLOCK_MIN_COUNT = 2;
 const UNDO_TIMEOUT_MS = 5000;
 const SHOP_UNDO_TIMEOUT_MS = 3000;
-const CARD_WIDTH = 260;
 const CARD_GAP = 12;
 const CAROUSEL_PADDING = 20;
+const PEEK_WIDTH = 44; // dp of next card to peek on right
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -137,12 +143,47 @@ export default function PantryTab() {
 
   // Search state
   const [addName, setAddName] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  // searchMode is set by pressing the Pressable search bar (not by TextInput
+  // onFocus). This sidesteps Android's IME-resize → spurious-onBlur cycle
+  // entirely: the autoFocus TextInput opens already-focused, with no state
+  // update mid-gesture to cause a race condition.
+  const [searchMode, setSearchMode] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  // Scroll-to-top when user taps the active Pantry tab button
+  const browseScrollRef = useRef<ScrollView>(null);
+  useScrollToTop(browseScrollRef);
+  // Blur debounce — gives suggestion taps 200 ms to fire before
+  // search mode exits. handleSearchSelect clears this on each tap.
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Search is active whenever the input has text — results stay visible while
-  // the user picks items without the view snapping back on each selection.
-  const isSearchActive = addName.length > 0 || isFocused;
+  // showDropdown: show the inline suggestion list when the user has typed
+  // ≥1 character. Browse content (pills, banner, carousel) is ALWAYS
+  // visible underneath — no full-screen mode switch.
+  const showDropdown = searchMode && addName.trim().length >= 1;
+
+  // Pill collapse — show first 5, expand on tap
+  const PILLS_SHOWN = 5;
+  const [pillsExpanded, setPillsExpanded] = useState(false);
+
+  // Search bar border colour animates 150 ms between inactive/active gold
+  const searchFocusAnim = useSharedValue(0);
+  useEffect(() => {
+    searchFocusAnim.value = withTiming(searchMode ? 1 : 0, { duration: 150 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchMode]);
+  const animatedSearchBorderStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      searchFocusAnim.value,
+      [0, 1],
+      ['rgba(184,64,48,0.22)', tokens.primary],
+    ),
+  }));
+
+  // Dynamic card width: screen minus both paddings, one gap, and peek allowance
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = Math.floor(
+    screenWidth - CAROUSEL_PADDING * 2 - CARD_GAP - PEEK_WIDTH,
+  );
 
   const [addedAt, setAddedAt] = useState<Record<string, number>>({});
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
@@ -170,6 +211,10 @@ export default function PantryTab() {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      // Clear all debounce/undo timers so no setState fires after unmount
+      if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      if (shopUndoTimerRef.current) clearTimeout(shopUndoTimerRef.current);
     };
   }, []);
 
@@ -257,7 +302,7 @@ export default function PantryTab() {
     const entries =
       q.length >= 2
         ? INGREDIENT_CATALOG.filter((e) => fuzzyMatchCatalog(e, q))
-        : INGREDIENT_CATALOG;
+        : []; // Don't dump full catalog — wait for 2+ chars
 
     const inPantryNorms = new Set(pantryItems.map((p) => normalizeForMatch(p.name)));
 
@@ -327,23 +372,32 @@ export default function PantryTab() {
 
   const handleSearchSelect = useCallback(
     (entry: CatalogEntry) => {
+      // Cancel pending blur dismissal so search mode stays open
+      if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
       addByName(entry.name, entry.category);
-      // Don't collapse — let the user keep adding multiple items
+      setAddName('');
+      // Keep keyboard open for rapid multi-add
+      requestAnimationFrame(() => inputRef.current?.focus());
     },
     [addByName],
   );
 
-  const handleSearchCancel = useCallback(() => {
-    setAddName('');
-    setIsFocused(false);
-    Keyboard.dismiss();
+  // handleSearchBlur — fires when TextInput loses focus.
+  // Debounced 200 ms so suggestion taps can fire first.
+  const handleSearchBlur = useCallback(() => {
+    blurTimerRef.current = setTimeout(() => {
+      setSearchMode(false);
+      setAddName('');
+    }, 200);
   }, []);
 
   const handleAddCustom = useCallback(() => {
     const trimmed = addName.trim();
     if (!trimmed) return;
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
     addByName(trimmed);
     setAddName('');
+    requestAnimationFrame(() => inputRef.current?.focus());
   }, [addName, addByName]);
 
   const removeItem = useCallback(
@@ -498,10 +552,7 @@ export default function PantryTab() {
           backgroundColor: tokens.bg,
         }}
       >
-        {/* Eyebrow — forest (tokens.sage), not rust.
-            Kitchen = rust (warm anchor). Pantry/Shop = forest (secondary,
-            cooler utility tabs). Prevents competing rust elements on screens
-            where the italic headline word ("Pantry") uses the same colour. */}
+        {/* Eyebrow */}
         <Text
           style={{
             fontFamily: fonts.sansBold,
@@ -549,15 +600,21 @@ export default function PantryTab() {
           {/* Right side: item count + trash (only when pantry has items) */}
           {haveCount > 0 ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingLeft: 8 }}>
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 11,
-                  color: tokens.muted,
-                }}
+              <Animated.View
+                key={haveCount}
+                entering={FadeIn.duration(250)}
+                accessibilityLabel={`${haveCount} ingredient${haveCount === 1 ? '' : 's'} stocked`}
               >
-                {haveCount} stocked
-              </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 11,
+                    color: tokens.muted,
+                  }}
+                >
+                  {haveCount} stocked
+                </Text>
+              </Animated.View>
               <Pressable
                 onPress={() => setShowClearModal(true)}
                 hitSlop={12}
@@ -571,17 +628,16 @@ export default function PantryTab() {
           ) : null}
         </View>
 
-        {/* Search bar — real TextInput (v3: no more tappable Pressable → overlay) */}
+        {/* Search bar — v4: full-width, no Cancel, blur exits search mode */}
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 10,
-            marginBottom: 14,
+            marginBottom: 8,
           }}
         >
-          <View
-            style={{
+          <Animated.View
+            style={[animatedSearchBorderStyle, {
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
@@ -589,12 +645,9 @@ export default function PantryTab() {
               backgroundColor: tokens.surface ?? tokens.cream,
               borderRadius: 14,
               borderWidth: 1.5,
-              borderColor: isFocused
-                ? tokens.primary
-                : 'rgba(232,184,48,0.22)',
               paddingHorizontal: 14,
               paddingVertical: 12,
-              ...(isFocused
+              ...(searchMode
                 ? {
                     shadowColor: tokens.primary,
                     shadowOffset: { width: 0, height: 0 },
@@ -603,32 +656,55 @@ export default function PantryTab() {
                     elevation: 2,
                   }
                 : {}),
-            }}
+            }]}
           >
             <Icon name="search" size={15} color={tokens.muted} />
-            <TextInput
-              ref={inputRef}
-              value={addName}
-              onChangeText={setAddName}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder="Search or add an ingredient…"
-              placeholderTextColor={tokens.muted}
-              style={{
-                flex: 1,
-                fontFamily: fonts.sans,
-                fontSize: 15,
-                color: tokens.ink,
-                paddingVertical: 0,
-              }}
-              autoCorrect={false}
-              autoCapitalize="none"
-              spellCheck={false}
-              returnKeyType="done"
-              onSubmitEditing={handleAddCustom}
-            />
-            {/* Android clear button — iOS uses clearButtonMode */}
-            {addName.length > 0 && Platform.OS === 'android' ? (
+            {!searchMode ? (
+              /* Tappable placeholder — reliable Android entry point.
+                 autoFocus on the TextInput below handles keyboard open;
+                 no onFocus/onBlur state juggling needed. */
+              <Pressable
+                onPress={() => setSearchMode(true)}
+                style={{ flex: 1 }}
+                accessibilityRole="button"
+                accessibilityLabel="Search or add an ingredient"
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 15,
+                    color: tokens.muted,
+                    paddingVertical: 0,
+                  }}
+                >
+                  Search or add an ingredient…
+                </Text>
+              </Pressable>
+            ) : (
+              <TextInput
+                ref={inputRef}
+                autoFocus
+                value={addName}
+                onChangeText={setAddName}
+                placeholder="Search or add an ingredient…"
+                placeholderTextColor={tokens.muted}
+                style={{
+                  flex: 1,
+                  fontFamily: fonts.sans,
+                  fontSize: 15,
+                  color: tokens.ink,
+                  paddingVertical: 0,
+                }}
+                autoCorrect={false}
+                autoCapitalize="none"
+                spellCheck={false}
+                returnKeyType="done"
+                onSubmitEditing={handleAddCustom}
+                onBlur={handleSearchBlur}
+              />
+            )}
+            {/* Android clear button — only in search mode */}
+            {addName.length > 0 && searchMode && Platform.OS === 'android' ? (
               <Pressable
                 onPress={() => setAddName('')}
                 hitSlop={10}
@@ -644,35 +720,14 @@ export default function PantryTab() {
                 <Icon name="x" size={11} color={tokens.muted} />
               </Pressable>
             ) : null}
-          </View>
-
-          {/* Cancel button — only when focused */}
-          {isFocused ? (
-            <Pressable
-              onPress={handleSearchCancel}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Cancel search"
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 14,
-                  color: tokens.primary,
-                }}
-              >
-                Cancel
-              </Text>
-            </Pressable>
-          ) : null}
+          </Animated.View>
         </View>
 
-        {/* Have-it pills card — frozen above results in both modes */}
+        {/* Have-it pills card — collapsed to PILLS_SHOWN, expandable */}
         {havePills.length > 0 ? (
           <View
             style={{
-              marginBottom: 14,
+              marginBottom: 10,
               backgroundColor: tokens.cream,
               borderRadius: 14,
               borderWidth: 1,
@@ -680,8 +735,11 @@ export default function PantryTab() {
               padding: 12,
             }}
           >
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}>
-              {havePills.map((it) => (
+            <Animated.View
+              layout={LinearTransition.springify().damping(18).stiffness(180)}
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7 }}
+            >
+              {(pillsExpanded ? havePills : havePills.slice(0, PILLS_SHOWN)).map((it) => (
                 <Pill
                   key={it.id}
                   item={it}
@@ -689,81 +747,154 @@ export default function PantryTab() {
                   onRemove={() => removeItem(it)}
                 />
               ))}
+              {/* Expand / collapse chip */}
+              {havePills.length > PILLS_SHOWN ? (
+                <Pressable
+                  onPress={() => setPillsExpanded((x) => !x)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    pillsExpanded
+                      ? 'Show fewer ingredients'
+                      : `Show ${havePills.length - PILLS_SHOWN} more ingredient${havePills.length - PILLS_SHOWN === 1 ? '' : 's'}`
+                  }
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 999,
+                    backgroundColor: pressed ? 'rgba(184,64,48,0.15)' : 'rgba(184,64,48,0.08)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(184,64,48,0.30)',
+                    gap: 4,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 11,
+                      color: tokens.primary,
+                    }}
+                  >
+                    {pillsExpanded
+                      ? 'Show less'
+                      : `+${havePills.length - PILLS_SHOWN} more`}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </Animated.View>
+          </View>
+        ) : null}
+
+        {/* Match banner — pinned in header so it stays above fold */}
+        {ranked.length > 0 ? (
+          <View
+            style={{
+              marginBottom: 10,
+              backgroundColor: tokens.cream,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: tokens.primaryLight,
+              paddingVertical: 11,
+              paddingHorizontal: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              overflow: 'hidden',
+            }}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                left: 0, top: 0, bottom: 0, width: 4,
+                backgroundColor: tokens.primary, borderRadius: 4,
+              }}
+            />
+            <View style={{ flex: 1, paddingLeft: 8 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.display,
+                  fontSize: 15,
+                  color: tokens.ink,
+                  lineHeight: 19,
+                  marginBottom: 2,
+                }}
+              >
+                {fullMatches > 0
+                  ? `${fullMatches} recipe${fullMatches === 1 ? '' : 's'} you can cook now`
+                  : `${ranked.length} match${ranked.length === 1 ? '' : 'es'} — keep adding`}
+              </Text>
+              <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+                {fullMatches > 0
+                  ? (ranked.length - fullMatches > 0
+                      ? `${ranked.length - fullMatches} more within 1–3 ingredients`
+                      : 'You have everything you need')
+                  : `${ranked.length} recipe${ranked.length === 1 ? '' : 's'} ranked by coverage`}
+              </Text>
             </View>
+            <Pressable
+              onPress={() => router.navigate('/')}
+              accessibilityRole="button"
+              accessibilityLabel="See all matching recipes in Kitchen tab"
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? tokens.sage : tokens.sageLight,
+                borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4,
+                borderWidth: 1,
+                borderColor: 'rgba(46,94,62,0.22)',
+              })}
+            >
+              <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.sage }}>
+                See all
+              </Text>
+            </Pressable>
           </View>
         ) : null}
       </View>
 
-      {/* ── Content: browse mode or inline autocomplete ─────────────── */}
-      {isSearchActive ? (
-        /* ── Autocomplete results ────────────────────────────────────── */
-        autocompleteSections.length === 0 ? (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 28,
-              paddingBottom: insets.bottom + 60,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 14,
-                color: tokens.muted,
-                textAlign: 'center',
-                marginBottom: 16,
-              }}
-            >
-              No match — press Enter or tap "+" to add it anyway.
-            </Text>
-            <Pressable
-              onPress={handleAddCustom}
-              style={({ pressed }) => ({
-                paddingVertical: 11,
-                paddingHorizontal: 20,
-                backgroundColor: tokens.primaryLight,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: 'rgba(232,184,48,0.35)',
-                opacity: pressed ? 0.75 : 1,
-              })}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 14,
-                  color: tokens.primary,
-                }}
-              >
-                + Add "{addName.trim()}"
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
+      {/* ── Inline suggestion dropdown ─────────────────────────────────── */}
+      {/* Appears between search bar and pills — browse content always stays  */}
+      {/* visible. blurTimerRef gives 200 ms for a suggestion tap to land.   */}
+      {showDropdown && autocompleteSections.length > 0 ? (
+        <View
+          style={{
+            maxHeight: 280,
+            marginHorizontal: 20,
+            marginBottom: 12,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(184,64,48,0.28)',
+            backgroundColor: tokens.cream,
+            overflow: 'hidden',
+          }}
+        >
           <SectionList<CatalogEntry, AutocompleteSection>
             sections={autocompleteSections}
             keyExtractor={(item, idx) => item.name + idx}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
+            keyboardDismissMode="none"
             stickySectionHeadersEnabled
             renderSectionHeader={({ section: { title } }) => (
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 7,
+                  gap: 8,
                   backgroundColor: tokens.bg,
-                  paddingHorizontal: 20,
-                  paddingVertical: 9,
+                  paddingHorizontal: 16,
+                  paddingVertical: 6,
                   borderBottomWidth: 1,
                   borderBottomColor: tokens.line,
                 }}
               >
-                <Text style={{ fontSize: 12, lineHeight: 15 }}>
-                  {CATEGORY_EMOJI[title] ?? '📦'}
-                </Text>
+                <View
+                  style={{
+                    width: 3,
+                    height: 11,
+                    borderRadius: 2,
+                    backgroundColor: tokens.warmBrown,
+                    opacity: 0.45,
+                  }}
+                />
                 <Text
                   style={{
                     fontSize: 9,
@@ -771,6 +902,7 @@ export default function PantryTab() {
                     letterSpacing: 2,
                     color: tokens.warmBrown,
                     textTransform: 'uppercase',
+                    flex: 1,
                   }}
                 >
                   {title}
@@ -781,7 +913,6 @@ export default function PantryTab() {
               const alias = matchedAlias(item, addName.trim());
               const alreadyAdded = inPantrySet.has(item.name.toLowerCase().trim());
               const isLast = index === section.data.length - 1;
-
               return (
                 <Pressable
                   onPress={() => !alreadyAdded && handleSearchSelect(item)}
@@ -794,25 +925,22 @@ export default function PantryTab() {
                   style={({ pressed }) => ({
                     flexDirection: 'row',
                     alignItems: 'center',
-                    paddingHorizontal: 20,
+                    paddingHorizontal: 16,
                     paddingVertical: 11,
                     minHeight: 46,
                     backgroundColor: tokens.cream,
                     borderBottomWidth: isLast ? 0 : 1,
                     borderBottomColor: tokens.line,
-                    gap: 10,
+                    gap: 12,
                     opacity: alreadyAdded ? 0.45 : pressed ? 0.8 : 1,
                   })}
                 >
-                  {/* Emoji inline with name — same flex row, no reflow risk */}
-                  <Text style={{ fontSize: 18, width: 26, textAlign: 'center', lineHeight: 22 }}>
-                    {CATEGORY_EMOJI[item.category] ?? '📦'}
-                  </Text>
+
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
                         fontSize: 14,
-                        fontFamily: alreadyAdded ? fonts.sans : fonts.sans,
+                        fontFamily: fonts.sans,
                         color: alreadyAdded ? tokens.muted : tokens.ink,
                         lineHeight: 19,
                       }}
@@ -833,30 +961,162 @@ export default function PantryTab() {
                     ) : null}
                   </View>
                   {alreadyAdded ? (
-                    <Text
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <Icon name="check" size={11} color={tokens.sage} />
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontFamily: fonts.sansBold,
+                          color: tokens.sage,
+                          letterSpacing: 0.3,
+                        }}
+                      >
+                        In pantry
+                      </Text>
+                    </View>
+                  ) : (
+                    <View
                       style={{
-                        fontSize: 11,
-                        fontFamily: fonts.sansBold,
-                        color: tokens.sage,
-                        letterSpacing: 0.3,
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      ✓ In pantry
-                    </Text>
-                  ) : (
-                    <Icon name="plus" size={16} color={tokens.muted} />
+                      <Icon name="plus" size={14} color={tokens.muted} />
+                    </View>
                   )}
                 </Pressable>
               );
             }}
-            contentContainerStyle={{
-              paddingBottom: insets.bottom + 60,
-            }}
+            ListFooterComponent={
+              addName.trim().length >= 1 ? (
+                <Pressable
+                  onPress={handleAddCustom}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    minHeight: 50,
+                    backgroundColor: pressed
+                      ? 'rgba(184,64,48,0.10)'
+                      : 'rgba(184,64,48,0.04)',
+                    gap: 12,
+                    borderTopWidth: 1,
+                    borderTopColor: 'rgba(184,64,48,0.22)',
+                  })}
+                >
+                  <View
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 15,
+                      backgroundColor: 'rgba(184,64,48,0.14)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon name="plus" size={14} color={tokens.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontFamily: fonts.sansBold,
+                        color: tokens.primary,
+                        lineHeight: 17,
+                      }}
+                      numberOfLines={1}
+                    >
+                      Add "{addName.trim()}"
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontFamily: fonts.sans,
+                        color: tokens.muted,
+                        marginTop: 1,
+                      }}
+                    >
+                      Save as a custom ingredient
+                    </Text>
+                  </View>
+                </Pressable>
+              ) : null
+            }
           />
-        )
-      ) : (
-        /* ── Browse mode ─────────────────────────────────────────────── */
+        </View>
+      ) : showDropdown && autocompleteSections.length === 0 ? (
+        /* No catalog match — offer custom add inline */
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 12,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(184,64,48,0.25)',
+            backgroundColor: 'rgba(184,64,48,0.04)',
+            overflow: 'hidden',
+          }}
+        >
+          <Pressable
+            onPress={handleAddCustom}
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              backgroundColor: pressed ? 'rgba(184,64,48,0.10)' : 'transparent',
+              gap: 12,
+            })}
+          >
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: 'rgba(184,64,48,0.16)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="plus" size={15} color={tokens.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: fonts.sansBold,
+                  color: tokens.primary,
+                  lineHeight: 18,
+                }}
+                numberOfLines={1}
+              >
+                Add "{addName.trim()}"
+              </Text>
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontFamily: fonts.sans,
+                  color: tokens.muted,
+                  marginTop: 2,
+                }}
+              >
+                No catalog match — save as custom
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {/* ── Browse mode — always visible ─────────────────────────────────── */}
         <ScrollView
+          ref={browseScrollRef}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 160, paddingTop: 4 }}
@@ -864,105 +1124,6 @@ export default function PantryTab() {
           {/* Empty pantry state — shown when no pills */}
           {havePills.length === 0 ? (
             <EmptyPantry onAddFirst={() => inputRef.current?.focus()} />
-          ) : null}
-
-          {/* Gold match summary banner */}
-          {ranked.length > 0 ? (
-            <View
-              style={{
-                marginHorizontal: 20,
-                marginBottom: 12,
-                backgroundColor: tokens.cream,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: tokens.primaryLight,
-                paddingVertical: 13,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                overflow: 'hidden',
-              }}
-            >
-              {/* Rust left strip — signal colour. Stays rust (not forest) because
-                  this strip is the "something is ready" signal, not a nav element. */}
-              <View
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 4,
-                  backgroundColor: tokens.primary,
-                  borderRadius: 4,
-                }}
-              />
-              <View style={{ flex: 1, paddingLeft: 8 }}>
-                {/* Title: ink text, only the count number in rust.
-                    Three rust elements (strip + full title + "See all") read as
-                    alarm — distributing them gives each element a clear role. */}
-                <Text
-                  style={{
-                    fontFamily: fonts.display,
-                    fontSize: 15,
-                    color: tokens.ink,
-                    lineHeight: 19,
-                    marginBottom: 2,
-                  }}
-                >
-                  {fullMatches > 0 ? (
-                    <>
-                      <Text style={{ color: tokens.primary }}>{fullMatches}</Text>
-                      {` recipe${fullMatches === 1 ? '' : 's'} you can cook now`}
-                    </>
-                  ) : (
-                    <>
-                      <Text style={{ color: tokens.primary }}>{ranked.length}</Text>
-                      {` match${ranked.length === 1 ? '' : 'es'} — keep adding`}
-                    </>
-                  )}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.sans,
-                    fontSize: 11,
-                    color: tokens.muted,
-                  }}
-                >
-                  {fullMatches > 0
-                    ? `${ranked.length - fullMatches > 0
-                        ? `${ranked.length - fullMatches} more within 1–3 ingredients`
-                        : 'You have everything you need'}`
-                    : `${ranked.length} recipe${ranked.length === 1 ? '' : 's'} ranked by coverage`}
-                </Text>
-              </View>
-
-              {/* "See all" forest chip — not rust. Three rust elements (strip,
-                  count, CTA) compete. Forest here = "action" not "alert",
-                  which is the correct semantic for a navigation element. */}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="See all matching recipes"
-                style={({ pressed }) => ({
-                  backgroundColor: pressed ? tokens.sage : tokens.sageLight,
-                  borderRadius: 999,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderWidth: 1,
-                  borderColor: 'rgba(46,94,62,0.22)',
-                })}
-              >
-                <Text
-                  style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 11,
-                    color: pressed ? tokens.onPrimary : tokens.sage,
-                  }}
-                >
-                  See all
-                </Text>
-              </Pressable>
-            </View>
           ) : null}
 
           {/* Unlock nudge */}
@@ -1070,10 +1231,12 @@ export default function PantryTab() {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                decelerationRate="fast"
-                snapToInterval={CARD_WIDTH + CARD_GAP}
+                decelerationRate={0.92}
+                snapToInterval={cardWidth + CARD_GAP}
                 snapToAlignment="start"
-                disableIntervalMomentum
+                onMomentumScrollEnd={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                }
                 contentContainerStyle={{
                   paddingHorizontal: CAROUSEL_PADDING,
                   gap: CARD_GAP,
@@ -1083,6 +1246,7 @@ export default function PantryTab() {
                   <RecipeMatchCard
                     key={m.recipe.id}
                     match={m}
+                    cardWidth={cardWidth}
                     onOpenRecipe={() => router.push(`/recipe/${m.recipe.id}`)}
                     onAddToShoppingList={(ing) =>
                       addToShoppingList(ing, m.recipe.id)
@@ -1280,7 +1444,7 @@ export default function PantryTab() {
               flex: 1,
               fontFamily: fonts.sansBold,
               fontSize: 13,
-              color: tokens.bgDeep,
+              color: tokens.onPrimary,
             }}
           >
             {shopUndo.label}
@@ -1292,7 +1456,7 @@ export default function PantryTab() {
                 fontSize: 12,
                 letterSpacing: 1,
                 textTransform: 'uppercase',
-                color: tokens.bgDeep,
+                color: tokens.onPrimary,
                 opacity: 0.65,
               }}
             >
@@ -1324,7 +1488,7 @@ function Pill({
 }) {
   const bg = fresh ? tokens.primaryLight : tokens.sageLight;
   const fg = fresh ? tokens.primaryDeep : tokens.sageDeep;
-  const borderColor = fresh ? 'rgba(232,184,48,0.45)' : 'rgba(170,204,168,0.50)';
+  const borderColor = fresh ? 'rgba(184,64,48,0.45)' : 'rgba(170,204,168,0.50)';
   const xBg = fresh ? 'rgba(163,68,31,0.18)' : 'rgba(70,94,64,0.18)';
 
   return (
@@ -1448,7 +1612,7 @@ function EmptyPantry({ onAddFirst }: { onAddFirst: () => void }) {
           style={{
             fontFamily: fonts.sansBold,
             fontSize: 14,
-            color: tokens.bgDeep,
+            color: tokens.onPrimary,
           }}
         >
           Add ingredients
@@ -1512,10 +1676,12 @@ function NoMatchesState() {
  */
 function RecipeMatchCard({
   match,
+  cardWidth,
   onOpenRecipe,
   onAddToShoppingList,
 }: {
   match: RecipeMatchResult;
+  cardWidth: number;
   onOpenRecipe: () => void;
   onAddToShoppingList: (ing: { name: string; amount: number; unit: string }) => void;
 }) {
@@ -1532,8 +1698,10 @@ function RecipeMatchCard({
   return (
     <Pressable
       onPress={onOpenRecipe}
+      accessibilityRole="button"
+      accessibilityLabel={`${match.recipe.title} — ${match.haveCount} of ${match.totalCount} ingredients matched`}
       style={({ pressed }) => ({
-        width: CARD_WIDTH,
+        width: cardWidth,
         backgroundColor: tokens.cream,
         borderRadius: 18,
         borderWidth: 1,
@@ -1704,4 +1872,46 @@ function ChipAdd({
     : ing.name;
 
   return (
-    <Press
+    <Pressable
+      onPress={() => !added && onAdd(ing)}
+      accessibilityRole="button"
+      accessibilityLabel={
+        added
+          ? `${ing.name} added to shopping list`
+          : `Add ${label} to shopping list`
+      }
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        backgroundColor: added ? tokens.primary : tokens.primaryLight,
+        borderWidth: 1,
+        borderColor: added ? tokens.primary : tokens.primaryLight,
+        borderRadius: 999,
+        opacity: pressed ? 0.75 : 1,
+      })}
+    >
+      <Text
+        style={{
+          fontFamily: fonts.sansBold,
+          fontSize: 12,
+          color: added ? tokens.onPrimary : tokens.primary,
+        }}
+      >
+        {added ? '✓' : '+'}
+      </Text>
+      <Text
+        style={{
+          fontFamily: fonts.sansBold,
+          fontSize: 11,
+          color: added ? tokens.onPrimary : tokens.primary,
+        }}
+        numberOfLines={1}
+      >
+        {ing.name}
+      </Text>
+    </Pressable>
+  );
+}
