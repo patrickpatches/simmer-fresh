@@ -42,7 +42,30 @@ import {
   Inter_800ExtraBold,
 } from '@expo-google-fonts/inter';
 import { tokens } from '../src/theme/tokens';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { initDatabase } from '../db/database';
+import { syncNewSeedRecipes, refreshSeedRecipeFields } from '../db/seed';
+
+/**
+ * Database bootstrap — called once by SQLiteProvider on open.
+ *
+ * Split into three sequential steps deliberately:
+ *   1. initDatabase  — schema creation + migration runner + first-launch seed
+ *   2. syncNewSeedRecipes  — insert any seed recipes added since first launch
+ *   3. refreshSeedRecipeFields — UPDATE DECISION-009 content fields on existing
+ *                               seed rows so new data ships without reinstall
+ *
+ * syncNewSeedRecipes and refreshSeedRecipeFields live here (not inside
+ * initDatabase) to avoid a circular dependency: seed.ts imports insertRecipe
+ * from database.ts, so database.ts cannot import back from seed.ts on the
+ * hot path without Metro's bundler giving seed.ts an incomplete view of
+ * database.ts, which corrupts Babel's TypeScript stripping.
+ */
+async function setupDatabase(db: SQLiteDatabase): Promise<void> {
+  await initDatabase(db);
+  await syncNewSeedRecipes(db);
+  await refreshSeedRecipeFields(db);
+}
 
 // Keep splash up until fonts are loaded — avoids system-font flash.
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -57,36 +80,3 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_800ExtraBold,
   });
-
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync().catch(() => {});
-    }
-  }, [fontsLoaded, fontError]);
-
-  // If the fonts fail to load we still render — the app won't crash, it'll
-  // just fall back to system fonts until the user relaunches. Rule #6: be
-  // honest about degradation, don't pretend everything is fine with a
-  // black screen.
-  if (!fontsLoaded && !fontError) return null;
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* BottomSheetModalProvider must be inside GestureHandlerRootView and
-          wrap the entire nav tree so BottomSheetModal portals render correctly. */}
-      <BottomSheetModalProvider>
-      <SQLiteProvider databaseName="hone.db" onInit={initDatabase}>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: tokens.bg },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-      </SQLiteProvider>
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
-  );
-}
