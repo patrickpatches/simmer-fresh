@@ -11,11 +11,10 @@
 
 ### Audit flags
 
-1. **WHOLE FOOD CLAIM — American cheese slices**
-   `whole_food_verified: true` but the recipe calls for American cheese slices. American cheese is a processed cheese product — it contains sodium citrate, milk protein concentrates, and preservatives. This technically fails the whole-food claim. Options:
-   - Remove `whole_food_verified: true`, OR
-   - Note: "Substitute good-quality cheddar (see ingredient) for a whole-food version"
-   Flag for Patrick's decision — this is a commercial reality (American cheese is the right cheese for a smash burger) vs our own label claim.
+1. **WHOLE FOOD CLAIM — RESOLVED ✅ (Patrick 2026-05-06)**
+   `whole_food_verified: true` → **REMOVE**. Patrick's rule: whole_food_verified only applies to completely unprocessed meals. American cheese is processed. Remove the claim.
+   **Engineer action:** Set `whole_food_verified: false` (or remove the field) on `smash-burger`.
+   **Note for Engineer:** Apply Patrick's rule across the entire seed library — audit every recipe with `whole_food_verified: true` and remove the flag wherever any ingredient is processed (sauces with additives, canned goods with preservatives, processed cheese, commercial condiments, etc.). Only dishes made entirely from unprocessed whole ingredients should carry the flag.
 
 2. **Description references "London kitchen"**
    Description currently in seed data doesn't mention this but the description could be improved with Australian context.
@@ -156,6 +155,4 @@ No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes 
 **Substitutions:** PASS — lean beef correctly flagged 'compromise'. Cheddar cheese correctly flagged 'compromise' (inferior melt). Honest throughout.
 **Whole-food claim:** FLAG — 'whole_food_verified: true' but American cheese slices are processed. Patrick to decide: remove claim or note whole-food version uses cheddar.
 **Australian English:** PASS — no issues.
-**Voice:** PASS — urgent, short steps match the fast cook. "Eat immediately" is the right closing.
-**Recommendation:** FIX BEFORE SHIP — whole food claim needs resolution. Attribution verification pending.
-```
+**Voice:** PASS — urgent, short steps match the fast cook. "Eat immediately" is 

@@ -11,15 +11,20 @@
 
 ### Audit flags
 
-1. **INGREDIENT DUPLICATION — tofu appears twice**
-   `{ id: 'i2', name: 'Prawns, sliced', amount: 200g }` has a substitution "Firm tofu only (no meat)" — vegan option.
-   AND separately: `{ id: 'i10', name: 'Tofu, firm, cubed', amount: 100g, scales: linear }` is listed as its own ingredient.
+1. **INGREDIENT DUPLICATION — RESOLVED ✅ (Chef recommendation accepted 2026-05-06)**
+
+   **Decision:** Keep tofu as a listed ingredient (100g firm tofu, cubed). Remove tofu from the prawns substitution array. Add correct substitutions for prawns.
    
-   This means: the standard prawn version also calls for 100g tofu alongside the prawns. This is confusing — is this a prawn-and-tofu pad thai? If yes, it's an unusual choice that needs explaining in the description. If no, the 100g tofu ingredient should be removed and tofu should exist only as a substitution for prawns.
+   **Why:** Authentic pad thai contains both prawns AND tofu together — the two proteins serve different textural roles (prawn: bouncy and sweet; tofu: soft and savoury). The current data model has a conceptual error: it treats tofu as a swap for prawns when in fact it's a co-ingredient. Replacing one with the other isn't how the dish is made.
    
-   **Culinary assessment:** Traditional pad thai often includes both meat and tofu, so prawn + tofu is legitimate. But it should be clearly called out in the description, not buried as an unexplained ingredient at the end of the list.
-   
-   **Recommendation:** Update description to make the prawn-and-tofu version explicit, OR move tofu to a prep note on the prawn ingredient ("traditionally served with both prawns and tofu"). Engineer to implement whichever Patrick decides.
+   **Engineer actions:**
+   - Keep `{ id: 'i10', name: 'Tofu, firm, cubed', amount: 100, unit: 'g', scales: 'linear' }` as a listed ingredient — no change needed
+   - On the prawns ingredient, **remove** the tofu substitution entry
+   - **Add** these substitutions to the prawns ingredient instead:
+     - `{ ingredient: 'Extra firm tofu, increase to 200g', quality: 'good_swap', notes: 'Vegetarian version — remove prawns entirely and increase tofu to 200g. The dish reads as a vegetarian pad thai, not a compromise.' }`
+     - `{ ingredient: 'Chicken thigh, thinly sliced', quality: 'great_swap', notes: 'Cooks in the same time as prawns. Use 180g. Slightly richer, less sweet than prawn. Slice thin so it cooks in 90 seconds at high heat.' }`
+     - `{ ingredient: 'Squid, scored and sliced', quality: 'great_swap', notes: 'Traditional alternative. Needs the same high heat. Don't overcook — 60 seconds maximum.' }`
+   - Update the description to make the prawn-and-tofu combination explicit: *"This is the traditional version — both prawns and tofu in the same pan."*
 
 2. **Attribution verification:** Confirm YouTube URL before ship.
 
@@ -72,7 +77,7 @@ Add: "Pad Thai is built in about 90 seconds of high heat. Everything that matter
 ## 6. Ingredients
 *(existing data is strong — scaling notes and tofu clarification)*
 
-**Note on tofu:** See audit flag above. Until Patrick decides, write expansion notes as if both prawns and tofu are in the dish (the traditional version).
+**Note on tofu:** Traditional version — both prawns (200g) AND tofu (100g) in the dish. Tofu is not a substitution for prawns; it's a co-ingredient. See audit flag for the substitution corrections the Engineer needs to make.
 
 **Scaling notes:**
 - `Flat rice noodles, 160g, scales: linear` — correct. scaling_note: *"For 4 serves, cook in two batches — don't double the noodles in one wok session. Overcrowding drops the temperature and the noodles steam and clump."*
@@ -157,9 +162,4 @@ Pad thai does not keep well. The noodles absorb remaining sauce and stick togeth
 **Audited:** 2026-05-05 by Culinary Verifier
 **Attribution:** CONDITIONAL — Andy Cooks with specific YouTube URL. URL not yet verified live.
 **Cultural origin:** PASS — Thai. No contested labelling.
-**Substitutions:** PASS — tamarind correctly defended as non-negotiable (ketchup listed as substitute 'changes the dish entirely' — should be flagged 'compromise'). The current substitution text says "ketchup is not a substitute — it changes the dish entirely" in the prep field, which is honest.
-**Whole-food claim:** PASS — all whole ingredients.
-**Australian English:** PASS — no issues.
-**Data fix required:** (1) Tofu duplication — Patrick to decide: keep tofu as a separate ingredient (prawn-and-tofu version) or move to substitution-only. (2) Attribution URL verification pending.
-**Recommendation:** FIX BEFORE SHIP — tofu duplication decision needed + attribution verification.
-```
+**Substitutions:** PASS — tamarind correctly defended a

@@ -241,9 +241,12 @@ All 11 launch-priority expansion files written in `docs/coo/culinary-research/` 
 - Bolognese: `video_url` — find specific Andy Cooks video or change `source.chef` to 'Hone Kitchen'
 - Hummus: attribution URL → book citation "After Reem Kassis, *The Palestinian Table* (Phaidon, 2017)"
 
-**Patrick to decide:**
-- Smash burger: `whole_food_verified: true` — American cheese is processed. Remove claim or note whole-food version uses cheddar.
-- Pad Thai: `tofu` appears both as main ingredient (100g cubed) and as a substitution for prawns. Confirm if traditional (both in) or move tofu to substitution-only.
+**Patrick decisions — BOTH RESOLVED ✅ (2026-05-06):**
+- Smash burger: **Drop `whole_food_verified`**. Rule: whole_food_verified only for completely unprocessed meals. American cheese fails. Engineer to remove flag.
+- Pad Thai: **Keep tofu as a listed ingredient (traditional prawn-and-tofu version).** Remove tofu from the prawns substitution array. Add correct substitutions: extra tofu (200g, good_swap, vegetarian), chicken thigh (great_swap), squid (great_swap). See `pad-thai.md` for full substitution spec.
+
+**Additional Engineer task (from whole_food_verified ruling):**
+Audit the entire seed library — every recipe with `whole_food_verified: true` must be reviewed. Remove the flag wherever any ingredient is processed (commercial sauces with additives, canned goods with preservatives, processed cheese, packet condiments, etc.). Only recipes made entirely from unprocessed whole ingredients keep the flag. Likely to affect several recipes beyond smash burger.
 
 **Attribution URLs to verify before ship (all 4 flagged):**
 - Carbonara: `https://www.youtube.com/watch?v=5t7JLjr1FxQ` (Gordon Ramsay)
@@ -735,12 +738,4 @@ Patrick found the original three levels (Refinement / Medium / Alternative) too 
 ### HANDOFF → Patrick · 2026-04-29 · DONE (✅ approved 29 Apr — DECISION-001)
 **From:** COO
 **Subject:** Confirm or amend launch date target
-**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for me unless we need more time." DECISION-001 logged. This handoff is closed — engineer reports referencing it as "still open" reflect stale awareness, not actual status.
-
-_(Substitution UI handoff superseded by the consolidated Senior Engineer multi-task handoff above.)_
-
-### HANDOFF → Product Designer · 2026-04-29 · DONE
-**From:** COO
-**Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
-**Why:** Engineer needs visual specs before building. Must respect terracotta/olive/gold tokens and Playfair/Source Sans 3 type scale. Per DECISION-003, the badge is needed for ~18 non-launch recipes.
-**What's done:** Both specs
+**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for 
