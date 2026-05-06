@@ -281,19 +281,16 @@ function SwapOption({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Swap to ${name}`}
-      style={({ pressed }) => ({
+      android_ripple={{ color: tokens.sageLight, borderless: false }}
+    >
+      <View style={{
         flexDirection: 'row',
         alignItems: 'flex-start',
         paddingHorizontal: 20,
         paddingVertical: 14,
-        backgroundColor: isActive
-          ? tokens.sageLight
-          : pressed
-            ? tokens.bgDeep
-            : 'transparent',
+        backgroundColor: isActive ? tokens.sageLight : 'transparent',
         gap: 14,
-      })}
-    >
+      }}>
       {/* Active indicator */}
       <View
         style={{
@@ -370,6 +367,6 @@ function SwapOption({
           </Text>
         )}
       </View>
+      </View>
     </Pressable>
   );
-}
