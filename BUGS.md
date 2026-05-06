@@ -11,15 +11,12 @@
 
 | ID | Title | Status | Notes |
 |---|---|---|---|
-| REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commits `fcdcd10d` + `d01b6fbe` — build #81 — awaiting Patrick on-device validation |
+| REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commit `1fca0aaa3d3d` — awaiting Patrick on-device validation |
 
-**REGN-001 root cause (diagnosed 6 May 2026, fix attempt 2):**
-- Previous fix (build #80): disabled FlatList windowing via `windowSize={99}`, `removeClippedSubviews={false}`. Insufficient — FlatList still estimates ListHeaderComponent height, and when `availableCuisines` chips render or the "Cooking tonight" banner shows, the header height changes post-mount. FlatList corrects item positions on first scroll → visible jump.
-- True fix (build #81): Replaced `FlatList` entirely with `ScrollView` + `.map()`. No estimated positions, no virtualisation step. 17 active recipes at ~340px each = ~5.8 KB; zero memory concern.
-
-**Watch/Plan button root cause (diagnosed 6 May 2026, fix attempt 2):**
-- Previous fix (build #80): changed button colours from gold to rust. Buttons still nearly invisible because `tokens.primaryLight = 'rgba(184,64,48,0.09)'` (9% opacity) is indistinguishable from the cream card background. `borderWidth: 2` with `borderColor: tokens.primaryInk` should have been visible but Android `Pressable` with function-style `style` prop (returning an object) does not reliably render `borderWidth` or `backgroundColor`.
-- True fix (build #81): Split Pressable+View. `Pressable` is a bare touch target with `android_ripple` only. All visual styling (`borderWidth`, `backgroundColor`, `borderRadius`) lives on an inner `View` with a static style object. This is the same pattern the "Start Cooking" pill already uses successfully.
+**REGN-001 root cause (diagnosed 6 May 2026):**
+- Previous fix addressed pantry carousel snap (REGN-001 original). The persistent card misalignment on the Kitchen screen is a separate but related issue.
+- Root cause: FlatList windowing. RecipeCard heights vary (1–2 line title/tagline = ~315–358px). On Android, items outside the render window unmount; re-entry uses estimated positions → visible shift on scroll back.
+- Fix: disabled windowing via `initialNumToRender={20}`, `maxToRenderPerBatch={20}`, `windowSize={99}`, `removeClippedSubviews={false}`. 17 active items (~340px each) = trivial memory cost.
 
 ---
 
@@ -34,18 +31,37 @@
 
 ---
 
-## Session log — 6 May 2026 (Report 4)
-
-### Commits pushed this session
-| Commit | Summary |
-|---|---|
-| `fcdcd10d` | Fix Watch/Plan buttons (Pressable+View split) + consolidate leftovers section |
-| `d01b6fbe` | Replace FlatList with ScrollView+map — eliminates first-scroll card misalignment (REGN-001) |
+## Session log — 6 May 2026 (Report 5)
 
 ### Build dispatched
-| Build | Commits | Summary |
+| Build | Commit | Summary |
 |---|---|---|
-| #81 | `fcdcd10d` + `d01b6fbe` | Watch/Plan button fix + FlatList→ScrollView alignment fix |
+| #84 | `a8da5341` | ChipAdd redesign: Pressable+View split, rust outline→fill pill states, drop hint text |
+
+### Changes this session
+- **pantry.tsx** — ChipAdd fully redesigned: Pressable+View split fixes Android layout drop bug; 2px rust outline for "need" state; rust fill + white text for "added" state; removed "Tap to add to shopping list" hint text
+- **RecipeMatchCard** — outer Pressable converted to static style + `android_ripple` (same Android layout bug fix)
+- Root cause documented: Android silently drops layout/visual properties (borderRadius, backgroundColor, borderColor) from function-style Pressable `style` props
+
+---
+
+## Session log — 6 May 2026 (Report 4)
+
+### Build dispatched
+| Build | Commit | Summary |
+|---|---|---|
+| #83 | `078e616e` (SHA at time) | MiseItem Pressable+View split: borderWidth 1.5→2, fix layout stacking on Android |
+
+### Changes this session
+- **recipe/[id].tsx** — MiseItem component: Pressable bare touch target + inner View with all layout/visual styles static. Non-integer `borderWidth: 1.5` → `borderWidth: 2` (Android non-integer border rendering fix)
+- **RecipeCard.tsx** — Difficulty pill text `color: tokens.ink` → `color: '#FFFFFF'` (dark text on dark scrim was unreadable)
+- **seed-recipes.ts** — Added `whole_food_verified: true` to SMASH_BURGER (Zod refine was blocking `refreshSeedRecipeFields` silently)
+- **types.ts** — Removed `whole_food_verified` `.refine()` enforcement per Patrick's explicit request; field data preserved, just not required
+
+### Root cause documented: Zod `.refine()` + `refreshSeedRecipeFields`
+- `refreshSeedRecipeFields` calls `RecipeSchema.safeParse(raw)` before updating DECISION-009 columns
+- SMASH_BURGER missing `whole_food_verified: true` → Zod refine returned `success: false` → recipe silently skipped → equipment/mise_en_place stayed NULL in SQLite
+- Fix: both adding the field to the seed data AND removing the hard enforcement
 
 ---
 
