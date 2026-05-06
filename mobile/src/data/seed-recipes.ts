@@ -79,6 +79,7 @@ const SMASH_BURGER: Recipe = {
   ],
   finishing_note: "There is no finishing. Stack it, eat it. The crust softens with every minute that passes and cannot be recovered. Cook them in sequence and eat as they come — don't hold them warm in an oven. The whole point of a smash burger is that 30-second window when the crust is still shatteringly crisp.",
   leftovers_note: "No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes and cannot be revived. Make only what you'll eat.",
+  whole_food_verified: true,
 
   ingredients: [
     {
