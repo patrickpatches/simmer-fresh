@@ -25,6 +25,70 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-06 · OPEN
+**From:** Culinary Verifier (Claude)
+**Subject:** Step-flow audit — 28 issues across 19 recipes in seed-recipes.ts
+**Why:** Full chef's audit of every cook step in all 39 recipes in `mobile/src/data/seed-recipes.ts`. Cross-referenced steps against ingredients and prep fields. 28 issues found across 19 recipes: missing steps, hidden advance prep time, unreferenced ingredient prep, and one Golden Rule 1 violation.
+**Full audit:** `docs/coo/culinary-research/step-flow-audit.md` — read before touching seed data.
+
+**HIGH priority — fix before ship (10 issues):**
+
+1. **sourdough-loaf** — Add s6 `{ id: 's6', title: 'Rest — do not cut yet', content: '...1 hour on wire rack...', timer_seconds: 3600 }`. The current why_note in s5 is the only place this appears. User who cuts early gets a gummy crumb.
+
+2. **ramen** — Chashu pork (i7) is a 2-hour preparation with no step. Options in priority order: (a) add a make-ahead s0 with the chashu method; (b) add a prep note in i7 linking to an external method; (c) replace with `'Roasted pork shoulder, sliced (or store-bought char siu)'`. Minimum: option (b).
+
+3. **chicken-adobo** — s4 says "Serve over steamed white rice" but rice is not an ingredient and no step cooks it. Add rice as an ingredient with a parallel cook note (start rice at s2 — the 35-min braise window is plenty of time).
+
+4. **beef-rendang** — Kerisik (i3) requires toasting desiccated coconut and pounding it in a mortar (~10–15 min active). This exists only as ingredient prep. Add a kerisik-making step between s4 and s5 with a note that it can be done during the 2-hour braise window.
+
+5. **curry-laksa** — Tofu (i2) is listed with prep "pan-fried until golden" but no step fries it. s5 just adds it to the broth. Add a tofu pan-frying step between s3 and s4.
+
+6. **barramundi** — `time_min: 20` hides a mandatory 30-min skin-drying step (s1 timer_seconds: 1800). Update time_min to 50. Also: asparagus (i9) has prep "Blanched 2 minutes" but no step blanches it — add a note in s3 (5–6 min window while fish sears skin-side).
+
+7. **pavlova** — `time_min: 150` understates actual time (minimum ~3h 10min). Update to 210. Also: add room-temp egg white instruction as the first line of s1.
+
+8. **saag-paneer** — `video_url: 'https://www.youtube.com/@JoshuaWeissman'` is the channel homepage — Golden Rule 1 violation. Find the specific Joshua Weissman saag paneer video URL, or change `source.chef` to `'Hone Kitchen'` and remove the video_url.
+
+9. **butter-chicken** — `time_min: 90` hides 4-hour minimum marinade. Update to 330. *(Already flagged Batch 2 — confirming still open.)*
+
+10. **roast-chicken** — `time_min: 90` hides overnight dry brine. *(Already flagged Batch 2 — confirming still open.)*
+
+**MEDIUM priority — fix before ship (9 issues):**
+
+11. **kafta** — s5 references "sumac onions" (thinly sliced onion tossed with sumac) but: (a) no sliced onion exists in the ingredients, (b) no step makes this. Add `{ id: 'i11', name: 'White onion, thinly sliced, for serving', ... }` and add a prep instruction to s5.
+
+12. **musakhan** — i9 `'Pine nuts, toasted'` — no step toasts them. Add to s4: "Toast pine nuts in a dry pan 2–3 min over medium heat, stirring constantly, until golden."
+
+13. **pad-thai** — s3 says "Add protein to the wok edge" without differentiating tofu-first timing. Tofu takes 2–3 min longer than prawns. Update s3: fry tofu first until lightly golden, push aside, then add prawns. (Linked to the substitution data fix already documented in `pad-thai.md`.)
+
+14. **nasi-lemak** — Dried chillies need a 20-min pre-soak before s1 can start; no step or timing note tells the user. Also: belacan is listed as "toasted" in ingredient prep but no step toasts it. Add both to an opening instruction or the start of s1.
+
+15. **beef-rendang** — Same dried chilli soak issue as nasi-lemak. Add opening instruction: soak chillies in boiling water 20 min before starting s1.
+
+16. **curry-laksa** — s4 says "Add chicken stock and prawn stock" but the volume of prawn stock to use is only in the s1 why_note. Move to s4 step content: "Add 400ml chicken stock and all the prawn stock."
+
+17. **saag-paneer** — s5 "Serve with basmati rice or naan" — neither in ingredients, no cook step. Add rice as a side ingredient with a concurrent cooking note (start rice at the beginning of s3's 15–18 min masala build).
+
+18. **chicken-katsu** — Rice (i19) has no cook step. Add a rice-cooking note within s1 (curry simmers 20 min — enough time to cook rice concurrently).
+
+19. **pavlova** — Add room-temp egg white instruction as first line of s1 (already listed under HIGH item 7 above — same fix).
+
+**LOW priority — improve before ship (9 issues):**
+
+20. **thai-green-curry** — s4 uses generic "vegetables". Name "Thai eggplant" specifically.
+21. **braised-short-ribs** — s2 (sear all sides, ~15–20 min) missing `timer_seconds`. Add `timer_seconds: 1200`.
+22. **nasi-lemak** — Belacan toasting instruction missing from steps (see item 14).
+23. **curry-laksa** — Rice vermicelli soak (i3) and bean sprout blanch (i19) are in ingredient prep only. Add timing to s6 or a mise en place note.
+24. **char-kway-teow** — Noodle room-temp requirement (i1 prep) not flagged in steps. Add to s1: "If noodles were refrigerated, take them out 30 min before starting — cold noodles kill wok hei." Also: pre-mix soy sauce, kecap manis, fish sauce, and white pepper in a small bowl before starting the 4-min cook.
+25. **chicken-katsu** — Cabbage dressing (i20 prep: "dressed with a little rice wine vinegar") not in any step. Add to s5.
+26. **flour-tortillas** — s7 (rolling) and s8 (heating pan) should be flagged as concurrent. Add note to s7: start the pan during rolling.
+
+**Files touched:** `mobile/src/data/seed-recipes.ts`  
+**Reference:** `docs/coo/culinary-research/step-flow-audit.md` (full per-recipe detail with exact wording for each fix)  
+**Blocks:** Launch quality — users will hit missing steps mid-cook.
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-05 · OPEN
 **From:** Product Designer
 **Subject:** Two design additions to `recipe/[id].tsx` — "A note" truncation + recipe card v2 redesign
@@ -738,4 +802,83 @@ Patrick found the original three levels (Refinement / Medium / Alternative) too 
 ### HANDOFF → Patrick · 2026-04-29 · DONE (✅ approved 29 Apr — DECISION-001)
 **From:** COO
 **Subject:** Confirm or amend launch date target
-**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for 
+**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for me unless we need more time." DECISION-001 logged. This handoff is closed — engineer reports referencing it as "still open" reflect stale awareness, not actual status.
+
+_(Substitution UI handoff superseded by the consolidated Senior Engineer multi-task handoff above.)_
+
+### HANDOFF → Product Designer · 2026-04-29 · DONE
+**From:** COO
+**Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
+**Why:** Engineer needs visual specs before building. Must respect terracotta/olive/gold tokens and Playfair/Source Sans 3 type scale. Per DECISION-003, the badge is needed for ~18 non-launch recipes.
+**What's done:** Both specs delivered 29 Apr 2026.
+- `docs/prototypes/substitution-sheet.html` — interactive bottom-sheet prototype. Full flow: ingredient tap → sheet open → substitution select → confirm. All quality pill states (perfect_swap / great_swap / good_swap / compromise), hard_to_find notice, all spacing/token annotations, engineering handoff block.
+- `docs/prototypes/recipe-card-states.html` — recipe card 3 states, recipe detail with/without stage photos, step placeholder, full spec tables. Badge is a dark-scrim pill ("Photos soon") bottom-right of card image — opposite corner from the existing difficulty badge. No collision.
+**Key design decisions:**
+- Badge text: "Photos soon" (not "Stage photos coming soon" — shorter, less internal-feeling)
+- Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no new schema field needed
+- Dark scrim on badge (not sky/blue) so it reads on any photo colour
+- Stage notice appears once in recipe detail (not repeated per step)
+**Files touched:** `docs/prototypes/substitution-sheet.html`, `docs/prototypes/recipe-card-states.html`
+
+---
+
+_(Designer-to-engineer handoff folded into the consolidated Senior Engineer multi-task handoff above. Specs remain at the prototype paths for engineer reference.)_
+
+### HANDOFF → Photography Director · 2026-04-29 · IN PROGRESS (all pre-shoot deliverables delivered 1 May)
+**From:** COO · **Direction update 30 Apr · Schedule update 1 May**
+**Subject:** Build shot lists for showcase 10 + hero-only for everything else
+
+⚠️ **SCHEDULE UPDATE (1 May 2026):** Photography weekend 1 (3–4 May) is **lost** — Patrick is away on personal commitments. Re-baselined: **weekend 2 (10–11 May) is now the de facto first shoot weekend.** Phase A buffer is consumed; no further weekends can slip without launch impact. Patrick is using this morning's window to push design and product work forward instead — see new Product Designer handoff for Pantry redesign.
+
+⚠️ **DIRECTION UPDATE (30 Apr 2026):** Patrick chose the **Dark Dramatic** visual direction. The app bg is now near-black `#111111`. This changes what good photography looks like in the UI — food shot against dark surfaces, dark boards, and dark plates will integrate far more powerfully than food on white or wood. Factor this into all surface and prop recommendations below.
+
+**Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
+**What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
+**What's needed:**
+1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
+2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
+3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable. **Include dark surface recommendations (dark slate, black board, charcoal linen) as preferred first-choice props for all dishes where they work aesthetically.**
+4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match). **For dark direction: slightly richer shadows, deeper blacks, food colours should feel saturated against the dark bg. Avoid over-brightening whites.**
+5. **Schedule recommendation** — propose which 2 showcase recipes to shoot each weekend, ordered by which are easiest to get right first (build Patrick's confidence) and which need most attention.
+**Coordination:** New showcase recipe (chicken schnitzel) needs to be in the seed library before its shoot weekend — coordinate with Senior Engineer on timing.
+**Dark surface prop notes:** The 2×2 browse grid in the approved prototype uses square crops. Props that disappear into the edges of the frame (dark plates, dark boards) look best — the food is the hero, not the surface. Avoid: white plates, bright-wood boards, busy printed linens. Prefer: matte black slate, charcoal/grey linen, raw dark timber, brushed steel.
+**Files touched:** `docs/coo/photography/shot-list-showcase.md`, `docs/coo/photography/shot-list-hero-only.md`, `docs/coo/photography/preflight-checklist.md`, `docs/coo/photography/post-processing-preset.md`
+**Blocks:** First photo weekend (3-4 May 2026)
+
+### HANDOFF → Culinary & Cultural Verifier · 2026-04-29 · OPEN (URGENT)
+**From:** COO
+**Subject:** Audit existing recipes + provide source recipes for 6 NEW additions
+**Why:** v1.0 launch library expanded per DECISION-004. Now ~34 recipes need audit, AND 6 new recipes need authoritative sources before Senior Engineer can populate them.
+**What's done:** Brief at `docs/coo/specialists/culinary-verifier.md`. Recipe library locked per DECISION-004.
+**What's needed:**
+
+1. **Provide source recipes for the 6 new dishes** that Senior Engineer needs to populate. For each, deliver: a chef-attributed source URL (or "traditional" framing if no chef is right), the ingredient list, the steps, plausible substitutions list, the cuisine and type categories, and Australian English check. Output to `docs/coo/culinary-research/<recipe-slug>.md`. The 6:
+   - Chicken schnitzel (consider Adam Liaw or another modern AU chef)
+   - Easy chicken & vegetable stir-fry (Bill Granger, RecipeTinEats Nagi, or "traditional Australian weeknight")
+   - Beef lasagne (consider Marcella Hazan classic or modern AU)
+   - Roast lamb with rosemary & garlic (consider Maggie Beer or "Sunday roast traditional")
+   - Fish & chips (likely "Australian Friday traditional")
+   - Falafel (Levantine — credit cuisine + region; specific chef optional)
+
+2. **Audit pass** on all priority 17 recipes per the format in your brief. Output to `docs/coo/culinary-audit.md`. Required before launch.
+
+3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everywhere.
+
+**Sequence:** Item 1 first (Senior Engineer is blocked on it). Items 2-3 can run in parallel after.
+**Files touched:** `docs/coo/culinary-research/`, `docs/coo/culinary-audit.md`, `mobile/src/data/seed-recipes.ts` (read-only), `docs/prototypes/hone.html` (read-only)
+**Blocks:** Senior Engineer's recipe-add task (#1 above), Photography Director's showcase shoot for chicken schnitzel
+
+### HANDOFF → QA Test Lead · 2026-04-29 · OPEN
+**From:** COO
+**Subject:** Stand up the smoke-test checklist v1
+**Why:** Currently `docs/SMOKE-TEST.md` exists but isn't owned. We need it to be the gate before every build.
+**What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
+**What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
+**Files touched:** `docs/SMOKE-TEST.md`
+**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
+
+---
+
+## Recently completed
+
+_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_
