@@ -22,7 +22,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   ScrollView,
   Text,
@@ -195,9 +194,7 @@ export default function KitchenHome() {
   }
 
   return (
-    <FlatList
-      data={results}
-      keyExtractor={(r) => r.id}
+    <ScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
         paddingTop: insets.top + 20,
@@ -207,128 +204,166 @@ export default function KitchenHome() {
       }}
       style={{ backgroundColor: tokens.bg }}
       showsVerticalScrollIndicator={false}
-      // Recipe library is capped at ~17 active items — windowing costs
-      // more than it saves and causes Android remeasure misalignment.
-      // Keep every card mounted; zero memory concern at this scale.
-      initialNumToRender={20}
-      maxToRenderPerBatch={20}
-      windowSize={99}
-      removeClippedSubviews={false}
-      ListHeaderComponent={
-        <View style={{ marginBottom: 20 }}>
-          {/* Kicker */}
+    >
+      {/* ── HEADER ── */}
+      <View style={{ marginBottom: 20 }}>
+        {/* Kicker */}
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 11,
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            color: tokens.primaryInk,
+            marginBottom: 4,
+          }}
+        >
+          A cooking companion
+        </Text>
+
+        {/* Hero headline */}
+        <Text
+          style={{
+            fontFamily: fonts.display,
+            fontSize: 36,
+            lineHeight: 40,
+            color: tokens.ink,
+          }}
+        >
+          What are you{'\n'}
           <Text
             style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 11,
-              letterSpacing: 2,
-              textTransform: 'uppercase',
-              color: tokens.primaryInk,
-              marginBottom: 4,
+              fontFamily: fonts.displayItalic,
+              fontStyle: 'italic',
+              color: tokens.primary,
             }}
           >
-            A cooking companion
-          </Text>
+            cooking
+          </Text>{' '}
+          tonight?
+        </Text>
 
-          {/* Hero headline */}
-          <Text
+        {/* Dynamic subtitle — responds to active filter */}
+        <Text
+          style={{
+            marginTop: 8,
+            fontFamily: fonts.sans,
+            fontSize: 12,
+            color: tokens.muted,
+          }}
+        >
+          {buildSubtitle(filter, results, recipes.length)}
+        </Text>
+
+        {/* Search bar — matches title, tagline, tags, chef, AND ingredients */}
+        <View
+          style={{
+            marginTop: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 13,
+            borderRadius: 16,
+            backgroundColor: tokens.cream,
+            borderWidth: 1,
+            borderColor: tokens.lineDark,
+            gap: 10,
+            ...shadows.card,
+          }}
+        >
+          <Icon name="search" size={16} color={tokens.muted} />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search recipes, chefs, ingredients…"
+            placeholderTextColor={tokens.muted}
             style={{
-              fontFamily: fonts.display,
-              fontSize: 36,
-              lineHeight: 40,
+              flex: 1,
               color: tokens.ink,
-            }}
-          >
-            What are you{'\n'}
-            <Text
-              style={{
-                fontFamily: fonts.displayItalic,
-                fontStyle: 'italic',
-                color: tokens.primary,
-              }}
-            >
-              cooking
-            </Text>{' '}
-            tonight?
-          </Text>
-
-          {/* Dynamic subtitle -- responds to active filter */}
-          <Text
-            style={{
-              marginTop: 8,
               fontFamily: fonts.sans,
-              fontSize: 12,
-              color: tokens.muted,
+              fontSize: 14,
+              padding: 0,
             }}
-          >
-            {buildSubtitle(filter, results, recipes.length)}
-          </Text>
+            returnKeyType="search"
+          />
+          {search ? (
+            <Pressable
+              onPress={() => setSearch('')}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+            >
+              <Icon name="x" size={14} color={tokens.muted} />
+            </Pressable>
+          ) : null}
+        </View>
 
-          {/* Search bar -- matches title, tagline, tags, chef, AND ingredients */}
-          <View
-            style={{
-              marginTop: 20,
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 13,
-              borderRadius: 16,
-              backgroundColor: tokens.cream,
-              borderWidth: 1,
-              borderColor: tokens.lineDark,
-              gap: 10,
-              ...shadows.card,
-            }}
-          >
-            <Icon name="search" size={16} color={tokens.muted} />
-            <TextInput
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search recipes, chefs, ingredients…"
-              placeholderTextColor={tokens.muted}
-              style={{
-                flex: 1,
-                color: tokens.ink,
-                fontFamily: fonts.sans,
-                fontSize: 14,
-                padding: 0,
-              }}
-              returnKeyType="search"
-            />
-            {search ? (
+        {/* Mode chips — All / Quick / Weekend / Favourites / Yours */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingTop: 14 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {MODE_FILTERS.map((chip) => {
+            const active = filter === chip;
+            return (
               <Pressable
-                onPress={() => setSearch('')}
-                hitSlop={10}
+                key={chip}
+                onPress={() => setFilter(chip)}
                 accessibilityRole="button"
-                accessibilityLabel="Clear search"
+                accessibilityState={{ selected: active }}
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 999,
+                  backgroundColor: active ? tokens.primary : tokens.cream,
+                  borderWidth: 1,
+                  borderColor: active ? tokens.primary : tokens.lineDark,
+                  ...(active ? shadows.card : null),
+                }}
               >
-                <Icon name="x" size={14} color={tokens.muted} />
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 12,
+                    color: active ? tokens.onPrimary : tokens.inkSoft,
+                  }}
+                >
+                  {chip}
+                </Text>
               </Pressable>
-            ) : null}
-          </View>
+            );
+          })}
+        </ScrollView>
 
-          {/* Mode chips -- All / Quick / Weekend / Favourites / Yours */}
+        {/* Cuisine chips — second row, only rendered when recipes exist.
+            Tap again to deselect (returns to All).
+            Uses sage-green accent to distinguish from mode chips (rust).
+            Why separate rows: mode chips are always relevant; cuisine chips
+            are a secondary browsing layer — two rows makes hierarchy clear. */}
+        {availableCuisines.length > 0 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingTop: 14 }}
+            contentContainerStyle={{ gap: 8, paddingTop: 8 }}
             keyboardShouldPersistTaps="handled"
           >
-            {MODE_FILTERS.map((chip) => {
-              const active = filter === chip;
+            {availableCuisines.map((cuisine) => {
+              const active = filter === cuisine;
               return (
                 <Pressable
-                  key={chip}
-                  onPress={() => setFilter(chip)}
+                  key={cuisine}
+                  onPress={() => setFilter(active ? 'All' : cuisine)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
                   style={{
                     paddingHorizontal: 14,
                     paddingVertical: 8,
                     borderRadius: 999,
-                    backgroundColor: active ? tokens.primary : tokens.cream,
+                    backgroundColor: active ? tokens.sage : tokens.cream,
                     borderWidth: 1,
-                    borderColor: active ? tokens.primary : tokens.lineDark,
+                    borderColor: active ? tokens.sage : tokens.lineDark,
                     ...(active ? shadows.card : null),
                   }}
                 >
@@ -336,132 +371,86 @@ export default function KitchenHome() {
                     style={{
                       fontFamily: fonts.sansBold,
                       fontSize: 12,
-                      // tokens.onPrimary (#FAFAF7) on rust pill -- cream on rust.
-                      // The previous tokens.ink (#111410) was correct in theory but
-                      // the active pill bg (tokens.primary = rust #B84030) is dark
-                      // enough that cream reads better than near-black.
                       color: active ? tokens.onPrimary : tokens.inkSoft,
                     }}
                   >
-                    {chip}
+                    {CUISINE_LABELS[cuisine]}
                   </Text>
                 </Pressable>
               );
             })}
           </ScrollView>
+        )}
 
-          {/* Cuisine chips -- second row, only rendered when recipes exist.
-              Tap again to deselect (returns to All).
-              Uses sage-green accent to distinguish from mode chips (rust).
-              Why separate rows not one long row: mode chips are always
-              relevant; cuisine chips are a secondary browsing layer. Two
-              rows makes the hierarchy clear without nesting or icons. */}
-          {availableCuisines.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8, paddingTop: 8 }}
-              keyboardShouldPersistTaps="handled"
-            >
-              {availableCuisines.map((cuisine) => {
-                const active = filter === cuisine;
-                return (
-                  <Pressable
-                    key={cuisine}
-                    onPress={() => setFilter(active ? 'All' : cuisine)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    style={{
-                      paddingHorizontal: 14,
-                      paddingVertical: 8,
-                      borderRadius: 999,
-                      backgroundColor: active ? tokens.sage : tokens.cream,
-                      borderWidth: 1,
-                      borderColor: active ? tokens.sage : tokens.lineDark,
-                      ...(active ? shadows.card : null),
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: fonts.sansBold,
-                        fontSize: 12,
-                        // sage (#2E5E3E) is dark enough that onPrimary (cream)
-                        // reads clearly -- same logic as the rust pill above
-                        color: active ? tokens.onPrimary : tokens.inkSoft,
-                      }}
-                    >
-                      {CUISINE_LABELS[cuisine]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          )}
+        {/* Cooking tonight banner — shown when any recipes are planned.
+            Uses amber surface to stand out without competing with the rust primary.
+            Tapping navigates to the Shop tab (shopping list). */}
+        {allPlannedRecipes.length > 0 && (
+          <Pressable
+            onPress={() => router.push('/shop' as never)}
+            accessibilityRole="button"
+            accessibilityLabel={`Cooking tonight: ${allPlannedRecipes.length} ${allPlannedRecipes.length === 1 ? 'recipe' : 'recipes'} planned`}
+            style={{
+              marginTop: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 14,
+              paddingVertical: 11,
+              borderRadius: 14,
+              backgroundColor: tokens.amber,
+              borderWidth: 1,
+              borderColor: tokens.amberLine,
+              gap: 10,
+              ...shadows.card,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>{'🍽️'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 11,
+                  color: tokens.ochre,
+                  letterSpacing: 1.5,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Cooking tonight
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: 12,
+                  color: tokens.warmBrown,
+                  marginTop: 2,
+                }}
+                numberOfLines={1}
+              >
+                {allPlannedRecipes.map((r) => r.title).join(' · ')}
+              </Text>
+            </View>
+            <Icon name="arrow-right" size={14} color={tokens.ochre} />
+          </Pressable>
+        )}
+      </View>
 
-          {/* Cooking tonight banner -- shown when any recipes are planned.
-              Uses amber surface to stand out without competing with the
-              rust primary. Tapping navigates to the Shop tab (shopping list). */}
-          {allPlannedRecipes.length > 0 && (
-            <Pressable
-              onPress={() => router.push('/shop' as never)}
-              accessibilityRole="button"
-              accessibilityLabel={`Cooking tonight: ${allPlannedRecipes.length} ${allPlannedRecipes.length === 1 ? 'recipe' : 'recipes'} planned`}
-              style={{
-                marginTop: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 14,
-                paddingVertical: 11,
-                borderRadius: 14,
-                backgroundColor: tokens.amber,
-                borderWidth: 1,
-                borderColor: tokens.amberLine,
-                gap: 10,
-                ...shadows.card,
-              }}
-            >
-              <Text style={{ fontSize: 16 }}>{'🍽️'}</Text>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 11,
-                    color: tokens.ochre,
-                    letterSpacing: 1.5,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Cooking tonight
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.sans,
-                    fontSize: 12,
-                    color: tokens.warmBrown,
-                    marginTop: 2,
-                  }}
-                  numberOfLines={1}
-                >
-                  {allPlannedRecipes.map((r) => r.title).join(' · ')}
-                </Text>
-              </View>
-              <Icon name="arrow-right" size={14} color={tokens.ochre} />
-            </Pressable>
-          )}
-        </View>
-      }
-      renderItem={({ item }) => (
-        <View style={{ marginBottom: 16 }}>
-          <RecipeCard
-            recipe={item}
-            onPress={(r) => router.push(`/recipe/${r.id}`)}
-            favorite={favoriteIds.has(item.id)}
-            onToggleFavorite={handleToggleFavorite}
-            isPlanned={plannedIds.has(item.id)}
-          />
-        </View>
-      )}
-      ListEmptyComponent={
+      {/* ── RECIPE CARDS ──
+          Plain .map() — no FlatList virtualisation. 17 active recipes at
+          ~340px each = ~5.8 KB of DOM; trivial memory cost. Without FlatList
+          there is no estimated-position step and no first-scroll jump. */}
+      {results.length > 0 ? (
+        results.map((item) => (
+          <View key={item.id} style={{ marginBottom: 16 }}>
+            <RecipeCard
+              recipe={item}
+              onPress={(r) => router.push(`/recipe/${r.id}`)}
+              favorite={favoriteIds.has(item.id)}
+              onToggleFavorite={handleToggleFavorite}
+              isPlanned={plannedIds.has(item.id)}
+            />
+          </View>
+        ))
+      ) : (
         <View
           style={{
             marginTop: 24,
@@ -511,7 +500,7 @@ export default function KitchenHome() {
             Try clearing the search or switching the filter to see more.
           </Text>
         </View>
-      }
-    />
+      )}
+    </ScrollView>
   );
 }
