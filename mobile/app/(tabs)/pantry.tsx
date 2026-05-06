@@ -1700,16 +1700,16 @@ function RecipeMatchCard({
       onPress={onOpenRecipe}
       accessibilityRole="button"
       accessibilityLabel={`${match.recipe.title} — ${match.haveCount} of ${match.totalCount} ingredients matched`}
-      style={({ pressed }) => ({
+      android_ripple={{ color: 'rgba(0,0,0,0.06)', borderless: false }}
+      style={{
         width: cardWidth,
         backgroundColor: tokens.cream,
         borderRadius: 18,
         borderWidth: 1,
         borderColor: tokens.line,
         overflow: 'hidden',
-        opacity: pressed ? 0.95 : 1,
         ...shadows.card,
-      })}
+      }}
     >
       {/* Hero image */}
       <View
@@ -1818,12 +1818,13 @@ function RecipeMatchCard({
             >
               Still need
             </Text>
+            {/* flex-wrap pill row — pills communicate tap action,
+                so no "tap to add" hint is needed */}
             <View
               style={{
                 flexDirection: 'row',
                 flexWrap: 'wrap',
                 gap: 6,
-                marginBottom: 4,
               }}
             >
               {match.missingIngredients.map((ing) => (
@@ -1835,16 +1836,6 @@ function RecipeMatchCard({
                 />
               ))}
             </View>
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 10,
-                color: tokens.muted,
-                marginTop: 2,
-              }}
-            >
-              Tap to add to shopping list
-            </Text>
           </View>
         )}
       </View>
@@ -1853,10 +1844,15 @@ function RecipeMatchCard({
 }
 
 /**
- * ChipAdd — Variant A missing-ingredient chip.
+ * ChipAdd — ingredient pill for the recipe match carousel.
  *
- * Gold-tinted → solid gold on "added" state.
- * Tapping calls onAdd and immediately flips to checkmark style.
+ * Two states:
+ *   Need (default): rust outline pill, rust text, "+" prefix → clearly tappable
+ *   Added:          rust fill, cream text, "✓" → clearly done
+ *
+ * Pressable is a bare touch target (android_ripple only). All visual styling
+ * lives on the inner View with a static style object — Pressable function-style
+ * style props silently drop layout/visual properties on Android.
  */
 function ChipAdd({
   ing,
@@ -1880,38 +1876,42 @@ function ChipAdd({
           ? `${ing.name} added to shopping list`
           : `Add ${label} to shopping list`
       }
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        backgroundColor: added ? tokens.primary : tokens.primaryLight,
-        borderWidth: 1,
-        borderColor: added ? tokens.primary : tokens.primaryLight,
-        borderRadius: 999,
-        opacity: pressed ? 0.75 : 1,
-      })}
+      android_ripple={{ color: 'rgba(184,64,48,0.18)', borderless: false }}
+      style={{ borderRadius: 999 }}
     >
-      <Text
+      <View
         style={{
-          fontFamily: fonts.sansBold,
-          fontSize: 12,
-          color: added ? tokens.onPrimary : tokens.primary,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 5,
+          paddingVertical: 6,
+          paddingHorizontal: 11,
+          borderRadius: 999,
+          backgroundColor: added ? tokens.primary : 'transparent',
+          borderWidth: 2,
+          borderColor: added ? tokens.primary : tokens.primaryInk,
         }}
       >
-        {added ? '✓' : '+'}
-      </Text>
-      <Text
-        style={{
-          fontFamily: fonts.sansBold,
-          fontSize: 11,
-          color: added ? tokens.onPrimary : tokens.primary,
-        }}
-        numberOfLines={1}
-      >
-        {ing.name}
-      </Text>
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 11,
+            color: added ? tokens.onPrimary : tokens.primaryInk,
+          }}
+        >
+          {added ? '✓' : '+'}
+        </Text>
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 11,
+            color: added ? tokens.onPrimary : tokens.primaryInk,
+          }}
+          numberOfLines={1}
+        >
+          {ing.name}
+        </Text>
+      </View>
     </Pressable>
   );
 }
