@@ -12,6 +12,7 @@
 | ID | Title | Status | Notes |
 |---|---|---|---|
 | REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commit `1fca0aaa3d3d` — awaiting Patrick on-device validation |
+| REGN-003 | seed-recipes.ts truncation — build #86 failure | FIX ATTEMPTED | Commit `e4a9d5d6462d` — restored from git history + 10 culinary fixes applied. Build #87 running. Awaiting Patrick on-device validation. |
 
 **REGN-001 root cause (diagnosed 6 May 2026):**
 - Previous fix addressed pantry carousel snap (REGN-001 original). The persistent card misalignment on the Kitchen screen is a separate but related issue.
@@ -28,6 +29,37 @@
 | REGN-001 (carousel) | Pantry recipe card carousel partial-snap | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
 | REGN-002 | OneDrive null-byte corruption | VALIDATED ✅ | 28 Apr 2026 — process fix; write via GitHub API only |
 | REGN-003 | pantry.tsx file-write truncation | VALIDATED ✅ | 3 May 2026 — full-file rebuild + Python assert validation before push |
+
+---
+
+## Session log — 7 May 2026
+
+### Commits pushed this session
+| Commit | Summary |
+|---|---|
+| `e4a9d5d6462d` | fix(seed-recipes): restore complete file from git history + apply 10 HIGH culinary fixes |
+| `f6c96cdad053` | docs: session report 07 May 2026 |
+
+### Root cause of build #86 failure
+Culinary verifier applied step-flow audit to an older base of `seed-recipes.ts`. Her commit truncated the file at FLOUR_TORTILLAS step s6 mid-sentence and wiped the Phase 2 batch (CHICKEN_SCHNITZEL, CHICKEN_VEG_STIR_FRY, BEEF_LASAGNE, ROAST_LAMB, FISH_AND_CHIPS, FALAFEL) plus the export array. Metro bundler failed during Gradle — APK never produced.
+
+### Fix
+- Pulled complete `seed-recipes.ts` from git commit `9f64870` (4,673 lines, balance=0)
+- Applied all 10 HIGH priority step-flow fixes from culinary verifier audit
+- Verified balance=0, 17 spot-checks passing
+- Pushed commit `e4a9d5d6462d`, triggered build #87
+
+### HIGH culinary fixes applied (build #87)
+1. sourdough-loaf: s6 "Rest — do not cut yet" added (1 hour timer)
+2. ramen: chashu pork i7 gets explicit prep note (make ahead / char siu sub)
+3. chicken-adobo: rice ingredient i8 added + concurrent cook notes in s2/s4
+4. beef-rendang: kerisik step s4b added (toast + pound during 2h braise)
+5. curry-laksa: tofu pan-fry step s3b added (before broth, not raw into broth)
+6. barramundi: time_min 20→50 + asparagus blanch note in s3
+7. pavlova: time_min 150→210 + room-temp egg white note in s1
+8. saag-paneer: bad video_url removed (channel homepage = Golden Rule 1 violation); chef → Hone Kitchen
+9. butter-chicken: time_min 90→330 (4h marinade now surfaced to user)
+10. roast-chicken: time_min 90→1530 (overnight dry brine now surfaced to user)
 
 ---
 
