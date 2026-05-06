@@ -644,7 +644,7 @@ export default function PantryTab() {
               gap: 10,
               backgroundColor: tokens.surface ?? tokens.cream,
               borderRadius: 14,
-              borderWidth: 1.5,
+              borderWidth: 2,
               paddingHorizontal: 14,
               paddingVertical: 12,
               ...(searchMode
@@ -757,29 +757,32 @@ export default function PantryTab() {
                       ? 'Show fewer ingredients'
                       : `Show ${havePills.length - PILLS_SHOWN} more ingredient${havePills.length - PILLS_SHOWN === 1 ? '' : 's'}`
                   }
-                  style={({ pressed }) => ({
+                  android_ripple={{ color: 'rgba(184,64,48,0.15)', borderless: false }}
+                  style={{ borderRadius: 999 }}
+                >
+                  <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 10,
                     paddingVertical: 5,
                     borderRadius: 999,
-                    backgroundColor: pressed ? 'rgba(184,64,48,0.15)' : 'rgba(184,64,48,0.08)',
+                    backgroundColor: 'rgba(184,64,48,0.08)',
                     borderWidth: 1,
                     borderColor: 'rgba(184,64,48,0.30)',
                     gap: 4,
-                  })}
-                >
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 11,
-                      color: tokens.primary,
-                    }}
-                  >
-                    {pillsExpanded
-                      ? 'Show less'
-                      : `+${havePills.length - PILLS_SHOWN} more`}
-                  </Text>
+                  }}>
+                    <Text
+                      style={{
+                        fontFamily: fonts.sansBold,
+                        fontSize: 11,
+                        color: tokens.primary,
+                      }}
+                    >
+                      {pillsExpanded
+                        ? 'Show less'
+                        : `+${havePills.length - PILLS_SHOWN} more`}
+                    </Text>
+                  </View>
                 </Pressable>
               ) : null}
             </Animated.View>
@@ -836,16 +839,19 @@ export default function PantryTab() {
               onPress={() => router.navigate('/')}
               accessibilityRole="button"
               accessibilityLabel="See all matching recipes in Kitchen tab"
-              style={({ pressed }) => ({
-                backgroundColor: pressed ? tokens.sage : tokens.sageLight,
+              android_ripple={{ color: tokens.sageLight, borderless: false }}
+              style={{ borderRadius: 999 }}
+            >
+              <View style={{
+                backgroundColor: tokens.sageLight,
                 borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4,
                 borderWidth: 1,
                 borderColor: 'rgba(46,94,62,0.22)',
-              })}
-            >
-              <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.sage }}>
-                See all
-              </Text>
+              }}>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.sage }}>
+                  See all
+                </Text>
+              </View>
             </Pressable>
           </View>
         ) : null}
@@ -922,7 +928,10 @@ export default function PantryTab() {
                       ? `${item.name} — already in pantry`
                       : `Add ${item.name} to pantry`
                   }
-                  style={({ pressed }) => ({
+                  android_ripple={{ color: tokens.primaryLight, borderless: false }}
+                  style={{ opacity: alreadyAdded ? 0.45 : 1 }}
+                >
+                  <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 16,
@@ -932,9 +941,7 @@ export default function PantryTab() {
                     borderBottomWidth: isLast ? 0 : 1,
                     borderBottomColor: tokens.line,
                     gap: 12,
-                    opacity: alreadyAdded ? 0.45 : pressed ? 0.8 : 1,
-                  })}
-                >
+                  }}>
 
                   <View style={{ flex: 1 }}>
                     <Text
@@ -988,6 +995,7 @@ export default function PantryTab() {
                       <Icon name="plus" size={14} color={tokens.muted} />
                     </View>
                   )}
+                  </View>
                 </Pressable>
               );
             }}
@@ -995,20 +1003,19 @@ export default function PantryTab() {
               addName.trim().length >= 1 ? (
                 <Pressable
                   onPress={handleAddCustom}
-                  style={({ pressed }) => ({
+                  android_ripple={{ color: 'rgba(184,64,48,0.15)', borderless: false }}
+                >
+                  <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     minHeight: 50,
-                    backgroundColor: pressed
-                      ? 'rgba(184,64,48,0.10)'
-                      : 'rgba(184,64,48,0.04)',
+                    backgroundColor: 'rgba(184,64,48,0.04)',
                     gap: 12,
                     borderTopWidth: 1,
                     borderTopColor: 'rgba(184,64,48,0.22)',
-                  })}
-                >
+                  }}>
                   <View
                     style={{
                       width: 30,
@@ -1045,6 +1052,7 @@ export default function PantryTab() {
                       Save as a custom ingredient
                     </Text>
                   </View>
+                  </View>
                 </Pressable>
               ) : null
             }
@@ -1065,15 +1073,15 @@ export default function PantryTab() {
         >
           <Pressable
             onPress={handleAddCustom}
-            style={({ pressed }) => ({
+            android_ripple={{ color: 'rgba(184,64,48,0.15)', borderless: false }}
+          >
+            <View style={{
               flexDirection: 'row',
               alignItems: 'center',
               paddingHorizontal: 16,
               paddingVertical: 14,
-              backgroundColor: pressed ? 'rgba(184,64,48,0.10)' : 'transparent',
               gap: 12,
-            })}
-          >
+            }}>
             <View
               style={{
                 width: 32,
@@ -1110,6 +1118,7 @@ export default function PantryTab() {
                 No catalog match — save as custom
               </Text>
             </View>
+            </View>
           </Pressable>
         </View>
       ) : null}
@@ -1130,20 +1139,20 @@ export default function PantryTab() {
           {unlock ? (
             <Pressable
               onPress={() => addByName(unlock.name)}
-              style={({ pressed }) => ({
-                marginHorizontal: 20,
-                marginBottom: 16,
+              android_ripple={{ color: tokens.primaryDeep, borderless: false }}
+              style={{ borderRadius: 18, marginHorizontal: 20, marginBottom: 16 }}
+            >
+              <View style={{
                 padding: 16,
                 borderRadius: 18,
-                backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+                backgroundColor: tokens.primary,
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 14,
                 ...shadows.card,
                 shadowColor: tokens.primaryDeep,
                 shadowOpacity: 0.18,
-              })}
-            >
+              }}>
               <View
                 style={{
                   width: 44,
@@ -1185,6 +1194,7 @@ export default function PantryTab() {
                 </Text>
               </View>
               <Text style={{ fontSize: 20, color: tokens.ink }}>＋</Text>
+              </View>
             </Pressable>
           ) : null}
 
@@ -1322,48 +1332,51 @@ export default function PantryTab() {
             {/* Destructive action */}
             <Pressable
               onPress={clearAll}
-              style={({ pressed }) => ({
-                backgroundColor: pressed ? '#C04040' : '#E05252',
+              android_ripple={{ color: '#C04040', borderless: false }}
+              style={{ borderRadius: 12, marginBottom: 10 }}
+            >
+              <View style={{
+                backgroundColor: '#E05252',
                 borderRadius: 12,
                 paddingVertical: 14,
                 alignItems: 'center',
-                marginBottom: 10,
-              })}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 15,
-                  color: '#FFF',
-                }}
-              >
-                Clear {haveCount} ingredient{haveCount === 1 ? '' : 's'}
-              </Text>
+              }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 15,
+                    color: '#FFF',
+                  }}
+                >
+                  Clear {haveCount} ingredient{haveCount === 1 ? '' : 's'}
+                </Text>
+              </View>
             </Pressable>
 
             {/* Safe default — phrased positively */}
             <Pressable
               onPress={() => setShowClearModal(false)}
-              style={({ pressed }) => ({
-                backgroundColor: pressed
-                  ? tokens.bgDeep
-                  : (tokens.surface2 ?? tokens.bgDeep),
+              android_ripple={{ color: tokens.primaryLight, borderless: false }}
+              style={{ borderRadius: 12 }}
+            >
+              <View style={{
+                backgroundColor: tokens.bgDeep,
                 borderRadius: 12,
                 paddingVertical: 14,
                 alignItems: 'center',
                 borderWidth: 1,
                 borderColor: tokens.line,
-              })}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 15,
-                  color: tokens.ink,
-                }}
-              >
-                Keep my pantry
-              </Text>
+              }}>
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 15,
+                    color: tokens.ink,
+                  }}
+                >
+                  Keep my pantry
+                </Text>
+              </View>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -1597,7 +1610,10 @@ function EmptyPantry({ onAddFirst }: { onAddFirst: () => void }) {
       </Text>
       <Pressable
         onPress={onAddFirst}
-        style={({ pressed }) => ({
+        android_ripple={{ color: tokens.primaryDeep, borderless: false }}
+        style={{ borderRadius: 12 }}
+      >
+        <View style={{
           backgroundColor: tokens.primary,
           borderRadius: 12,
           paddingVertical: 12,
@@ -1605,18 +1621,17 @@ function EmptyPantry({ onAddFirst }: { onAddFirst: () => void }) {
           flexDirection: 'row',
           alignItems: 'center',
           gap: 8,
-          opacity: pressed ? 0.85 : 1,
-        })}
-      >
-        <Text
-          style={{
-            fontFamily: fonts.sansBold,
-            fontSize: 14,
-            color: tokens.onPrimary,
-          }}
-        >
-          Add ingredients
-        </Text>
+        }}>
+          <Text
+            style={{
+              fontFamily: fonts.sansBold,
+              fontSize: 14,
+              color: tokens.onPrimary,
+            }}
+          >
+            Add ingredients
+          </Text>
+        </View>
       </Pressable>
     </View>
   );
