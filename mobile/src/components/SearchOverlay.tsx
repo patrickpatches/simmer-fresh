@@ -364,7 +364,7 @@ export function SearchOverlay({ visible, onClose, recipes, pantryItems }: Props)
               borderRadius: 14,
               paddingHorizontal: 14,
               paddingVertical: 12,
-              borderWidth: 1.5,
+              borderWidth: 2,
               borderColor: query ? tokens.primary : tokens.line,
             }}
           >
@@ -463,16 +463,19 @@ function EmptyState({
             <Pressable
               key={t.label}
               onPress={() => onChipPress(t.query)}
-              style={({ pressed }) => ({
+              android_ripple={{ color: tokens.primaryDeep, borderless: false }}
+              style={{ borderRadius: 999 }}
+            >
+              <View style={{
                 paddingHorizontal: 14,
                 paddingVertical: 9,
                 borderRadius: 999,
-                backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
-              })}
-            >
-              <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ink }}>
-                {t.label}
-              </Text>
+                backgroundColor: tokens.primary,
+              }}>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.onPrimary }}>
+                  {t.label}
+                </Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -487,19 +490,21 @@ function EmptyState({
               <Pressable
                 key={i}
                 onPress={() => onChipPress(r)}
-                style={({ pressed }) => ({
+                android_ripple={{ color: tokens.primaryLight, borderless: false }}
+                style={{ borderRadius: 8 }}
+              >
+                <View style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 12,
                   paddingHorizontal: 4,
                   paddingVertical: 10,
-                  backgroundColor: pressed ? tokens.bgDeep : 'transparent',
                   borderRadius: 8,
-                })}
-              >
-                <Icon name="clock" size={14} color={tokens.muted} />
-                <Text style={{ flex: 1, fontFamily: fonts.sans, fontSize: 14, color: tokens.ink }}>{r}</Text>
-                <Icon name="arrow-right" size={12} color={tokens.line} />
+                }}>
+                  <Icon name="clock" size={14} color={tokens.muted} />
+                  <Text style={{ flex: 1, fontFamily: fonts.sans, fontSize: 14, color: tokens.ink }}>{r}</Text>
+                  <Icon name="arrow-right" size={12} color={tokens.line} />
+                </View>
               </Pressable>
             ))}
           </View>
@@ -520,18 +525,21 @@ function EmptyState({
             <Pressable
               key={f.query}
               onPress={() => onChipPress(f.query)}
-              style={({ pressed }) => ({
+              android_ripple={{ color: tokens.primaryLight, borderless: false }}
+              style={{ borderRadius: 999 }}
+            >
+              <View style={{
                 paddingHorizontal: 12,
                 paddingVertical: 9,
                 borderRadius: 999,
-                backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+                backgroundColor: tokens.cream,
                 borderWidth: 1,
                 borderColor: tokens.line,
-              })}
-            >
-              <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ink }}>
-                {f.label}
-              </Text>
+              }}>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ink }}>
+                  {f.label}
+                </Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -661,17 +669,19 @@ function RecipeRow({ r, query, onPress }: { r: RecipeResult; query: string; onPr
     <Pressable
       onPress={onPress}
       accessibilityLabel={`${r.recipe.title} recipe`}
-      style={({ pressed }) => ({
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+      style={{ borderRadius: 16 }}
+    >
+      <View style={{
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
-        backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+        backgroundColor: tokens.cream,
         borderRadius: 16,
         borderWidth: 1,
         borderColor: tokens.line,
         padding: 12,
-      })}
-    >
+      }}>
       <View
         style={{
           width: 52, height: 52, borderRadius: 12,
@@ -712,6 +722,7 @@ function RecipeRow({ r, query, onPress }: { r: RecipeResult; query: string; onPr
           </Text>
         </View>
       )}
+      </View>
     </Pressable>
   );
 }
@@ -720,31 +731,33 @@ function IngredientRow({ r, query, onPress }: { r: IngredientResult; query: stri
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({
-        flexDirection: 'row', alignItems: 'center', gap: 12,
-        paddingHorizontal: 12, paddingVertical: 11,
-        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-        borderRadius: 12,
-      })}
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+      style={{ borderRadius: 12 }}
     >
       <View style={{
-        width: 32, height: 32, borderRadius: 999,
-        backgroundColor: tokens.sageLight,
-        alignItems: 'center', justifyContent: 'center',
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingHorizontal: 12, paddingVertical: 11,
+        borderRadius: 12,
       }}>
-        <Text style={{ fontSize: 14 }}>🥬</Text>
+        <View style={{
+          width: 32, height: 32, borderRadius: 999,
+          backgroundColor: tokens.sageLight,
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Text style={{ fontSize: 14 }}>🥬</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Highlight
+            text={r.name}
+            query={query}
+            baseStyle={{ fontFamily: fonts.sans, fontSize: 14, color: tokens.ink }}
+          />
+          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 2 }}>
+            in {r.recipeCount} recipe{r.recipeCount === 1 ? '' : 's'}
+          </Text>
+        </View>
+        <Icon name="arrow-right" size={12} color={tokens.line} />
       </View>
-      <View style={{ flex: 1 }}>
-        <Highlight
-          text={r.name}
-          query={query}
-          baseStyle={{ fontFamily: fonts.sans, fontSize: 14, color: tokens.ink }}
-        />
-        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 2 }}>
-          in {r.recipeCount} recipe{r.recipeCount === 1 ? '' : 's'}
-        </Text>
-      </View>
-      <Icon name="arrow-right" size={12} color={tokens.line} />
     </Pressable>
   );
 }
@@ -753,31 +766,33 @@ function ChefRow({ r, query, onPress }: { r: ChefResult; query: string; onPress:
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({
-        flexDirection: 'row', alignItems: 'center', gap: 12,
-        paddingHorizontal: 12, paddingVertical: 11,
-        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-        borderRadius: 12,
-      })}
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+      style={{ borderRadius: 12 }}
     >
       <View style={{
-        width: 32, height: 32, borderRadius: 999,
-        backgroundColor: tokens.primaryLight,
-        alignItems: 'center', justifyContent: 'center',
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingHorizontal: 12, paddingVertical: 11,
+        borderRadius: 12,
       }}>
-        <Text style={{ fontSize: 14 }}>👨‍🍳</Text>
+        <View style={{
+          width: 32, height: 32, borderRadius: 999,
+          backgroundColor: tokens.primaryLight,
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Text style={{ fontSize: 14 }}>👨‍🍳</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Highlight
+            text={r.name}
+            query={query}
+            baseStyle={{ fontFamily: fonts.sansBold, fontSize: 14, color: tokens.ink }}
+          />
+          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 2 }}>
+            {r.recipeCount} recipe{r.recipeCount === 1 ? '' : 's'}
+          </Text>
+        </View>
+        <Icon name="arrow-right" size={12} color={tokens.line} />
       </View>
-      <View style={{ flex: 1 }}>
-        <Highlight
-          text={r.name}
-          query={query}
-          baseStyle={{ fontFamily: fonts.sansBold, fontSize: 14, color: tokens.ink }}
-        />
-        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted, marginTop: 2 }}>
-          {r.recipeCount} recipe{r.recipeCount === 1 ? '' : 's'}
-        </Text>
-      </View>
-      <Icon name="arrow-right" size={12} color={tokens.line} />
     </Pressable>
   );
 }
@@ -786,13 +801,14 @@ function TagRow({ r, query, onPress }: { r: TagResult; query: string; onPress: (
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+      style={{ borderRadius: 12 }}
+    >
+      <View style={{
         flexDirection: 'row', alignItems: 'center', gap: 12,
         paddingHorizontal: 12, paddingVertical: 11,
-        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
         borderRadius: 12,
-      })}
-    >
+      }}>
       <View style={{
         width: 32, height: 32, borderRadius: 999,
         backgroundColor: 'rgba(212,169,106,0.18)',
@@ -810,7 +826,8 @@ function TagRow({ r, query, onPress }: { r: TagResult; query: string; onPress: (
           {r.kind === 'cuisine' ? 'Cuisine' : 'Type'} · {r.recipeCount} recipe{r.recipeCount === 1 ? '' : 's'}
         </Text>
       </View>
-      <Icon name="arrow-right" size={12} color={tokens.line} />
+        <Icon name="arrow-right" size={12} color={tokens.line} />
+      </View>
     </Pressable>
   );
 }
