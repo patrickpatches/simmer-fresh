@@ -52,17 +52,16 @@ export function RecipeCard({
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={`${recipe.title}. ${recipe.tagline}. ${recipe.time_min} minutes. ${recipe.difficulty}.`}
-      style={({ pressed }) => ({
+      android_ripple={{ color: 'rgba(255,255,255,0.06)', borderless: false }}
+      style={{ borderRadius: 20, ...shadows.card }}
+    >
+      <View style={{
         backgroundColor: tokens.cream,
         borderRadius: 20,
         borderWidth: 1,
         borderColor: tokens.lineDark,
         overflow: 'hidden',
-        opacity: pressed ? 0.93 : 1,
-        transform: [{ scale: pressed ? 0.985 : 1 }],
-        ...shadows.card,
-      })}
-    >
+      }}>
       {/* Hero image / gradient fallback */}
       <View style={{ height: 190, overflow: 'hidden' }}>
         {recipe.hero_url ? (
@@ -265,6 +264,7 @@ export function RecipeCard({
             </View>
           ) : null}
         </View>
+      </View>
       </View>
     </Pressable>
   );
