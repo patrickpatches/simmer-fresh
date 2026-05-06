@@ -308,23 +308,26 @@ export function SubstitutionSheet({
             onPress={handleConfirm}
             accessibilityRole="button"
             accessibilityLabel={confirmLabel}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
+            android_ripple={{ color: tokens.primaryDeep, borderless: false }}
+            style={{ borderRadius: 14 }}
+          >
+            <View style={{
+              backgroundColor: tokens.primary,
               borderRadius: 14,
               paddingVertical: 16,
               alignItems: 'center',
-            })}
-          >
-            <Text
-              style={{
-                fontFamily: fonts.sansBold,
-                fontSize: 15,
-                color: tokens.bgDeep,
-                letterSpacing: 0.2,
-              }}
-            >
-              {confirmLabel}
-            </Text>
+            }}>
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 15,
+                  color: tokens.onPrimary,
+                  letterSpacing: 0.2,
+                }}
+              >
+                {confirmLabel}
+              </Text>
+            </View>
           </Pressable>
         </View>
       )}
@@ -356,22 +359,19 @@ function SubRow({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Select ${name}`}
-      style={({ pressed }) => ({
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+    >
+      <View style={{
         flexDirection: 'row',
         alignItems: 'flex-start',
         paddingHorizontal: 20,
         paddingVertical: 14,
         // Selected state: primaryLight bg + 3dp left border in primaryDeep
-        backgroundColor: isStaged
-          ? tokens.primaryLight
-          : pressed
-            ? tokens.bgDeep
-            : 'transparent',
+        backgroundColor: isStaged ? tokens.primaryLight : 'transparent',
         borderLeftWidth: isStaged ? 3 : 0,
         borderLeftColor: tokens.primaryDeep,
         gap: 14,
-      })}
-    >
+      }}>
       {/* Radio dot */}
       <View
         style={{
@@ -495,6 +495,7 @@ function SubRow({
             </Text>
           </View>
         )}
+      </View>
       </View>
     </Pressable>
   );
