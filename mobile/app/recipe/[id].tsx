@@ -9,9 +9,8 @@
  * Studio Kitchen palette throughout. Plan toggle is a simple
  * bookmark-style button — no calendar, no date picker.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Animated,
   ActivityIndicator,
   Alert,
   Linking,
@@ -82,13 +81,6 @@ export default function RecipeDetailScreen() {
     if (recipe) setPeople(recipe.base_servings);
   }, [recipe]);
 
-  // Reset mise en place when navigating to a different recipe
-  useEffect(() => {
-    setMiseChecked(new Set());
-    setMiseExpanded(false);
-    miseExpandOpacity.setValue(0);
-  }, [recipe?.id]);
-
   // Cook mode
   const [cooking, setCooking]       = useState(false);
   const [stepsDone, setStepsDone]   = useState<Record<string, boolean>>({});
@@ -98,14 +90,6 @@ export default function RecipeDetailScreen() {
   // activeSwaps maps ingredient.id → chosen Substitution (null = restored original).
   const [sheetIngredient, setSheetIngredient] = useState<Ingredient | null>(null);
   const [sheetVisible, setSheetVisible]       = useState(false);
-
-  // Mise en place state — session-only, no persistence (DECISION-008)
-  const [miseChecked, setMiseChecked] = useState<Set<number>>(new Set());
-  const [miseExpanded, setMiseExpanded] = useState(false);
-  const [descExpanded, setDescExpanded] = useState(false);
-  const [equipCollapsed, setEquipCollapsed] = useState(false);
-  const [knowCollapsed, setKnowCollapsed] = useState(false);
-  const miseExpandOpacity = useRef(new Animated.Value(0)).current;
   const [activeSwaps, setActiveSwaps]         = useState<Record<string, Substitution | null>>({});
 
   // Wake lock while cooking
@@ -131,6 +115,7 @@ export default function RecipeDetailScreen() {
   if (!recipe) {
     return (
       <View style={{ flex: 1, backgroundColor: tokens.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+        <Text style={{ fontSize: 40, marginBottom: 8 }}>🤔</Text>
         <Text style={{ fontFamily: fonts.display, fontSize: 22, color: tokens.ink, marginBottom: 8 }}>
           Recipe not found
         </Text>
@@ -139,16 +124,19 @@ export default function RecipeDetailScreen() {
         </Text>
         <Pressable
           onPress={() => router.back()}
-          style={({ pressed }) => ({
+          android_ripple={{ color: tokens.primaryDeep, borderless: false }}
+          style={{ borderRadius: 999 }}
+        >
+          <View style={{
             paddingHorizontal: 20,
             paddingVertical: 12,
             borderRadius: 999,
-            backgroundColor: pressed ? tokens.primaryDeep : tokens.primary,
-          })}
-        >
-          <Text style={{ fontFamily: fonts.sansBold, color: tokens.ink, fontSize: 14 }}>
-            Back to Kitchen
-          </Text>
+            backgroundColor: tokens.primary,
+          }}>
+            <Text style={{ fontFamily: fonts.sansBold, color: tokens.onPrimary, fontSize: 14 }}>
+              Back to Kitchen
+            </Text>
+          </View>
         </Pressable>
       </View>
     );
@@ -164,16 +152,6 @@ export default function RecipeDetailScreen() {
   const stepsDoneCount = Object.values(stepsDone).filter(Boolean).length;
   const progress     = cooking ? stepsDoneCount / recipe.steps.length : 0;
   const gradient     = recipe.hero_fallback ?? [tokens.ink, tokens.warmBrown, tokens.bgDeep];
-
-  // DECISION-008 derived display values
-  const difficultyLabel = recipe.difficulty
-    ? recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)
-    : null;
-  const cuisineLabel = recipe.categories?.cuisines?.[0]
-    ? recipe.categories.cuisines[0].charAt(0).toUpperCase() + recipe.categories.cuisines[0].slice(1)
-    : null;
-  // Glance row only renders if at least one timing/difficulty field is populated
-  const hasGlanceData = !!(recipe.total_time_minutes || recipe.active_time_minutes || difficultyLabel);
 
   // Cook-mode surface palette. CLAUDE.md: dark, OLED-friendly true blacks.
   // The same surface names are used in both modes so JSX can read `c.X`
@@ -260,24 +238,6 @@ export default function RecipeDetailScreen() {
     // still renders its content during the exit animation.
   };
 
-  const toggleMise = (idx: number) => {
-    Haptics.selectionAsync().catch(() => {});
-    setMiseChecked(prev => {
-      const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx); else next.add(idx);
-      return next;
-    });
-  };
-
-  const expandMise = () => {
-    setMiseExpanded(true);
-    Animated.timing(miseExpandOpacity, {
-      toValue: 1,
-      duration: 150,
-      useNativeDriver: true,
-    }).start();
-  };
-
   const handleTogglePlan = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     const nowPlanned = await togglePlannedRecipe(db, recipe.id, recipe.base_servings);
@@ -335,16 +295,19 @@ export default function RecipeDetailScreen() {
               hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel="Back"
-              style={({ pressed }) => ({
+              android_ripple={{ color: tokens.primaryLight, borderless: true }}
+              style={{ borderRadius: 19 }}
+            >
+              <View style={{
                 width: 38,
                 height: 38,
                 borderRadius: 19,
-                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                backgroundColor: 'transparent',
                 alignItems: 'center',
                 justifyContent: 'center',
-              })}
-            >
-              <Icon name="arrow-left" size={20} color={tokens.ink} />
+              }}>
+                <Icon name="arrow-left" size={20} color={tokens.ink} />
+              </View>
             </Pressable>
             <Text
               style={{
@@ -363,16 +326,19 @@ export default function RecipeDetailScreen() {
               hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel={isPlanned ? 'Remove from plan' : 'Add to plan'}
-              style={({ pressed }) => ({
+              android_ripple={{ color: tokens.sageLight, borderless: true }}
+              style={{ borderRadius: 19 }}
+            >
+              <View style={{
                 width: 38,
                 height: 38,
                 borderRadius: 19,
-                backgroundColor: isPlanned ? tokens.primaryLight : (pressed ? tokens.bgDeep : 'transparent'),
+                backgroundColor: isPlanned ? tokens.sageLight : 'transparent',
                 alignItems: 'center',
                 justifyContent: 'center',
-              })}
-            >
-              <Icon name={isPlanned ? 'check' : 'plus'} size={20} color={isPlanned ? tokens.primaryInk : tokens.ink} />
+              }}>
+                <Icon name={isPlanned ? 'check' : 'plus'} size={20} color={isPlanned ? tokens.sage : tokens.ink} />
+              </View>
             </Pressable>
             {/* Favourite */}
             <Pressable
@@ -384,16 +350,19 @@ export default function RecipeDetailScreen() {
               hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel={favorite ? 'Unfavourite' : 'Favourite'}
-              style={({ pressed }) => ({
+              android_ripple={{ color: tokens.primaryLight, borderless: true }}
+              style={{ borderRadius: 19 }}
+            >
+              <View style={{
                 width: 38,
                 height: 38,
                 borderRadius: 19,
-                backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                backgroundColor: 'transparent',
                 alignItems: 'center',
                 justifyContent: 'center',
-              })}
-            >
-              <Icon name="heart" size={20} color={favorite ? tokens.primary : tokens.ink} fill={favorite ? tokens.primary : 'none'} />
+              }}>
+                <Icon name="heart" size={20} color={favorite ? tokens.primary : tokens.ink} fill={favorite ? tokens.primary : 'none'} />
+              </View>
             </Pressable>
           </View>
         )}
@@ -483,9 +452,7 @@ export default function RecipeDetailScreen() {
               <MetaPill icon="flame" label={recipe.difficulty} color={c.inkSoft} />
             </View>
 
-            {/* Description — 3-line clamp with expand/collapse.
-                Long recipe histories (Carbonara, Pavlova) are rich but not scan-level.
-                User taps to read more; can collapse again. */}
+            {/* Description */}
             {recipe.description ? (
               <View
                 style={{
@@ -495,79 +462,42 @@ export default function RecipeDetailScreen() {
                   marginTop: 14,
                 }}
               >
-                <Text
-                  numberOfLines={descExpanded ? undefined : 3}
-                  style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}
-                >
+                <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}>
                   <Text style={{ fontFamily: fonts.sansBold, color: c.ink }}>A note: </Text>
                   {recipe.description}
                 </Text>
-                <Pressable
-                  onPress={() => setDescExpanded(!descExpanded)}
-                  accessibilityRole="button"
-                  accessibilityLabel={descExpanded ? 'Show less' : 'Read more'}
-                  style={{ marginTop: 6 }}
-                >
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primaryInk }}>
-                    {descExpanded ? 'Read less ↑' : 'Read more ↓'}
-                  </Text>
-                </Pressable>
               </View>
             ) : null}
 
-            {/* Watch link — Pressable is bare touch target only; inner View
-                carries all visual style. Pressable function-style style props
-                (borderWidth, backgroundColor) do not reliably render on Android. */}
+            {/* Watch link */}
             {recipe.source?.video_url ? (
               <Pressable
                 onPress={openSource}
-                accessibilityRole="link"
-                accessibilityLabel="Watch the original video"
-                android_ripple={{ color: 'rgba(184,64,48,0.18)', borderless: false }}
-                style={{ alignSelf: 'flex-start', marginTop: 14, borderRadius: 999 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14 }}
               >
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 7,
-                  paddingHorizontal: 12,
-                  paddingVertical: 7,
-                  borderRadius: 999,
-                  backgroundColor: 'transparent',
-                  borderWidth: 2,
-                  borderColor: tokens.primaryInk,
-                }}>
-                  <Icon name="play" size={10} color={c.primaryInk} fill={c.primaryInk} />
-                  <Text style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 12,
-                    color: c.primaryInk,
-                    letterSpacing: 0.2,
-                  }}>
-                    Watch the original
-                  </Text>
-                </View>
+                <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primaryInk }}>
+                  Watch the original
+                </Text>
+                <Icon name="external" size={12} color={c.primaryInk} />
               </Pressable>
             ) : null}
 
             {/* Plan toggle — full width, inside card. Hidden in cook mode
-                because you don't plan a meal you're already cooking.
-                Pressable is bare touch target; inner View holds all visual style.
-                Pressable function-style style props don't reliably render on Android. */}
+                because you don't plan a meal you're already cooking. */}
             {!cooking && (
               <Pressable
                 onPress={handleTogglePlan}
                 accessibilityRole="button"
                 accessibilityLabel={isPlanned ? 'Remove from plan' : 'Add to plan'}
-                android_ripple={{ color: isPlanned ? 'rgba(255,255,255,0.22)' : 'rgba(184,64,48,0.18)', borderless: false }}
-                style={{ marginTop: 16, borderRadius: 14 }}
+                android_ripple={{ color: isPlanned ? tokens.sageDeep : tokens.primaryLight, borderless: false }}
+                style={{ borderRadius: 14, marginTop: 16 }}
               >
                 <View style={{
-                  paddingVertical: 13,
+                  paddingVertical: 12,
                   borderRadius: 14,
-                  backgroundColor: isPlanned ? tokens.primary : 'transparent',
+                  backgroundColor: isPlanned ? tokens.sage : 'transparent',
                   borderWidth: 2,
-                  borderColor: isPlanned ? tokens.primary : tokens.primaryInk,
+                  borderColor: isPlanned ? tokens.sage : tokens.primaryInk,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -575,83 +505,23 @@ export default function RecipeDetailScreen() {
                 }}>
                   <Icon
                     name={isPlanned ? 'check' : 'plus'}
-                    size={15}
-                    color={isPlanned ? tokens.ink : tokens.primaryInk}
+                    size={16}
+                    color={isPlanned ? tokens.onPrimary : tokens.primaryInk}
                   />
                   <Text
                     style={{
                       fontFamily: fonts.sansBold,
                       fontSize: 13,
-                      letterSpacing: 0.2,
-                      color: isPlanned ? tokens.ink : tokens.primaryInk,
+                      color: isPlanned ? tokens.onPrimary : tokens.primaryInk,
                     }}
                   >
-                    {isPlanned ? 'In your plan' : 'Plan this recipe'}
+                    {isPlanned ? 'In your plan ✓' : '+ Plan this recipe'}
                   </Text>
                 </View>
               </Pressable>
             )}
           </View>
         </View>
-
-
-        {/* ── AT A GLANCE (DECISION-008) ──
-            Renders only when the cook has populated timing/difficulty fields.
-            Backwards-compatible: old recipes without these fields render nothing. */}
-        {!cooking && hasGlanceData && (
-          <View style={{ paddingHorizontal: 20, marginTop: 12 }}>
-            <View
-              style={{
-                backgroundColor: c.cardBg,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: c.lineDark,
-                flexDirection: 'row',
-                paddingVertical: 14,
-              }}
-            >
-              {([
-                recipe.total_time_minutes
-                  ? { icon: 'clock' as const, value: String(recipe.total_time_minutes), sub: 'total min' }
-                  : null,
-                recipe.active_time_minutes
-                  ? { icon: 'flame' as const, value: String(recipe.active_time_minutes), sub: 'active min' }
-                  : null,
-                difficultyLabel
-                  ? { icon: 'flame' as const, value: difficultyLabel, sub: 'difficulty' }
-                  : null,
-                cuisineLabel
-                  ? { icon: 'chef' as const, value: cuisineLabel, sub: 'cuisine' }
-                  : null,
-                { icon: 'check' as const, value: recipe.leftover_mode ? 'yes' : 'no', sub: 'leftovers' },
-              ] as const).filter(Boolean).map((item, idx, arr) => (
-                <View
-                  key={idx}
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    borderRightWidth: idx < arr.length - 1 ? 1 : 0,
-                    borderRightColor: c.line,
-                    paddingHorizontal: 4,
-                    gap: 3,
-                  }}
-                >
-                  <Icon name={item!.icon} size={14} color={c.muted} />
-                  <Text
-                    style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.ink, textAlign: 'center' }}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                  >
-                    {item!.value}
-                  </Text>
-                  <Text style={{ fontFamily: fonts.sans, fontSize: 10, color: c.muted, textAlign: 'center' }}>
-                    {item!.sub}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
 
         {/* Stage photos notice — shown once when recipe has no stage photos.
             Hidden in cook mode (no point showing it while actively cooking). */}
@@ -680,81 +550,8 @@ export default function RecipeDetailScreen() {
                   flex: 1,
                 }}
               >
-                Stage-by-stage photos are on the way — we'll photograph this recipe soon.
+                Stage photos for this recipe are coming soon — we're shooting them shortly.
               </Text>
-            </View>
-          </View>
-        )}
-
-        {/* ── WHAT TO KNOW (DECISION-008) ──
-            Accordion: tap header to collapse/expand the notes.
-            Blue left-border: caution/information, not action.
-            Default expanded — these are critical gotchas. User collapses
-            after reading on subsequent visits. */}
-        {!cooking && (recipe.before_you_start?.length ?? 0) > 0 && (
-          <View style={{ paddingHorizontal: 20, marginTop: 12 }}>
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: 'rgba(91,143,212,0.25)',
-                borderLeftWidth: 3,
-                borderLeftColor: '#5B8FD4',
-                backgroundColor: 'rgba(91,143,212,0.06)',
-                paddingTop: 12,
-                paddingBottom: knowCollapsed ? 12 : 4,
-                paddingRight: 14,
-                paddingLeft: 14,
-              }}
-            >
-              <Pressable
-                onPress={() => setKnowCollapsed(!knowCollapsed)}
-                accessibilityRole="button"
-                accessibilityLabel={knowCollapsed ? 'Expand what to know' : 'Collapse what to know'}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: knowCollapsed ? 0 : 8,
-                }}
-              >
-                <Text
-                  style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 9,
-                    letterSpacing: 1.5,
-                    textTransform: 'uppercase',
-                    color: '#5B8FD4',
-                  }}
-                >
-                  What to know before you start
-                </Text>
-                <Icon
-                  name={knowCollapsed ? 'chevron-down' : 'chevron-up'}
-                  size={14}
-                  color='#5B8FD4'
-                />
-              </Pressable>
-              {!knowCollapsed && recipe.before_you_start!.map((note, idx) => (
-                <View
-                  key={idx}
-                  style={{ flexDirection: 'row', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}
-                >
-                  <View
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: 3,
-                      backgroundColor: '#5B8FD4',
-                      marginTop: 6,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: c.inkSoft, flex: 1 }}>
-                    {note}
-                  </Text>
-                </View>
-              ))}
             </View>
           </View>
         )}
@@ -826,7 +623,7 @@ export default function RecipeDetailScreen() {
                         width: 24,
                         height: 24,
                         borderRadius: 7,
-                        borderWidth: 1.5,
+                        borderWidth: 2,
                         borderColor: checked ? c.sage : c.muted,
                         backgroundColor: checked ? c.sage : 'transparent',
                         alignItems: 'center',
@@ -896,178 +693,6 @@ export default function RecipeDetailScreen() {
             })}
           </View>
         </View>
-
-        {/* ── EQUIPMENT (DECISION-008) ──
-            Accordion: header tap collapses/expands the pill row.
-            Why collapsible: equipment is check-before-you-shop info.
-            Once you've confirmed your kit, collapse to reduce scroll. */}
-        {!cooking && (recipe.equipment?.length ?? 0) > 0 && (
-          <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-            <Pressable
-              onPress={() => setEquipCollapsed(!equipCollapsed)}
-              accessibilityRole="button"
-              accessibilityLabel={equipCollapsed ? 'Expand equipment list' : 'Collapse equipment list'}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: equipCollapsed ? 0 : 10,
-              }}
-            >
-              <Text style={{ fontFamily: fonts.display, fontSize: 20, color: c.ink }}>
-                Equipment
-              </Text>
-              <Icon
-                name={equipCollapsed ? 'chevron-down' : 'chevron-up'}
-                size={16}
-                color={c.muted}
-              />
-            </Pressable>
-            {!equipCollapsed && (
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                {recipe.equipment!.map((item, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      paddingHorizontal: 13,
-                      paddingVertical: 8,
-                      borderRadius: 20,
-                      marginRight: 8,
-                      marginBottom: 8,
-                      backgroundColor: tokens.amber,
-                      borderWidth: 1,
-                      borderColor: tokens.amberLine,
-                    }}
-                  >
-                    <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: c.inkSoft }}>
-                      {item}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* ── MISE EN PLACE (DECISION-008) ──
-            Tappable checklist from mise_en_place[]. Session-only state.
-            Expand pattern: show first 4; chip reveals the rest with 150ms fade.
-            Progress counter counts all items including collapsed ones. */}
-        {!cooking && (recipe.mise_en_place?.length ?? 0) > 0 && (
-          <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-            <View
-              style={{
-                backgroundColor: c.cardBg,
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: c.lineDark,
-                overflow: 'hidden',
-              }}
-            >
-              {/* Header */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingHorizontal: 20,
-                  paddingTop: 14,
-                  paddingBottom: 12,
-                  borderBottomWidth: 1,
-                  borderBottomColor: c.line,
-                }}
-              >
-                <View>
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 14, color: c.ink }}>
-                    Mise en place
-                  </Text>
-                  <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: c.muted, marginTop: 2 }}>
-                    Do this before you heat anything
-                  </Text>
-                </View>
-                <Text
-                  style={{ fontFamily: fonts.sansBold, fontSize: 11, color: tokens.ochre }}
-                  accessibilityLabel={`${miseChecked.size} of ${recipe.mise_en_place!.length} prep tasks done`}
-                >
-                  {miseChecked.size} / {recipe.mise_en_place!.length} done
-                </Text>
-              </View>
-
-              {/* Always-visible items (first 4) */}
-              {recipe.mise_en_place!.slice(0, 4).map((task, idx) => (
-                <MiseItem
-                  key={idx}
-                  text={task}
-                  checked={miseChecked.has(idx)}
-                  onToggle={() => toggleMise(idx)}
-                  isLast={idx === Math.min(3, recipe.mise_en_place!.length - 1) && recipe.mise_en_place!.length <= 4}
-                  lineColor={c.line}
-                  inkColor={c.inkSoft}
-                />
-              ))}
-
-              {/* Expand chip */}
-              {recipe.mise_en_place!.length > 4 && !miseExpanded && (
-                <Pressable
-                  onPress={expandMise}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Show ${recipe.mise_en_place!.length - 4} more prep tasks`}
-                  style={({ pressed }) => ({
-                    margin: 10,
-                    paddingVertical: 10,
-                    borderRadius: 20,
-                    backgroundColor: pressed
-                      ? tokens.amber
-                      : 'rgba(160,92,40,0.08)',
-                    borderWidth: 1,
-                    borderColor: tokens.amberLine,
-                    alignItems: 'center',
-                  })}
-                >
-                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ochre }}>
-                    Show {recipe.mise_en_place!.length - 4} more prep tasks
-                  </Text>
-                </Pressable>
-              )}
-
-              {/* Expanded items (4+) */}
-              {recipe.mise_en_place!.length > 4 && miseExpanded && (
-                <Animated.View style={{ opacity: miseExpandOpacity }}>
-                  {recipe.mise_en_place!.slice(4).map((task, idx) => (
-                    <MiseItem
-                      key={idx + 4}
-                      text={task}
-                      checked={miseChecked.has(idx + 4)}
-                      onToggle={() => toggleMise(idx + 4)}
-                      isLast={idx + 4 === recipe.mise_en_place!.length - 1}
-                      lineColor={c.line}
-                      inkColor={c.inkSoft}
-                    />
-                  ))}
-                  <Pressable
-                    onPress={() => setMiseExpanded(false)}
-                    accessibilityRole="button"
-                    accessibilityLabel="Show fewer prep tasks"
-                    style={{
-                      margin: 10,
-                      paddingVertical: 10,
-                      borderRadius: 20,
-                      backgroundColor: 'rgba(160,92,40,0.08)',
-                      borderWidth: 1,
-                      borderColor: tokens.amberLine,
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ochre }}>
-                      Show less ↑
-                    </Text>
-                  </Pressable>
-                </Animated.View>
-              )}
-            </View>
-          </View>
-        )}
-
 
         {/* Method */}
         <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
@@ -1177,7 +802,7 @@ export default function RecipeDetailScreen() {
                             marginTop: 12,
                             height: 100,
                             borderRadius: 12,
-                            borderWidth: 1.5,
+                            borderWidth: 2,
                             borderStyle: 'dashed',
                             borderColor: c.lineDark,
                             backgroundColor: c.bgDeep,
@@ -1199,84 +824,34 @@ export default function RecipeDetailScreen() {
             })}
           </View>
 
-          {/* Leftover note removed — leftover_mode.note is superseded by the
-              LEFTOVERS & STORAGE section below which uses leftovers_note. */}
-        </View>
-
-        {/* ── FINISHING & TASTING (DECISION-008) ──
-            Warm-brown left border — conclusion, not caution. */}
-        {!cooking && recipe.finishing_note && (
-          <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+          {/* Leftover note */}
+          {recipe.leftover_mode ? (
             <View
               style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: 'rgba(196,168,130,0.3)',
-                borderLeftWidth: 3,
-                borderLeftColor: '#C4A882',
-                backgroundColor: 'rgba(196,168,130,0.06)',
+                marginTop: 16,
                 padding: 14,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 9,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  color: '#C4A882',
-                  marginBottom: 6,
-                }}
-              >
-                Finishing & tasting
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.displayItalic,
-                  fontStyle: 'italic',
-                  fontSize: 14,
-                  lineHeight: 21,
-                  color: c.inkSoft,
-                }}
-              >
-                {recipe.finishing_note}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* ── LEFTOVERS & STORAGE (DECISION-008) ──
-            Low surface, muted — honest and quiet. */}
-        {!cooking && recipe.leftovers_note && (
-          <View style={{ paddingHorizontal: 20, marginTop: 12 }}>
-            <View
-              style={{
+                borderRadius: 14,
                 backgroundColor: c.bgDeep,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: c.line,
-                padding: 14,
               }}
             >
               <Text
                 style={{
                   fontFamily: fonts.sansBold,
-                  fontSize: 9,
+                  fontSize: 10,
                   letterSpacing: 1.5,
                   textTransform: 'uppercase',
-                  color: c.muted,
-                  marginBottom: 6,
+                  color: c.ochre,
+                  marginBottom: 4,
                 }}
               >
-                Leftovers & storage
+                Designed for leftovers
               </Text>
-              <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: c.inkSoft }}>
-                {recipe.leftovers_note}
+              <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}>
+                {recipe.leftover_mode.note}
               </Text>
             </View>
-          </View>
-        )}
-
+          ) : null}
+        </View>
       </ScrollView>
 
       {/* ── FLOATING START-COOKING PILL ──
@@ -1509,81 +1084,6 @@ function Callout({
         {text}
       </Text>
     </View>
-  );
-}
-
-
-function MiseItem({
-  text,
-  checked,
-  onToggle,
-  isLast,
-  lineColor,
-  inkColor,
-}: {
-  text: string;
-  checked: boolean;
-  onToggle: () => void;
-  isLast: boolean;
-  lineColor: string;
-  inkColor: string;
-}) {
-  /* Pressable is bare touch target only — android_ripple + onPress.
-     flexDirection:'row', borderBottomWidth, and opacity live on the inner
-     View so Android actually renders them (function-style Pressable style
-     props silently drop layout props on Android). borderWidth must be
-     integer — 1.5 doesn't render reliably on Android. */
-  return (
-    <Pressable
-      onPress={onToggle}
-      accessibilityRole="checkbox"
-      accessibilityLabel={text}
-      accessibilityState={{ checked }}
-      android_ripple={{ color: 'rgba(160,92,40,0.10)', borderless: false }}
-    >
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          gap: 12,
-          paddingHorizontal: 20,
-          paddingVertical: 13,
-          borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: lineColor,
-          backgroundColor: 'transparent',
-          opacity: checked ? 0.5 : 1,
-        }}
-      >
-        <View
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: 10,
-            borderWidth: 2,
-            borderColor: checked ? tokens.ochre : lineColor,
-            backgroundColor: checked ? 'rgba(160,92,40,0.10)' : 'transparent',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            marginTop: 1,
-          }}
-        >
-          {checked && <Icon name="check" size={10} color={tokens.ochre} />}
-        </View>
-        <Text
-          style={{
-            fontFamily: fonts.sans,
-            fontSize: 13,
-            lineHeight: 19,
-            color: inkColor,
-            flex: 1,
-            textDecorationLine: checked ? 'line-through' : 'none',
-          }}
-        >
-          {text}
-        </Text>
-      </View>
-    </Pressable>
   );
 }
 
