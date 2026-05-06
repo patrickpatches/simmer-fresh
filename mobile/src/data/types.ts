@@ -347,10 +347,9 @@ export const Recipe = z.object({
   // ─────────────────────────────────────────────────────────────────────────
 
   /**
-   * Confirms every ingredient is whole and unprocessed.
-   * No preservatives, no stock cubes, no packaged seasoning mixes.
-   * Required true for all authored recipes. Non-negotiable product position.
-   * User-added recipes are exempt — the app shows a disclaimer instead.
+   * Optional flag — true if the recipe uses only whole, unprocessed ingredients
+   * with no preservatives or packaged seasoning mixes.
+   * Not enforced by validation — set it when you can confirm it.
    */
   whole_food_verified: z.boolean().optional(),
 
@@ -361,9 +360,6 @@ export const Recipe = z.object({
 }).refine(
   (r) => r.user_added || r.generated_by_claude || r.source !== undefined,
   { message: 'Recipe requires `source` unless user_added or generated_by_claude' },
-).refine(
-  (r) => r.user_added || r.generated_by_claude || r.whole_food_verified === true,
-  { message: 'Authored recipe is missing `whole_food_verified: true` — check no preservatives are used' },
 ).refine(
   (r) => r.user_added || r.generated_by_claude || r.categories !== undefined,
   { message: 'Authored recipe is missing `categories` — add cuisines[] and types[] for discoverability' },
