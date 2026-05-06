@@ -168,7 +168,7 @@ export function RecipeCard({
             style={{
               fontSize: 10,
               fontFamily: fonts.sansBold,
-              color: tokens.ink,
+              color: '#FFFFFF',
               letterSpacing: 0.5,
               textTransform: 'uppercase',
             }}
