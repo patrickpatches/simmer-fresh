@@ -9,7 +9,14 @@
 
 ## Active tickets
 
-*No open bug tickets.* REGN-001 and REGN-004 validated by Patrick on 5 May 2026.
+| ID | Title | Status | Notes |
+|---|---|---|---|
+| REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commit `1fca0aaa3d3d` — awaiting Patrick on-device validation |
+
+**REGN-001 root cause (diagnosed 6 May 2026):**
+- Previous fix addressed pantry carousel snap (REGN-001 original). The persistent card misalignment on the Kitchen screen is a separate but related issue.
+- Root cause: FlatList windowing. RecipeCard heights vary (1–2 line title/tagline = ~315–358px). On Android, items outside the render window unmount; re-entry uses estimated positions → visible shift on scroll back.
+- Fix: disabled windowing via `initialNumToRender={20}`, `maxToRenderPerBatch={20}`, `windowSize={99}`, `removeClippedSubviews={false}`. 17 active items (~340px each) = trivial memory cost.
 
 ---
 
@@ -18,9 +25,19 @@
 | ID | Title | Status | Closed |
 |---|---|---|---|
 | REGN-004 | Pantry search flashes / requires multiple taps | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
-| REGN-001 | Recipe card carousel partial-snap | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
+| REGN-001 (carousel) | Pantry recipe card carousel partial-snap | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
 | REGN-002 | OneDrive null-byte corruption | VALIDATED ✅ | 28 Apr 2026 — process fix; write via GitHub API only |
 | REGN-003 | pantry.tsx file-write truncation | VALIDATED ✅ | 3 May 2026 — full-file rebuild + Python assert validation before push |
+
+---
+
+## Session log — 6 May 2026 (Report 3)
+
+### Commits pushed this session
+| Commit | Summary |
+|---|---|
+| `38cbab3b` | Recipe screen: Watch/Plan button colours, equipment pills, mise header, expand chip |
+| `1fca0aaa` | FlatList windowing disabled — fixes REGN-001 card misalignment (awaiting validation) |
 
 ---
 
@@ -60,19 +77,4 @@
 
 **Failure 1 — Multi-tap / search auto-close (root cause of REGN-004)**
 - Pattern: `isFocused` state driven by `onFocus`/`onBlur` on TextInput
-- Why it breaks: Android IME fires `onLayout` during keyboard animation → spurious `onBlur` → state cycling
-- Lesson: Never use `onFocus`/`onBlur` as the trigger for UI mode switches on Android. IME event timing is unpredictable and variable across devices.
-- Fix: `searchMode` boolean (Pressable toggle) + `autoFocus` TextInput (native `requestFocus()` before JS event loop). See REGN-005 in regression-checklist.md.
-
-**Failure 2 — 150ms blur debounce was a patch, not a fix**
-- Pattern: Adding a debounce to fight spurious IME blurs
-- Why it breaks: Android IME timing can exceed any fixed debounce on lower-spec devices
-- Lesson: Debounces are bandages on the wrong wound. Fix the architecture, not the timing.
-
-**Failure 3 — "Semi full screen" content-hiding UX problem**
-- Pattern: `isSearchActive = searchMode` hid match banner + carousel when search was active
-- Why it breaks: Users couldn't see their matches while searching — the most useful moment to see them
-- Lesson: Search should overlay, not replace. Browse content should stay visible; dropdown overlays it.
-
-**Failure 4 — Carousel robotic snap**
-- Pattern: `disableIntervalMom
+- Why it breaks: Android IME fires `onLayout` during keyboard animation → spurious `onBlur` → s
