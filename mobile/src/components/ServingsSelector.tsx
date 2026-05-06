@@ -175,7 +175,7 @@ export function ServingsSelector({
                 paddingVertical: 8,
                 borderRadius: 999,
                 backgroundColor: active ? tokens.primary : 'transparent',
-                borderWidth: 1.5,
+                borderWidth: 2,
                 borderColor: active ? tokens.primary : tokens.line,
               }}
             >
@@ -225,23 +225,18 @@ function StepperBtn({
       accessibilityRole="button"
       accessibilityLabel={dir === 'plus' ? 'Add a person' : 'Remove a person'}
       hitSlop={8}
-      style={({ pressed }) => ({
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+      style={{ borderRadius: 23, opacity: disabled ? 0.4 : 1 }}
+    >
+      <View style={{
         width: 46,
         height: 46,
         borderRadius: 23,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: disabled
-          ? tokens.bgDeep
-          : pressed
-            ? tokens.primaryLight
-            : tokens.bg,
-        borderWidth: 1.5,
+        backgroundColor: disabled ? tokens.bgDeep : tokens.bg,
+        borderWidth: 2,
         borderColor: disabled ? tokens.line : tokens.primary,
-        opacity: disabled ? 0.4 : 1,
-      })}
-    >
-      <Icon name={dir} size={18} color={disabled ? tokens.muted : tokens.primary} />
-    </Pressable>
-  );
-}
+      }}>
+        <Icon name={dir} size={18} color={disabled ? tokens.muted : tokens.primary} />
+      </View
