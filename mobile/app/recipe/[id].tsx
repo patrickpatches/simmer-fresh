@@ -497,77 +497,80 @@ export default function RecipeDetailScreen() {
               </View>
             ) : null}
 
-            {/* Watch link */}
+            {/* Watch link — Pressable is bare touch target only; inner View
+                carries all visual style. Pressable function-style style props
+                (borderWidth, backgroundColor) do not reliably render on Android. */}
             {recipe.source?.video_url ? (
               <Pressable
                 onPress={openSource}
                 accessibilityRole="link"
                 accessibilityLabel="Watch the original video"
-                style={({ pressed }) => ({
-                  alignSelf: 'flex-start',
+                android_ripple={{ color: 'rgba(184,64,48,0.18)', borderless: false }}
+                style={{ alignSelf: 'flex-start', marginTop: 14, borderRadius: 999 }}
+              >
+                <View style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 7,
-                  marginTop: 14,
                   paddingHorizontal: 12,
                   paddingVertical: 7,
                   borderRadius: 999,
-                  backgroundColor: pressed
-                    ? 'rgba(184,64,48,0.16)'
-                    : tokens.primaryLight,
-                  borderWidth: 1,
-                  borderColor: 'rgba(184,64,48,0.30)',
-                })}
-              >
-                <Icon name="play" size={10} color={c.primaryInk} fill={c.primaryInk} />
-                <Text style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 12,
-                  color: c.primaryInk,
-                  letterSpacing: 0.2,
+                  backgroundColor: 'transparent',
+                  borderWidth: 2,
+                  borderColor: tokens.primaryInk,
                 }}>
-                  Watch the original
-                </Text>
+                  <Icon name="play" size={10} color={c.primaryInk} fill={c.primaryInk} />
+                  <Text style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 12,
+                    color: c.primaryInk,
+                    letterSpacing: 0.2,
+                  }}>
+                    Watch the original
+                  </Text>
+                </View>
               </Pressable>
             ) : null}
 
             {/* Plan toggle — full width, inside card. Hidden in cook mode
-                because you don't plan a meal you're already cooking. */}
+                because you don't plan a meal you're already cooking.
+                Pressable is bare touch target; inner View holds all visual style.
+                Pressable function-style style props don't reliably render on Android. */}
             {!cooking && (
               <Pressable
                 onPress={handleTogglePlan}
                 accessibilityRole="button"
                 accessibilityLabel={isPlanned ? 'Remove from plan' : 'Add to plan'}
-                style={({ pressed }) => ({
-                  marginTop: 16,
+                android_ripple={{ color: isPlanned ? 'rgba(255,255,255,0.22)' : 'rgba(184,64,48,0.18)', borderless: false }}
+                style={{ marginTop: 16, borderRadius: 14 }}
+              >
+                <View style={{
                   paddingVertical: 13,
                   borderRadius: 14,
-                  backgroundColor: isPlanned
-                    ? (pressed ? tokens.primaryDeep : tokens.primary)
-                    : (pressed ? 'rgba(184,64,48,0.16)' : tokens.primaryLight),
+                  backgroundColor: isPlanned ? tokens.primary : 'transparent',
                   borderWidth: 2,
-                  borderColor: tokens.primaryInk,
+                  borderColor: isPlanned ? tokens.primary : tokens.primaryInk,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 8,
-                })}
-              >
-                <Icon
-                  name={isPlanned ? 'check' : 'plus'}
-                  size={15}
-                  color={isPlanned ? tokens.ink : tokens.primaryInk}
-                />
-                <Text
-                  style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 13,
-                    letterSpacing: 0.2,
-                    color: isPlanned ? tokens.ink : tokens.primaryInk,
-                  }}
-                >
-                  {isPlanned ? 'In your plan' : 'Plan this recipe'}
-                </Text>
+                }}>
+                  <Icon
+                    name={isPlanned ? 'check' : 'plus'}
+                    size={15}
+                    color={isPlanned ? tokens.ink : tokens.primaryInk}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 13,
+                      letterSpacing: 0.2,
+                      color: isPlanned ? tokens.ink : tokens.primaryInk,
+                    }}
+                  >
+                    {isPlanned ? 'In your plan' : 'Plan this recipe'}
+                  </Text>
+                </View>
               </Pressable>
             )}
           </View>
@@ -1128,33 +1131,8 @@ export default function RecipeDetailScreen() {
             })}
           </View>
 
-          {/* Leftover note */}
-          {recipe.leftover_mode ? (
-            <View
-              style={{
-                marginTop: 16,
-                padding: 14,
-                borderRadius: 14,
-                backgroundColor: c.bgDeep,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 10,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  color: c.ochre,
-                  marginBottom: 4,
-                }}
-              >
-                Designed for leftovers
-              </Text>
-              <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}>
-                {recipe.leftover_mode.note}
-              </Text>
-            </View>
-          ) : null}
+          {/* Leftover note removed — leftover_mode.note is superseded by the
+              LEFTOVERS & STORAGE section below which uses leftovers_note. */}
         </View>
 
         {/* ── FINISHING & TASTING (DECISION-008) ──
