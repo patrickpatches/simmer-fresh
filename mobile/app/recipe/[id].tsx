@@ -1528,52 +1528,61 @@ function MiseItem({
   lineColor: string;
   inkColor: string;
 }) {
+  /* Pressable is bare touch target only — android_ripple + onPress.
+     flexDirection:'row', borderBottomWidth, and opacity live on the inner
+     View so Android actually renders them (function-style Pressable style
+     props silently drop layout props on Android). borderWidth must be
+     integer — 1.5 doesn't render reliably on Android. */
   return (
     <Pressable
       onPress={onToggle}
       accessibilityRole="checkbox"
       accessibilityLabel={text}
       accessibilityState={{ checked }}
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 12,
-        paddingHorizontal: 20,
-        paddingVertical: 13,
-        borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: lineColor,
-        backgroundColor: pressed ? 'rgba(160,92,40,0.06)' : 'transparent',
-        opacity: checked ? 0.5 : 1,
-      })}
+      android_ripple={{ color: 'rgba(160,92,40,0.10)', borderless: false }}
     >
       <View
         style={{
-          width: 20,
-          height: 20,
-          borderRadius: 10,
-          borderWidth: 1.5,
-          borderColor: checked ? tokens.ochre : lineColor,
-          backgroundColor: checked ? 'rgba(160,92,40,0.10)' : 'transparent',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          marginTop: 1,
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 12,
+          paddingHorizontal: 20,
+          paddingVertical: 13,
+          borderBottomWidth: isLast ? 0 : 1,
+          borderBottomColor: lineColor,
+          backgroundColor: 'transparent',
+          opacity: checked ? 0.5 : 1,
         }}
       >
-        {checked && <Icon name="check" size={10} color={tokens.ochre} />}
+        <View
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 2,
+            borderColor: checked ? tokens.ochre : lineColor,
+            backgroundColor: checked ? 'rgba(160,92,40,0.10)' : 'transparent',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginTop: 1,
+          }}
+        >
+          {checked && <Icon name="check" size={10} color={tokens.ochre} />}
+        </View>
+        <Text
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: 13,
+            lineHeight: 19,
+            color: inkColor,
+            flex: 1,
+            textDecorationLine: checked ? 'line-through' : 'none',
+          }}
+        >
+          {text}
+        </Text>
       </View>
-      <Text
-        style={{
-          fontFamily: fonts.sans,
-          fontSize: 13,
-          lineHeight: 19,
-          color: inkColor,
-          flex: 1,
-          textDecorationLine: checked ? 'line-through' : 'none',
-        }}
-      >
-        {text}
-      </Text>
     </Pressable>
   );
 }
