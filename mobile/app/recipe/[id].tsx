@@ -102,6 +102,9 @@ export default function RecipeDetailScreen() {
   // Mise en place state — session-only, no persistence (DECISION-008)
   const [miseChecked, setMiseChecked] = useState<Set<number>>(new Set());
   const [miseExpanded, setMiseExpanded] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [equipCollapsed, setEquipCollapsed] = useState(false);
+  const [knowCollapsed, setKnowCollapsed] = useState(false);
   const miseExpandOpacity = useRef(new Animated.Value(0)).current;
   const [activeSwaps, setActiveSwaps]         = useState<Record<string, Substitution | null>>({});
 
@@ -480,7 +483,9 @@ export default function RecipeDetailScreen() {
               <MetaPill icon="flame" label={recipe.difficulty} color={c.inkSoft} />
             </View>
 
-            {/* Description */}
+            {/* Description — 3-line clamp with expand/collapse.
+                Long recipe histories (Carbonara, Pavlova) are rich but not scan-level.
+                User taps to read more; can collapse again. */}
             {recipe.description ? (
               <View
                 style={{
@@ -490,10 +495,23 @@ export default function RecipeDetailScreen() {
                   marginTop: 14,
                 }}
               >
-                <Text style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}>
+                <Text
+                  numberOfLines={descExpanded ? undefined : 3}
+                  style={{ fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: c.inkSoft }}
+                >
                   <Text style={{ fontFamily: fonts.sansBold, color: c.ink }}>A note: </Text>
                   {recipe.description}
                 </Text>
+                <Pressable
+                  onPress={() => setDescExpanded(!descExpanded)}
+                  accessibilityRole="button"
+                  accessibilityLabel={descExpanded ? 'Show less' : 'Read more'}
+                  style={{ marginTop: 6 }}
+                >
+                  <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: c.primaryInk }}>
+                    {descExpanded ? 'Read less ↑' : 'Read more ↓'}
+                  </Text>
+                </Pressable>
               </View>
             ) : null}
 
@@ -669,8 +687,10 @@ export default function RecipeDetailScreen() {
         )}
 
         {/* ── WHAT TO KNOW (DECISION-008) ──
-            Rendered from before_you_start[]. Max 3 items per schema.
-            Blue left-border: caution/information, not action. */}
+            Accordion: tap header to collapse/expand the notes.
+            Blue left-border: caution/information, not action.
+            Default expanded — these are critical gotchas. User collapses
+            after reading on subsequent visits. */}
         {!cooking && (recipe.before_you_start?.length ?? 0) > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 12 }}>
             <View
@@ -682,24 +702,40 @@ export default function RecipeDetailScreen() {
                 borderLeftColor: '#5B8FD4',
                 backgroundColor: 'rgba(91,143,212,0.06)',
                 paddingTop: 12,
-                paddingBottom: 4,
+                paddingBottom: knowCollapsed ? 12 : 4,
                 paddingRight: 14,
                 paddingLeft: 14,
               }}
             >
-              <Text
+              <Pressable
+                onPress={() => setKnowCollapsed(!knowCollapsed)}
+                accessibilityRole="button"
+                accessibilityLabel={knowCollapsed ? 'Expand what to know' : 'Collapse what to know'}
                 style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 9,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  color: '#5B8FD4',
-                  marginBottom: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: knowCollapsed ? 0 : 8,
                 }}
               >
-                What to know before you start
-              </Text>
-              {recipe.before_you_start!.map((note, idx) => (
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 9,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    color: '#5B8FD4',
+                  }}
+                >
+                  What to know before you start
+                </Text>
+                <Icon
+                  name={knowCollapsed ? 'chevron-down' : 'chevron-up'}
+                  size={14}
+                  color='#5B8FD4'
+                />
+              </Pressable>
+              {!knowCollapsed && recipe.before_you_start!.map((note, idx) => (
                 <View
                   key={idx}
                   style={{ flexDirection: 'row', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}
@@ -862,40 +898,54 @@ export default function RecipeDetailScreen() {
         </View>
 
         {/* ── EQUIPMENT (DECISION-008) ──
-            Horizontal pill row from equipment[]. Omitted if empty. */}
+            Accordion: header tap collapses/expands the pill row.
+            Why collapsible: equipment is check-before-you-shop info.
+            Once you've confirmed your kit, collapse to reduce scroll. */}
         {!cooking && (recipe.equipment?.length ?? 0) > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-            <Text
+            <Pressable
+              onPress={() => setEquipCollapsed(!equipCollapsed)}
+              accessibilityRole="button"
+              accessibilityLabel={equipCollapsed ? 'Expand equipment list' : 'Collapse equipment list'}
               style={{
-                fontFamily: fonts.display,
-                fontSize: 20,
-                color: c.ink,
-                marginBottom: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: equipCollapsed ? 0 : 10,
               }}
             >
-              Equipment
-            </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {recipe.equipment!.map((item, idx) => (
-                <View
-                  key={idx}
-                  style={{
-                    paddingHorizontal: 13,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    marginRight: 8,
-                    marginBottom: 8,
-                    backgroundColor: tokens.amber,
-                    borderWidth: 1,
-                    borderColor: tokens.amberLine,
-                  }}
-                >
-                  <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: c.inkSoft }}>
-                    {item}
-                  </Text>
-                </View>
-              ))}
-            </View>
+              <Text style={{ fontFamily: fonts.display, fontSize: 20, color: c.ink }}>
+                Equipment
+              </Text>
+              <Icon
+                name={equipCollapsed ? 'chevron-down' : 'chevron-up'}
+                size={16}
+                color={c.muted}
+              />
+            </Pressable>
+            {!equipCollapsed && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {recipe.equipment!.map((item, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      paddingHorizontal: 13,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      marginRight: 8,
+                      marginBottom: 8,
+                      backgroundColor: tokens.amber,
+                      borderWidth: 1,
+                      borderColor: tokens.amberLine,
+                    }}
+                  >
+                    <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: c.inkSoft }}>
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
         )}
 
@@ -994,6 +1044,24 @@ export default function RecipeDetailScreen() {
                       inkColor={c.inkSoft}
                     />
                   ))}
+                  <Pressable
+                    onPress={() => setMiseExpanded(false)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Show fewer prep tasks"
+                    style={{
+                      margin: 10,
+                      paddingVertical: 10,
+                      borderRadius: 20,
+                      backgroundColor: 'rgba(160,92,40,0.08)',
+                      borderWidth: 1,
+                      borderColor: tokens.amberLine,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.ochre }}>
+                      Show less ↑
+                    </Text>
+                  </Pressable>
                 </Animated.View>
               )}
             </View>
