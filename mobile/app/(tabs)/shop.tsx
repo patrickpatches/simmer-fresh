@@ -485,19 +485,21 @@ export default function ShopTab() {
             hitSlop={10}
             accessibilityRole="button"
             accessibilityLabel="Share list"
-            style={({ pressed }) => ({
+            android_ripple={{ color: tokens.primaryLight, borderless: false }}
+            style={{ borderRadius: 20, marginTop: 4 }}
+          >
+            <View style={{
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: pressed ? tokens.bgDeep : tokens.cream,
+              backgroundColor: tokens.cream,
               borderWidth: 1,
               borderColor: tokens.lineDark,
               alignItems: 'center',
               justifyContent: 'center',
-              marginTop: 4,
-            })}
-          >
-            <Icon name="external" size={16} color={tokens.inkSoft} />
+            }}>
+              <Icon name="external" size={16} color={tokens.inkSoft} />
+            </View>
           </Pressable>
         </View>
 
@@ -731,25 +733,28 @@ export default function ShopTab() {
             >
               <Pressable
                 onPress={clearTicked}
-                style={({ pressed }) => ({
+                android_ripple={{ color: tokens.primaryLight, borderless: false }}
+                style={{ borderRadius: 14 }}
+              >
+                <View style={{
                   paddingVertical: 14,
                   borderRadius: 14,
-                  backgroundColor: pressed ? tokens.bgDeep : 'transparent',
+                  backgroundColor: 'transparent',
                   borderWidth: 1,
                   borderColor: tokens.lineDark,
                   alignItems: 'center',
-                })}
-              >
-                <Text
-                  style={{
-                    fontFamily: fonts.sansBold,
-                    fontSize: 13,
-                    color: tokens.inkSoft,
-                  }}
-                >
-                  Clear {tickedCount} ticked item
-                  {tickedCount === 1 ? '' : 's'}
-                </Text>
+                }}>
+                  <Text
+                    style={{
+                      fontFamily: fonts.sansBold,
+                      fontSize: 13,
+                      color: tokens.inkSoft,
+                    }}
+                  >
+                    Clear {tickedCount} ticked item
+                    {tickedCount === 1 ? '' : 's'}
+                  </Text>
+                </View>
               </Pressable>
             </View>
           )}
@@ -940,7 +945,9 @@ function DropdownRow({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({
+      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+    >
+      <View style={{
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
@@ -948,9 +955,7 @@ function DropdownRow({
         paddingHorizontal: 16,
         borderBottomWidth: divider ? 1 : 0,
         borderBottomColor: tokens.line,
-        backgroundColor: pressed ? tokens.bgDeep : 'transparent',
-      })}
-    >
+      }}>
       <View
         style={{
           width: 32,
@@ -1003,6 +1008,7 @@ function DropdownRow({
         >
           {tagText}
         </Text>
+      </View>
       </View>
     </Pressable>
   );
@@ -1179,10 +1185,8 @@ function ShopRow({
         hitSlop={10}
         accessibilityRole="button"
         accessibilityLabel={`Remove ${item.name}`}
-        style={({ pressed }) => ({
-          padding: 6,
-          opacity: pressed ? 0.4 : 0.5,
-        })}
+        style={{ padding: 6, opacity: 0.5 }}
+        android_ripple={{ color: tokens.primaryLight, borderless: true }}
       >
         <Icon name="x" size={14} color={tokens.ink} />
       </Pressable>
