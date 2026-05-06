@@ -207,6 +207,13 @@ export default function KitchenHome() {
       }}
       style={{ backgroundColor: tokens.bg }}
       showsVerticalScrollIndicator={false}
+      // Recipe library is capped at ~17 active items — windowing costs
+      // more than it saves and causes Android remeasure misalignment.
+      // Keep every card mounted; zero memory concern at this scale.
+      initialNumToRender={20}
+      maxToRenderPerBatch={20}
+      windowSize={99}
+      removeClippedSubviews={false}
       ListHeaderComponent={
         <View style={{ marginBottom: 20 }}>
           {/* Kicker */}
