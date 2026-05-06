@@ -513,10 +513,10 @@ export default function RecipeDetailScreen() {
                   paddingVertical: 7,
                   borderRadius: 999,
                   backgroundColor: pressed
-                    ? tokens.primaryLight
-                    : 'rgba(232,184,48,0.10)',
+                    ? 'rgba(184,64,48,0.16)'
+                    : tokens.primaryLight,
                   borderWidth: 1,
-                  borderColor: 'rgba(232,184,48,0.28)',
+                  borderColor: 'rgba(184,64,48,0.30)',
                 })}
               >
                 <Icon name="play" size={10} color={c.primaryInk} fill={c.primaryInk} />
@@ -544,8 +544,8 @@ export default function RecipeDetailScreen() {
                   borderRadius: 14,
                   backgroundColor: isPlanned
                     ? (pressed ? tokens.primaryDeep : tokens.primary)
-                    : (pressed ? tokens.primaryLight : 'transparent'),
-                  borderWidth: 1.5,
+                    : (pressed ? 'rgba(184,64,48,0.16)' : tokens.primaryLight),
+                  borderWidth: 2,
                   borderColor: tokens.primaryInk,
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -872,7 +872,7 @@ export default function RecipeDetailScreen() {
             >
               Equipment
             </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
               {recipe.equipment!.map((item, idx) => (
                 <View
                   key={idx}
@@ -880,9 +880,11 @@ export default function RecipeDetailScreen() {
                     paddingHorizontal: 13,
                     paddingVertical: 8,
                     borderRadius: 20,
-                    backgroundColor: 'rgba(232,184,48,0.08)',
+                    marginRight: 8,
+                    marginBottom: 8,
+                    backgroundColor: tokens.amber,
                     borderWidth: 1,
-                    borderColor: 'rgba(232,184,48,0.22)',
+                    borderColor: tokens.amberLine,
                   }}
                 >
                   <Text style={{ fontFamily: fonts.sans, fontSize: 13, color: c.inkSoft }}>
@@ -915,7 +917,7 @@ export default function RecipeDetailScreen() {
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  paddingHorizontal: 16,
+                  paddingHorizontal: 20,
                   paddingTop: 14,
                   paddingBottom: 12,
                   borderBottomWidth: 1,
@@ -962,10 +964,10 @@ export default function RecipeDetailScreen() {
                     paddingVertical: 10,
                     borderRadius: 20,
                     backgroundColor: pressed
-                      ? 'rgba(242,216,150,0.18)'
-                      : 'rgba(242,216,150,0.09)',
+                      ? tokens.amber
+                      : 'rgba(160,92,40,0.08)',
                     borderWidth: 1,
-                    borderColor: 'rgba(242,216,150,0.22)',
+                    borderColor: tokens.amberLine,
                     alignItems: 'center',
                   })}
                 >
@@ -1494,7 +1496,7 @@ function MiseItem({
         paddingVertical: 13,
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: lineColor,
-        backgroundColor: pressed ? 'rgba(242,216,150,0.05)' : 'transparent',
+        backgroundColor: pressed ? 'rgba(160,92,40,0.06)' : 'transparent',
         opacity: checked ? 0.5 : 1,
       })}
     >
@@ -1505,7 +1507,7 @@ function MiseItem({
           borderRadius: 10,
           borderWidth: 1.5,
           borderColor: checked ? tokens.ochre : lineColor,
-          backgroundColor: checked ? 'rgba(242,216,150,0.15)' : 'transparent',
+          backgroundColor: checked ? 'rgba(160,92,40,0.10)' : 'transparent',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
