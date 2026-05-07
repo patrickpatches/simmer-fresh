@@ -26,8 +26,8 @@
 **Effort:** ~1 session
 
 - ✅ Update Zod schema in `mobile/src/data/types.ts` — added `CuisineId`, `TypeId`, `SwapQuality`, `Substitution` types + `substitutions[]` on Ingredient
-- ✅ Added `categories` (cuisines + types dual-axis) and `whole_food_verified` to Recipe schema with refine validation
-- ✅ All 28 seed recipes updated with correct categories and `whole_food_verified: true`
+- ✅ Added `categories` (cuisines + types dual-axis) to Recipe schema with refine validation. (A `whole_food_verified` field was added at the same time but retired across the entire repo on 2026-05-07 — see `db/schema.ts` v7 migration.)
+- ✅ All 28 seed recipes updated with correct categories
 - ✅ Full substitution data on SMASH_BURGER (6 ingredients, 13 swaps), PASTA_CARBONARA (3 ingredients, 6 swaps), MUSAKHAN (3 ingredients, 7 swaps)
 - ✅ TypeScript check passes — 0 errors
 - ✅ Fixed pre-existing package.json truncation bug
@@ -124,5 +124,4 @@
 |---|---|---|
 | GitHub | patrickpatches | ✅ Active |
 | Expo/EAS | patrick.nasr | ✅ Active |
-| Google Play Console | patrick.nasr11@gmail.com | 🔄 Identity verification pending |
-| Cloudflare | — | Not created |
+| Google Play Console | patrick.nas
