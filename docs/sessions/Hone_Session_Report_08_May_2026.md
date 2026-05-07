@@ -26,30 +26,24 @@ Remaining batch (commit `2510bd1`):
 
 ---
 
-## What Patrick needs to do next
+### Culinary audit — first pass complete
 
-### Nothing urgent — this is background COO work
+`docs/coo/culinary-audit.md` created. Full first-pass attribution and cultural origin audit for all 45 seed recipes (the session summary said 44 — the actual count in `seed-recipes.ts` is 45).
 
-The research files are the data source for the engineer's DECISION-009 migration task (already open in `handoffs.md`). No on-device validation required for doc work.
+**Audit summary:**
+- 19 recipes: attribution PASS (specific YouTube or specific recipe page URL)
+- 16 recipes: attribution FAIL — broken links (channel pages, site roots, about pages, chef listing pages)
+- 10 recipes: attribution N/A (Hone Kitchen original or tradition attribution, no URL needed)
+- 1 recipe: cultural origin flag (SHEET_PAN_HARISSA_CHICKEN tagged `levantine` — harissa is North African, not Levantine; recommend tag change to `north_african`)
+- 1 recipe: attribution context flag (BEEF_LASAGNE — specific URL present but links to Bolognese sauce, not lasagne)
+- Substitutions, voice, and Australian English audit: pending second pass (all 45 recipes; target 2026-05-12)
 
-### Engineer task still open
+**Engineer handoff written:** `handoffs.md` → "ATTR-FAIL — fix 16 broken attribution URLs in seed-recipes.ts" — full table of every broken link with the correct fix path for each.
 
-`handoffs.md` has the DECISION-009 migration open: migrating `equipment`, `mise_en_place`, `before_you_start`, `finishing_note`, and `leftovers_note` from research `.md` files into `seed-recipes.ts` for the 11 recipes that already had research files before this session.
-
-Now that Batch 2 is complete, the engineer can expand this to all 44 recipes — or do it incrementally.
-
-### Build #86 still needs on-device validation
-
-Patrick still needs to validate the dark theme changes from the 7 May build (#86) on his physical device:
-- APK: https://github.com/patrickpatches/hone/actions/runs/25462021345
-- Checking: dark palette on the cook screen, Pressable highlight states
+**Commits this phase:** `culinary-audit.md` creation + `handoffs.md` update (see commit below).
 
 ---
 
-## Commits this session
+## What Patrick needs to do next
 
-| Hash | Message |
-|---|---|
-| `5d64021` | docs(coo): add DECISION-009 research files for 5 technique dishes |
-| `a485abd` | docs(coo): add DECISION-009 research files for 8 Malaysian/Asian recipes |
-| `2510bd1` | docs(coo): add DECISION-009 research files for 10 remaining recipes |
+### Nothing urg
