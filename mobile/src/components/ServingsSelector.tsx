@@ -239,4 +239,7 @@ function StepperBtn({
         borderColor: disabled ? tokens.line : tokens.primary,
       }}>
         <Icon name={dir} size={18} color={disabled ? tokens.muted : tokens.primary} />
-      </View
+      </View>
+    </Pressable>
+  );
+}
