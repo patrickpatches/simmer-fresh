@@ -269,6 +269,28 @@ const CHICKEN_ADOBO: Recipe = {
     { id: 's4', title: 'Serve over rice', content: 'Your rice should be rested and ready. Serve the chicken immediately over steamed white rice. The sauce is the point — make sure every plate gets a generous spoonful of it.' },
   ],
   categories: { cuisines: ['filipino'], types: ['chicken'] },
+  total_time_minutes: 50,
+  active_time_minutes: 25,
+  equipment: [
+    "Wide, heavy-bottomed pan or Dutch oven (wide enough that chicken pieces don't overlap during browning)",
+    "Tongs for turning the chicken",
+    "Separate medium saucepan for the rice",
+    "Ladle",
+  ],
+  before_you_start: [
+    "Brown the chicken properly before anything liquid goes in. The colour on the skin is not cosmetic — it is the flavour base. Pale, unbrowned chicken in adobo tastes thin and sharp; well-browned chicken carries the vinegar without being dominated by it.",
+    "The braising liquid is mostly vinegar. It will look and smell alarming. This is correct — trust the ratio. The acid mellows completely during the braise and becomes the sweet-sharp sauce that defines the dish. Do not reduce the vinegar quantity.",
+    "Start the rice when you add the braising liquid in step 2. The braise takes exactly long enough for the rice to cook. If the rice starts after the braise, you will be waiting and the sauce will over-reduce.",
+  ],
+  mise_en_place: [
+    "Pat the chicken pieces completely dry with paper towel — surface moisture prevents browning and causes spitting.",
+    "Measure out the white vinegar, soy sauce, and water into a single jug — they go in together.",
+    "Crush the garlic cloves with the flat of a knife — no need to chop. They soften and mellow during the braise.",
+    "Count out the bay leaves and black peppercorns. Set aside.",
+    "Rinse the rice until the water runs clear and set it beside the hob ready to cook.",
+  ],
+  finishing_note: "After the braise, remove the chicken and reduce the sauce at high heat until it is syrupy and coats a spoon — about 5–8 minutes. Taste now: it should be deeply savoury, sharp but not harsh, and complex in a way that doesn't resemble its raw ingredients. If it still tastes aggressively vinegary, reduce further. Spoon the reduced sauce over the chicken on the plate rather than serving it separately. The bay leaves and whole peppercorns are not eaten. Serve over plain steamed rice — the point of the rice is to be a mild, absorbent base for the intensely flavoured sauce.",
+  leftovers_note: "Chicken adobo is one of the great leftover dishes — the flavour deepens significantly overnight as the meat absorbs more sauce. Keeps 4 days in the fridge. Reheat in a pan with a splash of water over medium heat. The sauce will have tightened in the fridge; add a little water and it loosens back. Freezes for up to 2 months. Leftover adobo shredded off the bone makes an excellent fried rice component or filling for bao.",
 };
 
 const PASTA_CARBONARA: Recipe = {
@@ -470,6 +492,29 @@ const BEEF_STEW: Recipe = {
     { id: 's5', title: 'Add veg and finish', content: 'Add carrots and potatoes. Continue simmering, uncovered, 30–40 minutes until vegetables are tender and sauce has thickened.', timer_seconds: 1800, why_note: 'Vegetables added early turn to mush. Added in the last 30–40 minutes they cook through without disintegrating. Removing the lid lets steam escape and the sauce reduce and concentrate.' },
   ],
   categories: { cuisines: ['french'], types: ['beef', 'soups'] },
+  total_time_minutes: 180,
+  active_time_minutes: 50,
+  equipment: [
+    "Large Dutch oven or heavy-bottomed pot with a tight-fitting lid (the lid traps steam and keeps the braise moist)",
+    "Tongs for searing",
+    "Wooden spoon for deglazing",
+    "Ladle",
+  ],
+  before_you_start: [
+    "Sear the beef in small batches — never more than will fit in a single layer with space around each piece. Crowding the pan drops the temperature, the meat releases water, and you get grey boiled beef instead of brown, caramelised edges. The colour on the meat is the flavour.",
+    "The braise must be a bare simmer — occasional single bubbles, not a rolling boil. A hard boil toughens the collagen before it can dissolve into gelatin and makes the meat stringy. Low and slow is what turns cheap cuts into something tender.",
+    "Add the root vegetables only in the last 30–40 minutes, not at the start. Carrots and potato added at the beginning turn to mush after 2+ hours. The meat needs time the vegetables don't.",
+  ],
+  mise_en_place: [
+    "Cut the beef into large cubes — 4–5cm. Dry completely with paper towel, then season generously with salt and pepper. Set on a rack or spread on a tray — moisture migrates to the surface during resting; patting after seasoning keeps the surface dry.",
+    "Dice the onion, celery, and carrot for the base. These are cooking aromatics — rough dice is fine, they will soften fully.",
+    "Mince the garlic.",
+    "Measure the red wine, beef stock, and tomato paste into separate containers.",
+    "Prepare the thyme, bay leaves, and rosemary.",
+    "Prepare the finishing vegetables (larger-diced carrot, halved potatoes) separately — they go in much later.",
+  ],
+  finishing_note: "The stew is ready when the beef yields completely to a spoon with no resistance and the broth has thickened from the dissolved collagen — it should coat the back of a ladle. If the broth is thin, remove the lid and reduce at a low simmer for 15–20 minutes. If the beef is not yet tender at the 2-hour mark, cover and continue — it will not be rushed. Taste for salt and pepper before serving. The dish should taste deeply beefy and rich, not like red wine or stock alone. Serve with crusty bread or over mashed potato.",
+  leftovers_note: "Beef stew improves markedly overnight as the collagen continues to set in the broth and the flavours integrate. Keeps 4 days in the fridge. The broth will gel solid when cold — this is correct and desirable. Reheat gently in the pot over low heat with a splash of water, stirring occasionally, until fully hot. Freezes well for up to 3 months; freeze without potatoes if possible as they go grainy on reheating.",
 };
 
 const ROAST_CHICKEN: Recipe = {
@@ -664,6 +709,28 @@ const MUSAKHAN: Recipe = {
     { id: 's4', title: 'Final oven blast and finish', content: 'Put the assembled dish back in the oven at 200°C for 8–10 minutes until the edges of the bread crisp and the chicken skin re-crisps. Scatter toasted pine nuts and serve immediately.', timer_seconds: 480, why_note: 'The second oven blast revives the chicken skin that softened on top of the moist onions. Pine nuts add texture contrast — toast them until golden-brown, not pale, or they taste of nothing.' },
   ],
   categories: { cuisines: ['levantine'], types: ['chicken'] },
+  total_time_minutes: 90,
+  active_time_minutes: 45,
+  equipment: [
+    "Large roasting tray (big enough to lay out 8 chicken pieces without touching)",
+    "Wide, heavy-bottomed pan or braiser for the onions (stainless or cast iron — non-stick is fine but gives less caramelisation colour)",
+    "Tongs",
+    "Second baking tray or the same roasting tray for the final assembly",
+  ],
+  before_you_start: [
+    "The chicken roasts while the onions caramelise — both need to be running simultaneously. Read the full recipe before you turn on anything.",
+    "The onions are not garnish. One kilogram of raw onion will cook down to a fraction of the volume and become the body of the dish — do not reduce the quantity.",
+    "Musakhan is a Palestinian dish. Source it from Reem Kassis / The Palestinian Table. Do not label it otherwise.",
+  ],
+  mise_en_place: [
+    "Peel and slice all onions into thin half-moons — uniform thickness so they caramelise at the same rate. Set aside in a large bowl.",
+    "Mix half the sumac with the allspice, cinnamon, cardamom, a generous pinch of salt, and 3 tbsp of olive oil in a small bowl to form the spice rub.",
+    "Joint the chicken if whole, or lay out the pre-jointed pieces on a tray. Pat completely dry with paper towel — wet skin does not crisp.",
+    "Toast pine nuts in a dry pan over medium heat 3–4 minutes until golden. Watch them — pine nuts go from golden to burned in 30 seconds. Set aside.",
+    "Preheat oven to 200°C (fan-forced, or 210°C conventional).",
+  ],
+  finishing_note: "After the second blast in the oven, the bread edges should be slightly crisp and the chicken skin re-crisped. Taste the onions before assembly — they should be deeply sweet, sour from the sumac, and sticky. If they taste sweet but flat, stir in an extra teaspoon of sumac. Scatter the toasted pine nuts generously — they are not decoration, they are texture. Serve immediately from the tray with the juices soaked into the bread.",
+  leftovers_note: "Keeps two days in the fridge. The bread will have absorbed all the juices and gone soft — this is still delicious as a leftover hash. Reheat covered in a low oven (160°C, 15 minutes) rather than the microwave, which makes the chicken rubbery. The dish does not freeze well — the bread disintegrates.",
 };
 
 const KAFTA: Recipe = {
@@ -736,6 +803,28 @@ const KAFTA: Recipe = {
     { id: 's5', title: 'Serve in flatbread with sumac onions', content: 'Slide the kafta off the skewer into a warm pitta. Add thinly sliced raw onion tossed with sumac and a squeeze of lemon. Serve immediately.' },
   ],
   categories: { cuisines: ['levantine'], types: ['lamb', 'beef'] },
+  total_time_minutes: 60,
+  active_time_minutes: 25,
+  equipment: [
+    "Flat metal skewers (not round — kafta slides off round skewers)",
+    "Barbecue or grill pan (charcoal grill produces a genuinely better result)",
+    "Microplane or fine grater for the onion",
+    "Large mixing bowl",
+  ],
+  before_you_start: [
+    "The mixture must rest in the fridge at least 30 minutes before grilling — it firms up and holds the skewer. Do not skip this.",
+    "You need flat metal skewers, not round ones. Round skewers let the kafta spin and it will fall off over the grill.",
+    "Fat content in the mince matters. Ask for 20% fat lamb or beef — leaner mince dries out and crumbles.",
+  ],
+  mise_en_place: [
+    "Grate the onion on the fine side of a Microplane or box grater — you want juice and pulp, not chunks. Squeeze out about half the juice with your hands so the mix is not wet.",
+    "Finely chop the flat-leaf parsley until it is almost a paste — not roughly chopped. Coarse parsley makes the mixture harder to mould around skewers.",
+    "Measure out all the spices into a small bowl so they are ready to add together.",
+    "Set the mince out on the bench 10 minutes before mixing — you want cold, not frozen solid.",
+    "Prepare a bowl of cold water for wetting your hands during shaping.",
+  ],
+  finishing_note: "Kafta is done when it is charred on the outside and just cooked through — the interior should still be juicy and slightly pink for lamb (fully cooked for chicken). Do not probe it like a steak; pull one off, break it open. Serve in a warm pitta with thinly sliced raw onion tossed with sumac and a squeeze of lemon — the raw onion and sumac are not optional, they are the acid and crunch that complete the dish.",
+  leftovers_note: "Cooked kafta keeps two days in the fridge. Reheat in a warm oven at 160°C for 8 minutes or in a dry pan over medium heat — the microwave makes it dense and dry. Leftover kafta is excellent crumbled over a fattoush or stirred into a tomato sauce for an impromptu Lebanese-style pasta. Uncooked, shaped kafta freezes well on a tray for up to 3 months — freeze in a single layer then transfer to a bag.",
 };
 
 const HUMMUS: Recipe = {
@@ -910,6 +999,26 @@ const FATTOUSH: Recipe = {
     { id: 's3', title: 'Toss and serve immediately', content: 'Combine all vegetables and herbs in a large bowl. Add the fried bread. Pour over the dressing and toss. Serve within 5 minutes — the bread should still have some crunch.', why_note: 'Fattoush is a race against the bread going soft. The acid in the dressing starts breaking down the crisp surfaces the moment it touches them. Dress and serve; do not let it sit.' },
   ],
   categories: { cuisines: ['levantine'], types: ['salads', 'vegetarian'] },
+  total_time_minutes: 25,
+  active_time_minutes: 25,
+  equipment: [
+    "Wide frying pan for the bread (medium depth — the bread pieces need to fry, not boil in oil)",
+    "Large mixing bowl (bigger than you think — tossing needs space)",
+    "Salad servers or tongs for tossing",
+  ],
+  before_you_start: [
+    "Use stale pitta — at least two days old. Fresh pitta absorbs oil and goes soft immediately. If your pitta is fresh, tear it and leave it out on a rack overnight.",
+    "Once dressed, fattoush must be served within 5 minutes. The acid in the lemon and sumac starts breaking down the fried bread the moment the dressing touches it.",
+  ],
+  mise_en_place: [
+    "Tear the stale pitta into rough pieces — 4–5cm irregular shapes. Set aside on a plate.",
+    "Wash and spin dry the romaine lettuce, then tear into large pieces. Wet lettuce dilutes the dressing.",
+    "Halve and slice the cucumber into half-moons. Slice the radishes thin. Cut the tomatoes into wedges.",
+    "Slice the spring onions and pick the parsley and mint leaves — keep herbs whole or roughly torn, not finely chopped.",
+    "Make the dressing: whisk together lemon juice, olive oil, sumac, pomegranate molasses, and a good pinch of salt. Taste — it should be assertively sour and salty before it touches anything.",
+  ],
+  finishing_note: "The fried bread should still have some resistance when you bite it — not shatteringly crunchy, but not soggy either. That window closes fast once dressed. Taste the dressed salad and check the salt and acid — fattoush is often under-seasoned. Add another half teaspoon of sumac on top for colour and a final hit of tartness. The balance should be bright, sharp, and clean — not oily or heavy.",
+  leftovers_note: "Fattoush does not store once dressed — the bread goes to mush within an hour. If you want to get ahead, store the fried bread separately in an airtight container (keeps crisp for 2 days) and keep all the dressed vegetables refrigerated separately. Toss together at the last moment. The dressing keeps refrigerated for 3 days — shake before using.",
 };
 
 const PRAWN_TACOS_PINEAPPLE: Recipe = {
@@ -995,6 +1104,28 @@ const PRAWN_TACOS_PINEAPPLE: Recipe = {
     { id: 's5', title: 'Char the tortillas and build', content: 'Char tortillas directly on a gas flame or dry hot pan, 20–30 seconds per side. Build: chipotle crema, 3–4 prawns, pineapple salsa, squeeze of lime.', why_note: 'Cold tortillas crack. Charring adds flavour from the corn and makes them pliable. Build in this order so the crema acts as a moisture barrier between the warm tortilla and the juicy salsa.' },
   ],
   categories: { cuisines: ['mexican'], types: ['seafood'] },
+  total_time_minutes: 25,
+  active_time_minutes: 25,
+  equipment: [
+    "Cast iron pan or heavy skillet for charring the pineapple (needs to get very hot without oil)",
+    "Separate pan for the prawns (wide enough for a single layer)",
+    "Tongs for the tortillas over the gas flame",
+    "Small bowl for the chipotle crema",
+  ],
+  before_you_start: [
+    "Char the pineapple in a dry pan or under a grill before it becomes salsa — the caramelisation and slight bitterness from charring is what balances the sweetness and makes the salsa interesting. Raw pineapple in a taco salsa is just sweet and acidic.",
+    "Prawns cook in 60–90 seconds per side over high heat. Not 2 minutes, not until they curl into a tight ball — 60–90 seconds, pink and just opaque. Overcooked prawns are rubbery and no amount of salsa hides it. Pull them the moment they turn from translucent to opaque.",
+    "Char the tortillas directly over a gas flame or in a dry hot pan for 15–20 seconds per side. A warmed tortilla is not the same as a charred one — the slight smokiness from direct contact heat is part of the dish. Do not microwave them.",
+  ],
+  mise_en_place: [
+    "Peel and core the pineapple. Cut into 1cm slices or large planks — thick enough to char without falling apart.",
+    "Mix the chipotle crema: blend chipotle chillies in adobo with sour cream or crema, lime juice, and a pinch of salt. Taste — it should be smoky, creamy, and slightly sour. Set aside.",
+    "Peel and devein the prawns. Pat completely dry. Toss with the spice mix (cumin, chilli, smoked paprika, salt) just before cooking — not ahead, or the salt draws out moisture.",
+    "Char the pineapple in a dry screaming-hot pan 2–3 minutes per side until dark marks appear. Cool slightly, then dice into small pieces. Mix with finely diced red onion, fresh coriander, lime juice, and a pinch of salt.",
+    "Prepare all toppings: shred the cabbage finely, slice the avocado, pick the coriander leaves.",
+  ],
+  finishing_note: "Taste the pineapple salsa before assembling — it should be bright, sweet-sour, and slightly smoky from the char. If it is too sweet, add more lime. Cook the prawns at high heat in a single layer for 60–90 seconds per side — do them in batches if the pan is crowded. Char the tortillas and assemble immediately: crema first (it acts as the glue), then cabbage, then two or three prawns, then salsa, then coriander. Do not overload the taco — each component should be present in every bite without overpowering the others. Serve with lime wedges on the side; a final squeeze just before eating brightens everything.",
+  leftovers_note: "Assemble only what will be eaten immediately — assembled tacos go soggy within minutes. The pineapple salsa keeps 2 days in the fridge; the flavour mellows but it is still good. The chipotle crema keeps 5 days. Cooked prawns keep 1 day in the fridge — reheat gently in a pan rather than the microwave. Tortillas keep wrapped at room temperature for 2–3 days.",
 };
 
 const SOURDOUGH_MAINTENANCE: Recipe = {
@@ -1077,6 +1208,31 @@ const SOURDOUGH_LOAF: Recipe = {
     { id: 's6', title: 'Rest — do not cut yet', content: 'Transfer to a wire rack and leave uncovered for at least 1 hour before cutting. The interior continues cooking via residual heat and the crumb structure is still setting. A loaf cut at 20 minutes looks gummy and wet, even if the crust sounds hollow. This wait is part of the bake.', timer_seconds: 3600, why_note: 'The covered oven trapped steam in the first 20 minutes — all that moisture is still redistributing through the crumb. Cut early and the steam escapes in one go, leaving a gummy, compressed crumb. The hour rest is not optional; it is the final stage of cooking.' },
   ],
   categories: { cuisines: ['australian'], types: ['baking'] },
+  total_time_minutes: 1440,
+  active_time_minutes: 60,
+  equipment: [
+    "Dutch oven or cast iron combo cooker with lid (the covered bake traps steam, which is what gives sourdough its open crumb and blistered crust)",
+    "Banneton (proofing basket) or a bowl lined with a well-floured linen cloth",
+    "Bench scraper for shaping",
+    "Lame or a sharp razor blade for scoring",
+    "Kitchen scale accurate to 1g — baking is ratios, not volumes",
+    "Instant-read thermometer (optional but useful — internal temp of 96–98°C = done)",
+  ],
+  before_you_start: [
+    "Your starter must be active and at peak when it goes in — not just alive. Feed it 8–12 hours before you plan to mix (usually the night before). A starter at peak doubles in size, has a domed top, and a tangy smell. A starter that has peaked and collapsed will produce a flat, dense loaf that no shaping or baking can fix.",
+    "Autolyse means mixing only flour and water first, then resting 30–60 minutes before adding the starter and salt. This rest period allows gluten to develop without mechanical mixing — the result is a more extensible, stronger dough that is easier to shape. Do not add the starter or salt during autolyse.",
+    "Do not cut the loaf for at least 1 hour after it comes out of the oven — ideally 2 hours. The crumb is still setting. Cutting early gives you a gummy, compressed interior even if the loaf sounds hollow. The rest is part of the bake.",
+  ],
+  mise_en_place: [
+    "Feed the starter 8–12 hours before mixing. The loaf cannot start until the starter is at peak — plan around this, not around a clock.",
+    "Weigh all ingredients before mixing. Once autolyse starts, the sequence does not pause.",
+    "Lightly oil a large container for the bulk fermentation — the dough should have room to grow to double its volume.",
+    "Flour the banneton or proofing bowl generously — rice flour mixed with bread flour is the most reliable non-stick combination.",
+    "Set up a bench space large enough to shape without moving things mid-process. A damp bench (not floured) gives better traction for shaping.",
+    "Preheat the Dutch oven inside the oven at 250°C for at least 30 minutes before baking — the pot must be screaming hot before the dough goes in.",
+  ],
+  finishing_note: "The loaf is baked covered for 20 minutes (this is the steam phase — oven spring happens here), then uncovered for a further 20–25 minutes until the crust is a deep amber-brown. A pale crust means an under-baked loaf with a gummy crumb, not a gentle one. Tap the bottom of the loaf — it should sound hollow. Rest on a wire rack for at least 1 hour before cutting. The first slice will tell you whether the bulk fermentation was correct: an even, open crumb with irregular holes throughout is right. A dense, uniform crumb means under-fermentation. Large tunnels near the top mean over-fermentation or improper shaping.",
+  leftovers_note: "Sourdough keeps well at room temperature for 3–4 days stored cut-side-down on a board (not in a bag, which makes the crust soft). After day 2, toast it — the flavour improves with toasting. Do not refrigerate; cold temperatures stale bread faster than room temperature. Freeze sliced for up to 3 months — toast from frozen directly. A stale sourdough loaf is excellent as panzanella, ribollita, or breadcrumbs.",
 };
 
 const RISOTTO: Recipe = {
@@ -1154,6 +1310,32 @@ const RISOTTO: Recipe = {
     { id: 's5', title: 'Mantecatura — the final butter', content: 'When rice is al dente (it should have a firm but not chalky centre — taste it), remove from heat. Add cold butter in pieces and stir vigorously for 1 minute. Add mushrooms back in.', why_note: 'Mantecatura means "creaming". Cold butter emulsifies into the hot starch, creating a glossy, rich finish. Hot butter separates. Off heat prevents further starch release, which would make it gluey.' },
   ],
   categories: { cuisines: ['italian'], types: ['vegetarian'] },
+  total_time_minutes: 40,
+  active_time_minutes: 40,
+  equipment: [
+    "Wide, heavy-bottomed pan (stainless or enamelled cast iron — not non-stick, which inhibits the fond development)",
+    "Separate small saucepan for the stock (kept at a low simmer throughout)",
+    "Separate frying pan for the mushrooms (high heat, single layer)",
+    "Ladle",
+    "Wooden spoon or silicone spatula",
+    "Box grater for Parmesan",
+  ],
+  before_you_start: [
+    "The stock must be hot when it goes in — not cold, not room temperature. Cold stock shocks the rice, closes the starch, and breaks the gradual absorption the technique relies on. Keep a pot of stock at a low simmer beside the risotto pan throughout.",
+    "Mantecatura (the final butter emulsification) happens off heat with cold butter straight from the fridge. Cold fat creates the emulsion. Room-temperature butter melts into the rice rather than binding with it — you get a flat, greasy result instead of a glossy, creamy one.",
+    "The mushrooms go in a separate pan on high heat without stirring. Crowding them or stirring causes them to steam and release water. They need to be moving in a single layer, untouched, to get colour.",
+  ],
+  mise_en_place: [
+    "Bring the stock to a simmer in a small pot and keep it there on a back burner — it stays warm throughout.",
+    "Dice the shallots or onion finely. Uniform and small — they need to soften completely in 3–4 minutes.",
+    "Slice the mushrooms and set aside in a single pile. Do not wash them — wipe with a damp cloth if needed. Water kills the browning.",
+    "Grate the Parmesan. Set aside with a lid or wrapped so it doesn't dry out.",
+    "Cube the cold butter and return it to the fridge. It goes in at the very end — cold is the point.",
+    "Measure out the arborio or carnaroli rice. Do not rinse it — the surface starch is the whole mechanism.",
+    "Pour the white wine into a small jug ready to go in at the right moment.",
+  ],
+  finishing_note: "Pull the pan off the heat before the risotto looks ready — it will keep cooking from retained heat for a minute. Add the cold butter in cubes and the Parmesan, then beat vigorously with the wooden spoon. This is mantecatura: the friction creates an emulsion that binds fat, starch, and liquid into something that moves in a single glossy wave when you tilt the pan. If it sits still, it's too thick. If it runs like water, it needs another minute. Taste for salt — risotto is regularly under-seasoned because the Parmesan adds salt gradually and it's easy to underestimate. Serve immediately: risotto waits for no one and will seize and thicken within a couple of minutes off heat.",
+  leftovers_note: "Risotto keeps two days in the fridge. It will seize solid — this is expected. Reheat in a pan with a splash of stock or water over medium heat, stirring constantly, until it loosens again. Do not microwave — uneven heat ruins the texture. The classic Italian use of leftover risotto is arancini: roll into balls, stuff with mozzarella, coat in breadcrumbs, and deep-fry until golden. Freezing is not recommended — the starch structure breaks and you get a gluey result on reheating.",
 };
 
 const FISH_TACOS: Recipe = {
@@ -1229,6 +1411,30 @@ const FISH_TACOS: Recipe = {
     { id: 's4', title: 'Warm tortillas and assemble', content: 'Char tortillas directly on a gas flame or dry pan — 30 seconds per side. Stack fish, cabbage, crema, coriander, squeeze lime over the top.', why_note: 'Cold, raw tortillas taste of nothing and tear. Charring activates the corn flavour and makes them pliable enough to fold without cracking.' },
   ],
   categories: { cuisines: ['mexican'], types: ['seafood'] },
+  total_time_minutes: 25,
+  active_time_minutes: 25,
+  equipment: [
+    "Deep heavy-bottomed pan or Dutch oven for frying (needs to hold at least 6cm depth of oil safely)",
+    "Cooking thermometer for oil temperature (target 180–190°C)",
+    "Wire rack over a tray for draining",
+    "Spider strainer or slotted spoon for retrieving the fish",
+    "Tongs for the tortillas",
+  ],
+  before_you_start: [
+    "Make the chipotle crema and shred the cabbage first, before any oil goes on the heat. Once the oil is at temperature, you are frying continuously and there is no time to prepare anything else. Everything must be plated and ready before the first piece of fish goes in.",
+    "The batter should be cold — use cold sparkling water or cold beer. Cold batter hits hot oil and the water in it flashes to steam, creating the light, airy texture. Warm batter produces a dense, doughy coating.",
+    "Fry in small batches. Crowding the pan drops the oil temperature below the point where batter crisps — it absorbs oil instead and becomes greasy. Three or four pieces at a time is the limit. Drain on a wire rack, not paper towel — the rack allows airflow and keeps the batter crisp underneath.",
+  ],
+  mise_en_place: [
+    "Make the chipotle crema: blend chipotle chillies in adobo with sour cream, lime juice, and a pinch of salt. Taste and adjust — it should be smoky and slightly sour. Refrigerate until needed.",
+    "Shred the cabbage finely. Toss with a pinch of salt and a squeeze of lime. Set aside.",
+    "Cut the fish (barramundi, snapper, or basa) into 4–5cm strips against the grain. Pat dry.",
+    "Make the batter: whisk flour, baking powder, salt, and spices (cumin, smoked paprika). Add cold sparkling water or cold beer gradually until the batter coats the back of a spoon — thicker than cream, thinner than pancake batter. Do not overmix; lumps are fine.",
+    "Set up the frying station: batter bowl beside the pot, wire rack over a tray beside the pot, and the serving components ready at the end.",
+    "Begin heating the oil to 185°C.",
+  ],
+  finishing_note: "The batter is ready when a small drop flicked into the oil sizzles immediately and floats to the surface. Dip each strip of fish in the batter, let the excess drip for a second, then lower gently into the oil away from you. Fry 2–3 minutes until the batter is pale gold and audibly crunchy — it will take on more colour after draining. Season with flaked salt immediately out of the oil, while the surface is still hot and the salt adheres. Build the tacos: warm tortilla, crema, cabbage, fish, and a squeeze of fresh lime. Eat immediately — battered fish has a window of about 3 minutes before it begins to steam itself soft.",
+  leftovers_note: "Battered fish does not store — the crust goes completely soft within 30 minutes. Make only what will be eaten immediately. The chipotle crema keeps 5 days in the fridge. The uncooked batter keeps 1 day refrigerated, but make it fresh if possible — the leavening weakens overnight. Raw fish strips can be refrigerated for 1 day before battering and frying.",
 };
 
 const THAI_GREEN_CURRY: Recipe = {
@@ -1421,6 +1627,29 @@ const FRENCH_ONION_SOUP: Recipe = {
     { id: 's4', title: 'Grill and serve', content: 'Ladle soup into oven-safe bowls. Float a bread slice. Cover generously with gruyère — it should overhang the bowl slightly. Grill under a hot broiler 3–5 minutes until bubbling and spotted black in places.', timer_seconds: 300, why_note: 'The slight charring on the cheese is flavour, not failure. Maillard on the cheese creates nutty, bitter notes that balance the sweet onion and rich stock. Pale melted gruyère is aesthetically wrong and flavourwise missed.' },
   ],
   categories: { cuisines: ['french'], types: ['soups'] },
+  total_time_minutes: 180,
+  active_time_minutes: 80,
+  equipment: [
+    "Large, wide, heavy-bottomed pot (enamelled cast iron ideal — it retains even heat for the long onion cook)",
+    "Ovenproof soup crocks or bowls that can go under the grill (ceramic or cast iron — not thin glass)",
+    "Baking tray for transport under the grill",
+    "Wooden spoon for the long onion stir",
+  ],
+  before_you_start: [
+    "The onions take a genuine 60–70 minutes over medium heat to become properly caramelised. Do not rush this with high heat — high heat browns the edges while the centres remain raw and harsh-tasting. There is no shortcut that produces the same result. If your onions are done in 20 minutes, they are not caramelised, they are golden. Keep going.",
+    "Never add sugar or baking soda to speed the caramelisation. Sugar burns and tastes artificial; baking soda breaks the cell structure and makes the onions mushy. The natural sugars in the onion are sufficient if given enough time.",
+    "The soup must be finished under a hot grill, not in the oven. Only a grill produces the quick, bubbling, slightly charred Gruyère crust. The oven heats the whole bowl and you lose the contrast between the molten cheese top and the hot broth below.",
+  ],
+  mise_en_place: [
+    "Peel and slice all onions into thin, uniform half-moons — aim for 3mm. Uniform thickness means they caramelise at the same rate. Quantity looks alarming: 1–1.5kg of raw onion reduces to a small pile. Do not reduce it.",
+    "Measure out the white wine or dry vermouth and the beef stock. Set aside.",
+    "Prepare the thyme sprigs and bay leaves.",
+    "Slice the baguette into rounds 1.5–2cm thick. Toast them in the oven or under the grill until dry and crisp — they need to be hard enough to float on the soup without immediately sinking.",
+    "Grate the Gruyère generously. It should form a thick cap over the bread, not a thin sprinkle.",
+    "Preheat the grill to its highest setting before assembling the bowls.",
+  ],
+  finishing_note: "Before assembling the bowls, taste the soup for seasoning — it should be deeply sweet, beefy, and savoury, with the wine fully integrated. Under-seasoned soup at this point will not be saved by the cheese. Ladle the hot soup into the crocks, then float one or two toasted baguette slices on top. Cover generously with grated Gruyère — more than looks reasonable. Place under the hot grill for 3–4 minutes until the cheese is bubbling, beginning to brown, and has spread to seal the edges of the crock. Serve immediately in the crocks; the bowls will be extremely hot. Warn the user before they touch them.",
+  leftovers_note: "Store the soup base without the bread or cheese — both go to mush in the fridge. The soup keeps 4 days and freezes well for 3 months. Reheat to a simmer, taste and adjust seasoning, then reassemble with fresh croutons and cheese under the grill. The caramelised onions themselves can be made ahead and refrigerated for 3 days or frozen — this is the time-consuming part of the recipe and making a double batch is efficient.",
 };
 
 const PAD_THAI: Recipe = {
@@ -1612,6 +1841,29 @@ const BRAISED_SHORT_RIBS: Recipe = {
     { id: 's5', title: 'Rest and reduce sauce', content: 'Remove ribs, rest 15 minutes. Strain the braising liquid, skim fat, reduce in a pan over high heat to a glossy sauce.', timer_seconds: 900, why_note: 'Straining removes the now-exhausted vegetables. Skimming removes fat that would make the sauce greasy. Reducing concentrates into a glaze — pour it over the ribs and it should coat a spoon.' },
   ],
   categories: { cuisines: ['american'], types: ['beef'] },
+  total_time_minutes: 210,
+  active_time_minutes: 60,
+  equipment: [
+    "Large Dutch oven or heavy-bottomed braising pot with a tight-fitting lid (needs to hold all the ribs in a single layer with the braise liquid coming halfway up)",
+    "Tongs",
+    "Wooden spoon",
+    "Fine-mesh strainer for straining the sauce at the end",
+    "Small saucepan for reducing the strained sauce",
+  ],
+  before_you_start: [
+    "Sear every surface of every rib — not just the top and bottom. Short ribs have four long sides and two ends, and each surface needs 2–3 minutes of contact with a screaming-hot pan. This takes longer than you expect. Do not rush it, do not crowd the pan, and do not move the ribs before they release naturally from the surface.",
+    "Reduce the wine by half before adding the stock. Red wine added directly to the braise makes a harsh, alcoholic-tasting sauce. Reducing first burns off the alcohol and concentrates the fruit and tannin into something that actually improves the braise.",
+    "The ribs are done when they tremble. Pull one with tongs — if it jiggles like jelly and the meat is starting to pull from the bone, it is done. A firm short rib is an under-braised one and no amount of extra cooking at the table will fix it.",
+  ],
+  mise_en_place: [
+    "Pat the short ribs completely dry and season generously on all sides with salt and pepper — do this at least 30 minutes before searing, or the night before (uncovered in the fridge) for better browning.",
+    "Roughly dice the carrot, celery, and onion for the mirepoix — they are strained out at the end so the cut doesn't matter for presentation.",
+    "Smash the garlic cloves. Set aside with the thyme and bay leaves.",
+    "Measure out the red wine and beef stock separately.",
+    "Preheat the oven to 160°C (fan-forced) before searing begins — the pot goes in as soon as the liquid is added.",
+  ],
+  finishing_note: "Remove the ribs carefully — they are delicate and will pull from the bone if handled roughly (which is fine, but keep them presentable). Strain the braising liquid through a fine-mesh strainer, pressing the vegetables to extract all the liquid. Skim the fat from the surface — there will be a significant amount from the marbling. Reduce the strained liquid at a rolling boil until it coats a spoon and has a glossy, slightly viscous quality — 15–20 minutes. Taste for salt. Spoon the sauce over the ribs rather than serving it alongside — it should pool around the base and glaze the top. Serve over mashed potato or polenta; the sauce is too rich for plain rice.",
+  leftovers_note: "Braised short ribs improve overnight as the collagen continues to redistribute through the meat. Keep refrigerated for 4 days — the sauce will gel solid. Skim the solidified fat from the surface before reheating (it is easier to remove cold than hot). Reheat gently in the braising liquid in a 150°C oven for 20 minutes, covered. Freezes for up to 3 months; freeze in the sauce. Shredded short rib meat from leftovers is excellent in tacos, pasta, or on toast with horseradish.",
 };
 
 const RAMEN: Recipe = {
@@ -1696,6 +1948,30 @@ const RAMEN: Recipe = {
     { id: 's5', title: 'Assemble properly', content: 'Tare in the bowl first. Noodles. Hot broth ladled over. Then toppings in distinct sections: halved egg, pork, nori, spring onion, bamboo. Each topping should be visually distinct.', why_note: "Adding tare first ensures it distributes through the broth as it's poured. Keeping toppings visually separate isn't just aesthetic — it lets you eat each element alone or in combination at your own pace." },
   ],
   categories: { cuisines: ['japanese'], types: ['soups', 'pasta'] },
+  total_time_minutes: 30,
+  active_time_minutes: 30,
+  equipment: [
+    "Large pot for the broth",
+    "Separate pot for cooking noodles",
+    "Small pan for making the tare",
+    "Large, deep serving bowls — warm them with hot water for 2 minutes before assembly, then tip out. Cold bowls cool the broth fast.",
+    "Ladle",
+  ],
+  before_you_start: [
+    "Chashu pork must be made ahead — it requires 2–3 hours of braising plus resting time. This recipe has no chashu-making step. Either braise pork belly the day before, or buy char siu from a Chinese BBQ shop and ask for it sliced. The 30-minute time assumes the pork is already in your fridge.",
+    "Cook the noodles in a separate pot of unsalted water — never in the broth. Noodles cooked in stock cloud it with starch and absorb its seasoning before the tare can balance it.",
+    "Tare goes in the bowl first, before the broth is ladled over. This is how it disperses evenly through the liquid. Added on top after the broth, it sinks in a puddle and seasons unevenly.",
+  ],
+  mise_en_place: [
+    "Slice the chashu or char siu into rounds 5–6mm thick. Set aside.",
+    "Soft-boil the eggs first: 6.5 minutes in rolling water, then straight into iced water for 5 minutes. Peel and halve just before serving.",
+    "Slice the spring onions on a sharp diagonal. Drain and rinse the bamboo shoots.",
+    "Make the tare: combine soy sauce and mirin in a small pan, bring to a simmer for 2 minutes to cook off the alcohol. Remove from heat and set aside.",
+    "Heat the stock in the large pot and bring to a rolling boil. Add sesame oil.",
+    "Warm the serving bowls with hot water while you cook the noodles.",
+  ],
+  finishing_note: "Assembly order matters: tare in the bowl first, then noodles, then hot broth ladled directly over so it carries the tare through. Toppings go on last in distinct sections — egg, pork, nori, spring onion, bamboo shoots — each visually separate. This isn't decoration: it lets you eat each element alone or combine them at will. Taste the broth before it goes in — it should be rich but slightly underseasoned; the tare in the bowl finishes it. The whole bowl should be very hot; if the bowl or the broth are even slightly warm, not scalding, the dish falls flat. Serve immediately — ramen waits for no one.",
+  leftovers_note: "Store broth, noodles, and toppings separately — never assembled. The noodles will absorb all the broth and go soft within 30 minutes. Broth keeps 4 days in the fridge or 3 months frozen — it improves overnight. Reheat broth to a rolling boil before re-assembling. Cook fresh noodles each time. Chashu keeps 5 days in the fridge in the braising liquid; slice as needed.",
 };
 
 const BEEF_WELLINGTON: Recipe = {
@@ -1756,6 +2032,31 @@ const BEEF_WELLINGTON: Recipe = {
     { id: 's5', title: 'Bake to internal temp', content: 'Bake at 220°C for 25–30 minutes until pastry is deep golden. Internal temperature: 52°C for rare, 55°C for medium-rare. Rest 10 minutes before cutting.', timer_seconds: 1500, why_note: 'Pastry colour is a guide; internal temperature is the truth. Use a probe thermometer. The beef carries over by about 3°C during the rest, so pull it slightly under target. Without resting, the juices run everywhere when cut.' },
   ],
   categories: { cuisines: ['french'], types: ['beef'] },
+  total_time_minutes: 120,
+  active_time_minutes: 60,
+  equipment: [
+    "Heavy pan for searing (cast iron or stainless — the sear needs to be very fast and very hard)",
+    "Food processor for the duxelles (a knife works but takes significantly longer)",
+    "Cling wrap for shaping and chilling the fillet",
+    "Rolling pin for the pastry",
+    "Pastry brush for egg wash",
+    "Instant-read thermometer — non-negotiable for this recipe",
+    "Sharp knife for slicing — serrated works better than a straight blade on pastry",
+  ],
+  before_you_start: [
+    "The duxelles (mushroom paste) must be completely dry before it goes anywhere near the pastry. Cook it over high heat, stirring constantly, until every trace of moisture has evaporated and the paste is pulling away from the pan. Wet duxelles makes the pastry soggy from the inside and the Wellington collapses when cut.",
+    "Everything wrapped around the fillet must be cold before the pastry goes on — the seared fillet, the duxelles, the prosciutto. If any component is warm, the pastry butter melts before the oven, the structure loosens, and the base goes wet. Chill each wrapped layer for at least 15 minutes before proceeding.",
+    "Cook to internal temperature, not time. A 57°C core = medium-rare. Take it out at 55°C and rest — residual heat carries it to 57–58°C. There is no visual cue from the outside to judge the fillet; a thermometer is the only reliable tool here.",
+  ],
+  mise_en_place: [
+    "Remove the beef fillet from the fridge 30 minutes before searing to bring it to room temperature — a cold centre sears unevenly and takes significantly longer in the oven.",
+    "Blitz the mushrooms in a food processor to a fine paste. Season and cook in a dry pan over high heat, stirring constantly, until completely dry — this is the duxelles. It takes 15–20 minutes. Set aside to cool completely.",
+    "Lay out overlapping prosciutto slices on cling wrap in a rectangle large enough to roll around the fillet. Spread the cooled duxelles over the prosciutto in a thin, even layer.",
+    "Sear the fillet hard on all surfaces in a very hot pan with minimal oil — 1 minute per side, no more. The goal is colour, not cooking. Rest to room temperature, then season, roll in the prosciutto-duxelles using the cling wrap, and chill 15 minutes.",
+    "Prepare the egg wash (yolk + splash of water or cream) and roll the puff pastry to 3–4mm thickness.",
+  ],
+  finishing_note: "Score the pastry lightly with a knife in a crosshatch pattern — this is cosmetic but also helps it puff evenly. Egg wash twice: once before going in, once halfway through. Bake at 220°C until the pastry is deep golden and the internal temperature reads 55°C — about 22–25 minutes. Rest for 10 minutes before cutting, uncovered on a wire rack. Slice with a serrated knife in one confident movement per slice — sawing back and forth collapses the layers. The cross-section should show a ring of pink fillet, a thin dark layer of duxelles, then golden pastry. If the fillet is grey throughout, it was overcooked.",
+  leftovers_note: "Beef Wellington does not reheat without overcooking the fillet. Eat it the day it is made. Leftover slices can be served at room temperature — the pastry loses its crispness but the flavour holds. The duxelles can be made 2 days ahead and refrigerated; the assembled, wrapped fillet (before pastry) can be refrigerated overnight and brought to cold before baking.",
 };
 
 const DAL: Recipe = {
@@ -1843,6 +2144,29 @@ const DAL: Recipe = {
     { id: 's4', title: 'Combine and finish', content: 'Pour cooked lentils into the tarka pan (or vice versa). Add garam masala. Simmer together 5 minutes, season. The dal should coat a spoon but not be thick like cement.', timer_seconds: 300 },
   ],
   categories: { cuisines: ['indian'], types: ['vegetarian', 'soups'] },
+  total_time_minutes: 40,
+  active_time_minutes: 25,
+  equipment: [
+    "Medium saucepan for the lentils (with lid for the final 5-minute simmer)",
+    "Small, heavy frying pan for the tarka — a small pan concentrates the heat and oil around the spices",
+    "Ladle for transferring",
+    "Wooden spoon",
+  ],
+  before_you_start: [
+    "The tarka is made separately and poured over at the end — it is not stirred in. This is what makes it a tarka dal. The sizzle when hot ghee meets the lentils is half the dish. If you stir it in, you lose the hit of bloom from the whole spices.",
+    "Do not add salt until the lentils are completely soft. Salt added to legumes early firms the protein structure and slows cooking — sometimes significantly. Lentils go in with just turmeric; everything else comes later.",
+    "Mustard seeds need very hot ghee to pop — not warm ghee. If they don't sizzle loudly when they hit the pan, the oil isn't hot enough. Pull the pan off if they start burning before the next spice goes in; the sequence is fast.",
+  ],
+  mise_en_place: [
+    "Rinse the lentils in a sieve under cold water until the water runs clear — the milky rinse water is surface starch; removing it gives a cleaner-tasting dal.",
+    "Peel and thinly slice the onion into half-moons — it goes into the tarka and needs to brown, so thin and even is important.",
+    "Crush or finely grate the garlic. Grate or finely chop the ginger. Set both aside together — they go in at the same time.",
+    "Chop the tomatoes roughly. If using tinned, measure out 200g.",
+    "Measure out the cumin seeds, mustard seeds, dried chillies, turmeric, and garam masala into separate small bowls or the sections of a spice plate — the tarka moves fast and you need everything at hand.",
+    "Measure out the ghee and set beside the hob.",
+  ],
+  finishing_note: "Before the final combine, taste the cooked lentils — they should be fully soft, almost dissolved, and currently under-seasoned (the tarka brings the salt and spice). After combining, simmer together for 5 minutes so the flavours merge. The finished dal should coat a spoon but still pour easily — not thick like cement, not watery like soup. If it's too thick, add a splash of water. If it's too thin, cook uncovered a few more minutes. Taste for salt. The garam masala goes in at the end, not the beginning — added early it turns bitter from the heat. Serve over basmati rice with a small wedge of lime on the side.",
+  leftovers_note: "Tarka dal improves significantly overnight as the spices deepen. Keeps 4 days in the fridge and freezes well for up to 3 months. It will thicken in the fridge — add a splash of water and reheat over medium heat, stirring, until it returns to the right consistency. Do not reheat in the microwave without covering and adding water, or it will go solid and scorch. One batch feeds 4 as a side or 2 as a main; it scales straightforwardly.",
 };
 
 const SCRAMBLED_EGGS: Recipe = {
@@ -1891,6 +2215,27 @@ const SCRAMBLED_EGGS: Recipe = {
     { id: 's3', title: 'Salt and finish at the last second', content: 'When eggs are 90% set — still slightly glossy and wet — remove from heat. Add crème fraîche, stir once. Season with salt. Serve immediately.', why_note: 'Salt draws water from proteins by osmosis. Added early, it makes the eggs watery. Added at the end, it seasons without affecting texture. The crème fraîche adds richness and stops the cooking instantly by cooling the mass. Residual heat finishes them perfectly.' },
   ],
   categories: { cuisines: ['australian'], types: ['eggs'] },
+  total_time_minutes: 10,
+  active_time_minutes: 10,
+  equipment: [
+    "Small non-stick pan (20cm) — scrambled eggs need a non-stick surface; a stainless pan sticks badly at these temperatures",
+    "Silicone spatula — the tool for folding gently without breaking the curds",
+    "Bowl for beating eggs",
+    "Whisk for the initial beat",
+  ],
+  before_you_start: [
+    "Start with a cold pan. Not warm, not lightly preheated — cold. Adding eggs to a cold pan lets you control the rate of cooking from the very beginning. A hot pan sets the exterior before the interior has moved, and you get rubbery curds you can't recover.",
+    "Do not add salt until the eggs are off the heat and finished. Salt draws moisture out of the egg protein while it cooks, giving you a watery, grainy result. Season only at the very end.",
+    "Have the crème fraîche (or cold butter) ready before you start cooking. You add it the moment you pull the pan off the heat — it stops the cooking and adds the final creaminess. There is no time to look for it once the eggs are moving.",
+  ],
+  mise_en_place: [
+    "Crack the eggs into a bowl and beat well with a whisk until the yolks and whites are completely combined — no streaks. Set aside.",
+    "Measure out the crème fraîche (or cold butter) and have it within arm's reach of the stove.",
+    "Prepare toast or whatever you are serving with the eggs — it should be ready and plated before the eggs start, because eggs cannot wait.",
+    "Set out the pan cold on the hob, ready to go.",
+  ],
+  finishing_note: "The eggs should come off the heat while they still look slightly underdone — the residual heat in the pan finishes them. Add the crème fraîche or cold butter and fold it through with the spatula; it both stops the cooking and gives the final texture. Season with salt and white pepper only now. The curd should be large, glossy, and soft — not dry or broken into small granules. If they look like scrambled eggs from a hotel buffet, they've gone too far. Eat immediately from the pan or plate — eggs continue cooking on a warm plate.",
+  leftovers_note: "Scrambled eggs do not store. They continue cooking from retained heat and go rubbery within minutes. Make only what you will eat immediately. If you need to feed more people, make two separate batches rather than doubling the quantity in the same pan — a larger mass of egg cooks unevenly and is harder to control.",
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -2084,6 +2429,29 @@ const AGLIO_E_OLIO: Recipe = {
     { id: 's6', title: 'Parsley off heat, serve immediately', content: 'Kill the heat. Toss through parsley and a final glug of olive oil. Plate at once — this dish seizes as it cools.', why_note: 'Parsley off heat keeps it green and fresh-tasting. The final raw olive oil adds fragrance that a cooked oil loses. Eat while the sauce is still glossy; a minute later it will be sticky.' },
   ],
   categories: { cuisines: ['italian'], types: ['pasta', 'vegetarian'] },
+  total_time_minutes: 15,
+  active_time_minutes: 15,
+  equipment: [
+    "Large pot for the pasta (needs plenty of salted water — at least 4 litres for 200g pasta)",
+    "Wide frying pan or sauté pan for the sauce (wide enough that the pasta can be tossed in it)",
+    "Pasta tongs or a spider strainer for moving pasta directly from pot to pan (preferred over draining — you keep the starchy water)",
+    "Microplane or fine grater for the optional Parmesan or bottarga",
+  ],
+  before_you_start: [
+    "Garlic goes into cold oil in a cold pan — not hot oil, not a preheated pan. Slow infusion from cold pulls the flavour compounds into the fat gradually. A hot pan takes garlic from raw to burned in about 40 seconds with no room for correction.",
+    "Pull the garlic at pale gold, not amber. Amber means bitter. Pale gold is nutty and sweet. The oil retains enough heat to keep cooking after you pull it off the heat — stop earlier than you think you need to.",
+    "The pasta water is the emulsifier — not just water. It must come from the pot you cooked the pasta in. It carries dissolved starch that binds the oil and water into a glossy sauce. Tap water produces a broken, greasy result. Reserve at least 120ml before you drain.",
+  ],
+  mise_en_place: [
+    "Bring a large pot of well-salted water to the boil. The water should taste like mild seawater — this is the only seasoning the pasta itself receives.",
+    "Slice the garlic into thin, even rounds — uniform thickness is important so they colour at the same rate. Thicker slices go raw in the middle while the edges burn.",
+    "Pick and roughly chop the flat-leaf parsley. Set aside.",
+    "Slice the dried chillies or measure out the chilli flakes. Keep near the stove.",
+    "Measure out the olive oil — good quality extra virgin; this dish has nowhere to hide mediocre oil.",
+    "Set out a heatproof jug beside the pasta pot for reserving the cooking water before draining.",
+  ],
+  finishing_note: "Transfer the pasta to the garlic pan while the pasta is still slightly underdone — it finishes cooking in the sauce. Add the reserved pasta water in splashes and toss continuously; the starch cools the oil slightly and creates the emulsion. You are looking for a sauce that coats the strands and glistens, not pools of oil in the bottom of the pan. Taste for salt — pasta water varies in saltiness and the dish can need a final pinch. Add parsley off the heat. Serve immediately in warm bowls. Aglio e olio is one of the fastest dishes to go from perfect to cold and clumped — it will not wait.",
+  leftovers_note: "Aglio e olio does not store well — the pasta absorbs all the oil overnight and the emulsion breaks on reheating. Make only what you will eat. If you have leftover pasta, toss with a little olive oil to prevent it clumping, store in the fridge up to one day, and reheat in a pan with a splash of water over medium heat — not the microwave, which makes it clumped and uneven.",
 };
 
 const MUJADARA: Recipe = {
@@ -2160,6 +2528,28 @@ const MUJADARA: Recipe = {
     note: 'Keeps three days in the fridge and actually improves. Reheat with a splash of water, lid on.',
   },
   categories: { cuisines: ['levantine'], types: ['vegetarian'] },
+  total_time_minutes: 75,
+  active_time_minutes: 35,
+  equipment: [
+    "Medium saucepan with lid (for lentils and then for the rice steam)",
+    "Wide, heavy-bottomed pan or skillet for the onions (the wider the pan, the more surface area and the faster the onions brown)",
+    "Fine-mesh strainer for draining the lentils",
+    "Large heatproof jug or bowl for reserving the lentil water",
+  ],
+  before_you_start: [
+    "The onions need a genuine 30 minutes over medium heat to reach mahogany. Pale golden onions are the most common mistake — they give you sweet-but-flat instead of the deep, almost-bitter caramel the dish runs on.",
+    "Run the lentil pot and the onion pan at the same time. They finish at roughly the same point — this is the right workflow, not a timing problem.",
+    "Reserve 500ml of the lentil cooking water before draining. That is your cooking liquid for the rice — it is full of starch and flavour.",
+  ],
+  mise_en_place: [
+    "Rinse the lentils under cold water and pick out any stones. Set aside.",
+    "Rinse the basmati under cold water until it runs clear — 3–4 changes of water. This removes surface starch that would make the grains clump. Drain and set aside.",
+    "Peel and slice all three onions into thin, uniform half-moons — aim for about 3mm. Thin and consistent is what lets them brown evenly.",
+    "Measure out the cumin, allspice, salt, and pepper into a small bowl.",
+    "Set out a heatproof jug for the lentil water and a plate lined with paper towel for the reserved crispy onions.",
+  ],
+  finishing_note: "Before plating, taste the grain mixture for salt — it should be well-seasoned, not bland. If the rice sat in an under-salted pot, it is hard to recover at the end; you can only add so much on the surface. Tip the mujadara onto a wide platter rather than a deep bowl — the spread helps the steam escape and the grains stay separate. Crown generously with the crispy onions — they should make a visible, thick layer, not a sprinkle. Serve the cold yoghurt directly alongside; the cool, sour contrast is what makes the dish land.",
+  leftovers_note: "Mujadara keeps well for three days in the fridge and genuinely improves — the spices deepen and the grains absorb any remaining moisture overnight. Reheat in a pot with a splash of water and the lid on over low heat for 5 minutes, or in the microwave covered with a damp paper towel to prevent it drying out. The crispy onions will soften in storage — reheat them separately in a dry pan or under a grill for a minute to restore some crunch. Freezes for up to 2 months; the texture changes slightly but the flavour holds.",
 };
 
 const SHEET_PAN_HARISSA_CHICKEN: Recipe = {
@@ -2249,6 +2639,29 @@ const SHEET_PAN_HARISSA_CHICKEN: Recipe = {
     note: 'Pack in a container with the chickpeas — the chicken reheats in the oven (not microwave, the skin goes sad). Works cold too.',
   },
   categories: { cuisines: ['levantine'], types: ['chicken'] },
+  total_time_minutes: 55,
+  active_time_minutes: 15,
+  equipment: [
+    "Large rimmed baking tray (30 x 40cm minimum) — rimmed so juices don't spill in the oven",
+    "Oven mitts rated for high heat — pulling a 220°C tray bare-handed is a hospital trip",
+    "Large mixing bowl for the marinade and tossing",
+    "Tongs for loading the hot tray",
+  ],
+  before_you_start: [
+    "The tray goes into the oven empty while it preheats — not with food on it. A screaming-hot tray gives the chicken and chickpeas instant contact heat from below, which is what crisps the skin and caramelises the chickpeas. A cold tray means everything steams in its own moisture for the first 15 minutes.",
+    "Rose harissa is not the same as regular harissa — it is milder and more aromatic, with floral heat from dried rose petals rather than pure chilli blast. The quantity in this recipe is calibrated for rose harissa. If you only have regular harissa, use half the quantity.",
+    "Do not overcrowd the tray. The chickpeas and chicken need space around them to roast, not steam. If the tray is full edge-to-edge, use two trays. Crowded chickpeas go soft; crowded chicken skin stays flabby.",
+  ],
+  mise_en_place: [
+    "Put the empty baking tray in the oven and preheat to 220°C (fan-forced). Do this first, before any prep.",
+    "Drain and rinse the chickpeas. Pat completely dry with paper towel — wet chickpeas will not crisp.",
+    "Slice the red onion into thin wedges, keeping the root end intact so they hold together.",
+    "Mix the marinade in a large bowl: rose harissa, olive oil, honey, salt, garlic, and the spices. Taste — it should be assertively seasoned.",
+    "Add the chicken thighs, chickpeas, and onion to the bowl and toss well to coat. Make sure the marinade gets under the chicken skin.",
+    "Prepare the finishing elements: slice the lemon into thin rounds, pick the flat-leaf parsley, and have the yoghurt measured and ready.",
+  ],
+  finishing_note: "Pull the tray at 40–45 minutes — the chicken skin should be charred in places and deeply coloured, and the chickpeas should have shrunk slightly and turned crispy at their edges. If the skin is pale at 40 minutes, switch to the grill for 3–5 minutes to finish. Rest the chicken on the tray for 5 minutes before serving — this settles the juices. Squeeze the lemon over everything, scatter the parsley, and serve with cool yoghurt alongside. The cool yoghurt against the heat and spice is the contrast that makes the dish.",
+  leftovers_note: "Keeps 3 days in the fridge. The chickpeas will soften overnight — they are still good but not crispy. Reheat in a 200°C oven for 10 minutes rather than the microwave, which makes the chicken skin rubbery and the chickpeas wet. Cold leftovers pulled off the bone work well in a grain bowl or flatbread wrap. The cooking juices and harissa left on the tray make an excellent sauce — don't discard them.",
 };
 
 const EGG_FRIED_RICE: Recipe = {
@@ -2315,6 +2728,27 @@ const EGG_FRIED_RICE: Recipe = {
     { id: 's6', title: 'Sesame oil, greens, serve', content: 'Off the heat. Drizzle the sesame oil, scatter the spring onion greens, toss once. Plate immediately while the rice is loose and steaming.', why_note: 'Toasted sesame oil is fragile — real heat destroys the volatile compounds that make it taste of sesame. Always off heat, always at the end. The dish goes claggy as it cools so serve within two minutes.', ingredient_refs: ['i6', 'i3'] },
   ],
   categories: { cuisines: ['chinese'], types: ['eggs'] },
+  total_time_minutes: 12,
+  active_time_minutes: 12,
+  equipment: [
+    "Carbon steel wok or a large cast iron pan (a non-stick pan cannot reach the required temperature safely — the coating degrades)",
+    "Wok spatula or fish slice for the pressing and tossing",
+    "Bowl for breaking up the rice before cooking",
+  ],
+  before_you_start: [
+    "The rice must be cold and day-old — not fresh, not just cooled. Fresh rice has too much surface moisture and steam, which means it will stew in the wok rather than fry. Cook it the night before, spread it out to dry slightly, and refrigerate uncovered.",
+    "The wok must be visibly smoking before oil goes in. Not hot — smoking. A wok that is merely hot produces steamed rice. The smoke is the signal. This will take 2–3 minutes on a home hob at its highest setting.",
+    "Cook a maximum of 2 portions at a time. More rice in the pan drops the temperature below the threshold for wok hei and the whole batch stews. If you need to feed 4, cook two batches back-to-back.",
+  ],
+  mise_en_place: [
+    "Tip the cold rice into a bowl. Wet your fingers and crumble every clump into separate grains. Do this thoroughly before anything goes on the heat — a clump that survives into the wok stays a clump.",
+    "Beat the eggs with a pinch of salt in a small bowl. Set aside.",
+    "Trim and thinly slice the spring onions. Set aside separately — they go in at the end.",
+    "Measure out the soy sauce and sesame oil into a small bowl together, ready to add in one motion.",
+    "Have all garnishes (spring onion, white pepper) prepared and within arm's reach. You will not have time to cut anything once the wok is hot.",
+  ],
+  finishing_note: "The rice should have some individual grains with lightly browned, slightly charred edges — that is wok hei. If the whole batch is uniformly pale and soft, the heat was insufficient or the pan was overloaded. Add the soy and sesame in the last 30 seconds and toss hard so the liquid flashes off rather than pools. Taste for salt — soy varies. Spring onion goes in off the heat. Serve immediately; fried rice does not wait.",
+  leftovers_note: "Leftover fried rice keeps 2 days in the fridge. Reheat in a hot wok or pan with a splash of water and a drizzle of oil — it will not be as good as the first cook, but it is still a meal. Do not microwave; it goes uneven and wet. Fried rice is itself a leftover dish — making it from fresh-cooked rice defeats the purpose.",
 };
 
 const LAMB_SHAWARMA: Recipe = {
@@ -2545,6 +2979,30 @@ const NASI_LEMAK: Recipe = {
     { id: 's4', title: 'Fry the eggs', content: 'Pour most of the ikan bilis oil out, leaving about 2 tbsp. On high heat, fry eggs one at a time, basting with hot oil until the white is crispy at the edges but yolk is still runny. The white should puff up and blister.', timer_seconds: 90, why_note: 'The hot oil basting sets the white from above while the yolk stays soft — no need to flip. The crispy edges are textural contrast against the soft rice. This technique is standard across Southeast Asia for fried eggs.' },
     { id: 's5', title: 'Plate and serve', content: 'Pack rice into a small bowl and invert onto each plate to form a dome. Arrange sambal, ikan bilis, peanuts, cucumber slices, and a fried egg around it. Serve immediately — the ikan bilis go soft fast.', why_note: 'The dome presentation is traditional and practical — it holds the accompaniments separate so each person can mix as they go. The sambal should be stirred into the rice at the table, not pre-mixed.' },
   ],
+  total_time_minutes: 60,
+  active_time_minutes: 45,
+  equipment: [
+    "Medium saucepan with tight-fitting lid for the coconut rice",
+    "Wide frying pan or wok for the sambal (needs volume for stirring)",
+    "Small frying pan for the ikan bilis",
+    "Separate pan for the eggs (fried eggs need their own space)",
+    "Paper towel-lined plate for draining the ikan bilis",
+  ],
+  before_you_start: [
+    "The sambal is the soul of the dish and takes the longest — start it first. It must cook low and slow until it deepens to a rust-red colour and the oil separates from the paste. This takes 20–30 minutes. Under-cooked sambal tastes raw and sharp rather than deep and complex.",
+    "This is a multi-component dish — four things need to be ready at the same time. Read the full recipe before you start and map out the sequence: sambal first (longest), coconut rice second, ikan bilis and egg last. The rice steams passively while the other components come together.",
+    "Ikan bilis (dried anchovies) must be fried in oil hot enough to make them crisp immediately. Cool oil produces greasy, chewy anchovies. Drain on paper towel immediately and do not cover — steam trapped under a lid makes them go soft.",
+  ],
+  mise_en_place: [
+    "Rinse the jasmine rice until the water runs clear — 3–4 rinses. Drain and set aside.",
+    "Prepare the sambal aromatics: peel and roughly chop the onion and garlic, then blend with the dried chillies (soaked in hot water 15 minutes to soften), belacan, and a splash of water until a smooth paste.",
+    "Rinse the ikan bilis in cold water and pat completely dry on paper towel — any surface moisture will spit aggressively in the hot oil.",
+    "Slice the cucumber into rounds and halve. Set aside on the serving plate.",
+    "Boil the eggs or have them ready to fry just before plating — they are the last thing cooked.",
+    "Measure out the coconut milk and prepare the pandan leaves (tie them in a loose knot) and lemongrass (bruise with the back of a knife).",
+  ],
+  finishing_note: "Taste the sambal before plating — it should be deeply savoury, spicy, and slightly sweet from the caramelised onion. If it tastes sharp or raw, it needs more time over low heat. The coconut rice should be separate-grained and fragrant; if it is sticky or wet, steam it a further 5 minutes with the lid on. Plate the rice in a mound in the centre, then arrange the sambal, ikan bilis, peanuts, cucumber, and egg around it — each element distinct, not mixed. Nasi lemak is eaten by combining each element on the fork, not by stirring them together into one mass.",
+  leftovers_note: "Store each component separately — combined, they go soft quickly. The sambal keeps 5 days in the fridge and improves; freeze up to 3 months. The coconut rice goes hard in the fridge — reheat with a splash of water in a covered pan. The ikan bilis will soften overnight; re-crisp in a dry pan or low oven for 5 minutes. Do not store the cucumber or egg with the other components.",
 };
 
 const BEEF_RENDANG: Recipe = {
@@ -2651,6 +3109,29 @@ const BEEF_RENDANG: Recipe = {
     { id: 's5', title: 'Dry it out — the critical final stage', content: 'After 2 hours, the sauce should be thick and paste-like. Now stir in the kerisik. Keep cooking on low, stirring frequently, until almost all liquid is gone and the paste is frying in the coconut oil — you\'ll hear it transition from bubbling-liquid sounds to a frying sizzle. This takes 30–45 more minutes. The beef should be mahogany coloured.', timer_seconds: 2400, stage_note: 'Listen: when you hear sizzling rather than bubbling, you\'re in the frying stage. Look: mahogany-dark paste clinging to deep brown beef.', why_note: 'This is what makes rendang rendang — the deliberate drying out until the paste fries in the coconut oil. Most westernised recipes stop before this stage. The frying concentrates every flavour, toasts the spices again, and gives the beef its characteristic dry-but-tender texture. Pull it 2 minutes too early and you have a curry. Pull it 2 minutes too late and you burn it.' },
     { id: 's6', title: 'Taste, rest, serve', content: 'Taste and adjust salt and palm sugar. Rest 20 minutes off the heat — the flavour improves. Serve with steamed jasmine rice. Rendang reheats brilliantly — it\'s better the next day.', why_note: 'Resting allows the beef to reabsorb some of the spice-fat that surrounds it. Rendang is famously a dish that improves with time — traditionally made in bulk for celebrations and eaten over several days.' },
   ],
+  total_time_minutes: 210,
+  active_time_minutes: 60,
+  equipment: [
+    "Blender or food processor for the rempah (spice paste) — a stick blender is insufficient for this volume",
+    "Large heavy-bottomed pot or Dutch oven (cast iron preferred — the heat retention matters during the 3-hour braise)",
+    "Dry frying pan for the kerisik",
+    "Mortar and pestle for pounding the kerisik into a paste (a food processor will do but is less effective)",
+    "Wooden spoon with a long handle — the paste spits when frying",
+  ],
+  before_you_start: [
+    "Dried chillies must be soaked in boiling water for 20 minutes before blending — they need to be completely soft. Do this before anything else. Chillies that go into the blender hard will not blend smooth and the paste will be gritty.",
+    "Rendang is a dry curry — the goal at the end is to cook off ALL the coconut milk until the beef is re-frying in the coconut oil that separates out. Do not stop early because it looks \"done\". The mahogany-dark colour and the sizzling sound of the oil are the signals that it is actually finished, not a timer.",
+    "Make the kerisik (toasted desiccated coconut) during the braise, not after. It takes 8–10 minutes of constant stirring and must be pounded into a paste while warm. You have 3 hours of braise time — use 15 minutes of it here so you are not rushing at the end.",
+  ],
+  mise_en_place: [
+    "Soak the dried chillies in boiling water first — they need 20 minutes. Do this before preparing anything else.",
+    "While chillies soak: peel and roughly chop the rempah aromatics (shallots, garlic, galangal, lemongrass, turmeric). Cut lemongrass into the tender lower third only — the woody upper stalk is fibrous and blends poorly.",
+    "Drain and squeeze the chillies of excess water, then blend with the rempah aromatics and a small splash of water until completely smooth.",
+    "Cut the beef into large cubes — 5–6cm. They will shrink; large pieces retain moisture better through the long cook.",
+    "Measure out the coconut milk, kaffir lime leaves, and toasted coconut for the kerisik. Set everything within reach.",
+  ],
+  finishing_note: "The rendang is done when the coconut oil has fully separated, the paste is visibly frying around the beef in the oil rather than simmering in liquid, and the colour is dark mahogany — not pale yellow or caramel. At this point the beef should be tender enough to pull apart with a spoon but not dissolving. Stir in the pounded kerisik and taste: it should be deeply savoury, rich, and spiced, with no sharp or raw note. Season with salt. Rest for 10 minutes before serving — the oil redistributes slightly and the flavour sharpens. Serve over plain jasmine or coconut rice. The flavour is significantly better the next day.",
+  leftovers_note: "Beef rendang is one of the few dishes that genuinely improves over days. Keeps 5 days in the fridge and the flavour deepens markedly by day 2. Reheat in a pan over low heat with a splash of water if it has tightened up. Freezes well for up to 3 months — freeze in portions. The coconut fat will solidify on top in the fridge; this is normal. Scrape it into the pot when reheating.",
 };
 
 const CURRY_LAKSA: Recipe = {
@@ -2783,6 +3264,31 @@ const CURRY_LAKSA: Recipe = {
     { id: 's5', title: 'Cook the prawns and tofu', content: 'Add the tofu cubes and simmer 3 minutes. Add the prawns and cook exactly 2–3 minutes until just pink and curled. They should be barely cooked through — they will continue cooking in the residual heat of the bowl.', timer_seconds: 360, stage_note: 'Prawns are done when fully pink with a slight curl. Overcooked prawns go rubbery within 30 seconds.', why_note: 'Prawns cook far faster than most people expect. They go from raw to overcooked in about 90 seconds in hot broth. Pull them the moment they\'re pink.' },
     { id: 's6', title: 'Bowl up', content: 'Divide noodles between bowls, ladle over the broth with prawns and tofu. Top with bean sprouts, fresh coriander, and a lime wedge. Serve with sambal on the side for heat adjustment.', why_note: 'Assembling in bowls (not the pot) keeps the noodles from going soggy. Bean sprouts should have some crunch — add them at the last second.' },
   ],
+  total_time_minutes: 75,
+  active_time_minutes: 50,
+  equipment: [
+    "Medium saucepan for the prawn stock",
+    "Blender or food processor for the laksa paste (a mortar is traditional but very laborious — a blender is accurate here)",
+    "Large pot for building and simmering the broth",
+    "Non-stick frying pan for the tofu (separate from the broth pot)",
+    "Fine-mesh strainer for the prawn stock",
+    "Large deep bowls, warmed before serving",
+  ],
+  before_you_start: [
+    "Do not throw away the prawn shells. The prawn stock you make from them in the first step is the flavour base of the broth — without it you have a thin, one-dimensional result. Peel the prawns and start the stock before doing anything else.",
+    "The laksa paste must be fried until matang — until the oil visibly separates from the paste and pools around the edges. This takes 10–12 minutes over medium heat, stirring constantly. Under-cooked paste tastes raw, bitter, and harsh; properly fried paste smells sweet and deeply aromatic.",
+    "Pan-fry the tofu separately in its own pan until golden-brown on all sides before it goes into the broth. Tofu added directly to broth stays bland and falls apart. The golden crust is what gives it flavour and structure in the bowl.",
+  ],
+  mise_en_place: [
+    "Peel the prawns, keeping the shells and heads. Set the peeled prawns aside in the fridge. Start the prawn stock from shells immediately.",
+    "Prepare the laksa paste aromatics: peel and roughly chop shallots, garlic, galangal. Slice lemongrass into the tender lower third. Soak dried chillies in hot water 10 minutes until soft.",
+    "Press the tofu dry with paper towel — as dry as you can get it. Pat several times, then set on a clean towel while you prepare everything else. Moisture is the enemy of browning.",
+    "Soak the rice vermicelli or hokkien noodles per packet instructions. Drain and set aside.",
+    "Prepare the toppings: halve the fish balls, pick and roughly chop the laksa leaves (Vietnamese mint), and slice the spring onion.",
+    "Measure out the coconut milk and have it ready to add in one pour.",
+  ],
+  finishing_note: "Taste the broth before assembling — it should be rich, coconutty, and spiced, with a clear prawn flavour underneath. If it tastes flat, check the salt and add a small squeeze of lime. The broth should be hot enough to cook the prawns in the bowl in about 90 seconds once ladled. Bowl up in this order: noodles first, then prawns and tofu, then broth ladled over hot, then toppings. The laksa leaves go in at the very end off the heat — they are not a garnish, they are the herb that completes the flavour. Serve immediately; noodles absorb broth fast.",
+  leftovers_note: "Store broth and noodles separately. The noodles absorb all the broth within 30 minutes and go soft — combine only when serving. Broth keeps 3 days in the fridge and freezes well for 2 months. Prawns do not reheat well; cook fresh each time. Tofu can be reheated in a dry pan. The broth will thicken slightly from the coconut milk in the fridge — add a splash of water when reheating.",
 };
 
 const CHAR_KWAY_TEOW: Recipe = {
@@ -2867,6 +3373,31 @@ const CHAR_KWAY_TEOW: Recipe = {
     { id: 's4', title: 'Scramble in the eggs', content: 'Push noodles to the side. Add eggs to the empty wok centre — let them set slightly for 10 seconds, then scramble loosely and toss into the noodles before fully set.', timer_seconds: 20, why_note: 'Half-scrambled eggs integrated into the noodles is the texture you want — neither a separate omelette nor invisible. Adding fully cooked eggs to the noodles gives rubbery chunks; adding raw egg directly to the noodles gives a wet, coating result.' },
     { id: 's5', title: 'Bean sprouts and greens, then plate', content: 'Add bean sprouts and chives. Toss 15 seconds — they should still have crunch. Immediately plate on a warm dish. Serve with fresh chilli slices.', timer_seconds: 15, stage_note: 'Bean sprouts should still have crunch. If they\'ve gone soft, you overcooked them by 20 seconds.', why_note: 'Bean sprouts wilt and release water in about 30 seconds of heat. That water steams the noodles and destroys the wok hei you just built. The 15-second toss is enough to warm them through while preserving crunch.' },
   ],
+  total_time_minutes: 20,
+  active_time_minutes: 20,
+  equipment: [
+    "Carbon steel wok (not non-stick — this dish requires temperatures that degrade non-stick coatings)",
+    "Wok spatula or a metal fish slice — you need the stiffness to press noodles against the metal",
+    "Bowl for pre-separating the noodles",
+    "Paper towel-lined plate for the lap cheong while it rests",
+  ],
+  before_you_start: [
+    "Cook 1–2 portions at a time, never more. Adding extra noodles drops the wok temperature below the threshold for wok hei and the batch stews instead of frying. If you need to feed 4, cook two separate batches back-to-back — the wok recovers heat faster than you think.",
+    "The wok must be screaming hot before anything goes in — significantly hotter than for any other dish. On a home hob this means 3–4 minutes at maximum heat. The visual test: a drop of water on the surface evaporates instantly and leaves no trace. Smoke rising without any food is correct.",
+    "The sequence of ingredients is not flexible. Lap cheong (Chinese sausage) goes in first because it renders fat that flavours the oil. Aromatics next. Prawns and noodles together. Eggs last, pushed to the side and scrambled separately before folding into the noodles. Scrambling eggs into the noodle mass produces a different texture and appearance.",
+  ],
+  mise_en_place: [
+    "Separate the fresh flat rice noodles by hand before they hit the wok — run your fingers through them to free every strand. Cold noodles from the fridge may need a brief soak in hot water to loosen.",
+    "Slice the lap cheong on a diagonal, 5mm thick. Set aside.",
+    "Mince the garlic. Set aside with the sliced chilli.",
+    "Peel and devein the prawns. Pat completely dry on paper towel — wet prawns steam rather than sear.",
+    "Beat the eggs lightly in a small bowl. Set aside.",
+    "Measure out the soy sauce, dark soy sauce, oyster sauce, and fish sauce into a single small bowl — they go in together in one motion during the cook.",
+    "Wash and drain the bean sprouts. Have the Chinese chives (or baby bok choy) chopped and ready.",
+    "Set everything out beside the wok before you turn the heat on. You will not have time to look for anything once cooking starts.",
+  ],
+  finishing_note: "The finished noodles should have some strands with dark, slightly charred edges — that is wok hei. The eggs should be visible as separate, glossy curds folded through rather than coating the noodles. The bean sprouts should still have some crunch — they go in at the very end and are moved no more than twice. Taste before plating: char kway teow should be savoury, slightly smoky, and deeply umami. A good squeeze of fresh lime at the table cuts the richness. Serve immediately, directly from the wok. Do not cover — trapped steam kills the texture.",
+  leftovers_note: "Char kway teow does not store well — the noodles continue absorbing the sauce and go stodgy, and the wok hei dissipates completely. Make and eat immediately. If you have leftovers, reheat in a very hot pan (not microwave) with a dash of water to prevent sticking — it will be passable but not the original dish.",
 };
 
 const BUTTER_CHICKEN: Recipe = {
@@ -3098,6 +3629,29 @@ const SAAG_PANEER: Recipe = {
     { id: 's4', title: 'Add spinach and simmer', content: 'Stir the blended spinach into the masala base. Simmer 5 minutes. Add the yoghurt one spoon at a time, stirring constantly — it will combine into the sauce rather than curdling. Add garam masala and lemon juice. Taste and adjust salt.', timer_seconds: 300, why_note: 'Garam masala goes in at the end because heat destroys its delicate aromatics — the cardamom and cloves that make garam masala distinctive evaporate quickly. Adding it with the other spices at the start is wasting it. The yoghurt goes in slowly because a sudden temperature shock can cause it to split.' },
     { id: 's5', title: 'Add paneer, serve', content: 'Add the golden paneer cubes, stir gently to coat. Simmer 3 minutes — long enough for the flavours to absorb into the paneer crust, not so long it softens again. Serve with basmati rice or naan.', timer_seconds: 180 },
   ],
+  total_time_minutes: 45,
+  active_time_minutes: 40,
+  equipment: [
+    "Non-stick pan or well-seasoned cast iron for frying the paneer (paneer sticks badly in stainless)",
+    "Large pan or wide saucepan for the masala base and final dish",
+    "Stick blender or food processor (optional — for a partially-blended texture)",
+    "Tongs for turning the paneer cubes without breaking them",
+  ],
+  before_you_start: [
+    "Fry the paneer first, before any other cooking. Pan-fried paneer gets a golden crust that gives it flavour and structural integrity in the sauce. Paneer added directly to the sauce without frying stays pale, bland, and falls apart into crumbles.",
+    "Fresh spinach — not frozen. Frozen spinach is wet and gives a flat, dull result. Fresh spinach wilts down to a fraction of its volume (400g raw becomes about 150g cooked) — this is normal, not a mistake. Do not reduce the raw quantity.",
+    "Do not blend the spinach smooth. This dish is saag — a textured, roughly-chopped spinach sauce. A completely smooth purée is a different preparation. A few pulses in the blender (or leave it unblended) gives the right texture.",
+  ],
+  mise_en_place: [
+    "Cut the paneer into 2–3cm cubes. Pat completely dry with paper towel — surface moisture causes spitting and prevents browning.",
+    "Wash the spinach thoroughly. No need to dry it — the water that clings is useful for wilting. Stack the leaves and remove the thick stalks if they are tough.",
+    "Finely dice the onion. Grate or crush the garlic. Grate the ginger.",
+    "Measure out all the spices into a small bowl together: cumin seeds, coriander, turmeric, garam masala, chilli powder. They go in at the same point.",
+    "Dice the tomatoes or measure out the tinned chopped tomatoes.",
+    "Set out the cream or yoghurt for finishing — have it at room temperature so it does not split when it hits the hot pan.",
+  ],
+  finishing_note: "Before the paneer goes back in, taste the spinach masala — it should be well-seasoned, gently spiced, and earthy rather than sharp. If it tastes acidic, the tomatoes need another minute of cooking. Fold the fried paneer cubes in carefully and let them warm through for 2–3 minutes — stirring too aggressively breaks them up. Add the cream or yoghurt off the heat, stirring in gently. The finished dish should be deep green, glossy, and thick enough to coat the paneer without pooling. Serve over basmati with warm roti or naan alongside.",
+  leftovers_note: "Saag paneer keeps well for 3 days in the fridge and the spices deepen overnight. Reheat gently in a pan over low heat with a splash of water — the cream or yoghurt can split on high heat. If using yoghurt instead of cream, add a little extra when reheating to freshen it. The paneer will soften slightly from soaking in the sauce — this is fine and some people prefer it. Does not freeze well; the spinach becomes watery and the paneer rubbery.",
 };
 
 const CHICKEN_KATSU: Recipe = {
@@ -3199,6 +3753,30 @@ const CHICKEN_KATSU: Recipe = {
     { id: 's4', title: 'Shallow-fry at 170°C', content: 'Heat oil in a heavy pan to 170°C — use a thermometer. Fry 2 pieces at a time, 4–5 minutes per side until deep golden. The internal temp should hit 74°C. Rest on a wire rack, not paper towel — paper makes the bottom go soggy.', timer_seconds: 540, stage_note: 'Deep golden brown panko, not pale gold. Pale panko is undercooked. The oil should bubble steadily around the chicken.', why_note: '170°C is the sweet spot — hot enough to cook through without burning the panko. 180°C burns the outside before the centre reaches safe temp. 160°C produces pale, oily katsu because moisture can\'t escape fast enough. The wire rack keeps air circulating under the crust.' },
     { id: 's5', title: 'Slice and serve', content: 'Slice each piece on the diagonal into thick strips — this is the traditional presentation and makes them easy to eat with chopsticks or a fork. Fan them over steamed rice. Pour the curry sauce next to (not over) the chicken, so the crust stays crispy. Add shredded cabbage on the side.', why_note: 'Pouring sauce over the katsu turns the panko crust soggy in about 90 seconds. Serving the sauce alongside preserves the crust for the duration of the meal. Traditional Japanese restaurant plating always separates them.' },
   ],
+  total_time_minutes: 60,
+  active_time_minutes: 45,
+  equipment: [
+    "Medium saucepan for the curry sauce",
+    "Three wide, shallow bowls for the breading station (flour, egg, panko)",
+    "Large heavy-bottomed pan or cast iron skillet for shallow-frying (needs to hold the oil at a consistent depth)",
+    "Cooking thermometer for oil temperature",
+    "Tongs for turning the katsu without puncturing the crust",
+    "Wire rack over a tray for resting (not paper towel — paper towel traps steam and softens the underside)",
+  ],
+  before_you_start: [
+    "Make the curry sauce first — before you touch the chicken. The sauce needs 30 minutes of active building and then a further simmer to develop depth. The chicken takes 15 minutes to crumb and 6–8 minutes to fry. Starting with the sauce means both are ready at the same time.",
+    "The oil temperature for frying must be 170°C — not hotter. Panko crumbs are larger and more porous than standard breadcrumbs and absorb heat quickly. Higher temperature browns the crumbs before the chicken cooks through. Use a thermometer or test with a single panko crumb — it should sizzle steadily but not smoke immediately.",
+    "Pound the chicken breast to an even 1cm thickness before crumbing. Uneven thickness means the thin end overcooks while the thick end is still raw. A zip-lock bag and a rolling pin do the job without mess.",
+  ],
+  mise_en_place: [
+    "Make the curry sauce first: dice onion and carrot finely, sauté until soft, add garlic and ginger, then the curry powder and garam masala. Add stock, simmer 15–20 minutes, then blend smooth and return to the pan.",
+    "While the curry simmers: pound each chicken breast inside a zip-lock bag with a rolling pin to 1cm even thickness. Season with salt and pepper on both sides.",
+    "Set up the breading station in order: plain flour in the first bowl, beaten egg in the second, panko in the third. Line them up in the order they are used.",
+    "Pour the oil into the frying pan to a depth of 1cm. Begin heating to 170°C while you crumb the chicken.",
+    "Crumb the chicken: flour (shake off excess) → egg (let the excess drip) → panko (press firmly on all sides). Set on a plate. Crumb all pieces before the first one goes in the oil.",
+  ],
+  finishing_note: "The katsu is done when the panko is an even, deep golden-brown all over and the internal temperature reaches 74°C, or when a skewer inserted in the thickest part shows no resistance. Rest on a wire rack for 2–3 minutes — resting lets the crust set and the juices redistribute. Slice on a diagonal into 2cm strips before plating; this is how katsu is served and it allows the sauce to contact the cut surface. Plate over steamed short-grain rice, ladle the curry sauce alongside rather than poured over — the user can apply it themselves to keep the crust intact.",
+  leftovers_note: "Store curry sauce and katsu separately. The katsu crust goes soft overnight as it absorbs moisture — reheat in a 200°C oven for 8–10 minutes on a wire rack to restore some crunch. The microwave makes the crust completely soft. Curry sauce keeps 4 days in the fridge or freezes for 2 months. Sliced leftover katsu is excellent in a sandwich with Japanese mayo and shredded cabbage (katsu sando).",
 };
 
 const TOM_YUM: Recipe = {
@@ -3309,6 +3887,29 @@ const TOM_YUM: Recipe = {
     { id: 's4', title: 'Season the broth', content: 'Add fish sauce and palm sugar. Taste the broth — it should be intensely savoury, pleasantly salty, with a hint of sweetness. Adjust. The sourness comes in the next step after the heat is off.', why_note: 'Season without the lime juice first. Lime juice in a hot pot evaporates and tastes flat — you end up adding more and more to compensate. Adding it off-heat preserves the bright, sharp citrus that defines the soup.' },
     { id: 's5', title: 'Add prawns, finish, serve immediately', content: 'Add prawns to the simmering broth. Cook exactly 2 minutes — they should just turn opaque. Remove from heat immediately. Add lime juice, coriander, and spring onions. Taste one more time and adjust. Serve instantly into warmed bowls.', timer_seconds: 120, stage_note: 'Prawns are done when just opaque throughout — about 2 minutes. Do not let them sit in the broth cooking further.', why_note: 'Everything in the final 30 seconds is an off-heat addition. The lime juice is added after the heat source is off. The fresh herbs wilt instantly in the hot broth — that\'s fine, it\'s intended. Serve immediately: this soup does not hold.' },
   ],
+  total_time_minutes: 35,
+  active_time_minutes: 30,
+  equipment: [
+    "Medium saucepan for the prawn stock",
+    "Separate pot for the soup (or the same pot, strained and returned)",
+    "Fine-mesh strainer for straining the prawn stock",
+    "Deep serving bowls — the aromatics stay in the bowl, so the bowl needs depth for the lemongrass stalks",
+  ],
+  before_you_start: [
+    "Do not throw away the prawn shells and heads. They are the stock — the entire flavour base of the soup. Peel the prawns first, start the shell stock immediately, and peel nothing else until the stock is simmering.",
+    "The aromatics — lemongrass, galangal, kaffir lime leaves — are left in the bowl when serving. They are not removed or strained. They continue infusing the broth as you eat. Do not chew them.",
+    "Tom yum is aggressively sour and spicy — this is correct. The international restaurant version is often diluted to palatability. The balance is right when the lime acid is almost sharp, the chilli heat builds slowly, and the galangal and lemongrass are the dominant aromas. If it tastes mild or flat, it is under-seasoned.",
+  ],
+  mise_en_place: [
+    "Peel and devein the prawns, reserving all shells and heads. Set the peeled prawns aside in the fridge until needed.",
+    "Start the prawn stock: sauté shells and heads in a dry pot until pink and fragrant (2–3 minutes), then cover with cold water and simmer 15 minutes. Strain and discard the shells.",
+    "While the stock simmers: bruise the lemongrass stalks with the back of a knife and cut into 5cm pieces. Slice the galangal into thin coins — no need to peel. Tear the kaffir lime leaves in half along the spine.",
+    "Halve the mushrooms (oyster, straw, or button — any work).",
+    "Slice the bird's eye chillies. Set aside — they go in with the seasoning at the end so you can control the heat.",
+    "Measure out the fish sauce and lime juice. Taste-test the ratio together on a spoon before adding to the soup — you want assertively salty from the fish sauce and very sour from the lime, then adjust.",
+  ],
+  finishing_note: "Season the broth before the prawns go in — taste fish sauce and lime juice together, adding each separately to get the balance right. The soup should be salty, sour, and hot in that order when you taste it on a spoon. Add the prawns last and cook just until pink and curled — 90 seconds in simmering broth, no more. Overcooked prawns are rubbery and the window is narrow. Ladle immediately into warmed bowls, making sure lemongrass, galangal, and kaffir lime leaves are distributed through each bowl. A final squeeze of fresh lime over the bowl at the table brightens it. Eat hot and immediately.",
+  leftovers_note: "Tom yum does not store well once assembled — the prawns continue cooking in the residual heat and go rubbery, and the lime juice loses its brightness. Store broth separately without prawns for up to 2 days in the fridge. Reheat the broth to a gentle simmer and add fresh prawns each time. The aromatics (lemongrass, galangal, kaffir lime) can be reused once if kept in the broth — by the third use they are spent. Freezing is not recommended; the lime flavour becomes dull and flat.",
 };
 
 const BARRAMUNDI: Recipe = {
@@ -3657,6 +4258,31 @@ const FLOUR_TORTILLAS: Recipe = {
     },
   ],
   categories: { cuisines: ['mexican'], types: ['baking'] },
+  total_time_minutes: 90,
+  active_time_minutes: 35,
+  equipment: [
+    "Kitchen scale accurate to 1g",
+    "Large mixing bowl",
+    "Rolling pin (thinner is better for tortillas — standard thickness dowel, not a handled French pin)",
+    "Cast iron pan or heavy-based frying pan (non-stick works but gives less even heat)",
+    "Lidded pot for stacking the cooked tortillas (keeps them warm and pliable)",
+    "Clean tea towel for the inside of the pot (absorbs condensation)",
+  ],
+  before_you_start: [
+    "Weigh every ingredient. Flour tortillas are a hydration ratio — a heaped cup of flour versus a level one can be 20g different, which changes the dough character entirely. Baking rewards precision; this recipe was developed and tested by weight, not volume.",
+    "Use lard, not butter, not oil. Lard coats the flour proteins before the water touches them, which produces a short, pliable texture rather than a bready chew. Butter has too much water; vegetable oil doesn't coat the flour in the same way. If lard is unavailable, vegetable shortening is the next-best substitute.",
+    "The rest after kneading is not optional — it is the mechanism. Gluten tightens during kneading; 45–60 minutes of rest relaxes it so the dough rolls thin without springing back. A dough that resists rolling has not rested long enough. Set a timer and wait.",
+  ],
+  mise_en_place: [
+    "Weigh 200g plain flour, 4g salt, and 40g lard (or vegetable shortening) into separate containers before mixing begins.",
+    "Heat 130ml water to 60°C — hot but not scalding. A thermometer is useful; otherwise, it should be too hot to hold your finger in for more than 2 seconds.",
+    "Combine the flour and salt in a large bowl and mix through.",
+    "Rub the lard into the flour with your fingertips until the mixture looks like fine breadcrumbs with no visible clumps of fat. This takes 3–4 minutes and is worth doing thoroughly.",
+    "Add the hot water and mix until a rough dough forms, then knead for 5–8 minutes until smooth and silky. Do not add more flour — the dough starts tacky and resolves with kneading.",
+    "Divide into five equal balls of about 40g each. Cover with a damp tea towel and rest at room temperature for at least 45–60 minutes.",
+  ],
+  finishing_note: "A properly rested dough ball should roll to 2–3mm thickness — roughly the size of a small side plate — without springing back. If it resists, cover it and rest it 5 more minutes before trying again. Cook in a dry pan over medium heat. Three flips: 10 seconds on the first side, 15 seconds on the second, then the third flip produces the puff — steam inflates a pocket between the two layers like a balloon. When it settles back, it is done. Stack immediately in a lidded pot with a tea towel inside the lid to catch condensation. The steam in the pot is what keeps them soft and pliable for up to 20 minutes. Left on a bare plate, they stiffen in 2 minutes.",
+  leftovers_note: "Flour tortillas keep 2–3 days at room temperature in an airtight bag, or refrigerated for up to a week. To reheat: 15–20 seconds in a dry hot pan, or wrapped in a damp paper towel in the microwave for 20 seconds. Freeze between layers of baking paper for up to 2 months — thaw at room temperature. Stale tortillas that have gone dry can be cut into triangles, fried briefly in hot oil, and used as totopos (chips) for guacamole or bean dip.",
 };
 
 // ────────────────────────────────────────────────────────────────────────────
