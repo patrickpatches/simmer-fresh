@@ -642,7 +642,7 @@ export default function PantryTab() {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 10,
-              backgroundColor: tokens.surface ?? tokens.cream,
+              backgroundColor: tokens.cream,
               borderRadius: 14,
               borderWidth: 2,
               paddingHorizontal: 14,
@@ -1296,7 +1296,7 @@ export default function PantryTab() {
             onPress={(e) => e.stopPropagation?.()}
             style={{
               width: '100%',
-              backgroundColor: tokens.surface ?? tokens.cream,
+              backgroundColor: tokens.cream,
               borderRadius: 20,
               padding: 20,
               borderWidth: 1,
