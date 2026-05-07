@@ -96,22 +96,17 @@ The Edit tool truncated `pantry.tsx` and `recipe/[id].tsx` mid-write twice durin
 
 `npx tsc --noEmit -p .` returns clean for both modified files. Remaining errors in the broader project are missing-module errors for npm packages not installed in this sandbox — not regressions.
 
+## Build & deploy state at session end
+
+- Commit `4725618` is on `origin/main`.
+- **Build #93 dispatched** at Patrick's request — https://github.com/patrickpatches/hone/actions/runs/25489339565 (workflow_dispatch, profile=preview, ref=main).
+- **Build #92 also exists and was successful** on the same commit (`4725618`) — completed at 2026-05-07T07:53:28Z. The APK from #92 already contains both fixes; either #92's or #93's artifact will work.
+- Patrick observed doubled `+`/`✓` glyphs on the Plan button on his earlier APK. Root cause: commit `c302f44` had `<Icon name=plus|check />` PLUS Text content `'+ Plan this recipe' / 'In your plan ✓'` — both rendering. Fixed in `4725618` by removing the embedded glyphs from the text content; only the Icon now renders. Visible on whichever new APK he installs.
+
 ## What Patrick needs to do next
 
-**Stale git lock — must clear before commit.** A 4-day-old `.git/index.lock` (from 3 May 10:47) is blocking commits on this repo. The sandbox user does not have permission to remove it. From Windows PowerShell:
-
-```powershell
-Remove-Item C:\Users\patri\hone\.git\index.lock
-```
-
-Then `git add` and commit the four files listed below. The file changes are already on disk — only the commit step is blocked.
-
-1. Once the lock is cleared, commit and push these files (the per-file changes are valid and ready):
-   - `mobile/app/recipe/[id].tsx`
-   - `mobile/app/(tabs)/pantry.tsx`
-   - `BUGS.md`
-   - `docs/sessions/Hone_Session_Report_07_May_2026_3.md`
-2. Trigger a build (REGN-006 + REGN-007 fixes are in this commit).
+1. Uninstall the existing Hone app on the phone (Android keeps the previous install's resources around if you only sideload over it).
+2. Install the APK from build #93 (or #92 — either works).
 3. On-device, verify:
    - **REGN-006**: open any recipe — Equipment, Prep, Before-you-start, Finishing, Leftovers sections should appear for the 6 Batch 1 recipes (chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel). The header should read "Prep" (not "Mise en place").
    - **REGN-007**: open Pantry, tap a + chip → confirm chip flips to ✓ and undo banner appears. Then walk all 5 paths above.
@@ -119,6 +114,4 @@ Then `git add` and commit the four files listed below. The file changes are alre
 
 ## Tracked follow-ups
 
-- Engineering migration of the 11 yellow-row recipes' DECISION-009 data from `docs/coo/culinary-research/*.md` into `seed-recipes.ts`. Estimate: half a session.
-- Cook authoring of research for the 27 white-row recipes (Batch 2). Cook handoff is in `docs/coo/handoffs.md`.
-- File-write truncation regression. Same class as REGN-003. Worth a risk-register entry.
+- Engineering migration of the 11 yellow-row recipes' DECISION-009 data

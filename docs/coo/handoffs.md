@@ -25,6 +25,39 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → COO · 2026-05-07 · OPEN
+**From:** Senior Engineer (Claude)
+**Subject:** REGN-006 + REGN-007 fixed; build #93 dispatched on `4725618`; Cook Batch 2 + 11-recipe migration still open
+**Why:** Patrick reported Equipment + Prep sections missing on most recipes (REGN-006), and Pantry STILL NEED chip state broken across three symptoms (REGN-007). Both have been root-caused, fixed in code, pushed to `main`, and a fresh APK build is in flight. There are tracked follow-ups the COO should be aware of and route correctly.
+
+**What's done:**
+- Diagnosed REGN-006 as a UI regression in `mobile/app/recipe/[id].tsx` — working tree had dropped 443 lines including the entire DECISION-008 UI block (At a glance / What to know / Equipment / Prep / Finishing & tasting / Leftovers & storage). Data was in the schema and SQLite; UI just wasn't rendering it. Restored from HEAD; re-applied the Pressable+View Android split on header buttons, title-card pill, Watch link, expand chip, and `MiseItem`. Renamed UI label "Mise en place" → "Prep" per Patrick — schema field `mise_en_place` unchanged.
+- Diagnosed REGN-007 as a single architectural bug behind three symptoms: chip's `added` boolean lived in a local `Set<string>` on `RecipeMatchCard`. Inverted the state flow — chip state is now DERIVED from `shoppingNameSet` (a memoised normalised name set off the live `shoppingItems`). All mutations route through `addToShoppingList` / `removeFromShoppingList` on the parent. `useFocusEffect` re-fetches the shopping list on tab return so Shop-tab edits propagate. Toast holds the ingredient *name*, not chip state, so undo survives chip re-renders. All 5 chip paths Patrick called out are wired in code.
+- Audited every recipe in `seed-recipes.ts`. Result: 6 fully populated (Batch 1), 11 have research files ready and need engineering migration, 27 have no research yet (Cook's Batch 2). Audit table is in BUGS.md and the session report.
+- Pushed commit `4725618` to `origin/main`.
+- Dispatched build #93 (`https://github.com/patrickpatches/hone/actions/runs/25489339565`) on Patrick's explicit go.
+- Wrote session report `docs/sessions/Hone_Session_Report_07_May_2026_3.md`.
+- Per CLAUDE.md, **no GitHub issues self-closed**. Patrick validates and closes.
+
+**What's needed (COO actions):**
+1. **Track build #93.** When it finishes and Patrick validates the on-device fixes for REGN-006 and REGN-007, close those tickets in BUGS.md and update the issue tracker.
+2. **Open a new handoff to the Engineer for the 11-recipe DECISION-009 migration.** Source data is in `docs/coo/culinary-research/*.md` for: smash-burger, pasta-carbonara, weekday-bolognese, butter-chicken, thai-green-curry, pavlova, roast-chicken, barramundi-lemon-butter, lamb-shawarma, hummus, pad-thai. Estimate: half a session. Until that lands, those 11 recipes will render the screen exactly as before — no broken state, just fewer sections.
+3. **Cook's Batch 2 (27 recipes)** still has no research and is blocked on the Cook authoring `docs/coo/culinary-research/<recipe-id>.md` files. The list is in BUGS.md REGN-006 audit table. Decide whether to escalate or spread across multiple cook sessions.
+4. **Risk register entry needed.** The Edit tool truncated `pantry.tsx` and `recipe/[id].tsx` mid-write twice during this session — same class as REGN-003 (3 May). Caught both times by `npx tsc --noEmit` flagging JSX-not-closed errors at impossible-looking line numbers, then verified with `tail -c` showing the byte stream ending mid-attribute. Worth an `R-NNN` entry calling for "always run `tsc --noEmit` after any large file edit; verify the last line before assuming the write completed."
+
+**Files touched:**
+- `mobile/app/recipe/[id].tsx` — DECISION-008 sections restored, "Prep" rename, 5× Pressable+View splits.
+- `mobile/app/(tabs)/pantry.tsx` — chip state architecture inverted, `useFocusEffect` added, `useRef` typing fixed (pre-existing TS error).
+- `BUGS.md` — REGN-006 + REGN-007 entries with full root-cause notes and audit table.
+- `docs/sessions/Hone_Session_Report_07_May_2026_3.md` — session report.
+- This file — current handoff.
+
+**Blocks:**
+- Cook's Batch 2 authoring blocks the 27-recipe DECISION-009 migration to seed data.
+- Engineering 11-recipe migration is unblocked — research files exist; just needs Engineer time.
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-06 · OPEN
 **From:** Culinary Verifier (Claude)
 **Subject:** Step-flow audit — 28 issues across 19 recipes in seed-recipes.ts
@@ -837,48 +870,3 @@ _(Designer-to-engineer handoff folded into the consolidated Senior Engineer mult
 **What's needed:**
 1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
 2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
-3. **Pre-flight checklist** Patrick uses every shoot weekend. One-page printable. **Include dark surface recommendations (dark slate, black board, charcoal linen) as preferred first-choice props for all dishes where they work aesthetically.**
-4. **Post-processing preset** documented (white balance, contrast, sharpening — so reshoots match). **For dark direction: slightly richer shadows, deeper blacks, food colours should feel saturated against the dark bg. Avoid over-brightening whites.**
-5. **Schedule recommendation** — propose which 2 showcase recipes to shoot each weekend, ordered by which are easiest to get right first (build Patrick's confidence) and which need most attention.
-**Coordination:** New showcase recipe (chicken schnitzel) needs to be in the seed library before its shoot weekend — coordinate with Senior Engineer on timing.
-**Dark surface prop notes:** The 2×2 browse grid in the approved prototype uses square crops. Props that disappear into the edges of the frame (dark plates, dark boards) look best — the food is the hero, not the surface. Avoid: white plates, bright-wood boards, busy printed linens. Prefer: matte black slate, charcoal/grey linen, raw dark timber, brushed steel.
-**Files touched:** `docs/coo/photography/shot-list-showcase.md`, `docs/coo/photography/shot-list-hero-only.md`, `docs/coo/photography/preflight-checklist.md`, `docs/coo/photography/post-processing-preset.md`
-**Blocks:** First photo weekend (3-4 May 2026)
-
-### HANDOFF → Culinary & Cultural Verifier · 2026-04-29 · OPEN (URGENT)
-**From:** COO
-**Subject:** Audit existing recipes + provide source recipes for 6 NEW additions
-**Why:** v1.0 launch library expanded per DECISION-004. Now ~34 recipes need audit, AND 6 new recipes need authoritative sources before Senior Engineer can populate them.
-**What's done:** Brief at `docs/coo/specialists/culinary-verifier.md`. Recipe library locked per DECISION-004.
-**What's needed:**
-
-1. **Provide source recipes for the 6 new dishes** that Senior Engineer needs to populate. For each, deliver: a chef-attributed source URL (or "traditional" framing if no chef is right), the ingredient list, the steps, plausible substitutions list, the cuisine and type categories, and Australian English check. Output to `docs/coo/culinary-research/<recipe-slug>.md`. The 6:
-   - Chicken schnitzel (consider Adam Liaw or another modern AU chef)
-   - Easy chicken & vegetable stir-fry (Bill Granger, RecipeTinEats Nagi, or "traditional Australian weeknight")
-   - Beef lasagne (consider Marcella Hazan classic or modern AU)
-   - Roast lamb with rosemary & garlic (consider Maggie Beer or "Sunday roast traditional")
-   - Fish & chips (likely "Australian Friday traditional")
-   - Falafel (Levantine — credit cuisine + region; specific chef optional)
-
-2. **Audit pass** on all priority 17 recipes per the format in your brief. Output to `docs/coo/culinary-audit.md`. Required before launch.
-
-3. **Audit pass** on remaining seed library recipes (musakhan, mujadara, kafta, fattoush, lamb shawarma, char kway teow, ramen, katsu, etc.) — same format. Especially check: no Israeli labels for Levantine; no fabricated chef attributions; Australian English everywhere.
-
-**Sequence:** Item 1 first (Senior Engineer is blocked on it). Items 2-3 can run in parallel after.
-**Files touched:** `docs/coo/culinary-research/`, `docs/coo/culinary-audit.md`, `mobile/src/data/seed-recipes.ts` (read-only), `docs/prototypes/hone.html` (read-only)
-**Blocks:** Senior Engineer's recipe-add task (#1 above), Photography Director's showcase shoot for chicken schnitzel
-
-### HANDOFF → QA Test Lead · 2026-04-29 · OPEN
-**From:** COO
-**Subject:** Stand up the smoke-test checklist v1
-**Why:** Currently `docs/SMOKE-TEST.md` exists but isn't owned. We need it to be the gate before every build.
-**What's done:** Brief written in `docs/coo/specialists/qa-test-lead.md`.
-**What's needed:** Take ownership of `docs/SMOKE-TEST.md`, expand to cover: cold start time, scroll jank, dropped network mid-cook, TalkBack labels, 200% text scale, low storage, malformed user input.
-**Files touched:** `docs/SMOKE-TEST.md`
-**Blocks:** Internal Alpha track go-live (22 May 2026 milestone)
-
----
-
-## Recently completed
-
-_(Empty — no handoffs have been completed yet under this system. This is the first session running it.)_
