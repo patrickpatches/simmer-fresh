@@ -59,6 +59,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useScrollToTop } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { tokens, fonts, shadows } from '../../src/theme/tokens';
@@ -68,6 +69,7 @@ import {
   clearAllPantryItems,
   getAllRecipes,
   getPantryItems,
+  getShoppingItems,
   upsertPantryItem,
   deletePantryItem,
   upsertShoppingItem,
@@ -139,6 +141,11 @@ export default function PantryTab() {
 
   const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  // Shopping items must live on the pantry screen so chip state can be
+  // DERIVED from membership (REGN-007 architectural fix). Without this,
+  // the chip kept its own bool which couldn't sync back when Shop-tab
+  // hit the X, when undo fired, or when the user re-tapped a ✓ chip.
+  const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Search state
@@ -197,14 +204,18 @@ export default function PantryTab() {
     addedAt: Record<string, number>;
     label: string;
   } | null>(null);
-  const undoTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Shopping-list add undo state (3 s window — shorter than clear-all)
+  // Shopping-list add undo state (3 s window — shorter than clear-all).
+  // We hold the ingredient's *name* (not the chip's local state) so undo can
+  // find and remove the row even if the chip has re-rendered with a new
+  // shoppingItems list underneath it (REGN-007 path #2).
   const [shopUndo, setShopUndo] = useState<{
     id: string;
+    name: string;
     label: string;
   } | null>(null);
-  const shopUndoTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const shopUndoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -224,13 +235,15 @@ export default function PantryTab() {
     let cancelled = false;
     (async () => {
       try {
-        const [items, recs] = await Promise.all([
+        const [items, recs, shop] = await Promise.all([
           getPantryItems(db),
           getAllRecipes(db),
+          getShoppingItems(db),
         ]);
         if (!cancelled) {
           setPantryItems(items);
           setRecipes(recs);
+          setShoppingItems(shop);
         }
       } catch (e) {
         console.error('Pantry load failed', e);
@@ -242,6 +255,21 @@ export default function PantryTab() {
       cancelled = true;
     };
   }, [db]);
+
+  // Re-sync shopping items every time the user comes back to the Pantry tab.
+  // This is the one-way bridge that lets a Shop-tab X-removal show up here
+  // as the chip reverting to "+ need". REGN-007 path #5.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      getShoppingItems(db).then((items) => {
+        if (!cancelled) setShoppingItems(items);
+      }).catch((e) => console.error('shopping-list refetch failed', e));
+      return () => {
+        cancelled = true;
+      };
+    }, [db]),
+  );
 
   // ── Derived ────────────────────────────────────────────────────────────────
 
@@ -293,6 +321,16 @@ export default function PantryTab() {
     () => sortedPantry.filter((p) => p.have_it),
     [sortedPantry],
   );
+
+  // ── Derived chip state (REGN-007) ─────────────────────────────────────────
+  // The chip's added/needed visual is not its own — it's a function of the
+  // current shopping list. Anything that changes the list (add, undo, ✓-tap,
+  // Shop-tab X) flows through setShoppingItems and the chip auto re-derives.
+  const shoppingNameSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const it of shoppingItems) s.add(normalizeForMatch(it.name));
+    return s;
+  }, [shoppingItems]);
 
   // ── Autocomplete sections ──────────────────────────────────────────────────
   // When search is active, the SectionList shows these instead of browse content.
@@ -472,13 +510,20 @@ export default function PantryTab() {
     );
   }, [db, undoSnapshot]);
 
-  // ── Shopping list add + undo ───────────────────────────────────────────────
+  // ── Shopping list add / remove / undo ──────────────────────────────────────
+  // All mutations route through these helpers. Each one updates local state
+  // synchronously so the chip re-derives immediately, then persists to SQLite
+  // in the background. REGN-007 architectural fix.
 
   const addToShoppingList = useCallback(
     async (
       ing: { name: string; amount: number; unit: string },
       recipeId: string,
     ) => {
+      // No-op if already on the list — chip will already render as ✓.
+      // This protects against double-taps and stale render races.
+      if (shoppingNameSet.has(normalizeForMatch(ing.name))) return;
+
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       const id = shopId(ing.name);
       const item: ShoppingItem = {
@@ -493,8 +538,10 @@ export default function PantryTab() {
         added_at: Date.now(),
         sources: [{ kind: 'pantry-suggestion', recipe_id: recipeId }],
       };
+      // Optimistic local update — chip re-derives to ✓ immediately.
+      setShoppingItems((prev) => [item, ...prev]);
       if (shopUndoTimerRef.current) clearTimeout(shopUndoTimerRef.current);
-      setShopUndo({ id, label: `${ing.name} added to shopping list` });
+      setShopUndo({ id, name: ing.name, label: `${ing.name} added to shopping list` });
       shopUndoTimerRef.current = setTimeout(() => {
         if (!mountedRef.current) return;
         setShopUndo(null);
@@ -503,21 +550,48 @@ export default function PantryTab() {
         console.error('upsertShoppingItem failed', e),
       );
     },
-    [db],
+    [db, shoppingNameSet],
+  );
+
+  /**
+   * removeFromShoppingList — single pathway used by:
+   *   (a) clicking the ✓ chip in pantry (REGN-007 path #4)
+   *   (b) the toast Undo button (REGN-007 path #2 — wraps this)
+   *
+   * Looks the row up by name (chip only knows the ingredient, not the
+   * shop row id). If the row currently being undone matches, also clears
+   * the undo banner so the user doesn't get a ghost toast.
+   */
+  const removeFromShoppingList = useCallback(
+    async (ingName: string) => {
+      const target = shoppingItems.find((it) => sameNorm(it.name, ingName));
+      if (!target) return;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      // Optimistic local update — chip re-derives to "+ need" immediately.
+      setShoppingItems((prev) => prev.filter((it) => it.id !== target.id));
+      // If the active undo banner refers to this exact ingredient, dismiss it.
+      // Otherwise leave it alone so a chain of adds + one removal doesn't
+      // wipe the banner for an unrelated item.
+      if (shopUndo && sameNorm(shopUndo.name, ingName)) {
+        if (shopUndoTimerRef.current) clearTimeout(shopUndoTimerRef.current);
+        setShopUndo(null);
+      }
+      deleteShoppingItem(db, target.id).catch((e) =>
+        console.error('deleteShoppingItem failed', e),
+      );
+    },
+    [db, shoppingItems, shopUndo],
   );
 
   const undoShopAdd = useCallback(async () => {
     if (!shopUndo) return;
-    if (shopUndoTimerRef.current) clearTimeout(shopUndoTimerRef.current);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
       () => {},
     );
-    const id = shopUndo.id;
-    setShopUndo(null);
-    deleteShoppingItem(db, id).catch((e) =>
-      console.error('deleteShoppingItem during undo failed', e),
-    );
-  }, [db, shopUndo]);
+    // Route through removeFromShoppingList — same pathway, single source of
+    // truth. removeFromShoppingList clears the timer and the banner.
+    await removeFromShoppingList(shopUndo.name);
+  }, [shopUndo, removeFromShoppingList]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -1257,9 +1331,13 @@ export default function PantryTab() {
                     key={m.recipe.id}
                     match={m}
                     cardWidth={cardWidth}
+                    shoppingNameSet={shoppingNameSet}
                     onOpenRecipe={() => router.push(`/recipe/${m.recipe.id}`)}
                     onAddToShoppingList={(ing) =>
                       addToShoppingList(ing, m.recipe.id)
+                    }
+                    onRemoveFromShoppingList={(name) =>
+                      removeFromShoppingList(name)
                     }
                   />
                 ))}
@@ -1683,31 +1761,32 @@ function NoMatchesState() {
 /**
  * RecipeMatchCard — compact horizontal card for the match carousel.
  *
+ * v0.7.0 (REGN-007): chip state is now DERIVED, not stored. The card no
+ * longer keeps a local `addedNames` Set — it reads `shoppingNameSet` (a
+ * normalised set of names currently on the shopping list) and the chip
+ * decides its own visuals. Add/remove route to the parent so the source
+ * of truth (shoppingItems on PantryTab) updates and every chip sees it.
+ *
  * v0.6.0: derivationMatches from pantry-helpers Phase 2 are available on
  * the match object — the "from your X →" annotation can be wired here
- * once the design spec is finalised. For now the card renders identically
- * to v0.5.x.
+ * once the design spec is finalised.
  */
 function RecipeMatchCard({
   match,
   cardWidth,
+  shoppingNameSet,
   onOpenRecipe,
   onAddToShoppingList,
+  onRemoveFromShoppingList,
 }: {
   match: RecipeMatchResult;
   cardWidth: number;
+  shoppingNameSet: Set<string>;
   onOpenRecipe: () => void;
   onAddToShoppingList: (ing: { name: string; amount: number; unit: string }) => void;
+  onRemoveFromShoppingList: (name: string) => void;
 }) {
   const allReady = match.totalCount === match.haveCount;
-  const [addedNames, setAddedNames] = useState<Set<string>>(new Set());
-
-  const handleChipAdd = (
-    ing: { name: string; amount: number; unit: string },
-  ) => {
-    setAddedNames((prev) => new Set(prev).add(ing.name));
-    onAddToShoppingList(ing);
-  };
 
   return (
     <Pressable
@@ -1845,8 +1924,9 @@ function RecipeMatchCard({
                 <ChipAdd
                   key={ing.name}
                   ing={ing}
-                  added={addedNames.has(ing.name)}
-                  onAdd={handleChipAdd}
+                  added={shoppingNameSet.has(normalizeForMatch(ing.name))}
+                  onAdd={onAddToShoppingList}
+                  onRemove={onRemoveFromShoppingList}
                 />
               ))}
             </View>
@@ -1862,7 +1942,13 @@ function RecipeMatchCard({
  *
  * Two states:
  *   Need (default): rust outline pill, rust text, "+" prefix → clearly tappable
- *   Added:          rust fill, cream text, "✓" → clearly done
+ *   Added:          rust fill, cream text, "✓" → clearly done. Tapping again
+ *                    removes from the shopping list (REGN-007 path #4).
+ *
+ * The `added` prop is DERIVED upstream from shopping-list membership — this
+ * component never owns its own boolean. That's why undo, ✓-toggle, and
+ * Shop-tab X-removal all flow through the same chip without it ever being
+ * inconsistent with the actual list.
  *
  * Pressable is a bare touch target (android_ripple only). All visual styling
  * lives on the inner View with a static style object — Pressable function-style
@@ -1872,10 +1958,12 @@ function ChipAdd({
   ing,
   added,
   onAdd,
+  onRemove,
 }: {
   ing: { name: string; amount: number; unit: string };
   added: boolean;
   onAdd: (ing: { name: string; amount: number; unit: string }) => void;
+  onRemove: (name: string) => void;
 }) {
   const label = ing.amount > 0
     ? `${ing.amount}${ing.unit ? ' ' + ing.unit : ''} ${ing.name}`
@@ -1883,11 +1971,12 @@ function ChipAdd({
 
   return (
     <Pressable
-      onPress={() => !added && onAdd(ing)}
+      onPress={() => (added ? onRemove(ing.name) : onAdd(ing))}
       accessibilityRole="button"
+      accessibilityState={{ selected: added }}
       accessibilityLabel={
         added
-          ? `${ing.name} added to shopping list`
+          ? `${ing.name} on shopping list — tap to remove`
           : `Add ${label} to shopping list`
       }
       android_ripple={{ color: 'rgba(184,64,48,0.18)', borderless: false }}

@@ -12,47 +12,37 @@
 | ID | Title | Status | Notes |
 |---|---|---|---|
 | REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commit `1fca0aaa3d3d` — awaiting Patrick on-device validation |
-| REGN-005 | seed-recipes.ts truncation — build #86 failure | FIX ATTEMPTED | Commit `e4a9d5d6462d` — awaiting Patrick on-device validation |
-| REGN-006 | tokens.ts truncation — build #87 failure | FIX ATTEMPTED | Commit `23bd653ce877` — awaiting Patrick on-device validation (build #88 triggered) |
-| REGN-007 | pantry.tsx orphaned )} — builds #88/#89 JSX parse error | FIX ATTEMPTED | Commit `3444a540f8ab` — build #89 triggered |
+| REGN-006 | Equipment + Prep sections missing on most recipes | FIX ATTEMPTED | UI rendering restored 7 May 2026 — awaiting on-device validation |
+| REGN-007 | Pantry STILL NEED chip state broken (undo, X-removal, ✓-toggle) | FIX ATTEMPTED | Refactored to derive state from shopping list — awaiting on-device validation |
+
+**REGN-006 root cause (diagnosed 7 May 2026):**
+- Patrick reported Equipment + Mise en place sections missing across most recipes (not just SMASH_BURGER).
+- True root cause: regression in `mobile/app/recipe/[id].tsx`. Working tree had 1097 lines vs HEAD's 1540 — a previous edit dropped the entire DECISION-008 UI block (At a glance, What to know, Equipment, Prep/Mise, Finishing & tasting, Leftovers & storage). The data was in the schema, in seed-recipes.ts (for the 6 Batch 1 recipes), and in SQLite — but the UI had no `recipe.equipment.map(...)` block to render it. So the bug was 100% UI-side.
+- Fix: restored HEAD's full DECISION-008 rendering. Re-applied Pressable+View split on header buttons (back, plan toggle, heart), title-card pill, Watch link, expand-more chip, and MiseItem itself per the session-4 Report-4 lesson — Android silently drops layout/visual props from `style={({ pressed }) => ({…})}`. UI label changed "Mise en place" → "Prep" per Patrick 7 May; schema field stays `mise_en_place`.
+
+**REGN-006 audit table — populated state of every recipe:**
+
+The DECISION-008 fields are: `equipment[]`, `before_you_start[]`, `mise_en_place[]`, `finishing_note`, `leftovers_note`, `total_time_minutes`, `active_time_minutes`.
+
+| Status | Count | Recipes |
+|---|---|---|
+| ✅ Populated (Batch 1) | 6 | chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel |
+| 🟡 Research file ready, awaiting migration | 11 | smash-burger, pasta-carbonara, weekday-bolognese, butter-chicken, thai-green-curry, pavlova, roast-chicken, barramundi-lemon-butter, lamb-shawarma, hummus, pad-thai |
+| ⚪ No research yet — flagged for cook's Batch 2 | 27 | chicken-adobo, beef-stew, musakhan, kafta, fattoush, prawn-tacos-pineapple, sourdough-maintenance, sourdough-loaf, risotto, fish-tacos, french-onion-soup, braised-short-ribs, ramen, beef-wellington, dal, scrambled-eggs, aglio-e-olio, mujadara, sheet-pan-harissa-chicken, egg-fried-rice, nasi-lemak, beef-rendang, curry-laksa, char-kway-teow, saag-paneer, chicken-katsu, tom-yum, flour-tortillas |
+
+**Migration status:** UI now correctly renders the 5 sections for all 6 Batch 1 recipes. The 11 yellow recipes have full source data in `docs/coo/culinary-research/*.md` — engineering migration into seed-recipes.ts is a tracked follow-up (next session). The 27 white recipes need the Cook to author research first; Cook handoff is in `docs/coo/handoffs.md`. UI gracefully renders nothing for absent fields — no broken state on recipes without populated data.
+
+**REGN-007 root cause (diagnosed 7 May 2026):**
+- Three symptoms reported by Patrick: (1) Undo on chip-add toast doesn't work, (2) Hitting X in Shop tab doesn't revert pantry chip, (3) Clicking already-added ✓ chip doesn't remove from shopping list.
+- Single architectural root cause: the chip's `added` state was held in a local `Set<string>` inside `RecipeMatchCard`, NOT derived from shopping-list membership. Every state mutation was one-way (chip → shopping list). The chip had no way to learn that the shopping list had changed underneath it.
+- Fix: chip visual state is now DERIVED from `shoppingItems.some(it => sameNorm(it.name, ing.name))`. Pantry tab loads shopping items on mount and on focus (useFocusEffect), so it reflects Shop-tab edits when the user comes back. All mutations route through pantry's `addToShoppingList` / `removeFromShoppingList` helpers, both of which update local state synchronously and persist to SQLite. Undo button calls `removeFromShoppingList(name)` — same pathway as the ✓-toggle. Toast holds the ingredient *name* (not the chip's local state), so undo survives chip re-renders.
+
+---
 
 **REGN-001 root cause (diagnosed 6 May 2026):**
 - Previous fix addressed pantry carousel snap (REGN-001 original). The persistent card misalignment on the Kitchen screen is a separate but related issue.
 - Root cause: FlatList windowing. RecipeCard heights vary (1–2 line title/tagline = ~315–358px). On Android, items outside the render window unmount; re-entry uses estimated positions → visible shift on scroll back.
 - Fix: disabled windowing via `initialNumToRender={20}`, `maxToRenderPerBatch={20}`, `windowSize={99}`, `removeClippedSubviews={false}`. 17 active items (~340px each) = trivial memory cost.
-
-**REGN-005 root cause (diagnosed 7 May 2026):**
-- Culinary verifier applied step-flow fixes to a stale base of seed-recipes.ts (pre-Phase 2 batch). Write truncated mid-sentence at FLOUR_TORTILLAS s6, wiping Phase 2 batch (6 recipes) + export array.
-- Fix: restored from git commit `9f64870` (4,673 lines, brace-balance=0), applied all 10 HIGH culinary fixes on top, re-verified balance, pushed as `e4a9d5d6462d`.
-- Lesson: before writing any large TypeScript file, verify you are on the most recent GitHub HEAD, not a cached copy.
-
-**REGN-006 root cause (diagnosed 7 May 2026):**
-- `mobile/src/theme/tokens.ts` truncated at line 150 — `displayItalic` string cut off mid-value (`'PlayfairDisplay_500Med`). `fonts` export object never closed; `TokenName` type missing.
-- Metro bundler: `SyntaxError: Unterminated string constant. (150:17)` → build #87 failed at `Task :app:createBundleReleaseJsAndAssets`.
-- Fix: reconstructed complete 156-line file, pushed as commit `23bd653ce877`, build #88 triggered.
-- Class: same file-write truncation pattern as REGN-002/003/005. All large .ts file writes must pass brace-balance + line-count assertion before push.
-
-**REGN-007 root cause (diagnosed 7 May 2026):**
-- `mobile/app/(tabs)/pantry.tsx` line 1274: orphaned `)}` left behind after the browse-mode ScrollView was refactored to be "always visible" (no searchMode conditional). The Pressable fix pass removed the opening `{!searchMode ? (` but left the closing `)}`.
-- tsc: `TS1381: Unexpected token. Did you mean {'}'} or &rbrace;? (1274,8)` → Metro bundle fails.
-- Fix: deleted line 1274 (single-line removal), tsc clean, pushed as commit `3444a540f8ab`, build #89 triggered.
-- Why it was masked: builds #86 and #87 failed earlier (at Metro/seed-recipes.ts and tokens.ts) before reaching this file. Build #88 exposed it.
-
-
----
-
-## Session log — 7 May 2026
-
-### Builds dispatched this session
-| Build | Commit | Summary |
-|---|---|---|
-| #87 | `e4a9d5d6462d` | seed-recipes.ts restored + 10 HIGH culinary fixes — FAILED (tokens.ts truncation, unrelated) |
-| #88 | `23bd653ce877` | tokens.ts complete 156-line restore — fixes Metro SyntaxError at line 150 |
-| #89 | `3444a540f8ab` | pantry.tsx orphaned )} removed at L1274 — fixes TS1381 JSX parse error |
-
-### Changes this session
-- **seed-recipes.ts** — restored from git `9f64870`, applied 10 HIGH priority culinary fixes (sourdough rest step, ramen chashu prep note, chicken-adobo rice, rendang kerisik step, laksa tofu step, barramundi 20→50 min, pavlova 150→210 min, saag-paneer chef corrected, butter-chicken 90→330 min, roast-chicken 90→1530 min)
-- **tokens.ts** — restored complete `fonts` export (was truncated at line 150; missing `sans`, `sansBold`, `sansXBold`, closing brace, `TokenName` type)
 
 ---
 
@@ -64,37 +54,6 @@
 | REGN-001 (carousel) | Pantry recipe card carousel partial-snap | VALIDATED ✅ | 5 May 2026 — Patrick confirmed on-device |
 | REGN-002 | OneDrive null-byte corruption | VALIDATED ✅ | 28 Apr 2026 — process fix; write via GitHub API only |
 | REGN-003 | pantry.tsx file-write truncation | VALIDATED ✅ | 3 May 2026 — full-file rebuild + Python assert validation before push |
-
----
-
-## Session log — 7 May 2026
-
-### Commits pushed this session
-| Commit | Summary |
-|---|---|
-| `e4a9d5d6462d` | fix(seed-recipes): restore complete file from git history + apply 10 HIGH culinary fixes |
-| `f6c96cdad053` | docs: session report 07 May 2026 |
-
-### Root cause of build #86 failure
-Culinary verifier applied step-flow audit to an older base of `seed-recipes.ts`. Her commit truncated the file at FLOUR_TORTILLAS step s6 mid-sentence and wiped the Phase 2 batch (CHICKEN_SCHNITZEL, CHICKEN_VEG_STIR_FRY, BEEF_LASAGNE, ROAST_LAMB, FISH_AND_CHIPS, FALAFEL) plus the export array. Metro bundler failed during Gradle — APK never produced.
-
-### Fix
-- Pulled complete `seed-recipes.ts` from git commit `9f64870` (4,673 lines, balance=0)
-- Applied all 10 HIGH priority step-flow fixes from culinary verifier audit
-- Verified balance=0, 17 spot-checks passing
-- Pushed commit `e4a9d5d6462d`, triggered build #87
-
-### HIGH culinary fixes applied (build #87)
-1. sourdough-loaf: s6 "Rest — do not cut yet" added (1 hour timer)
-2. ramen: chashu pork i7 gets explicit prep note (make ahead / char siu sub)
-3. chicken-adobo: rice ingredient i8 added + concurrent cook notes in s2/s4
-4. beef-rendang: kerisik step s4b added (toast + pound during 2h braise)
-5. curry-laksa: tofu pan-fry step s3b added (before broth, not raw into broth)
-6. barramundi: time_min 20→50 + asparagus blanch note in s3
-7. pavlova: time_min 150→210 + room-temp egg white note in s1
-8. saag-paneer: bad video_url removed (channel homepage = Golden Rule 1 violation); chef → Hone Kitchen
-9. butter-chicken: time_min 90→330 (4h marinade now surfaced to user)
-10. roast-chicken: time_min 90→1530 (overnight dry brine now surfaced to user)
 
 ---
 
@@ -125,109 +84,4 @@ Culinary verifier applied step-flow audit to an older base of `seed-recipes.ts`.
 - **seed-recipes.ts** — Added `whole_food_verified: true` to SMASH_BURGER (Zod refine was blocking `refreshSeedRecipeFields` silently)
 - **types.ts** — Removed `whole_food_verified` `.refine()` enforcement per Patrick's explicit request; field data preserved, just not required
 
-### Root cause documented: Zod `.refine()` + `refreshSeedRecipeFields`
-- `refreshSeedRecipeFields` calls `RecipeSchema.safeParse(raw)` before updating DECISION-009 columns
-- SMASH_BURGER missing `whole_food_verified: true` → Zod refine returned `success: false` → recipe silently skipped → equipment/mise_en_place stayed NULL in SQLite
-- Fix: both adding the field to the seed data AND removing the hard enforcement
-
----
-
-## Session log — 6 May 2026 (Report 3)
-
-### Commits pushed this session
-| Commit | Summary |
-|---|---|
-| `38cbab3b` | Recipe screen: Watch/Plan button colours, equipment pills, mise header, expand chip |
-| `1fca0aaa` | FlatList windowing disabled — fixes REGN-001 card misalignment (awaiting validation) |
-
----
-
-## Session log — 6 May 2026 (Report 2)
-
-### Builds dispatched this session
-| Build | Commit | Summary |
-|---|---|---|
-| (queued) | `de86d257` + `e253b0e7` | DECISION-009 data for 12 chef recipes + retire 28 incomplete recipes to holding |
-
-### UI fixes pushed (commit `3a9da3ca3cf8`, earlier today)
-- Equipment section: horizontal ScrollView → flex-wrap View (long items now wrap)
-- Mise en place: paddingHorizontal 16 → 20 (Android border-radius clipping fix)
-
----
-
-## Session log — 5 May 2026
-
-### Builds dispatched this session
-| Build | Commit | Summary |
-|---|---|---|
-| #68 | `a5acbb2a50c3` | DECISION-011 — Sage palette (tokens.ts, _layout.tsx, pantry.tsx, shop.tsx) |
-
----
-
-## Session log — 4 May 2026
-
-### Builds dispatched this session
-| Build | Commit | Summary |
-|---|---|---|
-| #59 | `8c0db90873d7` | searchMode + autoFocus architecture — fixes REGN-004 multi-tap bug |
-| #60 | *(part of session)* | Pantry v4: inline dropdown, full-width bar, Cancel removed, browse always visible |
-| #61 | *(part of session)* | Pantry v4 polish: dynamic cardWidth, carousel momentum, pill collapse, banner pin, haptic snap |
-| #62 | `0b7ebe609142` | 7 UX polish fixes: See All nav, counter FadeIn, pill LinearTransition, animated search border, scroll-to-top, timer cleanup, accessibility labels |
-
-### Failures encountered and lessons learned
-
-**Failure 1 — Multi-tap / search auto-close (root cause of REGN-004)**
-- Pattern: `isFocused` state driven by `onFocus`/`onBlur` on TextInput
-- Why it breaks: Android IME fires `onLayout` during keyboard animation → spurious `onBlur` → state cycling
-- Lesson: Never use `onFocus`/`onBlur` as the trigger for UI mode switches on Android. IME event timing is unpredictable and variable across devices.
-- Fix: `searchMode` boolean (Pressable toggle) + `autoFocus` TextInput (native `requestFocus()` before JS event loop). See REGN-005 in regression-checklist.md.
-
-**Failure 2 — 150ms blur debounce was a patch, not a fix**
-- Pattern: Adding a debounce to fight spurious IME blurs
-- Why it breaks: Android IME timing can exceed any fixed debounce on lower-spec devices
-- Lesson: Debounces are bandages on the wrong wound. Fix the architecture, not the timing.
-
-**Failure 3 — "Semi full screen" content-hiding UX problem**
-- Pattern: `isSearchActive = searchMode` hid match banner + carousel when search was active
-- Why it breaks: Users couldn't see their matches while searching — the most useful moment to see them
-- Lesson: Search should overlay, not replace. Browse content should stay visible; dropdown overlays it.
-
-**Failure 4 — Carousel robotic snap**
-- Pattern: `disableIntervalMomentum` + `decelerationRate="fast"` on carousel ScrollView
-- Why it breaks: `disableIntervalMomentum` hard-stops at nearest snap point ignoring velocity — feels like hitting a wall
-- Lesson: Natural snap = `snapToInterval` + `decelerationRate={0.92}`. The snap grid handles alignment; momentum handles feel.
-
-**Failure 5 — Static CARD_WIDTH on different screen sizes**
-- Pattern: `const CARD_WIDTH = 260` hardcoded constant
-- Why it breaks: On large-screen Android devices (tablets, foldables, large phones), peek width becomes enormous and snap math breaks
-- Lesson: All layout dimensions that depend on viewport must derive from `useWindowDimensions()`.
-
-
----
-
-## Session log — 7 May 2026 (session 4 continuation)
-
-### Fixes pushed this session
-| Commit | File | Fix |
-|---|---|---|
-| `68ed391e2229` | `mobile/app/(tabs)/pantry.tsx` | Remove `tokens.surface ?? tokens.cream` → `tokens.cream` directly (L645, L1299). `surface` doesn't exist in dark palette — nullish coalescing always fell through anyway. Eliminates the TypeScript type noise. |
-
-### Deploy to GitHub Pages — root cause analysis
-
-The Pages CI workflow (`deploy.yml`) runs `npx expo export --platform web` on every push to main. Metro bundles the full app for web — same code path as the Android Metro bundle. This means **any syntax error that breaks the Android build also breaks the Pages build**.
-
-The Pages failures visible in the screenshot (commits fixing pantry.tsx `)}` and BUGS.md) were caused by the cascade of truncated files from the Pressable refactor pass: `tokens.ts`, `pantry.tsx` (orphaned `)}` after the `tokens.ts` fix landed), `ServingsSelector.tsx`, and `SwapSheet.tsx` were all still broken at that point.
-
-**These are now resolved.** All four truncated files have been fixed and pushed (builds #88–#90 / commits `23bd653`, `3444a540`, `59f16e09`, `e9e816de`). The next Pages run should go green.
-
-**No structural issue with deploy.yml** — the workflow is correct. `expo-haptics` no-ops silently on web; `react-native-web` is present; Expo Router is configured for single-page output. The failures were purely Metro syntax errors cascading from the truncation bug class.
-
-### REGN-008 — tokens.surface phantom reference (CLOSED)
-
-| Field | Value |
-|---|---|
-| Status | CLOSED — fixed commit `68ed391e2229` |
-| Severity | Low (no crash — nullish coalescing always used `tokens.cream`) |
-| Root cause | Dark palette refactor renamed/removed `surface` token; two occurrences in pantry.tsx not updated |
-| Fix | Direct `tokens.cream` in both places |
-| Awaiting | No validation needed — no behavioural change, purely eliminates type noise |
+### Root ca
