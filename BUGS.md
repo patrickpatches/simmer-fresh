@@ -14,6 +14,7 @@
 | REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commit `1fca0aaa3d3d` — awaiting Patrick on-device validation |
 | REGN-005 | seed-recipes.ts truncation — build #86 failure | FIX ATTEMPTED | Commit `e4a9d5d6462d` — awaiting Patrick on-device validation |
 | REGN-006 | tokens.ts truncation — build #87 failure | FIX ATTEMPTED | Commit `23bd653ce877` — awaiting Patrick on-device validation (build #88 triggered) |
+| REGN-007 | pantry.tsx orphaned )} — builds #88/#89 JSX parse error | FIX ATTEMPTED | Commit `3444a540f8ab` — build #89 triggered |
 
 **REGN-001 root cause (diagnosed 6 May 2026):**
 - Previous fix addressed pantry carousel snap (REGN-001 original). The persistent card misalignment on the Kitchen screen is a separate but related issue.
@@ -31,6 +32,12 @@
 - Fix: reconstructed complete 156-line file, pushed as commit `23bd653ce877`, build #88 triggered.
 - Class: same file-write truncation pattern as REGN-002/003/005. All large .ts file writes must pass brace-balance + line-count assertion before push.
 
+**REGN-007 root cause (diagnosed 7 May 2026):**
+- `mobile/app/(tabs)/pantry.tsx` line 1274: orphaned `)}` left behind after the browse-mode ScrollView was refactored to be "always visible" (no searchMode conditional). The Pressable fix pass removed the opening `{!searchMode ? (` but left the closing `)}`.
+- tsc: `TS1381: Unexpected token. Did you mean {'}'} or &rbrace;? (1274,8)` → Metro bundle fails.
+- Fix: deleted line 1274 (single-line removal), tsc clean, pushed as commit `3444a540f8ab`, build #89 triggered.
+- Why it was masked: builds #86 and #87 failed earlier (at Metro/seed-recipes.ts and tokens.ts) before reaching this file. Build #88 exposed it.
+
 
 ---
 
@@ -41,6 +48,7 @@
 |---|---|---|
 | #87 | `e4a9d5d6462d` | seed-recipes.ts restored + 10 HIGH culinary fixes — FAILED (tokens.ts truncation, unrelated) |
 | #88 | `23bd653ce877` | tokens.ts complete 156-line restore — fixes Metro SyntaxError at line 150 |
+| #89 | `3444a540f8ab` | pantry.tsx orphaned )} removed at L1274 — fixes TS1381 JSX parse error |
 
 ### Changes this session
 - **seed-recipes.ts** — restored from git `9f64870`, applied 10 HIGH priority culinary fixes (sourdough rest step, ramen chashu prep note, chicken-adobo rice, rendang kerisik step, laksa tofu step, barramundi 20→50 min, pavlova 150→210 min, saag-paneer chef corrected, butter-chicken 90→330 min, roast-chicken 90→1530 min)
