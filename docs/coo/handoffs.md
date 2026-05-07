@@ -25,6 +25,40 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-07 · OPEN (DECISION-009 — 11-recipe migration)
+**From:** COO
+**Subject:** Migrate 11 recipes that already have research files into seed-recipes.ts with full DECISION-009 fields
+**Why:** Per the engineer's 7 May handover, the recipe audit found 6 recipes fully populated (Batch 1), **11 recipes that have research `.md` files in `docs/coo/culinary-research/` ready to migrate**, and 27 recipes still waiting on Cook's Batch 2 research. The 11-recipe migration is unblocked — research already exists, no Cook input needed.
+**Recipe ↔ source file ↔ seed line map (verified 2026-05-07):**
+
+| Seed const | Line | Recipe id | Research file |
+|---|---|---|---|
+| `SMASH_BURGER` | 42 | `smash-burger` | `culinary-research/smash-burger.md` |
+| `PASTA_CARBONARA` | 253 | `pasta-carbonara` | `culinary-research/carbonara.md` |
+| `ROAST_CHICKEN` | 432 | `roast-chicken` | `culinary-research/roast-chicken.md` |
+| `HUMMUS` | 676 | `hummus` | `culinary-research/hummus.md` |
+| `THAI_GREEN_CURRY` | 1150 | `thai-green-curry` | `culinary-research/green-curry.md` |
+| `PAD_THAI` | 1320 | `pad-thai` | `culinary-research/pad-thai.md` |
+| `WEEKDAY_BOLOGNESE` | 1775 | `weekday-bolognese` | `culinary-research/bolognese.md` |
+| `LAMB_SHAWARMA` | 2178 | `lamb-shawarma` | `culinary-research/shawarma.md` |
+| `BUTTER_CHICKEN` | 2709 | `butter-chicken` | `culinary-research/butter-chicken.md` |
+| `BARRAMUNDI` | 3130 | `barramundi-lemon-butter` | `culinary-research/barramundi.md` |
+| `PAVLOVA` | 3200 | `pavlova` | `culinary-research/pavlova.md` |
+
+`FALAFEL` (line 4416) is the migration template — copy field shapes verbatim. Note `culinary-research` filenames don't always match recipe ids (e.g. `barramundi.md` → `barramundi-lemon-butter`, `green-curry.md` → `thai-green-curry`, `shawarma.md` → `lamb-shawarma`, `bolognese.md` → `weekday-bolognese`, `carbonara.md` → `pasta-carbonara`).
+
+**`whole_food_verified` audit (don't skip this):** Patrick's standing rule is `true` only when *every* ingredient is unprocessed. The smash-burger research file (line 14) explicitly resolves to `false` — American cheese is processed. Apply the same audit per recipe; flip to `false` wherever a stock cube, commercial sauce, processed cheese, or preserved condiment appears. List your decision per recipe in the commit message.
+**What's needed:**
+1. For each of the 11 recipes, read the corresponding `.md` source and migrate the new sections into `mobile/src/data/seed-recipes.ts`: `total_time_minutes`, `active_time_minutes`, `difficulty`, `equipment[]`, `before_you_start[]`, `mise_en_place[]`, `finishing_note`, `leftovers_note`. Existing fields (steps, ingredients, etc.) stay untouched.
+2. After each recipe migration, validate the schema parses (`npx tsc --noEmit`) and visually verify last 5 lines (per R-014 mitigation).
+3. After all 11, run a full `tsc --noEmit` on `seed-recipes.ts` and trigger a build.
+4. **Don't combine with the step-flow audit fixes** (separate 6 May handoff, 10 HIGH-priority items). Keep this as its own commit and build for review.
+**Cost:** Engineer estimates ~half a session.
+**Files touched:** `mobile/src/data/seed-recipes.ts`
+**Blocks:** Patrick seeing the full DECISION-008 sections on these 11 launch-priority recipes (currently they render with the same UI but with empty equipment/prep/finishing/leftovers — looks broken even though it's just missing data).
+
+---
+
 ### HANDOFF → COO · 2026-05-07 · OPEN
 **From:** Senior Engineer (Claude)
 **Subject:** REGN-006 + REGN-007 fixed; build #93 dispatched on `4725618`; Cook Batch 2 + 11-recipe migration still open
@@ -842,31 +876,4 @@ _(Substitution UI handoff superseded by the consolidated Senior Engineer multi-t
 ### HANDOFF → Product Designer · 2026-04-29 · DONE
 **From:** COO
 **Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
-**Why:** Engineer needs visual specs before building. Must respect terracotta/olive/gold tokens and Playfair/Source Sans 3 type scale. Per DECISION-003, the badge is needed for ~18 non-launch recipes.
-**What's done:** Both specs delivered 29 Apr 2026.
-- `docs/prototypes/substitution-sheet.html` — interactive bottom-sheet prototype. Full flow: ingredient tap → sheet open → substitution select → confirm. All quality pill states (perfect_swap / great_swap / good_swap / compromise), hard_to_find notice, all spacing/token annotations, engineering handoff block.
-- `docs/prototypes/recipe-card-states.html` — recipe card 3 states, recipe detail with/without stage photos, step placeholder, full spec tables. Badge is a dark-scrim pill ("Photos soon") bottom-right of card image — opposite corner from the existing difficulty badge. No collision.
-**Key design decisions:**
-- Badge text: "Photos soon" (not "Stage photos coming soon" — shorter, less internal-feeling)
-- Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no new schema field needed
-- Dark scrim on badge (not sky/blue) so it reads on any photo colour
-- Stage notice appears once in recipe detail (not repeated per step)
-**Files touched:** `docs/prototypes/substitution-sheet.html`, `docs/prototypes/recipe-card-states.html`
-
----
-
-_(Designer-to-engineer handoff folded into the consolidated Senior Engineer multi-task handoff above. Specs remain at the prototype paths for engineer reference.)_
-
-### HANDOFF → Photography Director · 2026-04-29 · IN PROGRESS (all pre-shoot deliverables delivered 1 May)
-**From:** COO · **Direction update 30 Apr · Schedule update 1 May**
-**Subject:** Build shot lists for showcase 10 + hero-only for everything else
-
-⚠️ **SCHEDULE UPDATE (1 May 2026):** Photography weekend 1 (3–4 May) is **lost** — Patrick is away on personal commitments. Re-baselined: **weekend 2 (10–11 May) is now the de facto first shoot weekend.** Phase A buffer is consumed; no further weekends can slip without launch impact. Patrick is using this morning's window to push design and product work forward instead — see new Product Designer handoff for Pantry redesign.
-
-⚠️ **DIRECTION UPDATE (30 Apr 2026):** Patrick chose the **Dark Dramatic** visual direction. The app bg is now near-black `#111111`. This changes what good photography looks like in the UI — food shot against dark surfaces, dark boards, and dark plates will integrate far more powerfully than food on white or wood. Factor this into all surface and prop recommendations below.
-
-**Why:** Photography is the longest pole. Per DECISION-004, scope is now ~34 recipes — 10 showcase (full stage shots) + ~24 hero-only.
-**What's done:** Brief at `docs/coo/specialists/photography-director.md`. Recipe library locked per DECISION-004.
-**What's needed:**
-1. **Showcase shot list** at `docs/coo/photography/shot-list-showcase.md` for the 10 showcase recipes (hero + ~6 stage shots each = ~60 shots). The 10 are: Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Thai Green Curry, Chicken Schnitzel, Smash Burger, Pan-Fried Fish (barramundi), Pavlova, Chicken Shawarma.
-2. **Hero-only shot list** at `docs/coo/photography/shot-list-hero-only.md` for ~24 recipes — 7 from priority list (stir-fry, lasagne, roast lamb, fish & chips, hummus, pad thai, falafel) plus all existing seed recipes not in the showcase 10. One hero shot each, batchable in 1–2 dedicated weekends.
+**Why:** Engineer needs visual specs be
