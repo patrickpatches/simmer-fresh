@@ -25,6 +25,51 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-07 · OPEN URGENT (kill whole_food_verified + verify all recipes show Prep + Equipment)
+**From:** Patrick (via COO)
+**Subject:** Two related cleanups: remove the whole-food-verified concept from the entire repo, and verify every recipe actually renders the Prep and Equipment sections on-device
+**Why:** The `whole_food_verified` field has caused recurring problems — it blocked SMASH_BURGER from rendering (6 May), the `.refine()` was removed, but the field remains in the schema and data. Patrick has decided to drop the concept entirely. Separately, Patrick is still seeing many recipes on-device with no Prep section and no Equipment list. Both need a definitive end.
+
+**TASK 1 — Remove whole_food_verified from the entire repo, locally and on GitHub.**
+
+Surfaces to clean (30 files referenced; engineer should grep to confirm):
+- `mobile/src/data/types.ts` — remove the field from the Zod schema
+- `mobile/src/data/seed-recipes.ts` — strip the field from every recipe object
+- `mobile/db/schema.ts` — remove the SQLite column (write a migration if data exists)
+- `mobile/db/seed.ts` and any seeder code — remove field references
+- Any UI rendering the badge: `mobile/app/recipe/[id].tsx`, RecipeCard, recipe-detail-v2.html, recipe-card-v2.html, recipe-detail-v2.1.html prototypes
+- Documentation: `BUGS.md`, `docs/coo/handoffs.md` (this file), `docs/coo/command-centre.md`, all session reports under `docs/sessions/` (these are historical — leave session-report mentions alone, they're the diary; only strip live reference docs)
+- Cook's research files: `docs/coo/culinary-research/*.md` — strip the field from each (the COO has already removed the rule from CLAUDE.md and the cook brief)
+
+Approach:
+1. Grep to find every reference. Keep historical session reports as-is (they're the diary).
+2. Remove the Zod field, the data field on every recipe, the SQLite column with a migration, the UI badges, and any tests.
+3. Run `npx tsc --noEmit` to confirm nothing else references it.
+4. Commit with a clear message and push to `main`.
+
+**TASK 2 — Audit and complete the Prep + Equipment data on every recipe Patrick can browse.**
+
+Patrick is finding recipes on-device with empty Prep and Equipment sections. The 11-recipe DECISION-009 migration handoff (also in this file, queued before this) covers 11 of those. After that lands, this task adds the verification layer:
+
+1. Run a script or manual pass: for every recipe in `seed-recipes.ts`, check `equipment.length > 0` AND `mise_en_place.length > 0`. Output the list of recipes still empty.
+2. For each empty recipe, check whether a research file exists in `docs/coo/culinary-research/<recipe-slug>.md`. If yes, migrate the data. If no, that recipe is on Cook's Batch 2 — list it back to the COO for Cook handoff.
+3. The UI must NOT silently hide the section if the data is empty. Instead, when both fields are empty, the recipe should not yet be browsable — or render a clear "Recipe being upgraded" state. Pick the cleanest option, document the call.
+4. Verify on-device that every recipe Patrick can open has both sections visible with real content.
+
+**Validation gate before declaring done:**
+- `npx tsc --noEmit` passes
+- Brace + JSX balance check passes (per R-014 mitigation)
+- `tail -c 200` of every modified large file shows clean end of file
+- All recipes browsable show Prep + Equipment with content
+- No grep hit for `whole_food_verified` anywhere except historical session reports
+- Patrick validates on-device — and only Patrick closes the issue per CLAUDE.md
+
+**Files touched:** Per grep — `mobile/src/data/types.ts`, `mobile/src/data/seed-recipes.ts`, `mobile/db/schema.ts`, `mobile/db/seed.ts`, multiple UI files in `mobile/app/`, multiple prototype HTML files, multiple culinary-research markdown files, BUGS.md, this handoffs file
+**Cost:** ~1 session for both tasks combined
+**Blocks:** Recipe quality on-device — currently Patrick sees empty sections even on supposedly-completed recipes
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-07 · OPEN (DECISION-009 — 11-recipe migration)
 **From:** COO
 **Subject:** Migrate 11 recipes that already have research files into seed-recipes.ts with full DECISION-009 fields
@@ -47,7 +92,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 `FALAFEL` (line 4416) is the migration template — copy field shapes verbatim. Note `culinary-research` filenames don't always match recipe ids (e.g. `barramundi.md` → `barramundi-lemon-butter`, `green-curry.md` → `thai-green-curry`, `shawarma.md` → `lamb-shawarma`, `bolognese.md` → `weekday-bolognese`, `carbonara.md` → `pasta-carbonara`).
 
-**`whole_food_verified` audit (don't skip this):** Patrick's standing rule is `true` only when *every* ingredient is unprocessed. The smash-burger research file (line 14) explicitly resolves to `false` — American cheese is processed. Apply the same audit per recipe; flip to `false` wherever a stock cube, commercial sauce, processed cheese, or preserved condiment appears. List your decision per recipe in the commit message.
+**Note:** the `whole_food_verified` field was retired 2026-05-07 — the concept caused recurring data drift. Don't add it. Schema, seed data, and DB column have all been removed; the migration is in `db/schema.ts` v7.
 **What's needed:**
 1. For each of the 11 recipes, read the corresponding `.md` source and migrate the new sections into `mobile/src/data/seed-recipes.ts`: `total_time_minutes`, `active_time_minutes`, `difficulty`, `equipment[]`, `before_you_start[]`, `mise_en_place[]`, `finishing_note`, `leftovers_note`. Existing fields (steps, ingredients, etc.) stay untouched.
 2. After each recipe migration, validate the schema parses (`npx tsc --noEmit`) and visually verify last 5 lines (per R-014 mitigation).
@@ -198,11 +243,10 @@ Layout (top to bottom):
    - Recipe title: `fonts.display` (Playfair Display), 17px, `tokens.ink`, `letterSpacing: -0.3`. Single line, truncate with ellipsis.
    - Tagline: `fonts.sans`, 12px, italic, `tokens.muted`. 2-line max, ellipsis.
    - **At-a-glance strip** — horizontal row, `marginTop: 8`, separated by a thin `tokens.line` divider above. Three data points only: total time (⏱ `total_time_minutes` min), difficulty (📊 beginner/intermediate/advanced), and cuisine (first cuisine category tag). Font: `fonts.sans`, 11px, `tokens.muted`. If `total_time_minutes` is absent (old seed recipes), omit the strip entirely — don't show dashes.
-   - **Whole-food badge** — only if `recipe.whole_food_verified === true`. Small sage-green pill, same treatment as in the detail page. Sits below the at-a-glance strip.
 
 **What does NOT change:** card tap behaviour, favourite icon, match badge (pantry context), planned-recipe indicator. Those stay exactly as-is.
 
-**Conditional rendering rule:** At-a-glance strip and whole-food badge are both conditional — cards without those fields look like slightly simplified current cards, not broken.
+**Conditional rendering rule:** the at-a-glance strip is conditional — cards without that data look like slightly simplified current cards, not broken.
 
 **Files to touch:** `mobile/src/components/RecipeCard.tsx` (or equivalent card component), `mobile/app/(tabs)/index.tsx` if card layout is inlined there.
 
@@ -355,7 +399,7 @@ All 11 launch-priority expansion files written in `docs/coo/culinary-research/` 
 - `bolognese.md` ✅ — ATTRIBUTION FAIL flagged: channel URL not recipe URL; garlic timing why_note added
 - `butter-chicken.md` ✅ — time_min UX CRITICAL fix flagged (90 → 330 for overnight marinade)
 - `green-curry.md` ✅ — "Thai aubergine" → "Thai eggplant" fix flagged; attribution verification needed
-- `smash-burger.md` ✅ — whole_food_verified decision flagged for Patrick (American cheese)
+- `smash-burger.md` ✅ — whole-food claim flagged for Patrick (American cheese was the trigger; field has since been retired entirely)
 - `roast-chicken.md` ✅ — time_min fix flagged for overnight dry brine (14h+ commitment invisible)
 - `pavlova.md` ✅ — fan oven instruction moved to before-you-start; attribution verification needed
 - `barramundi.md` ✅ — salt/pepper ingredient split flagged; one of strongest recipes in library
@@ -373,11 +417,8 @@ All 11 launch-priority expansion files written in `docs/coo/culinary-research/` 
 - Hummus: attribution URL → book citation "After Reem Kassis, *The Palestinian Table* (Phaidon, 2017)"
 
 **Patrick decisions — BOTH RESOLVED ✅ (2026-05-06):**
-- Smash burger: **Drop `whole_food_verified`**. Rule: whole_food_verified only for completely unprocessed meals. American cheese fails. Engineer to remove flag.
+- Smash burger: **Drop the whole-food claim.** Rule was: only set true for completely unprocessed meals; American cheese fails. The field itself was retired across the entire repo on 2026-05-07 — schema and seed data no longer carry it.
 - Pad Thai: **Keep tofu as a listed ingredient (traditional prawn-and-tofu version).** Remove tofu from the prawns substitution array. Add correct substitutions: extra tofu (200g, good_swap, vegetarian), chicken thigh (great_swap), squid (great_swap). See `pad-thai.md` for full substitution spec.
-
-**Additional Engineer task (from whole_food_verified ruling):**
-Audit the entire seed library — every recipe with `whole_food_verified: true` must be reviewed. Remove the flag wherever any ingredient is processed (commercial sauces with additives, canned goods with preservatives, processed cheese, packet condiments, etc.). Only recipes made entirely from unprocessed whole ingredients keep the flag. Likely to affect several recipes beyond smash burger.
 
 **Attribution URLs to verify before ship (all 4 flagged):**
 - Carbonara: `https://www.youtube.com/watch?v=5t7JLjr1FxQ` (Gordon Ramsay)
@@ -845,35 +886,4 @@ Patrick found the original three levels (Refinement / Medium / Alternative) too 
 
 1. **Rename bundle ID** `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json` and `mobile/package.json`. Verify clean APK build. Write ADR (`docs/adr/NNN-bundle-id-rename.md`). Tell Patrick the Play Console steps for the next AAB upload (new app entry under new package name auto-creates).
 
-2. **Implement Substitution UI + recipe-card photo-badge states** per Product Designer's specs at `docs/prototypes/substitution-sheet.html` and `docs/prototypes/recipe-card-states.html`. Use `@gorhom/bottom-sheet` (`BottomSheetModal`) for the SubstitutionSheet component. Derive `hasStagePhotos` from `steps.every(s => !!s.photo_url)` — no schema change needed. Badge text "Photos soon" (not "Stage photos coming soon"). See the handoff block in those HTML files for full spec.
-
-**3a. (NEW per DECISION-007) Schema change — add `scaling_note` to Ingredient.** Do this BEFORE populating the 6 new recipes so cook's scaling annotations have a place to land:
-- In `mobile/src/data/types.ts`: add `scaling_note: z.string().optional()` to the `Ingredient` Zod schema. Update the TypeScript type accordingly.
-- In `mobile/src/data/scale.ts`: when scale.ts produces a scaled ingredient list, the `scaling_note` field passes through unchanged (it's plain English, not math).
-- UI surface: in `mobile/app/recipe/[id].tsx`, when the user changes serving count and an ingredient has a `scaling_note`, surface the note as a small icon/tooltip next to the amount (or in the ingredient row's secondary text). Designer hasn't speced this — use minimal styling consistent with v0.7 dark tokens (muted text, gold info icon if needed). Spec it lightly and ship; we'll iterate.
-- Purely additive change — no breaking effect on existing recipes that don't use the field.
-- Cost: ~1 hour of engineer.
-
-3. **Add 6 new recipes** to `mobile/src/data/seed-recipes.ts` per DECISION-004:
-   - Chicken schnitzel (Australian pub classic)
-   - Easy chicken & vegetable stir-fry (generic Australian weeknight)
-   - Beef lasagne (Australian household staple)
-   - Roast lamb with rosemary & garlic (Sunday roast)
-   - Fish & chips (Australian Friday classic)
-   - Falafel (Levantine)
-   Each must follow the standard schema (chef-attributed if possible — coordinate with Culinary Verifier on sources — substitutions populated with quality flags, `scales` flag set per ingredient, `scaling_note` populated where chef knowledge changes the answer, `whole_food_verified: true` where appropriate, Australian English, metric units, dual-axis categories). Block on Culinary Verifier to provide authoritative source recipes before populating chef attribution.
-
-**Files touched:** `mobile/app.json`, `mobile/package.json`, `mobile/app/recipe/[id].tsx`, `mobile/src/components/SubstitutionSheet.tsx` (new), `mobile/src/components/RecipeCard.tsx` (or equivalent), `mobile/src/data/seed-recipes.ts`, `docs/adr/`
-**Blocks:** All future AAB uploads (#1), v1 feature completeness (#2), photography of new showcase recipes (#3)
-
-### HANDOFF → Patrick · 2026-04-29 · DONE (✅ approved 29 Apr — DECISION-001)
-**From:** COO
-**Subject:** Confirm or amend launch date target
-**Resolution:** Patrick approved 24 July 2026 launch date on 29 April: "24 July works for me unless we need more time." DECISION-001 logged. This handoff is closed — engineer reports referencing it as "still open" reflect stale awareness, not actual status.
-
-_(Substitution UI handoff superseded by the consolidated Senior Engineer multi-task handoff above.)_
-
-### HANDOFF → Product Designer · 2026-04-29 · DONE
-**From:** COO
-**Subject:** Design the Substitution bottom-sheet + "Stage photos coming soon" badge
-**Why:** Engineer needs visual specs be
+2. **Implement Substitution UI + recipe-card photo-badge states** per Product Designer's specs at `docs/p

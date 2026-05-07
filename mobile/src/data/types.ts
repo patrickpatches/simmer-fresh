@@ -18,7 +18,12 @@
  *   - SwapQuality + Substitution — ingredient-level swap data
  *   - `substitutions[]` on Ingredient
  *   - `categories` on Recipe (dual-axis taxonomy, required for non-user recipes)
- *   - `whole_food_verified` on Recipe (no preservatives flag)
+ *
+ * Removed 2026-05-07:
+ *   - `whole_food_verified` — concept retired. Caused recurring data drift
+ *     and a SMASH_BURGER rendering regression on 6 May. The associated
+ *     SQLite column is dropped by a forward migration in schema.ts; old
+ *     installs upgrade cleanly.
  */
 
 import { z } from 'zod';
@@ -345,13 +350,6 @@ export const Recipe = z.object({
    */
   leftovers_note: z.string().optional(),
   // ─────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Optional flag — true if the recipe uses only whole, unprocessed ingredients
-   * with no preservatives or packaged seasoning mixes.
-   * Not enforced by validation — set it when you can confirm it.
-   */
-  whole_food_verified: z.boolean().optional(),
 
   /** True for recipes a user added in-app. Exempt from source requirement. */
   user_added: z.boolean().default(false),

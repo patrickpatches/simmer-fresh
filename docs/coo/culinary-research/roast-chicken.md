@@ -155,7 +155,6 @@ Roast chicken leftovers are excellent. Cold sliced chicken keeps 3 days refriger
 **Attribution:** PASS — Hone Kitchen original. No chef fabricated. No link to verify.
 **Cultural origin:** PASS — Australian (universal technique). No contested labelling.
 **Substitutions:** PASS — limited substitutions for a straightforward technique recipe. All appropriate.
-**Whole-food claim:** PASS — chicken, butter, garlic, thyme, salt. Entirely whole food.
 **Australian English:** PASS — no issues found.
 **Voice:** PASS — calm, anticipatory, doneness cues throughout. "This is not optional" on the rest step is correctly firm without being preachy.
 **Data fix required:** time_min must reflect overnight brine commitment. At-a-glance must show "14+ hours with overnight brine / 3h with 2h minimum brine."

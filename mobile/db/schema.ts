@@ -13,7 +13,7 @@
  */
 
 /** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 /**
  * Full schema for a fresh install.
@@ -40,7 +40,6 @@ export const SCHEMA_SQL: string[] = [
     leftover_extra_servings INTEGER,
     leftover_note          TEXT,
     categories             TEXT,
-    whole_food_verified    INTEGER,
     total_time_minutes     INTEGER,
     active_time_minutes    INTEGER,
     equipment              TEXT,
@@ -109,7 +108,7 @@ export const SCHEMA_SQL: string[] = [
     created_at  INTEGER NOT NULL
   )`,
 
-  `CREATE TABLE IF NOT EXISTS favorites (
+    `CREATE TABLE IF NOT EXISTS favorites (
     recipe_id  TEXT PRIMARY KEY,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
@@ -152,11 +151,13 @@ export const SCHEMA_SQL: string[] = [
  * Value = array of SQL statements to run in order.
  *
  * Version 1 = original schema (no explicit user_version set).
- * Version 2 = Phase 2 additions: categories, whole_food_verified, substitutions.
+ * Version 2 = Phase 2 additions: categories, whole_food_verified (since dropped in v7), substitutions.
  * Version 3 = ingredient_swaps table for persistent cross-screen swap state.
- * Version 4 = shopping_extras table.
- * Version 5 = source-tracked shopping_items table.
- * Version 6 = DECISION-009 extended recipe content fields.
+ * Version 4 = shopping_extras (later superseded by shopping_items).
+ * Version 5 = source-tracked shopping_items.
+ * Version 6 = DECISION-009 extended recipe content fields (timings, equipment, prep, finishing, leftovers).
+ * Version 7 = drop whole_food_verified column. The concept was retired
+ *             2026-05-07 — see types.ts header for rationale.
  */
 export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
   2: [
@@ -187,6 +188,9 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
     )`,
   ],
   5: [
+    // Source-tracked shopping list. Replaces shopping_extras going forward;
+    // shopping_extras stays in the schema for backwards compatibility but
+    // is no longer written to. New code reads/writes shopping_items.
     `CREATE TABLE IF NOT EXISTS shopping_items (
       id              TEXT PRIMARY KEY,
       name            TEXT NOT NULL,
@@ -201,6 +205,10 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
     )`,
   ],
   6: [
+    // DECISION-009: Extended recipe content fields.
+    // Seven new columns on the recipes table — all nullable so existing rows
+    // are unaffected. refreshSeedRecipeFields (seed.ts) populates them for
+    // seed recipes on every launch after this migration runs.
     `ALTER TABLE recipes ADD COLUMN total_time_minutes INTEGER`,
     `ALTER TABLE recipes ADD COLUMN active_time_minutes INTEGER`,
     `ALTER TABLE recipes ADD COLUMN equipment TEXT`,
@@ -208,5 +216,16 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
     `ALTER TABLE recipes ADD COLUMN mise_en_place TEXT`,
     `ALTER TABLE recipes ADD COLUMN finishing_note TEXT`,
     `ALTER TABLE recipes ADD COLUMN leftovers_note TEXT`,
+  ],
+  7: [
+    // 2026-05-07 — drop whole_food_verified. The concept was retired:
+    // seed data no longer sets it, the Zod schema no longer declares it,
+    // and the UI never used it. This migration cleans up the column on
+    // existing installs. SQLite ≥3.35 (March 2021) supports DROP COLUMN
+    // natively; expo-sqlite ships a much newer SQLite. The migration
+    // runner in database.ts swallows "duplicate column" AND "no such
+    // column" as non-fatal so older installs that never had the column
+    // (somehow skipped v2) don't fail to upgrade.
+    `ALTER TABLE recipes DROP COLUMN whole_food_verified`,
   ],
 };

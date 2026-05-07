@@ -162,4 +162,8 @@ Pad thai does not keep well. The noodles absorb remaining sauce and stick togeth
 **Audited:** 2026-05-05 by Culinary Verifier
 **Attribution:** CONDITIONAL — Andy Cooks with specific YouTube URL. URL not yet verified live.
 **Cultural origin:** PASS — Thai. No contested labelling.
-**Substitutions:** PASS — tamarind correctly defended a
+**Substitutions:** PASS — tamarind correctly defended as non-negotiable (ketchup listed as substitute 'changes the dish entirely' — should be flagged 'compromise'). The current substitution text says "ketchup is not a substitute — it changes the dish entirely" in the prep field, which is honest.
+**Australian English:** PASS — no issues.
+**Data fix required:** (1) Tofu: keep as listed ingredient, remove from prawns substitutions, add correct vegetarian/protein substitutions (see audit flags above — RESOLVED). (2) Attribution URL verification pending.
+**Recommendation:** FIX BEFORE SHIP — Engineer to implement substitution corrections + verify attribution URL.
+```

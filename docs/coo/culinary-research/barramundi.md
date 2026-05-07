@@ -153,7 +153,6 @@ Pan-seared fish is not a leftover dish. The skin goes flabby within 10 minutes a
 **Attribution:** PASS — Hone Kitchen original. No chef fabricated.
 **Cultural origin:** PASS — Australian. Barramundi correctly positioned as the Australian fish of choice.
 **Substitutions:** PASS — all fish substitutions are legitimate Australian species (snapper, kingfish, flathead). Honest about salmon needing lower heat. 
-**Whole-food claim:** PASS — all whole ingredients. Capers in brine are fine.
 **Australian English:** PASS — 'flat-leaf parsley', no issues.
 **Minor data fix:** Combined 'Salt and white pepper' ingredient should be split or changed to 'to taste'.
 **Recommendation:** SHIP AS-IS (minor data fix recommended but non-blocking). One of the best recipes in the library.

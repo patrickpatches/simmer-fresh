@@ -270,20 +270,6 @@
   .strip-icon { font-size: 10px; flex-shrink: 0; }
   .strip-text { overflow: hidden; text-overflow: ellipsis; }
 
-  /* Whole-food badge */
-  .whole-food-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--sage-tint);
-    border: 1px solid rgba(170,204,168,0.22);
-    border-radius: 20px;
-    padding: 3px 8px;
-    font-size: 10px;
-    color: var(--sage);
-    margin-top: 7px;
-  }
-
   /* Pantry match badge — sits inside card, top-left of image */
   .match-badge {
     position: absolute;
@@ -460,10 +446,6 @@
             <span class="strip-text">Italian</span>
           </div>
         </div>
-        <div class="whole-food-badge">
-          <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#AACCA8" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 4" stroke="#AACCA8" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Whole food
-        </div>
       </div>
     </div>
 
@@ -572,11 +554,6 @@
       <p>Two-line clamp on the title prevents tall cards in the grid. If a recipe title is longer than two lines it truncates with ellipsis — users can read the full title on the detail page.</p>
     </div>
     <div class="rat-card">
-      <div class="rat-card-title">Whole-food badge conditional rendering</div>
-      <p>The sage-green "Whole food" badge only appears when <code>whole_food_verified === true</code>. This makes the badge meaningful — if it always appeared, it would become wallpaper. Cards without it aren't visually broken; they simply end at the at-a-glance strip.</p>
-      <p>Sage green is correct here: the primary accent (rust) is for actions and planned states. Whole-food is a quality signal, not an action — it gets the secondary sage.</p>
-    </div>
-    <div class="rat-card">
       <div class="rat-card-title">Planned vs favourited vs pantry-matched — three independent layers</div>
       <p>The card supports three simultaneous overlay states, all designed to coexist without collision. Planned: sage circle with tick, top-right. Favourite: ghost heart icon (unfilled idle, filled when active), top-right (replaces planned if both — planned takes priority). Pantry match: dark pill "N of X", top-left.</p>
       <p>These were all present in some form in the current card — the v2 pass tidies their placement and ensures they don't overlap the chef chip (bottom-left) or the "Photos soon" badge (bottom-right).</p>
@@ -599,13 +576,12 @@
     <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">New props / data access</div>
     <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:4px;">At-a-glance strip requires: <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.total_time_minutes</code>, <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.difficulty</code>, <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.categories.cuisines[0]</code>. All three are optional — if any one is absent, omit the strip. Don't show a partial strip.</p>
     <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:4px;">Chef chip requires: <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.source?.chef</code>. Conditionally rendered — omit if absent.</p>
-    <p style="font-size:13px; color:#8A8278; line-height:1.65; margin-bottom:4px;">Whole-food badge requires: <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">recipe.whole_food_verified === true</code>. Conditionally rendered.</p>
 
     <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">What does NOT change</div>
     <p style="font-size:13px; color:#8A8278; line-height:1.65;">Card tap → recipe detail navigation. Favourite toggle logic. Planned-recipe indicator logic. Pantry match badge logic. Card dimensions and grid layout. "Photos soon" badge logic. All of these already work — only the visual treatment changes, not the behaviour.</p>
 
     <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">Tokens (all existing)</div>
-    <p style="font-size:13px; color:#8A8278; line-height:1.65;"><code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.surface</code> card bg · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.line</code> border · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.primary</code> source chip · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.sage</code> planned badge + whole-food · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.ink</code> title · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.muted</code> tagline + strip. No new tokens required.</p>
+    <p style="font-size:13px; color:#8A8278; line-height:1.65;"><code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.surface</code> card bg · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.line</code> border · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.primary</code> source chip · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.sage</code> planned badge ·<code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.ink</code> title · <code style="background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px; color:#C0A878; font-size:11px;">tokens.muted</code> tagline + strip. No new tokens required.</p>
 
     <div style="font-size:13px; font-weight:700; color:#E0D8D0; margin-bottom:6px; margin-top:14px;">Sequencing</div>
     <p style="font-size:13px; color:#8A8278; line-height:1.65;">COO to confirm priority relative to other open engineer handoffs. The at-a-glance strip is only useful once DECISION-009 seed data is populated — implementing the card before the data exists means the strip stays hidden on all cards. Visual impact only materialises after Culinary Verifier's Batch 2 completes. COO may choose to defer card visual work until data exists.</p>

@@ -163,7 +163,6 @@ Before the pasta goes in, taste the ragù aggressively. It needs more salt than 
 **Attribution:** FAIL — source.chef: 'Andy Cooks' but video_url points to channel homepage, not a specific recipe video. Does not satisfy Golden Rule 1. Must be resolved before ship: either find the specific video URL or change attribution framing.
 **Cultural origin:** PASS — Italian (Emilian ragù). No contested labelling.
 **Substitutions:** PASS — quality flags honest. Veal noted as 'great_swap' correctly. Alcohol-free option flagged 'compromise' correctly.
-**Whole-food claim:** PASS — all whole ingredients.
 **Australian English:** PASS — no issues.
 **Voice:** PASS — second person, present tense, doneness cues used throughout. Stage notes are the best in the library.
 **Data fix required:** Garlic step 4 needs a why_note explaining the timing. Attribution URL must be updated.

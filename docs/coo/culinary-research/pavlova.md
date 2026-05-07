@@ -156,7 +156,6 @@ Taste the whipped cream before it goes on — it should be lightly sweet from th
 **Attribution:** CONDITIONAL — Donna Hay with specific YouTube URL. URL not yet verified live.
 **Cultural origin:** PASS — Australian. Trans-Tasman debate acknowledged in description without taking a side. Good.
 **Substitutions:** PASS — aquafaba vegan substitute correctly flagged 'compromise' (marshmallow effect is reduced). Thickened cream correctly flagged 'perfect_swap' for Australian cooks.
-**Whole-food claim:** PASS — egg whites, caster sugar, vinegar, cornflour, vanilla, cream, fresh fruit. All whole.
 **Australian English:** PASS — 'cornflour' correct (not cornstarch), 'caster sugar' correct, 'thickened cream' listed. Strong.
 **Voice:** PASS — calm and methodical through a technique-heavy recipe. The why_notes are particularly strong.
 **Recommendation:** CONDITIONAL SHIP — attribution verification required. Content is excellent.

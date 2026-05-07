@@ -151,7 +151,6 @@ Keeps 3 days refrigerated. The flavour actually deepens — the lime leaf and sp
 **Attribution:** CONDITIONAL — Andy Cooks with specific YouTube URL. URL not yet verified live.
 **Cultural origin:** PASS — Thai. No contested labelling.
 **Substitutions:** PASS — light coconut milk correctly flagged 'compromise' (will separate — this is honest). Kaffir lime leaf has accurate local_alternative note.
-**Whole-food claim:** PASS — store-bought curry paste is the only borderline item. Most commercial green curry pastes are minimal ingredient — Mae Ploy, Maesri are acceptable. Worth noting on the ingredient.
 **Australian English:** FAIL — 'Thai aubergine' should be 'Thai eggplant'. Fix in seed-recipes.ts.
 **Voice:** PASS — second person, present tense, doneness cues used.
 **Data fix required:** 'Thai aubergine' → 'Thai eggplant'.

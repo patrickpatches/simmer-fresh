@@ -146,7 +146,6 @@ Carbonara does not keep. The egg sauce continues to cook in the residual heat as
 **Attribution:** CONDITIONAL — Gordon Ramsay attributed with specific YouTube URL. URL not yet verified live. Flag for verification before ship.
 **Cultural origin:** PASS — Italian (Roman). No contested labelling issues.
 **Substitutions:** PASS — quality flags are honest. Bacon correctly flagged 'compromise', whole egg swap correctly flagged 'compromise'.
-**Whole-food claim:** PASS — guanciale, eggs, pecorino, pasta, pepper, salt. All whole food.
 **Australian English:** PASS — no issues found.
 **Voice:** PASS — second person, present tense, doneness cues used. Step 4 title ("Combine off heat — this is the critical step") is slightly food-blog emphatic but acceptable given the importance of the step.
 **Data fix required:** whole egg ingredient must change from scales: 'fixed' to scales: 'linear'. Engineer task.

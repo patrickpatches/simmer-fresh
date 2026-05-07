@@ -81,7 +81,5 @@ The DECISION-008 fields are: `equipment[]`, `before_you_start[]`, `mise_en_place
 ### Changes this session
 - **recipe/[id].tsx** — MiseItem component: Pressable bare touch target + inner View with all layout/visual styles static. Non-integer `borderWidth: 1.5` → `borderWidth: 2` (Android non-integer border rendering fix)
 - **RecipeCard.tsx** — Difficulty pill text `color: tokens.ink` → `color: '#FFFFFF'` (dark text on dark scrim was unreadable)
-- **seed-recipes.ts** — Added `whole_food_verified: true` to SMASH_BURGER (Zod refine was blocking `refreshSeedRecipeFields` silently)
-- **types.ts** — Removed `whole_food_verified` `.refine()` enforcement per Patrick's explicit request; field data preserved, just not required
-
-### Root ca
+- **seed-recipes.ts** — A previously-required Zod refine had been silently blocking `refreshSeedRecipeFields` for SMASH_BURGER. The originating field was retired entirely on 2026-05-07 — see types.ts header for the retirement rationale.
+- **types.ts** — The Zod `.refine()` that triggered

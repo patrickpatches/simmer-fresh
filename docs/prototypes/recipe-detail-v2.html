@@ -204,19 +204,6 @@
     font-style: italic;
     margin-bottom: 14px;
   }
-  .whole-food-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--sage-tint);
-    border: 1px solid rgba(170,204,168,0.22);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 11px;
-    color: var(--sage);
-    margin-bottom: 18px;
-  }
-
   /* ── AT-A-GLANCE row ───────────────────────────────────────── */
   .at-a-glance {
     background: var(--surface);
@@ -951,10 +938,6 @@
       <div class="recipe-header">
         <div class="recipe-title">Pasta Carbonara</div>
         <div class="recipe-tagline">The Roman original — no cream, ever</div>
-        <div class="whole-food-badge">
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#AACCA8" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 4" stroke="#AACCA8" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Whole food verified — no preservatives
-        </div>
       </div>
 
       <!-- CTA ROW -->
@@ -1412,4 +1395,91 @@
       <div class="tag">warm-brown #C4A882</div>
       <div class="tag">--ochre #F2D896 (mise accent)</div>
     </div>
-    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not new tokens, j
+    <p style="margin-top:8px">The blue (#5B8FD4) and warm-brown (#C4A882) are used <em>only</em> as left-border accents on the two framing blocks — they are not new tokens, just RGB values used inline for these two specific components. Do not add them to <span class="code-inline">tokens.ts</span>.</p>
+
+    <h4>Conditional rendering rule</h4>
+    <p>Every new section is conditionally rendered — if the data field is absent or empty, the section does not appear and does not leave a gap. The page degrades gracefully for recipes that haven't been expanded yet (i.e. most of the current seed library). A recipe with no <span class="code-inline">before_you_start</span>, <span class="code-inline">equipment</span>, <span class="code-inline">mise_en_place</span>, <span class="code-inline">finishing_note</span>, or <span class="code-inline">leftovers_note</span> should look exactly like the current page.</p>
+
+    <h4>Files to touch</h4>
+    <ul>
+      <li><span class="code-inline">mobile/app/recipe/[id].tsx</span> — add the 6 new section renderers</li>
+      <li><span class="code-inline">mobile/src/data/types.ts</span> — already done in the schema pass</li>
+      <li>No new component files required — all sections are small enough to live inline in the screen file</li>
+    </ul>
+
+    <h4>Sequencing</h4>
+    <p>Do not start this pass until: (1) schema pass is committed, (2) at least Carbonara's seed data has been expanded by the Culinary Verifier. You need real data to QA the new sections. Testing with empty fields (everything hidden) doesn't verify the layout.</p>
+
+    <h4>CTA row — Plan + Watch (additive, can ship independently)</h4>
+    <p>Sits immediately below the recipe header block, above the at-a-glance row. Two pills, equal flex width, 8px gap, 14px horizontal padding.</p>
+    <ul>
+      <li><strong>Plan this recipe</strong> — primary, gold-filled (<span class="code-inline">background: tokens.primary</span>, <span class="code-inline">color: '#111111'</span>). Calendar icon left of label. On press: calls existing <span class="code-inline">togglePlannedRecipe()</span> — same logic as the current bookmark button. On planned state: fill darkens to <span class="code-inline">tokens.primaryDeep</span> and label reads "Planned ✓". No new DB writes required.</li>
+      <li><strong>Watch original</strong> — secondary, gold-outlined (<span class="code-inline">background: 'transparent'</span>, <span class="code-inline">borderWidth: 1.5</span>, <span class="code-inline">borderColor: tokens.primary</span>, <span class="code-inline">color: tokens.primary</span>). Play icon (filled circle with triangle) left of label. On press: <span class="code-inline">Linking.openURL(recipe.source.video_url)</span>. Conditionally rendered — if <span class="code-inline">recipe.source?.video_url</span> is absent, omit the Watch button entirely and let Plan fill the full row width.</li>
+    </ul>
+    <p>Both buttons use <span class="code-inline">border-radius: 12</span>, <span class="code-inline">paddingVertical: 12</span>, 13px semi-bold Inter, no shadow. Remove the existing plain-text "Watch original" and "Plan this recipe" text links from wherever they currently render — these pills replace them entirely.</p>
+  </div>
+</div>
+
+<script>
+  let servings = 2;
+  function changeServings(delta) {
+    servings = Math.max(1, Math.min(8, servings + delta));
+    document.getElementById('servCount').textContent = servings;
+  }
+
+  function toggleMise(el) {
+    el.classList.toggle('done');
+    const done = document.querySelectorAll('.mise-item.done').length;
+    document.getElementById('miseCount').textContent = done;
+  }
+
+  let miseExpanded = false;
+
+  function toggleMiseExpand() {
+    const hidden = document.querySelectorAll('.mise-hidden');
+    const chevron = document.getElementById('miseChevron');
+    const label   = document.getElementById('miseToggleLabel');
+
+    if (!miseExpanded) {
+      // Expand — show hidden items with staggered fade
+      hidden.forEach((el, i) => {
+        setTimeout(() => {
+          el.style.display  = 'flex';
+          el.style.opacity  = '0';
+          el.style.transition = 'opacity 0.15s ease';
+          requestAnimationFrame(() => { el.style.opacity = '1'; });
+        }, i * 60);
+      });
+      chevron.style.transform = 'rotate(180deg)';
+      label.textContent = 'Show less';
+      miseExpanded = true;
+    } else {
+      // Collapse — fade out then hide
+      hidden.forEach((el, i) => {
+        el.style.transition = 'opacity 0.12s ease';
+        el.style.opacity = '0';
+        setTimeout(() => { el.style.display = 'none'; }, 130 + i * 30);
+      });
+      chevron.style.transform = 'rotate(0deg)';
+      label.textContent = 'Show 3 more prep tasks';
+      miseExpanded = false;
+    }
+  }
+
+  function expandMise() {
+    // Show hidden items with a quick fade
+    const hidden = document.querySelectorAll('.mise-hidden');
+    hidden.forEach((el, i) => {
+      setTimeout(() => {
+        el.style.display = 'flex';
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.2s';
+        requestAnimationFrame(() => { el.style.opacity = '1'; });
+      }, i * 60);
+    });
+    // Remove the expand row
+    document.getElementById('miseExpandRow').style.display = 'none';
+  }
+</script>
+</body>
+</html>

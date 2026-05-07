@@ -155,7 +155,6 @@ Hummus keeps 5 days refrigerated in an airtight container. It improves for the f
 **Attribution:** PARTIAL PASS — Reem Kassis correctly identified as the cultural source. Palestinian author, appropriate credit. URL points to homepage only — must be updated to a specific recipe page or converted to a book citation before ship.
 **Cultural origin:** PASS — tagline "Palestinian hummus". categories: levantine. No Israeli label. This is done right.
 **Substitutions:** PASS — tinned chickpeas correctly flagged 'compromise' with honest explanation (grainier, less silky). No false claims.
-**Whole-food claim:** PASS — dried chickpeas, tahini, lemon, garlic, olive oil, bicarbonate of soda. All whole food.
 **Australian English:** PASS — 'bicarbonate of soda' correct (not baking soda), no issues.
 **Voice:** PASS — the step note on tinned chickpeas ("they do not make good hummus") is exactly the right tone: honest, direct, not apologetic.
 **Data fix required:** Attribution URL to be updated (homepage → specific page or book citation).

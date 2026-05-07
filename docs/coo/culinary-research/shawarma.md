@@ -156,7 +156,6 @@ Taste a shred of lamb from the tray before serving. It should be deeply spiced, 
 **Attribution:** PASS — Hone Kitchen original. No chef fabricated. No Israeli attribution.
 **Cultural origin:** PASS — categories: levantine. Tagline and description make no Israeli claim. Cuisine correctly attributed to the Levantine tradition.
 **Substitutions:** PASS — goat shoulder correctly flagged 'great_swap' (historically accurate). Boneless shoulder correctly noted as needing reduced cook time.
-**Whole-food claim:** PASS — all whole ingredients. Yoghurt, fresh spices, lamb, olive oil.
 **Australian English:** PASS — no issues.
 **Minor data fixes:** (1) Description "London kitchen" → "home kitchen". (2) Tags 'beef' → 'lamb'. (3) time_min needs updating to reflect overnight marinade.
 **Recommendation:** FIX BEFORE SHIP — minor data fixes (easy). Content is outstanding. One of the strongest recipes in the library.

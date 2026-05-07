@@ -160,7 +160,6 @@ The sauce genuinely improves overnight — the spices integrate and the sweetnes
 **Attribution:** CONDITIONAL — Joshua Weissman with specific YouTube URL. URL not yet verified live. Flag for verification before ship.
 **Cultural origin:** PASS — Indian (North Indian / murgh makhani origin). Historical context in description is accurate and well-sourced.
 **Substitutions:** PASS — quality flags honest. Coconut cream dairy-free swap flagged accurately. Ground ginger flagged 'compromise' correctly — it is a last resort.
-**Whole-food claim:** PASS — all whole ingredients. Honey, yoghurt, tinned tomatoes all within scope.
 **Australian English:** PASS — "thickened cream" listed as perfect_swap for double cream. Correct.
 **Data fix required:** time_min must change from 90 to reflect real total (4h 30m minimum). UX critical.
 **Recommendation:** FIX BEFORE SHIP — time display issue is the most important fix; attribution needs verification.

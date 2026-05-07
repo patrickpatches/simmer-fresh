@@ -174,9 +174,16 @@ async function runMigrations(db: SQLiteDatabase): Promise<void> {
         await db.execAsync(sql);
       } catch (e) {
         // ALTER TABLE ADD COLUMN throws if the column already exists on some
-        // SQLite builds. Treat "duplicate column" errors as non-fatal.
-        const msg = e instanceof Error ? e.message : String(e);
-        if (!msg.toLowerCase().includes('duplicate column')) throw e;
+        // SQLite builds — treat "duplicate column" as non-fatal.
+        // ALTER TABLE DROP COLUMN throws if the column doesn't exist (e.g. a
+        // very old install that somehow skipped the v2 migration before v7
+        // tries to drop the column it never had). Treat "no such column" as
+        // non-fatal too — the goal state is "column gone", and gone is gone.
+        const msg = (e instanceof Error ? e.message : String(e)).toLowerCase();
+        const recoverable =
+          msg.includes('duplicate column') ||
+          msg.includes('no such column');
+        if (!recoverable) throw e;
       }
     }
   }

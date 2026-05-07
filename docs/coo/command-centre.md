@@ -10,7 +10,7 @@
 - **Days to launch:** 86
 - **App version:** v0.4.0
 - **Phase:** Pre-Closed-Testing — code polish + photography prep
-- **Top risk:** Photography schedule slippage (5 weekends needed, none shot yet)
+- **Top risk:** Photography schedule (weekend 1 slipped 30 Apr — Patrick away. Phase A buffer now consumed; no further slips without launch impact.)
 - **Top blocker on Patrick:** Spin up Senior Engineer chat to apply v0.7 dark tokens; install dev APK and confirm on-device
 - **Visual direction:** ✅ DARK DRAMATIC locked 30 Apr 2026 (DECISION-006). Tokens v0.7 in `mobile/src/theme/tokens.ts`. Reference prototype: `docs/prototypes/concept-dark-dramatic.html`
 - **Play Console verification:** ✅ Done (confirmed 25 Apr 2026)
@@ -82,13 +82,14 @@ Detailed reasoning: `docs/coo/launch-plan.md`
 
 | Metric | Current | Target for launch |
 |---|---|---|
-| Recipes in seed library | 28 (in app) | ~34 (28 existing + 6 new from priority list) |
-| Priority launch recipes (Patrick's 17) | 11 of 17 already in lib | All 17 in lib (6 new to be added) |
+| Recipes in seed library | 28 existing + 6 new source files = 34 total potential | ~34 (28 existing + 6 new from priority list) |
+| Priority launch recipes (Patrick's 17) | 11 of 17 already in lib · 6 new shipped as source `.md` (Batch 1 ✅ 5 May, commit `61c0074`) | All 17 in lib with full template populated |
+| Recipes with full 10-section template (DECISION-009) | 6 of ~30 (Batch 1 ✅) · Batch 2 next: 11 launch-priority existing | All ~30 |
+| Ingredient-derivations map | ✅ shipped 5 May (`mobile/src/data/ingredient-derivations.ts`) — Phase 1 of joint handoff complete; Engineer's Phase 2 (matching algorithm) now unblocked | Live in pantry-helpers.ts |
 | Showcase recipes with full stage photography | 0 | 10 |
 | Hero shots completed | 0 | ~24 (7 priority hero + ~17 existing non-showcase) |
 | Recipes with full substitution data | 3 | 17 priority recipes minimum |
 | Stage-by-stage photos shot | 0 | ~60 (10 showcase × 6 stages avg) |
-| Whole-food verified recipes | All seeded | All shipped |
 | Open bugs | TBC (sync from GitHub Issues) | 0 P0/P1 at launch |
 | Tester signups | 0 | 12+ active for 14 consecutive days |
 | Cold-start time on mid-range Android | Unmeasured | <2 seconds |

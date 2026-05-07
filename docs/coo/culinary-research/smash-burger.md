@@ -11,10 +11,8 @@
 
 ### Audit flags
 
-1. **WHOLE FOOD CLAIM — RESOLVED ✅ (Patrick 2026-05-06)**
-   `whole_food_verified: true` → **REMOVE**. Patrick's rule: whole_food_verified only applies to completely unprocessed meals. American cheese is processed. Remove the claim.
-   **Engineer action:** Set `whole_food_verified: false` (or remove the field) on `smash-burger`.
-   **Note for Engineer:** Apply Patrick's rule across the entire seed library — audit every recipe with `whole_food_verified: true` and remove the flag wherever any ingredient is processed (sauces with additives, canned goods with preservatives, processed cheese, commercial condiments, etc.). Only dishes made entirely from unprocessed whole ingredients should carry the flag.
+1. **Whole-food claim — RESOLVED ✅ (Patrick 2026-05-06; field retired 2026-05-07)**
+   The original audit flagged that smash-burger's whole-food claim was wrong — American cheese is processed. Patrick's resolution: drop the claim. Subsequent decision (2026-05-07): retire the whole-food concept across the entire repo. Schema, seed data, and the SQLite column have all been removed. Nothing to do here for engineering.
 
 2. **Description references "London kitchen"**
    Description currently in seed data doesn't mention this but the description could be improved with Australian context.
@@ -153,6 +151,8 @@ No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes 
 **Attribution:** CONDITIONAL — Andy Cooks with specific YouTube URL. URL not yet verified live.
 **Cultural origin:** PASS — American diner. No contested labelling.
 **Substitutions:** PASS — lean beef correctly flagged 'compromise'. Cheddar cheese correctly flagged 'compromise' (inferior melt). Honest throughout.
-**Whole-food claim:** FLAG — 'whole_food_verified: true' but American cheese slices are processed. Patrick to decide: remove claim or note whole-food version uses cheddar.
+**Whole-food claim:** RESOLVED — concept retired across the repo on 2026-05-07. No data to clean up here.
 **Australian English:** PASS — no issues.
-**Voice:** PASS — urgent, short steps match the fast cook. "Eat immediately" is 
+**Voice:** PASS — urgent, short steps match the fast cook. "Eat immediately" is the right closing.
+**Recommendation:** FIX BEFORE SHIP — attribution verification pending.
+```
