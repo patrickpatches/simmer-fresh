@@ -12,12 +12,39 @@
 | ID | Title | Status | Notes |
 |---|---|---|---|
 | REGN-001 | Recipe cards misalign after first scroll | FIX ATTEMPTED | Commit `1fca0aaa3d3d` — awaiting Patrick on-device validation |
-| REGN-003 | seed-recipes.ts truncation — build #86 failure | FIX ATTEMPTED | Commit `e4a9d5d6462d` — restored from git history + 10 culinary fixes applied. Build #87 running. Awaiting Patrick on-device validation. |
+| REGN-005 | seed-recipes.ts truncation — build #86 failure | FIX ATTEMPTED | Commit `e4a9d5d6462d` — awaiting Patrick on-device validation |
+| REGN-006 | tokens.ts truncation — build #87 failure | FIX ATTEMPTED | Commit `23bd653ce877` — awaiting Patrick on-device validation (build #88 triggered) |
 
 **REGN-001 root cause (diagnosed 6 May 2026):**
 - Previous fix addressed pantry carousel snap (REGN-001 original). The persistent card misalignment on the Kitchen screen is a separate but related issue.
 - Root cause: FlatList windowing. RecipeCard heights vary (1–2 line title/tagline = ~315–358px). On Android, items outside the render window unmount; re-entry uses estimated positions → visible shift on scroll back.
 - Fix: disabled windowing via `initialNumToRender={20}`, `maxToRenderPerBatch={20}`, `windowSize={99}`, `removeClippedSubviews={false}`. 17 active items (~340px each) = trivial memory cost.
+
+**REGN-005 root cause (diagnosed 7 May 2026):**
+- Culinary verifier applied step-flow fixes to a stale base of seed-recipes.ts (pre-Phase 2 batch). Write truncated mid-sentence at FLOUR_TORTILLAS s6, wiping Phase 2 batch (6 recipes) + export array.
+- Fix: restored from git commit `9f64870` (4,673 lines, brace-balance=0), applied all 10 HIGH culinary fixes on top, re-verified balance, pushed as `e4a9d5d6462d`.
+- Lesson: before writing any large TypeScript file, verify you are on the most recent GitHub HEAD, not a cached copy.
+
+**REGN-006 root cause (diagnosed 7 May 2026):**
+- `mobile/src/theme/tokens.ts` truncated at line 150 — `displayItalic` string cut off mid-value (`'PlayfairDisplay_500Med`). `fonts` export object never closed; `TokenName` type missing.
+- Metro bundler: `SyntaxError: Unterminated string constant. (150:17)` → build #87 failed at `Task :app:createBundleReleaseJsAndAssets`.
+- Fix: reconstructed complete 156-line file, pushed as commit `23bd653ce877`, build #88 triggered.
+- Class: same file-write truncation pattern as REGN-002/003/005. All large .ts file writes must pass brace-balance + line-count assertion before push.
+
+
+---
+
+## Session log — 7 May 2026
+
+### Builds dispatched this session
+| Build | Commit | Summary |
+|---|---|---|
+| #87 | `e4a9d5d6462d` | seed-recipes.ts restored + 10 HIGH culinary fixes — FAILED (tokens.ts truncation, unrelated) |
+| #88 | `23bd653ce877` | tokens.ts complete 156-line restore — fixes Metro SyntaxError at line 150 |
+
+### Changes this session
+- **seed-recipes.ts** — restored from git `9f64870`, applied 10 HIGH priority culinary fixes (sourdough rest step, ramen chashu prep note, chicken-adobo rice, rendang kerisik step, laksa tofu step, barramundi 20→50 min, pavlova 150→210 min, saag-paneer chef corrected, butter-chicken 90→330 min, roast-chicken 90→1530 min)
+- **tokens.ts** — restored complete `fonts` export (was truncated at line 150; missing `sans`, `sansBold`, `sansXBold`, closing brace, `TokenName` type)
 
 ---
 
