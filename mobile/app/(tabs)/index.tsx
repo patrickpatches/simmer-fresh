@@ -218,7 +218,7 @@ export default function KitchenHome() {
             marginBottom: 4,
           }}
         >
-          Hone
+          hone
         </Text>
 
         {/* Hero headline */}
