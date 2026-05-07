@@ -51,10 +51,10 @@ export default function TabLayout() {
             backgroundColor: 'transparent',
           }}
         >
-          {/* Pill bg: tokens.cream (#FAFAF7) -- warm near-white card surface.
-              Sage palette: dock is light on a sage-green app bg.
+          {/* Pill bg: tokens.cream (#1E1E1E) -- elevated dark card surface.
+              Dark palette: dock floats on #141414 app bg.
               Active pill: rust primary with cream labels (tokens.onPrimary).
-              Inactive: dark ink at 52% opacity -- legible on the light dock
+              Inactive: warm cream at 55% opacity -- legible on the dark dock
               without competing with the active rust pill. */}
           <View
             style={{
@@ -109,11 +109,11 @@ export default function TabLayout() {
                   <Icon
                     name={spec.icon}
                     size={16}
-                    color={focused ? tokens.onPrimary : 'rgba(17,20,16,0.52)'}
+                    color={focused ? tokens.onPrimary : 'rgba(245,239,232,0.55)'}
                   />
                   <Text
                     style={{
-                      color: focused ? tokens.onPrimary : 'rgba(17,20,16,0.52)',
+                      color: focused ? tokens.onPrimary : 'rgba(245,239,232,0.55)',
                       fontFamily: fonts.sansBold,
                       fontSize: 10,
                       letterSpacing: 0.2,
