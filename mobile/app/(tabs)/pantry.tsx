@@ -1271,7 +1271,6 @@ export default function PantryTab() {
 
           <VersionFooter paddingBottom={32} />
         </ScrollView>
-      )}
 
       {/* ── Clear-all confirmation Modal ────────────────────────────── */}
       {/* Modal (not Alert) so we can apply dark tokens and custom styling.
