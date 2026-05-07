@@ -201,3 +201,33 @@ Culinary verifier applied step-flow audit to an older base of `seed-recipes.ts`.
 - Pattern: `const CARD_WIDTH = 260` hardcoded constant
 - Why it breaks: On large-screen Android devices (tablets, foldables, large phones), peek width becomes enormous and snap math breaks
 - Lesson: All layout dimensions that depend on viewport must derive from `useWindowDimensions()`.
+
+
+---
+
+## Session log — 7 May 2026 (session 4 continuation)
+
+### Fixes pushed this session
+| Commit | File | Fix |
+|---|---|---|
+| `68ed391e2229` | `mobile/app/(tabs)/pantry.tsx` | Remove `tokens.surface ?? tokens.cream` → `tokens.cream` directly (L645, L1299). `surface` doesn't exist in dark palette — nullish coalescing always fell through anyway. Eliminates the TypeScript type noise. |
+
+### Deploy to GitHub Pages — root cause analysis
+
+The Pages CI workflow (`deploy.yml`) runs `npx expo export --platform web` on every push to main. Metro bundles the full app for web — same code path as the Android Metro bundle. This means **any syntax error that breaks the Android build also breaks the Pages build**.
+
+The Pages failures visible in the screenshot (commits fixing pantry.tsx `)}` and BUGS.md) were caused by the cascade of truncated files from the Pressable refactor pass: `tokens.ts`, `pantry.tsx` (orphaned `)}` after the `tokens.ts` fix landed), `ServingsSelector.tsx`, and `SwapSheet.tsx` were all still broken at that point.
+
+**These are now resolved.** All four truncated files have been fixed and pushed (builds #88–#90 / commits `23bd653`, `3444a540`, `59f16e09`, `e9e816de`). The next Pages run should go green.
+
+**No structural issue with deploy.yml** — the workflow is correct. `expo-haptics` no-ops silently on web; `react-native-web` is present; Expo Router is configured for single-page output. The failures were purely Metro syntax errors cascading from the truncation bug class.
+
+### REGN-008 — tokens.surface phantom reference (CLOSED)
+
+| Field | Value |
+|---|---|
+| Status | CLOSED — fixed commit `68ed391e2229` |
+| Severity | Low (no crash — nullish coalescing always used `tokens.cream`) |
+| Root cause | Dark palette refactor renamed/removed `surface` token; two occurrences in pantry.tsx not updated |
+| Fix | Direct `tokens.cream` in both places |
+| Awaiting | No validation needed — no behavioural change, purely eliminates type noise |
