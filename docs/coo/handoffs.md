@@ -25,6 +25,33 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → COO · 2026-05-07 · OPEN URGENT (brief the Cook — whole-food field is dead)
+**From:** Patrick (via Senior Engineer)
+**Subject:** The cook's research database had whole-food references throughout. Engineer cleaned them. Cook must be told to never use the term again.
+**Why:** The `whole_food_verified` field was retired across the entire repo on 2026-05-07 (commits `21198e5` + `474f500`). When the engineer ran the cleanup, fifteen of the sixteen recipe research files in `docs/coo/culinary-research/` still had a "Whole-food claim:" or "Whole-food verified:" line in their audit sections — the cook had been adding it as a standard audit checkbox. The lines have been stripped, but if the cook keeps following the old pattern, the term will leak back in next time research lands. Patrick's words: he wants this fully addressed before the 11-recipe migration proceeds, so we don't ship an APK with the term re-introduced through a new research file.
+
+**What's already done (Engineer):**
+- Stripped 15 `Whole-food claim:` / `Whole-food verified:` lines from the cook's research files in `docs/coo/culinary-research/`. Smash-burger left intentionally as the retirement narrative.
+- Verified `docs/coo/culinary-research/TEMPLATE.md` (the cook's template) is clean — no mention there.
+- Verified `docs/coo/specialists/culinary-verifier.md` (the cook's brief) is clean — Patrick had already cleaned this earlier.
+- Schema, seed data, SQLite column, prototypes, BUGS.md, command-centre.md, roadmap.md, handoffs.md — all stripped. Only the URGENT handoff and the smash-burger retirement narrative still mention it, both deliberately.
+
+**What's needed (COO actions):**
+1. **Brief the Cook explicitly:** the whole-food concept is retired. Don't add `whole_food_verified` to any new recipe data. Don't include a "Whole-food claim" or "Whole-food verified" line in the audit section of new research files.
+2. **Update the cook's standing brief if needed.** The current `docs/coo/specialists/culinary-verifier.md` is clean — confirm no follow-up edits required, or add an explicit "do not use" note if you think the cook needs the reminder in writing.
+3. **Confirm to Senior Engineer when done** so the 11-recipe migration can proceed without risk of re-introducing the term through new research files.
+4. **Future-proof:** consider adding a one-line check to the cook's session-end checklist — `grep "whole_food" docs/coo/culinary-research/<new-file>.md` should return zero hits.
+
+**Files referenced:**
+- `docs/coo/culinary-research/*.md` (cleaned, except smash-burger.md retirement narrative)
+- `docs/coo/specialists/culinary-verifier.md` (already clean)
+- `docs/coo/culinary-research/TEMPLATE.md` (already clean)
+
+**Blocks:**
+- The 11-recipe DECISION-009 migration (separate handoff below) is paused until the COO confirms the Cook has been briefed. Patrick's call — he doesn't want the term to come back in a Cook update.
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-07 · OPEN URGENT (kill whole_food_verified + verify all recipes show Prep + Equipment)
 **From:** Patrick (via COO)
 **Subject:** Two related cleanups: remove the whole-food-verified concept from the entire repo, and verify every recipe actually renders the Prep and Equipment sections on-device
@@ -862,28 +889,4 @@ Patrick found the original three levels (Refinement / Medium / Alternative) too 
 **Subject:** Implement pantry redesign v2 — search takeover, have-it pills, match card chips (Variant A)
 **Why:** Patrick confirmed Variant A (tap-to-add missing ingredient chips) on 2 May 2026. Pantry is the kill feature — this takes priority over the recipe-add task in the multi-task handoff below. Full spec in `docs/prototypes/pantry-redesign-v2.html` engineer handoff block — open in Chrome, not Cowork panel.
 **What's needed (in priority order):**
-1. **IngredientSearchOverlay** — new full-screen component replacing the broken floating dropdown. Mounts on add-ingredient input focus. Solid `tokens.bg` background, autocomplete SectionList grouped by category, added-this-session pills row at top. File: `mobile/src/components/IngredientSearchOverlay.tsx`.
-2. **Have-it pills row** — horizontal ScrollView of sage pills for `have_it === true` items, above search bar in `ListHeaderComponent`. × to toggle off.
-3. **Gold match banner** — replace the sage `Pressable` pill with a left-gold-accent card (`tokens.primary` left border, `tokens.surface` bg, `tokens.gold-border` outer border).
-4. **Variant A missing-ingredient chips** — reshape `RecipeMatchResult` to expose `missingIngredients: Array<{name, amount, unit, substitutions}>`. Cap at 4 chips visible, "+N more →" for overflow. On tap: chip disappears + 3-second undo banner. Sort substitution-available first. No hint caption. `hitSlop={8}` on each chip `Pressable`.
-5. **Remove percentage badge** from `MatchCard` entirely. "N of X ingredients" + progress bar is sufficient.
-**Files:** `mobile/app/(tabs)/pantry.tsx`, new `mobile/src/components/IngredientSearchOverlay.tsx`
-**Decision reference:** DECISION-008 in `docs/coo/decision-log.md`
-**Blocks:** Pantry is the kill feature — must land before Internal Alpha (22 May milestone).
-
----
-
-### HANDOFF → Senior Engineer · 2026-04-29 · IN PROGRESS
-**From:** Patrick (via COO)
-**Subject:** Three priority tasks — bundle rename, substitution UI, add 6 new recipes
-**Why:** Patrick made multiple decisions on 29 April that all queue up to Senior Engineer. Sequenced because each unblocks downstream work.
-**Engineer update (30 Apr 2026):**
-- ✅ Task 1 (bundle ID rename) — COMPLETE. `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json`. ADR written at `docs/adr/001-bundle-id-rename.md`. Play Console steps in the ADR. `splash.backgroundColor` and `android.adaptiveIcon.backgroundColor` also updated to `#111111`.
-- ✅ Task 2 (Substitution UI + photo badge) — COMPLETE. `SubstitutionSheet.tsx` built with `@gorhom/bottom-sheet` `BottomSheetModal`. Wired into `recipe/[id].tsx` — ingredient rows show swap icon when substitutions exist, tap opens sheet. "Photos soon" badge added to `RecipeCard.tsx` (bottom-right, dark scrim). Stage notice banner added to recipe detail. Step photo placeholder added to each step. `BottomSheetModalProvider` added to root `_layout.tsx`.
-- 🔴 Task 3 (add 6 new recipes) — BLOCKED. `docs/coo/culinary-research/` does not exist. Culinary Verifier has not delivered source recipes. See new OPEN handoff below. Do not proceed until Culinary Verifier delivers.
-**What's done:** Patrick approvals + Product Designer specs.
-**What's needed (in this order):**
-
-1. **Rename bundle ID** `com.patricknasr.simmerfresh` → `com.patricknasr.hone` in `mobile/app.json` and `mobile/package.json`. Verify clean APK build. Write ADR (`docs/adr/NNN-bundle-id-rename.md`). Tell Patrick the Play Console steps for the next AAB upload (new app entry under new package name auto-creates).
-
-2. **Implement Substitution UI + recipe-card photo-badge states** per Product Designer's specs at `docs/p
+1. **IngredientSearchOverlay** — new full-screen component replacing the broken floating dropdown. Mounts on add-ingredient input focus. Solid `tokens.bg` background, autocomplete SectionList grouped by category, added-this-session pills row at top. File: `mobile/s
