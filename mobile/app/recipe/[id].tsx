@@ -882,6 +882,46 @@ export default function RecipeDetailScreen() {
           </View>
         </View>
 
+        {/* ── PLACEHOLDER for recipes with no Equipment AND no Prep ──
+            One small honest line where the Equipment/Prep blocks would have
+            been. Only renders when BOTH fields are absent — if either is
+            populated, that block renders normally and we don't show this.
+            Currently this affects only sourdough-maintenance (the starter
+            feeder guide, intentionally outside the DECISION-008 schema).
+            UI guard against the "looks half-built" state Patrick reported. */}
+        {!cooking
+          && (recipe.equipment?.length ?? 0) === 0
+          && (recipe.mise_en_place?.length ?? 0) === 0 && (
+          <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+            <View
+              style={{
+                paddingVertical: 14,
+                paddingHorizontal: 16,
+                borderRadius: 14,
+                backgroundColor: 'rgba(170,204,168,0.08)',
+                borderWidth: 1,
+                borderColor: 'rgba(170,204,168,0.22)',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: 10,
+              }}
+            >
+              <Icon name="chef" size={14} color={tokens.sage} style={{ marginTop: 2 }} />
+              <Text
+                style={{
+                  flex: 1,
+                  fontFamily: fonts.sans,
+                  fontSize: 13,
+                  lineHeight: 19,
+                  color: c.inkSoft,
+                }}
+              >
+                Equipment and prep notes are coming — the chef hasn't written the audit for this recipe yet. Ingredients and method below are complete.
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* ── EQUIPMENT (DECISION-008) ──
             Horizontal pill row from equipment[]. Omitted if empty. */}
         {!cooking && (recipe.equipment?.length ?? 0) > 0 && (
@@ -1520,7 +1560,8 @@ function MiseItem({
   isLast: boolean;
   lineColor: string;
   inkColor: string;
-}) {
+}) 
+{
   return (
     <Pressable
       onPress={onToggle}
