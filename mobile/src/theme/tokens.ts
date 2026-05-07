@@ -147,4 +147,10 @@ export const shadows = {
  */
 export const fonts = {
   display:       'PlayfairDisplay_700Bold',
-  displayItalic: 'PlayfairDisplay_500Med
+  displayItalic: 'PlayfairDisplay_500Medium_Italic',
+  sans:          'Inter_400Regular',
+  sansBold:      'Inter_600SemiBold',
+  sansXBold:     'Inter_800ExtraBold',
+} as const;
+
+export type TokenName = keyof typeof tokens;
