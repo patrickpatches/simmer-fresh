@@ -25,7 +25,78 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → COO · 2026-05-07 · OPEN URGENT (brief the Cook — whole-food field is dead)
+### HANDOFF → Patrick · 2026-05-08 · ON-DEVICE VALIDATION (three jobs landed, awaiting your install)
+**From:** Senior Engineer
+**Subject:** ATTR-FAIL + 11-recipe DECISION-009 + 27-recipe Batch 3+4 + audit placeholder all on origin/main; build not triggered per CLAUDE.md.
+**Commits:**
+- `ee111a0` — ATTR-FAIL: 16 broken attribution URLs converted to book citations
+- `5ac153b` — DECISION-009 Batch 2 (11 launch-priority recipes)
+- `e649f0f` — DECISION-009 Batch 3+4 (27 cook-extras)
+- `c5f6a2d` — UI placeholder for the one remaining empty recipe (sourdough-maintenance)
+
+**State after all four commits:**
+- 44 of 45 seed recipes carry full DECISION-008 sections (Equipment, Prep, Before-you-start, Finishing, Leftovers, total/active timings)
+- 1 still empty: `sourdough-maintenance` — intentional, it's a starter-feeder guide, not a meal recipe; renders the new "Equipment and prep notes are coming" placeholder
+- Zero broken attribution URLs in `seed-recipes.ts`
+- Zero `whole_food_verified` references anywhere outside historical session reports
+
+**On-device checks Patrick should walk through after triggering a build:**
+1. Open chicken-adobo (now book-cited "Anthony Bourdain, No Reservations Philippines" with no URL) — Equipment, Prep, Finishing, Leftovers should render
+2. Open butter-chicken — total time should read 270 min (4h 30m, including the 4-hour marinade) instead of the previous understated 90
+3. Open roast-chicken — total time should read 840 min (14h, dry-brine overnight) instead of 90
+4. Open lamb-shawarma — Prep checklist should be tappable, count should tick
+5. Open sourdough-maintenance — should show the sage-tinted "Equipment and prep notes are coming" placeholder, NOT empty space
+6. Open carbonara — `Watch the original` button should still work (the URL was already clean)
+
+**Per CLAUDE.md:** GitHub issue NOT closed. Patrick validates on-device and closes himself.
+
+**Build trigger:** Patrick decides when. The fixes are stacked on top of `4725618` (REGN-006 + REGN-007 fix that was last built as #92/#93). A new build dispatched on `c5f6a2d` will carry everything since the last validated APK.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-08 · DONE ✅ (ATTR-FAIL — 16 broken attribution URLs fixed)
+**Closed by Senior Engineer 2026-05-08 in commit `ee111a0`.** All 16 recipes converted to book citations per Patrick's default. Andy Cooks recipes (PRAWN_TACOS_PINEAPPLE, WEEKDAY_BOLOGNESE) used 'inspired by, no URL' framing because Andy Cooks doesn't have a published book. No video_url remains broken in seed-recipes.ts. Patrick validates on-device.
+
+### Original handoff (preserved for audit) → Senior Engineer · 2026-05-08 · OPEN (ATTR-FAIL — fix 16 broken attribution URLs in seed-recipes.ts)
+**From:** Culinary & Cultural Verifier
+**Subject:** 16 recipes have `video_url` values that violate Golden Rule 1 — fix before any recipe ships
+**Why:** The full attribution audit (`docs/coo/culinary-audit.md`, 2026-05-08) found 16 of 45 seed recipes link to a channel homepage, site root, about page, or chef listing page — none of which point to a specific recipe. Under Golden Rule 1, every chef-attributed link must be live and point to the specific recipe, not a channel or site. None of these recipes can ship until the link is correct or the attribution is reframed as a book citation / "inspired by" with no URL.
+**What's needed:**
+For each recipe below, either:
+(a) Find the specific YouTube `watch?v=` video or specific recipe page URL and update `video_url` in `seed-recipes.ts`, OR
+(b) Change attribution to a book citation format — update `source.notes` to include the book title, and remove or null `video_url`. The `chef` field stays as-is.
+
+| Recipe const | Chef | Current broken URL | Fix type |
+|---|---|---|---|
+| `CHICKEN_ADOBO` | Anthony Bourdain / No Reservations | `@AnthonyBourdainPartsUnknown` (channel + wrong show) | Find No Reservations Philippines clip or use book citation |
+| `BEEF_STEW` | Jacques Pépin | `/c/HomeCookingwithJacquesPepin` (channel) | Find specific beef stew episode on that channel |
+| `ROAST_CHICKEN` | Thomas Keller / Bouchon | `@ChefThomasKeller` (channel) | Find specific roast chicken video or use Bouchon book citation |
+| `PRAWN_TACOS_PINEAPPLE` | Andy Cooks | `@andy_cooks` (channel) | Find specific prawn taco/pineapple video |
+| `FRENCH_ONION_SOUP` | Anthony Bourdain / Les Halles | `@AnthonyBourdainPartsUnknown` (channel + wrong show) | Find Les Halles video or use *Les Halles Cookbook* citation |
+| `SCRAMBLED_EGGS` | Gordon Ramsay | `@GordonRamsay` (channel) | The F Word scrambled eggs clip is widely available — find `watch?v=` |
+| `WEEKDAY_BOLOGNESE` | Andy Cooks | `@andy_cooks` (channel) | Find specific bolognese video |
+| `MUSAKHAN` | Reem Kassis / The Palestinian Table | `reemkassis.com/` (site root) | Find specific musakhan page or use *The Palestinian Table* book citation |
+| `KAFTA` | Anissa Helou / Feast | `anissas.com/` (site root) | Find specific kafta page or use *Feast* book citation |
+| `HUMMUS` | Reem Kassis / The Palestinian Table | `reemkassis.com/` (site root) | Find specific hummus page or use *The Palestinian Table* book citation |
+| `FATTOUSH` | Anissa Helou / Lebanese Cuisine | `anissas.com/` (site root) | Find specific fattoush page or use *Lebanese Cuisine* book citation |
+| `SOURDOUGH_MAINTENANCE` | Chad Robertson / Tartine Bakery | `tartinebakery.com/about` (about page) | Find specific video or use *Tartine Bread* book citation |
+| `SOURDOUGH_LOAF` | Chad Robertson / Tartine Bakery | `tartinebakery.com/about` (about page) | Find specific video or use *Tartine Bread* book citation |
+| `RISOTTO` | Marcella Hazan | `giulianohazan.com/` (site root — also Giuliano's site, not Marcella's) | Find specific mushroom risotto page or use *Essentials of Classic Italian Cooking* book citation |
+| `RAMEN` | Ivan Orkin / Ivan Ramen | `ivanramen.com/` (site root) | Find specific recipe page or use *Ivan Ramen* book citation |
+| `DAL` | Madhur Jaffrey | `thehappyfoodie.co.uk/chefs/madhur-jaffrey/` (chef listing page) | Find specific tarka dal page on Happy Foodie or use *Madhur Jaffrey's Curry Easy* book citation |
+
+**Also flag for review:** `BEEF_LASAGNE` — the URL `https://www.nytimes.com/recipes/12869/marcella-hazans-bolognese-meat-sauce.html` is a specific page (PASS) but it links to a Bolognese sauce recipe, not a lasagne. The attribution notes should clarify: "Sauce adapted from Marcella Hazan's bolognese; assembled as lasagne — Hone Kitchen." Update `source.notes` accordingly.
+
+**Files touched:** `mobile/src/data/seed-recipes.ts` — `source.video_url` and `source.notes` fields only. No step or ingredient changes.
+**Full audit detail:** `docs/coo/culinary-audit.md` — per-recipe attribution notes with context on each failure.
+**Blocks:** All 16 affected recipes from shipping. This is a brand-safety issue, not just a QA item.
+
+---
+
+### HANDOFF → COO · 2026-05-07 · DONE ✅ (Cook briefed in writing — engineer unblocked for 11-recipe migration)
+**Closed by COO 2026-05-07.** Cook's brief at `docs/coo/specialists/culinary-verifier.md` now carries an explicit "RETIRED FIELDS — DO NOT USE" section at the top of "How you work," naming `whole_food_verified` and instructing zero use in any new research file. A session-end `grep -i "whole_food..."` check has been added to the cook's "At session end" ritual so any drift is caught before close. Patrick is sending the cook a paste-back to acknowledge directly. Engineer cleared to proceed with the 11-recipe migration.
+
+### Original handoff (preserved for audit) → COO · 2026-05-07 · OPEN URGENT (brief the Cook — whole-food field is dead)
 **From:** Patrick (via Senior Engineer)
 **Subject:** The cook's research database had whole-food references throughout. Engineer cleaned them. Cook must be told to never use the term again.
 **Why:** The `whole_food_verified` field was retired across the entire repo on 2026-05-07 (commits `21198e5` + `474f500`). When the engineer ran the cleanup, fifteen of the sixteen recipe research files in `docs/coo/culinary-research/` still had a "Whole-food claim:" or "Whole-food verified:" line in their audit sections — the cook had been adding it as a standard audit checkbox. The lines have been stripped, but if the cook keeps following the old pattern, the term will leak back in next time research lands. Patrick's words: he wants this fully addressed before the 11-recipe migration proceeds, so we don't ship an APK with the term re-introduced through a new research file.
@@ -52,7 +123,13 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ---
 
-### HANDOFF → Senior Engineer · 2026-05-07 · OPEN URGENT (kill whole_food_verified + verify all recipes show Prep + Equipment)
+### HANDOFF → Senior Engineer · 2026-05-07 · DONE ✅ (kill whole_food_verified + verify Prep + Equipment populated)
+**Closed by Senior Engineer 2026-05-08.** Both tasks landed:
+- TASK 1 (kill whole_food_verified) — completed in commits `21198e5` + `474f500` on 2026-05-07. Removed from Zod schema, all 45 seed recipes, SQLite v7 migration, prototypes, BUGS.md, command-centre.md, handoffs.md, culinary-research/*.md, roadmap.md. Only deliberate retirement-doc references remain. tsc clean.
+- TASK 2 (verify Prep + Equipment populated) — completed in commits `5ac153b` + `e649f0f` + `c5f6a2d` on 2026-05-08. 44 of 45 recipes now carry full DECISION-008 fields. Sourdough-maintenance is the lone exception and renders the new "Equipment and prep notes are coming" placeholder.
+Patrick validates on-device. Per CLAUDE.md, the GitHub issue is not closed by the engineer.
+
+### Original handoff (preserved for audit) → Senior Engineer · 2026-05-07 · OPEN URGENT (kill whole_food_verified + verify all recipes show Prep + Equipment)
 **From:** Patrick (via COO)
 **Subject:** Two related cleanups: remove the whole-food-verified concept from the entire repo, and verify every recipe actually renders the Prep and Equipment sections on-device
 **Why:** The `whole_food_verified` field has caused recurring problems — it blocked SMASH_BURGER from rendering (6 May), the `.refine()` was removed, but the field remains in the schema and data. Patrick has decided to drop the concept entirely. Separately, Patrick is still seeing many recipes on-device with no Prep section and no Equipment list. Both need a definitive end.
@@ -97,7 +174,10 @@ Patrick is finding recipes on-device with empty Prep and Equipment sections. The
 
 ---
 
-### HANDOFF → Senior Engineer · 2026-05-07 · OPEN (DECISION-009 — 11-recipe migration)
+### HANDOFF → Senior Engineer · 2026-05-07 · DONE ✅ (DECISION-009 — 11-recipe migration)
+**Closed by Senior Engineer 2026-05-08 in commit `5ac153b`.** All 11 recipes ported from `docs/coo/culinary-research/*.md` into `seed-recipes.ts` with `total_time_minutes`, `active_time_minutes`, `equipment[]`, `before_you_start[]` (capped at 3 per Zod schema), `mise_en_place[]`, `finishing_note`, `leftovers_note`. Markdown bold (`**text**`) stripped from inserted strings — they would not have rendered in React Native Text. Time strings normalised to integer minutes (e.g. "4 hours 30 min" → 270, overnight → 720 floor). Cook authored research for an additional 27 recipes during the same window; those landed as a follow-on commit `e649f0f`. Patrick validates on-device.
+
+### Original handoff (preserved for audit) → Senior Engineer · 2026-05-07 · OPEN (DECISION-009 — 11-recipe migration)
 **From:** COO
 **Subject:** Migrate 11 recipes that already have research files into seed-recipes.ts with full DECISION-009 fields
 **Why:** Per the engineer's 7 May handover, the recipe audit found 6 recipes fully populated (Batch 1), **11 recipes that have research `.md` files in `docs/coo/culinary-research/` ready to migrate**, and 27 recipes still waiting on Cook's Batch 2 research. The 11-recipe migration is unblocked — research already exists, no Cook input needed.
@@ -792,101 +872,4 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 ### HANDOFF → Culinary & Cultural Verifier · 2026-04-30 · OPEN (URGENT — Senior Engineer blocked)
 **From:** Senior Engineer
 **Subject:** Deliver source recipes for 6 new dishes — Senior Engineer cannot proceed without them
-**Why:** Priority 2, Task 3 of the Senior Engineer multi-task handoff requires adding 6 new recipes to `mobile/src/data/seed-recipes.ts`. The original COO handoff (below) says Senior Engineer must block on Culinary Verifier to provide authoritative sources before populating chef attribution. As of 30 April 2026, `docs/coo/culinary-research/` does not exist — no source files have been delivered.
-**What's needed:** Deliver the 6 source recipe files per the original COO handoff instructions (reproduced below for convenience). Output to `docs/coo/culinary-research/<recipe-slug>.md`. For each dish: chef-attributed source URL (or "traditional" framing), ingredient list, steps, substitutions, cuisine/type categories, Australian English check.
-1. `chicken-schnitzel.md` — consider Adam Liaw or another modern AU chef
-2. `chicken-vegetable-stir-fry.md` — Bill Granger, RecipeTinEats Nagi, or "traditional Australian weeknight"
-3. `beef-lasagne.md` — consider Marcella Hazan classic or modern AU
-4. `roast-lamb-rosemary-garlic.md` — consider Maggie Beer or "Sunday roast traditional"
-5. `fish-and-chips.md` — likely "Australian Friday traditional"
-6. `falafel.md` — Levantine; credit cuisine + region; specific chef optional
-**Sequence:** Item 1 (chicken schnitzel) first — Photography Director needs it before the 10–11 May shoot weekend (first weekend slipped; second weekend is now the target).
-**Blocks:** Senior Engineer Task 3 (recipe population), Photography Director (chicken schnitzel shoot weekend)
-
----
-
-### HANDOFF → Senior Engineer · 2026-04-30 · DONE ✅ (Patrick confirmed on-device)
-**From:** Product Designer + COO (direction switch confirmed by Patrick 30 April 2026)
-**Engineer note (30 Apr 2026):** All wiring done. APK build triggered. Patrick confirmed on-device — dark tokens look correct. Priority 2 now in progress.
-**Subject:** Roll out v0.7 token changes — Dark Dramatic direction (font swap + full palette inversion)
-**Why:** Patrick chose the Dark Dramatic direction on 30 April 2026, superseding the earlier Medium Iteration pick. `mobile/src/theme/tokens.ts` is now at v0.7 with the complete dark token set. The Engineer needs to swap the Google Fonts package, wire up Inter, and verify all components render correctly on the inverted dark palette.
-
-⚠️ **NOTE:** The previous handoff for this slot said Medium Iteration (terracotta #C04A2E, cream bg). That is **superseded**. Implement v0.7 dark tokens. Do not implement v0.6.
-
-**What's done:** `mobile/src/theme/tokens.ts` updated to v0.7 — OLED dark bg (#111111), gold primary (#E8B830), inverted ink (#F5EFE8), Inter font constants, cook mode true black (#000000).
-
-**What's needed (in this order):**
-
-1. **Install Inter, remove Source Sans 3:**
-   ```
-   npx expo install @expo-google-fonts/inter
-   ```
-   Remove `@expo-google-fonts/source-sans-3` from `mobile/package.json` dependencies.
-
-2. **Update `useFonts()` in `mobile/app/_layout.tsx`:**
-   Replace the `SourceSans3_*` font imports with:
-   ```ts
-   import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_800ExtraBold } from '@expo-google-fonts/inter';
-   ```
-   Update the `useFonts({})` call to load those three weights.
-
-3. **Grep for any hardcoded `SourceSans3` or `source-sans` references** outside of tokens.ts and update them.
-
-4. **Grep and fix all hardcoded light surface colours** — any `#F6F0E8`, `#EBE2D6`, `#FFFFFF`, `#181008`, `#D88A7B`, `#C04A2E`, `#B86A5A` in component files. Replace with the appropriate token reference.
-
-5. **Check StatusBar and NavigationBar configuration** — on dark bg the system bars need `dark-content` → `light-content` (light icons on dark bg). Update any `StatusBar` style props accordingly.
-
-6. **Build a dev APK and smoke-test:**
-   - App bg is near-black `#111111`, not cream
-   - Body text is warm off-white `#F5EFE8`, legible on dark
-   - Primary accent (buttons, chips, active states) is gold `#E8B830`, not terracotta
-   - Browse screen renders with Inter body text
-   - Headings still in Playfair Display
-   - Gold buttons use dark label text (`tokens.bgDeep`), not light — the surface is light gold
-   - Cook mode true black `#000000` is visually darker than app bg `#111111`
-   - No cream or pink remnants anywhere
-
-**Files to touch:** `mobile/package.json`, `mobile/app/_layout.tsx`, any component with hardcoded font or colour strings, StatusBar configuration.
-**Prototype reference:** `docs/prototypes/concept-dark-dramatic.html` (open in Chrome — Cowork panel renders prototypes poorly)
-**Blocks:** Photography weekend planning (Patrick needs to see the dark tokens on-device before finalising photo surface decisions)
-
----
-
-### HANDOFF → File Organiser · 2026-04-29 · DONE
-**From:** COO
-**Subject:** Session report naming breach acknowledged + convention clarified
-**Why:** File Organiser flagged that `Hone_Session_Report_29_April_2026_COO.md` uses a role-tag suffix that doesn't match the CLAUDE.md naming convention.
-**What's done by File Organiser:** Caught the breach, recommended a sequential-number convention (`_2`, `_3`) for multi-session days, asked COO to enforce going forward without retroactively renaming the existing file.
-**What's done by COO (this session):** Recommendation accepted in full.
-- `CLAUDE.md` Part 4 naming conventions and "Where things go" table updated to specify `_N` sequential suffix for additional reports on the same day, and to explicitly forbid role tags.
-- `docs/FILE_MAP.md` naming conventions updated to match.
-- `docs/coo/operating-rhythm.md` "At session end" ritual updated so every specialist sees the rule.
-- DECISION-005 logged in `docs/coo/decision-log.md` with full rationale and the existing file's status as a one-time exception.
-**Net effect:** Future multi-session days will produce `Hone_Session_Report_DD_Month_YYYY.md` and `_2.md`, never `_COO.md` or similar. Existing file on GitHub stands.
-**Note:** This catch is exactly the value the File Organiser role exists to provide. The system worked.
-
-### HANDOFF → Product Designer · 2026-04-29 · DONE (delivered 30 Apr)
-**From:** Patrick (via COO)
-**Subject:** Stylistic refresh — propose 3 genuinely different directions with mockups
-**What's done by Designer (this session, 30 Apr):**
-Patrick found the original three levels (Refinement / Medium / Alternative) too visually similar. Designer pivoted to three fundamentally distinct aesthetic worlds:
-
-1. **Direction 1 — Pastel Cool** (`docs/prototypes/direction-1-pastel.html`)
-   Fraunces + Plus Jakarta Sans. Dulux Piglet blush, sage, lavender, butter, sky. Category-coloured card pills. Soft and tactile — the antithesis of recipe-app beige. Cost: ~2 engineer sessions.
-
-2. **Direction 2 — Bold Magazine** (`docs/prototypes/direction-2-magazine.html`)
-   Space Grotesk throughout. Deep cobalt (#0B1628) surfaces. Recipe titles overlaid directly on full-bleed food photos via gradient scrim — no text below the photo card. Amber (#F0A500) as the only accent. Cost: ~2 engineer sessions.
-
-3. **Direction 3 — Japanese Minimal** (`docs/prototypes/direction-3-minimal.html`)
-   Noto Serif Display + Noto Sans. Browse is a pure typographic list — no cards, no photos. Extreme whitespace. A single vermillion (#CC3311) reserved for the "Start Cooking" CTA only. Best launch story: browse screen looks complete with zero photos. Cost: ~1.5 engineer sessions.
-
-**What Patrick needs to do:** Pick one direction. Reply in the next session with "go with Direction N" and the Designer/Engineer pipeline picks up from there.
-**Files touched:** `docs/prototypes/direction-1-pastel.html`, `docs/prototypes/direction-2-magazine.html`, `docs/prototypes/direction-3-minimal.html`
-**Blocks resolved:** Photography weekend timing depends on Patrick's pick (see Photography Director handoff).
-
-### HANDOFF → Senior Engineer · 2026-05-02 · OPEN — Pantry redesign (new, do before existing multi-task)
-**From:** Product Designer (Patrick confirmed 2 May 2026)
-**Subject:** Implement pantry redesign v2 — search takeover, have-it pills, match card chips (Variant A)
-**Why:** Patrick confirmed Variant A (tap-to-add missing ingredient chips) on 2 May 2026. Pantry is the kill feature — this takes priority over the recipe-add task in the multi-task handoff below. Full spec in `docs/prototypes/pantry-redesign-v2.html` engineer handoff block — open in Chrome, not Cowork panel.
-**What's needed (in priority order):**
-1. **IngredientSearchOverlay** — new full-screen component replacing the broken floating dropdown. Mounts on add-ingredient input focus. Solid `tokens.bg` background, autocomplete SectionList grouped by category, added-this-session pills row at top. File: `mobile/s
+**Why:** Priority 2, Task 3 of the Senior

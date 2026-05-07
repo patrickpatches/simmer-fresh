@@ -26,11 +26,11 @@ The DECISION-008 fields are: `equipment[]`, `before_you_start[]`, `mise_en_place
 
 | Status | Count | Recipes |
 |---|---|---|
-| ✅ Populated (Batch 1) | 6 | chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel |
-| 🟡 Research file ready, awaiting migration | 11 | smash-burger, pasta-carbonara, weekday-bolognese, butter-chicken, thai-green-curry, pavlova, roast-chicken, barramundi-lemon-butter, lamb-shawarma, hummus, pad-thai |
-| ⚪ No research yet — flagged for cook's Batch 2 | 27 | chicken-adobo, beef-stew, musakhan, kafta, fattoush, prawn-tacos-pineapple, sourdough-maintenance, sourdough-loaf, risotto, fish-tacos, french-onion-soup, braised-short-ribs, ramen, beef-wellington, dal, scrambled-eggs, aglio-e-olio, mujadara, sheet-pan-harissa-chicken, egg-fried-rice, nasi-lemak, beef-rendang, curry-laksa, char-kway-teow, saag-paneer, chicken-katsu, tom-yum, flour-tortillas |
+| ✅ Populated (Batch 1, 2, 3, 4) | 44 | every seed recipe except sourdough-maintenance |
+| 🟡 Research file ready, awaiting migration | 0 | — all caught up |
+| ⚪ No research, intentional placeholder | 1 | sourdough-maintenance — feeder-starter guide, doesn't fit DECISION-008 schema; renders the "Equipment and prep notes are coming" placeholder |
 
-**Migration status:** UI now correctly renders the 5 sections for all 6 Batch 1 recipes. The 11 yellow recipes have full source data in `docs/coo/culinary-research/*.md` — engineering migration into seed-recipes.ts is a tracked follow-up (next session). The 27 white recipes need the Cook to author research first; Cook handoff is in `docs/coo/handoffs.md`. UI gracefully renders nothing for absent fields — no broken state on recipes without populated data.
+**Migration status (updated 2026-05-08):** All 38 outstanding recipe migrations completed in commits `5ac153b` (Batch 2, 11 recipes) + `e649f0f` (Batch 3+4, 27 recipes). UI correctly renders all 5 DECISION-008 sections for 44 of 45 recipes. The lone empty recipe (sourdough-maintenance) now renders a sage-tinted placeholder line — "Equipment and prep notes are coming" — instead of empty space. Awaiting Patrick's on-device validation.
 
 **REGN-007 root cause (diagnosed 7 May 2026):**
 - Three symptoms reported by Patrick: (1) Undo on chip-add toast doesn't work, (2) Hitting X in Shop tab doesn't revert pantry chip, (3) Clicking already-added ✓ chip doesn't remove from shopping list.
