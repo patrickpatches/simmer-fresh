@@ -225,6 +225,9 @@ const SMASH_BURGER: Recipe = {
   ],
   finishing_note: "There is no finishing. Stack it, eat it. The crust softens with every minute that passes and cannot be recovered. If you're making multiple burgers, cook them in sequence and eat as they come — don't hold them warm in an oven. The whole point of a smash burger is that 30-second window when the crust is still shatteringly crisp.",
   leftovers_note: "No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes and cannot be revived. Make only what you'll eat.",
+  output_unit: "burger",
+  output_default: 4,
+  extra_for_tomorrow_label: "Make only what you'll eat — smash burgers don't reheat once the crust softens",
 };
 
 const CHICKEN_ADOBO: Recipe = {
@@ -431,6 +434,9 @@ const PASTA_CARBONARA: Recipe = {
   ],
   finishing_note: "Taste before plating. The sauce should be savoury, peppery, and rich without being heavy. If it tastes flat, it needs more Pecorino — the cheese is both seasoning and sauce. If it's too thick, a splash more pasta water. If it's too thin, 20 seconds of tossing over very low heat (carefully — you're right at the egg-scramble threshold). Plate into warm bowls, top with more grated Pecorino and a fresh crack of pepper. That's it.",
   leftovers_note: "Carbonara does not keep. The egg sauce continues to cook in the residual heat as it cools, and reheating it curdled the eggs further. Make only what you'll eat. If you have leftover guanciale and egg mixture, refrigerate them separately (up to 2 days) and make a fresh batch. Exception: The cooked guanciale keeps well in the fridge. Day-2 guanciale tossed through fresh pasta with olive oil and pepper is excellent.",
+  output_unit: "serve",
+  output_default: 4,
+  extra_for_tomorrow_label: "No tomorrow — carbonara's emulsion breaks within 30 min and the eggs scramble on reheat",
 };
 
 const BEEF_STEW: Recipe = {
@@ -632,6 +638,9 @@ const ROAST_CHICKEN: Recipe = {
   ],
   finishing_note: "Carve the chicken and taste a piece of breast without any sauce. It should taste genuinely seasoned all the way through — not just salted on the surface. If it does, the dry brine worked. The skin should shatter slightly when you bite it. The pan drippings are the most flavourful thing in the whole dish — don't pour them away. Deglaze with a splash of water or white wine, scrape up all the fond, and pour it over the carved chicken as a simple jus.",
   leftovers_note: "Roast chicken leftovers are excellent. Cold sliced chicken keeps 3 days refrigerated. Use the carcass for chicken stock — cover with cold water, add a halved onion, carrot, celery, bay leaf, simmer 2 hours. The stock freezes perfectly and is the difference between a good soup and a great one.",
+  output_unit: "chicken",
+  output_default: 1,
+  extra_for_tomorrow_label: "+1 second bird — fits beside the first if your oven has the room; leftovers make stock",
 };
 
 const MUSAKHAN: Recipe = {
@@ -940,6 +949,9 @@ const HUMMUS: Recipe = {
   ],
   finishing_note: "Before serving, taste the hummus and adjust: salt, lemon, or water for consistency. The right texture is thick enough to hold a well in the centre when spread in a bowl — it should not run or be liquid. The flavour should be deeply savoury from the chickpeas, bright from the lemon, nutty from the tahini, with a quiet background note of garlic. Spread in a shallow bowl using the back of a spoon in one fluid circular motion — this creates the well that catches the olive oil. Fill the well with extra virgin olive oil, scatter a few whole cooked chickpeas, dust with paprika or sumac. Serve with warm flatbread.",
   leftovers_note: "Hummus keeps 5 days refrigerated in an airtight container. It improves for the first 24 hours as the flavours integrate. It firms up when cold — take it out 20 minutes before serving, or reheat very gently in a pan over low heat with a splash of water. Don't microwave — it goes grainy. Drizzle fresh olive oil each time you serve.",
+  output_unit: "cup",
+  output_default: 2,
+  extra_for_tomorrow_label: "Double the batch — keeps 5 days refrigerated; bring to room temperature before serving",
 };
 
 const FATTOUSH: Recipe = {
@@ -1586,6 +1598,9 @@ const THAI_GREEN_CURRY: Recipe = {
   ],
   finishing_note: "Taste before serving: Thai cooking is built on the balance of salty (fish sauce), sweet (palm sugar), sour (lime), and aromatic (kaffir lime, basil). These need to be in harmony — no single element should dominate. Add a squeeze of lime now if it tastes flat. A little extra fish sauce if it needs salt. If it's too spicy, a teaspoon more palm sugar softens the heat. Serve in deep bowls over jasmine rice.",
   leftovers_note: "Keeps 3 days refrigerated. The flavour actually deepens — the lime leaf and spices continue to infuse. Reheat gently on the stove (not microwave — the coconut milk can separate unevenly). Stir in a splash of water to loosen if it's thickened. Add the remaining fresh basil again on reheating.",
+  output_unit: "serve",
+  output_default: 4,
+  extra_for_tomorrow_label: "+1 lunch tomorrow — keeps 2 days, reheat gently (don't boil — coconut milk splits)",
 };
 
 const FRENCH_ONION_SOUP: Recipe = {
@@ -1794,6 +1809,9 @@ const PAD_THAI: Recipe = {
   ],
   finishing_note: "Taste before plating: the noodles themselves should be well-seasoned — slightly sweet-sour-salty from the caramelised sauce. Adjust with a small splash of fish sauce if needed. The bean sprouts and spring onions go on at plating — their job is freshness and crunch against the hot noodles. Squeeze the lime generously over everything. The lime is not garnish; it's part of the dish.",
   leftovers_note: "Pad thai does not keep well. The noodles absorb remaining sauce and stick together as they cool, and the bean sprouts go limp. If you have leftovers, reheat in a hot pan with a splash of water — it will not be as good as fresh but it's acceptable. Don't microwave — the noodles go gluey.",
+  output_unit: "serve",
+  output_default: 2,
+  extra_for_tomorrow_label: "No tomorrow — noodles go gummy on reheat; for 4 people do two wok sessions back-to-back",
 };
 
 const BRAISED_SHORT_RIBS: Recipe = {
@@ -2414,6 +2432,9 @@ const WEEKDAY_BOLOGNESE: Recipe = {
   ],
   finishing_note: "Before the pasta goes in, taste the ragù aggressively. It needs more salt than you think — the pasta and Parmigiano will dilute the seasoning. The flavour should be deep, meaty, slightly sweet from the carrot and the milk, with a clean red wine note behind it. If it tastes flat, salt. If it tastes thin, reduce another 5 minutes. If it tastes acidic, a pinch of sugar or a small knob of butter will round it out. Finish with Parmigiano stirred through off-heat — it emulsifies into the sauce rather than sitting on top.",
   leftovers_note: "The ragù improves significantly overnight as the collagen continues to set and the flavours integrate. Make a double batch and refrigerate or freeze the extra ragù (without pasta). Freezes perfectly for 3 months. Reheat gently with a splash of water to loosen. *Already exists in leftover_mode — content is correct.*",
+  output_unit: "serve",
+  output_default: 6,
+  extra_for_tomorrow_label: "Double the batch — freezes 3 months in 2-serve portions, better on day 2",
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -3075,6 +3096,9 @@ const CHICKEN_SHAWARMA: Recipe = {
   ],
   finishing_note: "Taste a strip of chicken before wrapping. It should be savoury, warmly spiced, and slightly smoky from the char. If it tastes flat, salt it directly on the sliced chicken — not in the sauce. If the garlic sauce is too heavy, thin with a few drops of lemon juice. The pickled vegetables are not optional garnish — their acidity is the counterpoint to the rich chicken and toum. Don't skip them.",
   leftovers_note: "Cold shawarma sliced thin into a wrap with leftover toum is one of the better lunches you can have the next day — the spices deepen overnight. Refrigerate for up to 3 days. Reheat in a hot pan with a splash of water to prevent sticking; never microwave (it goes rubbery). Flatbreads don't store assembled — keep components separate and assemble fresh.",
+  output_unit: "serve",
+  output_default: 4,
+  extra_for_tomorrow_label: "+2 wraps tomorrow — chicken keeps 3 days, marinate up to 24h ahead for deeper spice",
 };
 
 
@@ -3737,6 +3761,9 @@ const BUTTER_CHICKEN: Recipe = {
   ],
   finishing_note: "Before plating, taste for three things: salt (it probably needs more), sweetness (an extra half teaspoon of honey if the tomatoes are acidic), and heat (if it's too mild for your household, a pinch of cayenne now). The sauce should be thick enough to coat a spoon — if it's too thin, simmer uncovered 5 more minutes. Serve over basmati with naan alongside. A small swirl of extra cream on top before serving is traditional and not for show — it cools the surface temperature so the dish isn't scalding when it hits the table.",
   leftovers_note: "The sauce genuinely improves overnight — the spices integrate and the sweetness from the tomatoes rounds out. Refrigerate for up to 3 days or freeze (sauce only, not rice) for 3 months. Reheat gently — don't boil, the cream can split. Reheat with a splash of water stirred through.",
+  output_unit: "serve",
+  output_default: 4,
+  extra_for_tomorrow_label: "+1 lunch tomorrow — sauce freezes well; freeze sauce-only and add fresh chicken",
 };
 
 const SAAG_PANEER: Recipe = {
@@ -4214,6 +4241,9 @@ const BARRAMUNDI: Recipe = {
   ],
   finishing_note: "Taste the brown butter sauce before plating. It should be nutty, bright from the lemon, salty from the capers, and rounded from the garlic. If it's too sharp, a small extra knob of cold butter whisked in will soften it. Plate the fish skin-side up always — never rest the crispy skin on a plate. Spoon the sauce over generously, scatter parsley, and serve with the asparagus alongside. Eat immediately.",
   leftovers_note: "Pan-seared fish is not a leftover dish. The skin goes flabby within 10 minutes and cannot be revived. If you have leftover fish, flake it cold into a salad the next day — but the crispy skin experience is gone.",
+  output_unit: "serve",
+  output_default: 4,
+  extra_for_tomorrow_label: "+1 lunch tomorrow — fish reheats gently in a low oven; eat the same day for crispy skin",
 };
 
 const PAVLOVA: Recipe = {
@@ -4323,6 +4353,9 @@ const PAVLOVA: Recipe = {
   ],
   finishing_note: "Taste the whipped cream before it goes on — it should be lightly sweet from the icing sugar. The pavlova itself is very sweet; the cream needs to balance it. Taste the passionfruit — if it's not tart, add a squeeze of lime juice to the pulp before spooning on. The final dish should have: sweetness (meringue), richness (cream), tang (passionfruit), freshness (strawberries), and a slight earthiness (kiwi). Every element is there to balance the others.",
   leftovers_note: "Untopped meringue: Keeps in an airtight container or under a dome for 2 days in dry conditions. In humidity it will soften. Do not refrigerate — the moisture ruins the shell. Assembled pavlova: Does not keep. Once topped with cream and fruit, serve within 1–2 hours. The cream soaks in and the whole structure collapses within a few hours. Make the meringue ahead; assemble just before serving.",
+  output_unit: "serve",
+  output_default: 10,
+  extra_for_tomorrow_label: "Always one full pavlova — slice fewer if needed; meringue chemistry doesn't scale down",
 };
 
 const FLOUR_TORTILLAS: Recipe = {
@@ -4492,6 +4525,9 @@ const FLOUR_TORTILLAS: Recipe = {
   ],
   finishing_note: "A properly rested dough ball should roll to 2–3mm thickness — roughly the size of a small side plate — without springing back. If it resists, cover it and rest it 5 more minutes before trying again. Cook in a dry pan over medium heat. Three flips: 10 seconds on the first side, 15 seconds on the second, then the third flip produces the puff — steam inflates a pocket between the two layers like a balloon. When it settles back, it is done. Stack immediately in a lidded pot with a tea towel inside the lid to catch condensation. The steam in the pot is what keeps them soft and pliable for up to 20 minutes. Left on a bare plate, they stiffen in 2 minutes.",
   leftovers_note: "Flour tortillas keep 2–3 days at room temperature in an airtight bag, or refrigerated for up to a week. To reheat: 15–20 seconds in a dry hot pan, or wrapped in a damp paper towel in the microwave for 20 seconds. Freeze between layers of baking paper for up to 2 months — thaw at room temperature. Stale tortillas that have gone dry can be cut into triangles, fried briefly in hot oil, and used as totopos (chips) for guacamole or bean dip.",
+  output_unit: "tortilla",
+  output_default: 13,
+  extra_for_tomorrow_label: "+N tortillas — reheat in a dry pan in 15-20 sec with no quality loss; double batch keeps 2-3 days",
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -4670,6 +4706,9 @@ const CHICKEN_SCHNITZEL: Recipe = {
       why_note: 'Squeeze the lemon at the table, not in the kitchen. Citrus on hot crumb starts going soggy in seconds — this is the rule that separates pub-class schnitzel from cafe schnitzel.',
     },
   ],
+  output_unit: "schnitzel",
+  output_default: 4,
+  extra_for_tomorrow_label: "+1 extra schnitzel — reheats crispy on a wire rack in a 200°C oven for 8 min",
 };
 
 const CHICKEN_VEG_STIR_FRY: Recipe = {
@@ -5099,6 +5138,9 @@ const BEEF_LASAGNE: Recipe = {
       why_note: 'A lasagne cut hot collapses into a heap of pasta and sauce. The 15-minute rest lets the béchamel and ragù set just enough to slice cleanly. The lasagne stays piping hot under its own mass.',
     },
   ],
+  output_unit: "serve",
+  output_default: 8,
+  extra_for_tomorrow_label: "Always one full tray — better day 2 as the layers set; freezes 2 months in portions",
 };
 
 const ROAST_LAMB: Recipe = {
@@ -5287,6 +5329,9 @@ const ROAST_LAMB: Recipe = {
       why_note: 'A 2 kg shoulder pulled with two forks gives you the texture this dish is famous for — long strands of lamb that fall through the gravy. Carving works too if you prefer slices, but the cut needs to be thick — thin slices on lamb shoulder dry out in seconds.',
     },
   ],
+  output_unit: "serve",
+  output_default: 6,
+  extra_for_tomorrow_label: "Roast a 6-serve shoulder deliberately — cold lamb in flatbread the next day is excellent",
 };
 
 const FISH_AND_CHIPS: Recipe = {
@@ -5475,6 +5520,9 @@ const FISH_AND_CHIPS: Recipe = {
       why_note: "From the moment they leave the oil, the clock is against you. Five minutes on the bench and the steam from the chips has softened the batter on the fish. The reason fish-and-chip shops wrap in butcher's paper, not plastic, is the same reason — paper lets the steam escape.",
     },
   ],
+  output_unit: "serve",
+  output_default: 4,
+  extra_for_tomorrow_label: "No tomorrow — battered fish goes soft within 5 min of leaving the oil",
 };
 
 const FALAFEL: Recipe = {

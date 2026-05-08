@@ -378,6 +378,65 @@ export const Recipe = z.object({
    * Absent === false at the filter site (`!r.not_yet_shipping`).
    */
   not_yet_shipping: z.boolean().optional(),
+
+  // ── DECISION-014 (2026-05-08): per-recipe portion sizing ─────────────────
+  // Cook's spec: docs/coo/culinary-research/launch-recipe-units.md.
+  //
+  // The legacy `base_servings` field treats every recipe as if "servings"
+  // means "people." That's wrong: burgers are per-person, hummus is by cup,
+  // sourdough is one loaf regardless of party size, tortillas are per-piece.
+  //
+  // The four optional fields below let the recipe screen render the right
+  // unit per recipe — "Makes 4 burgers" / "Makes 1 loaf" / "Makes 8 tortillas"
+  // / "Serves 4 people" — without breaking existing recipes that don't yet
+  // have these populated.
+  //
+  // Migration strategy: launch-16 recipes get these populated from the cook's
+  // spec; non-launch recipes default to legacy "people" rendering until the
+  // cook authors their unit data in v1.1+.
+
+  /**
+   * The unit this recipe produces — the singular form of what's on the
+   * stepper. Examples: `"burger"`, `"serve"`, `"loaf"`, `"cup"`, `"piece"`,
+   * `"tortilla"`, `"chicken"`, `"schnitzel"`. When the unit is `"serve
+"` or
+   * `"person"`, the UI prefix is "Serves N"; otherwise it's "Makes N".
+   *
+   * If absent, the recipe falls back to the legacy "N people" rendering.
+   */
+  output_unit: z.string().optional(),
+
+  /**
+   * Plural form of `output_unit` for display when count !== 1.
+   * If absent, the UI auto-pluralises by appending "s" (works for the
+   * common cases — burgers, tortillas, cups, etc.).
+   *
+   * Note: "loaf" → "loafs" via auto-pluralise is wrong; this is exactly why
+   * the field exists. Set `output_unit_plural: "loaves"` for sourdough.
+   */
+  output_unit_plural: z.string().optional(),
+
+  /**
+   * Default count for the unit (e.g., 4 burgers, 1 loaf, 8 tortillas,
+   * 4 people). Distinct from `base_servings`, which means "default people"
+   * and is the legacy recipe-scaling input. For launch-16 recipes the two
+   * are usually the same number — the difference is semantic. When this
+   * field is absent, the UI uses `base_servings` as the default count.
+   */
+  output_default: z.number().int().positive().optional(),
+
+  /**
+   * Recipe-aware label for the "Make extra for tomorrow" affordance. The
+   * cook's spec at `launch-recipe-units.md` writes this per recipe based on
+   * how the dish stores: e.g., `"+2 lunches tomorrow"` (butter chicken),
+   * `"Double the batch — freezes 3 months"` (bolognese), `"No tomorrow —
+   * carbonara doesn't store"` (pasta carbonara — UI should show this as a
+   * disabled/explanatory state).
+   *
+   * If absent, the UI falls back to the leftover-mode option's generic hint.
+   */
+  extra_for_tomorrow_label: z.string().optional(),
+  // ─────────────────────────────────────────────────────────────────────────
 }).refine(
   (r) => r.user_added || r.generated_by_claude || r.source !== undefined,
   { message: 'Recipe requires `source` unless user_added or generated_by_claude' },
@@ -397,13 +456,11 @@ export type Recipe = z.infer<typeof Recipe>;
  * Use this at the database ingestion boundary, not in hot UI code.
  */
 export function parseRecipe(raw: unknown): Recipe {
-  return Recipe.parse
-(raw);
+  return Recipe.parse(raw);
 }
 
 /**
  * Same as parseRecipe but returns a SafeParseReturnType — never throws.
- * Useful when you want to render a fallback UI for malformed user input.
  */
 export function safeParseRecipe(raw: unknown) {
   return Recipe.safeParse(raw);

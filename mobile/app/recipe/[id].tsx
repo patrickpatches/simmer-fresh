@@ -79,7 +79,12 @@ export default function RecipeDetailScreen() {
   const [leftoverKey, setLeftoverKey] = useState<LeftoverModeId>('tonight');
 
   useEffect(() => {
-    if (recipe) setPeople(recipe.base_servings);
+    if (recipe) {
+      // DECISION-014: prefer output_default when the recipe has authored its
+      // per-unit count (4 burgers, 1 loaf, 8 tortillas). Falls back to
+      // base_servings for recipes that haven't been migrated yet.
+      setPeople(recipe.output_default ?? recipe.base_servings);
+    }
   }, [recipe]);
 
   // Reset mise en place when navigating to a different recipe
@@ -744,7 +749,10 @@ export default function RecipeDetailScreen() {
           </View>
         )}
 
-        {/* Servings selector */}
+        {/* Servings selector — DECISION-014 per-recipe units. The selector
+            falls back to legacy "people / portions" when output_unit is
+            absent, so non-launch recipes keep working until cook authors
+            their unit data in v1.1+. */}
         <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
           <ServingsSelector
             people={people}
@@ -752,6 +760,9 @@ export default function RecipeDetailScreen() {
             leftoverKey={leftoverKey}
             setLeftoverKey={setLeftoverKey}
             baseServings={recipe.base_servings}
+            outputUnit={recipe.output_unit}
+            outputUnitPlural={recipe.output_unit_plural}
+            extraForTomorrowLabel={recipe.extra_for_tomorrow_label}
           />
         </View>
 

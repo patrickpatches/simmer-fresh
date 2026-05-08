@@ -1,6 +1,15 @@
 /**
  * ServingsSelector — controls how the ingredients list is scaled.
  *
+ * v2 (2026-05-08, DECISION-014): per-recipe units. Replaces the generic
+ * "How many people / Makes N portions" header with recipe-aware copy:
+ * "Makes 4 burgers", "Makes 1 loaf", "Serves 4 people". The stepper still
+ * adjusts the count; ingredient scaling math is unchanged. Recipe-aware
+ * `extra_for_tomorrow_label` overrides the generic leftover-mode hint.
+ *
+ * Backwards-compatible: when `outputUnit` / `outputUnitPlural` are absent,
+ * the component falls back to the legacy "people / portions" rendering.
+ *
  * Stepper + leftover mode pills. Lives in the bottom half so thumbs
  * reach it one-handed. Haptic on every tap — confirms the action
  * without eyes needing to leave the pan.
@@ -23,7 +32,33 @@ type Props = {
   leftoverKey: LeftoverModeId;
   setLeftoverKey: (k: LeftoverModeId) => void;
   baseServings: number;
+  /** DECISION-014 per-recipe unit (singular). E.g. "burger", "serve". */
+  outputUnit?: string;
+  /** Plural form. Falls back to outputUnit + "s". */
+  outputUnitPlural?: string;
+  /** Recipe-aware label for the leftover-mode hint. */
+  extraForTomorrowLabel?: string;
 };
+
+/**
+ * Pluralise an output unit. Tries the explicit plural prop first, then a
+ * naive append-"s" fallback. Patterns like "loaf -> loaves" require the
+ * recipe to provide an explicit `output_unit_plural`.
+ */
+function pluralise(unit: string, plural: string | undefined, n: number): string {
+  if (n === 1) return unit;
+  if (plural) return plural;
+  return unit + 's';
+}
+
+/**
+ * Whether to use "Serves" or "Makes" as the prefix. Person-equivalent units
+ * (the `serve` semantic the cook uses, plus the literal `person`) read as
+ * "Serves 4". Item units (burger, tortilla, loaf, cup, etc.) read as "Makes 4".
+ */
+function isPersonUnit(unit: string | undefined): boolean {
+  return unit === 'serve' || unit === 'person';
+}
 
 export function ServingsSelector({
   people,
@@ -31,6 +66,9 @@ export function ServingsSelector({
   leftoverKey,
   setLeftoverKey,
   baseServings,
+  outputUnit,
+  outputUnitPlural,
+  extraForTomorrowLabel,
 }: Props) {
   const option = leftoverById(leftoverKey);
   const totalPortions = totalPortionsFor(option, people, baseServings);
@@ -41,6 +79,18 @@ export function ServingsSelector({
       : factor > 1
         ? `Scaled ${factor.toFixed(factor < 2 ? 1 : 0)}× up`
         : `Scaled ${factor.toFixed(1)}× down`;
+
+  // DECISION-014: pick wording per recipe.
+  const stepperCaption = outputUnit
+    ? pluralise(outputUnit, outputUnitPlural, people)
+    : people === 1 ? 'person' : 'people';
+  const headerLabel = outputUnit
+    ? `How many ${pluralise(outputUnit, outputUnitPlural, 2)}`
+    : 'How many people';
+  const makesPrefix = isPersonUnit(outputUnit) ? 'Serves' : 'Makes';
+  const totalCaption = outputUnit
+    ? pluralise(outputUnit, outputUnitPlural, totalPortions)
+    : 'portions';
 
   const step = (delta: number) => {
     const next = Math.max(1, Math.min(20, people + delta));
@@ -89,7 +139,7 @@ export function ServingsSelector({
             color: tokens.muted,
           }}
         >
-          How many people
+          {headerLabel}
         </Text>
         <Text
           style={{
@@ -125,7 +175,7 @@ export function ServingsSelector({
               marginTop: -2,
             }}
           >
-            {people === 1 ? 'person' : 'people'}
+            {stepperCaption}
           </Text>
         </View>
         <StepperBtn dir="plus" disabled={people >= 20} onPress={() => step(1)} />
@@ -141,7 +191,7 @@ export function ServingsSelector({
               color: tokens.muted,
             }}
           >
-            Makes
+            {makesPrefix}
           </Text>
           <Text
             style={{
@@ -154,7 +204,7 @@ export function ServingsSelector({
             {totalPortions}
           </Text>
           <Text style={{ fontFamily: fonts.sans, fontSize: 10, color: tokens.muted }}>
-            portions
+            {totalCaption}
           </Text>
         </View>
       </View>
@@ -193,7 +243,8 @@ export function ServingsSelector({
         })}
       </View>
 
-      {/* Mode hint */}
+      {/* Mode hint — recipe-aware when out of "tonight" mode and the recipe
+          has its own extra_for_tomorrow_label authored. (DECISION-014.) */}
       <Text
         style={{
           fontFamily: fonts.sans,
@@ -203,7 +254,9 @@ export function ServingsSelector({
           lineHeight: 15,
         }}
       >
-        {option.hint}
+        {leftoverKey !== 'tonight' && extraForTomorrowLabel
+          ? extraForTomorrowLabel
+          : option.hint}
       </Text>
     </View>
   );

@@ -245,7 +245,18 @@ export function RecipeCard({
           }}
         >
           <MetaChip icon="clock" label={`${recipe.time_min} min`} />
-          <MetaChip icon="users" label={`${recipe.base_servings}`} />
+          <MetaChip
+            icon="users"
+            label={(() => {
+              // DECISION-014: per-recipe unit on the card chip.
+              // "4 burgers" / "1 loaf" / "8 tortillas" / "4" (legacy fallback).
+              const count = recipe.output_default ?? recipe.base_servings;
+              const unit = recipe.output_unit;
+              if (!unit) return `${count}`;
+              const plural = recipe.output_unit_plural ?? unit + 's';
+              return `${count} ${count === 1 ? unit : plural}`;
+            })()}
+          />
           {recipe.source ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Icon name="external" size={12} color={tokens.primaryInk} />
