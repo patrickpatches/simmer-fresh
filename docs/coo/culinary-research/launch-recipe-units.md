@@ -365,6 +365,31 @@ max_servings:   48
 
 ---
 
+### 16 · FLOUR_TORTILLAS · Flour Tortillas
+
+**Added per DECISION-013, 2026-05-08.**
+
+```
+serving_unit:   "tortilla"
+base_servings:  13
+min_servings:   6
+max_servings:   26
+```
+
+Base recipe (200g flour) yields ~13 taco-sized tortillas (~12–13cm). Each ball is ~29g of dough. For larger wrap-size tortillas (20cm), use 50–55g balls — same dough, ~7 tortillas per batch.
+
+**Scaling logic:**
+- Bread flour, 200g: `scales: linear`. `scaling_note: "Each tortilla needs ~15g of flour. To scale: multiply 200g by (desired tortillas ÷ 13). Scale all other ingredients by the same factor."`
+- Unsalted butter, 40g: `scales: linear`. `scaling_note: "Scale linearly. Butter must be softened (room temperature), not melted — melted butter doesn't coat the flour evenly. Lard is the traditional substitute and produces a slightly flakier result at the same weight."`
+- Water, 130ml: `scales: linear`. `scaling_note: "The hydration ratio is fixed. Do not adjust water to compensate for sticky dough — stickiness resolves with kneading."`
+- Fine sea salt, 6g: `scales: linear`.
+
+**Make extra note:** "+N tortillas — reheat in a dry pan in 15–20 seconds with no quality loss. Make a double batch (26 tortillas from 400g flour) if you are feeding a group or want leftovers across 2–3 days. Refrigerate in an airtight bag; freeze between layers of baking paper for up to 2 months."
+
+**Designer note:** This recipe produces a countable item, not portions of a shared dish. The selector should show "13 tortillas" not "serves 13". The "make extra" toggle is appropriate and active — tortillas store and reheat without quality loss.
+
+---
+
 ## Summary table — engineer quick reference
 
 | Recipe const | `serving_unit` | `base_servings` | `min` | `max` | Key constraint |
@@ -378,26 +403,4 @@ max_servings:   48
 | `BEEF_LASAGNE` | serve | 8 | 4 | 8 | One tray only; double means second tray |
 | `ROAST_CHICKEN` | chicken | 1 | 1 | 2 | Cook time by weight (20 min/500g + 20 min) |
 | `ROAST_LAMB` | serve | 6 | 4 | 8 | Cut size drives serves; ask butcher, not recipe |
-| `FISH_AND_CHIPS` | serve | 4 | 2 | 6 | Batter fixed; fry in batches of 3–4 max |
-| `PAVLOVA` | serve | 10 | 8 | 12 | Never scale down; meringue chemistry is fixed |
-| `HUMMUS` | cup | 2 | 1 | 4 | Tahini, garlic, lemon all scale at 0.75× not 1× |
-| `CHICKEN_SHAWARMA` | serve | 4 | 2 | 8 | Marinade coats to ~800g; scales 1.5× above (new recipe — needs authoring) |
-| `PAD_THAI` | serve | 2 | 1 | 4 | 2 serves per wok session max; batch cook for 4 |
-| `FALAFEL` | piece | 24 | 12 | 48 | Dried chickpeas only; baking powder at 0.75× |
-
----
-
-## Notes for Product Designer
-
-**On the servings selector UI:**
-- The label next to the stepper should show the `serving_unit` (e.g. "4 burgers", "2 cups", "24 pieces"), not "serves 4".
-- For recipes with a max above which a warning should appear, show a toast or inline note — not an error — explaining the constraint in plain language (e.g. "For more than 8 schnitzels, work in two frying sessions").
-- Recipes where the unit is a whole item (chicken, pavlova) need the selector UI to communicate clearly that 2 = two whole chickens, not two servings split from one.
-- Carbonara and pad Thai need the strongest warnings — both are dishes that actively degrade beyond their stated maximum. These aren't soft suggestions.
-
-**On "make extra for tomorrow":**
-- The in-recipe "make extra" toggle (if designed) should know whether the recipe freezes well, keeps overnight, or must be eaten immediately. This file has those answers per recipe. Do not let the toggle appear on carbonara, fish and chips, or pad Thai — those dishes have no "tomorrow."
-
----
-
-*Written 2026-05-08 by Culinary & Cultural Verifier. Lock this file bef
+| `FISH_AND_CHIPS` | serve | 4 | 2 | 6 | 
