@@ -25,6 +25,21 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-08 · OPEN (DECISION-012 — bump version to v0.5.0 on next push)
+**From:** Patrick (via COO)
+**Subject:** Set `version` in `mobile/app.json` to `"0.5.0"` on the next commit. Adopt new versioning policy.
+**Why:** Per DECISION-012 (decision-log.md, 8 May), `v1.0.0` is reserved for Play Store production launch day. Pre-launch we use v0.x. Only the COO bumps minor versions — engineer continues to bump patches and build numbers freely. Current state has shipped enough to justify a retroactive bump from `0.4.1` to `0.5.0` to mark the Pantry v3/v4 + dark/sage palettes + Kitchen improvements + recipe template skeleton package.
+**What's needed:**
+1. In `mobile/app.json`, change `expo.version` from `"0.4.1"` to `"0.5.0"`. No other code changes.
+2. `expo.android.versionCode` (the build number) keeps auto-incrementing as normal — that's separate.
+3. Going forward: do NOT auto-bump the minor version on your own. Bug-fix patches go `0.5.0 → 0.5.1 → 0.5.2`. Minor bumps (`0.5.x → 0.6.0`) only happen on explicit COO instruction. The milestone map is in DECISION-012.
+4. Commit message: `chore(version): bump to v0.5.0 per DECISION-012`.
+**Files touched:** `mobile/app.json` only.
+**Cost:** ~5 minutes.
+**Blocks:** Nothing. Land alongside any other build.
+
+---
+
 ### HANDOFF → Patrick · 2026-05-08 · ON-DEVICE VALIDATION (three jobs landed, awaiting your install)
 **From:** Senior Engineer
 **Subject:** ATTR-FAIL + 11-recipe DECISION-009 + 27-recipe Batch 3+4 + audit placeholder all on origin/main; build not triggered per CLAUDE.md.
@@ -855,21 +870,4 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 
 **What's needed:**
 1. **Mockup of the redesigned Pantry screen** at `docs/prototypes/pantry-redesign-v2.html`. Show three states: empty pantry, pantry with 2-3 ingredients added (current state in screenshot 1), and active search with autocomplete dropdown (current state in screenshot 2). Use v0.7 dark tokens — bg `#111111`, cards `#1A1A1A`, gold accent `#E8B830`.
-2. **For the missing-ingredient affordance**, propose two variants in the same prototype file (variant A: tap-to-add, variant B: missing-label-only). Patrick picks Monday.
-3. **Written rationale** at the bottom of the prototype — what changed, what stays, why.
-4. **Engineer handoff block** at the bottom — implementation notes, state changes, any new tokens needed, accessibility notes.
-
-**Constraints:**
-- Dark v0.7 tokens locked per DECISION-006. Don't change colours.
-- Pill style locked per Patrick's feedback. Don't redesign added-ingredient pills.
-- Stage photo dependency — ignore for the Pantry screen specifically, but the recipe match cards within it still need to show "Photos soon" badges per DECISION-003 / Product Designer's earlier card-states spec.
-
-**Files touched:** `docs/prototypes/pantry-redesign-v2.html` (new), `docs/coo/handoffs.md` (this file, mark IN PROGRESS when started)
-**Blocks:** Engineer's next Pantry-related work. Patrick reviews mockup Monday morning when he's back at his PC.
-
-**Patrick is offline for the weekend** — the Designer can ship a complete mockup with rationale today; Patrick reviews Monday morning. No live iteration needed mid-session.
-
-### HANDOFF → Culinary & Cultural Verifier · 2026-04-30 · OPEN (URGENT — Senior Engineer blocked)
-**From:** Senior Engineer
-**Subject:** Deliver source recipes for 6 new dishes — Senior Engineer cannot proceed without them
-**Why:** Priority 2, Task 3 of the Senior
+2. **For the missing-ingredient affordance**, propose two variants in the same prototype file (variant A: tap-to-add, variant B: missing-label-only). Patric

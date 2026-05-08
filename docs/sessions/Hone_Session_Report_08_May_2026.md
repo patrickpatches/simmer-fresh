@@ -44,6 +44,4 @@ Remaining batch (commit `2510bd1`):
 
 ---
 
-## What Patrick needs to do next
-
-### Nothing urg
+### Decision 1 — v1.0 launch recipe list confir
