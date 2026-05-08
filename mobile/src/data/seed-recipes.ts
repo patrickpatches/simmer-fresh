@@ -317,6 +317,7 @@ const CHICKEN_ADOBO: Recipe = {
   ],
   finishing_note: "After the braise, remove the chicken and reduce the sauce at high heat until it is syrupy and coats a spoon — about 5–8 minutes. Taste now: it should be deeply savoury, sharp but not harsh, and complex in a way that doesn't resemble its raw ingredients. If it still tastes aggressively vinegary, reduce further. Spoon the reduced sauce over the chicken on the plate rather than serving it separately. The bay leaves and whole peppercorns are not eaten. Serve over plain steamed rice — the point of the rice is to be a mild, absorbent base for the intensely flavoured sauce.",
   leftovers_note: "Chicken adobo is one of the great leftover dishes — the flavour deepens significantly overnight as the meat absorbs more sauce. Keeps 4 days in the fridge. Reheat in a pan with a splash of water over medium heat. The sauce will have tightened in the fridge; add a little water and it loosens back. Freezes for up to 2 months. Leftover adobo shredded off the bone makes an excellent fried rice component or filling for bao.",
+  not_yet_shipping: true,
 };
 
 const PASTA_CARBONARA: Recipe = {
@@ -541,6 +542,7 @@ const BEEF_STEW: Recipe = {
   ],
   finishing_note: "The stew is ready when the beef yields completely to a spoon with no resistance and the broth has thickened from the dissolved collagen — it should coat the back of a ladle. If the broth is thin, remove the lid and reduce at a low simmer for 15–20 minutes. If the beef is not yet tender at the 2-hour mark, cover and continue — it will not be rushed. Taste for salt and pepper before serving. The dish should taste deeply beefy and rich, not like red wine or stock alone. Serve with crusty bread or over mashed potato.",
   leftovers_note: "Beef stew improves markedly overnight as the collagen continues to set in the broth and the flavours integrate. Keeps 4 days in the fridge. The broth will gel solid when cold — this is correct and desirable. Reheat gently in the pot over low heat with a splash of water, stirring occasionally, until fully hot. Freezes well for up to 3 months; freeze without potatoes if possible as they go grainy on reheating.",
+  not_yet_shipping: true,
 };
 
 const ROAST_CHICKEN: Recipe = {
@@ -757,6 +759,7 @@ const MUSAKHAN: Recipe = {
   ],
   finishing_note: "After the second blast in the oven, the bread edges should be slightly crisp and the chicken skin re-crisped. Taste the onions before assembly — they should be deeply sweet, sour from the sumac, and sticky. If they taste sweet but flat, stir in an extra teaspoon of sumac. Scatter the toasted pine nuts generously — they are not decoration, they are texture. Serve immediately from the tray with the juices soaked into the bread.",
   leftovers_note: "Keeps two days in the fridge. The bread will have absorbed all the juices and gone soft — this is still delicious as a leftover hash. Reheat covered in a low oven (160°C, 15 minutes) rather than the microwave, which makes the chicken rubbery. The dish does not freeze well — the bread disintegrates.",
+  not_yet_shipping: true,
 };
 
 const KAFTA: Recipe = {
@@ -851,6 +854,7 @@ const KAFTA: Recipe = {
   ],
   finishing_note: "Kafta is done when it is charred on the outside and just cooked through — the interior should still be juicy and slightly pink for lamb (fully cooked for chicken). Do not probe it like a steak; pull one off, break it open. Serve in a warm pitta with thinly sliced raw onion tossed with sumac and a squeeze of lemon — the raw onion and sumac are not optional, they are the acid and crunch that complete the dish.",
   leftovers_note: "Cooked kafta keeps two days in the fridge. Reheat in a warm oven at 160°C for 8 minutes or in a dry pan over medium heat — the microwave makes it dense and dry. Leftover kafta is excellent crumbled over a fattoush or stirred into a tomato sauce for an impromptu Lebanese-style pasta. Uncooked, shaped kafta freezes well on a tray for up to 3 months — freeze in a single layer then transfer to a bag.",
+  not_yet_shipping: true,
 };
 
 const HUMMUS: Recipe = {
@@ -1045,6 +1049,7 @@ const FATTOUSH: Recipe = {
   ],
   finishing_note: "The fried bread should still have some resistance when you bite it — not shatteringly crunchy, but not soggy either. That window closes fast once dressed. Taste the dressed salad and check the salt and acid — fattoush is often under-seasoned. Add another half teaspoon of sumac on top for colour and a final hit of tartness. The balance should be bright, sharp, and clean — not oily or heavy.",
   leftovers_note: "Fattoush does not store once dressed — the bread goes to mush within an hour. If you want to get ahead, store the fried bread separately in an airtight container (keeps crisp for 2 days) and keep all the dressed vegetables refrigerated separately. Toss together at the last moment. The dressing keeps refrigerated for 3 days — shake before using.",
+  not_yet_shipping: true,
 };
 
 const PRAWN_TACOS_PINEAPPLE: Recipe = {
@@ -1152,6 +1157,7 @@ const PRAWN_TACOS_PINEAPPLE: Recipe = {
   ],
   finishing_note: "Taste the pineapple salsa before assembling — it should be bright, sweet-sour, and slightly smoky from the char. If it is too sweet, add more lime. Cook the prawns at high heat in a single layer for 60–90 seconds per side — do them in batches if the pan is crowded. Char the tortillas and assemble immediately: crema first (it acts as the glue), then cabbage, then two or three prawns, then salsa, then coriander. Do not overload the taco — each component should be present in every bite without overpowering the others. Serve with lime wedges on the side; a final squeeze just before eating brightens everything.",
   leftovers_note: "Assemble only what will be eaten immediately — assembled tacos go soggy within minutes. The pineapple salsa keeps 2 days in the fridge; the flavour mellows but it is still good. The chipotle crema keeps 5 days. Cooked prawns keep 1 day in the fridge — reheat gently in a pan rather than the microwave. Tortillas keep wrapped at room temperature for 2–3 days.",
+  not_yet_shipping: true,
 };
 
 const SOURDOUGH_MAINTENANCE: Recipe = {
@@ -1186,6 +1192,7 @@ const SOURDOUGH_MAINTENANCE: Recipe = {
     { id: 's5', title: 'Signs something is wrong', content: 'Mould is the only true emergency — pink, orange, or fuzzy growth means discard the whole thing and start fresh. Black streaks or liquid are usually just over-fermentation. A consistently flat, non-rising starter after 5 days of daily feeding in a warm kitchen likely means the flour or water is inhibiting microbial activity — try bottled water and wholemeal flour.', why_note: 'Mould is a contaminant from the air and wins when acidity drops too low to protect the culture. Once mould is visible on the surface, it has almost certainly penetrated deeper — stirring it away does not fix it. Every other problem short of mould is recoverable with patience and consistent feeding.' },
   ],
   categories: { cuisines: ['australian'], types: ['baking'] },
+  not_yet_shipping: true,
 };
 
 const SOURDOUGH_LOAF: Recipe = {
@@ -1259,6 +1266,7 @@ const SOURDOUGH_LOAF: Recipe = {
   ],
   finishing_note: "The loaf is baked covered for 20 minutes (this is the steam phase — oven spring happens here), then uncovered for a further 20–25 minutes until the crust is a deep amber-brown. A pale crust means an under-baked loaf with a gummy crumb, not a gentle one. Tap the bottom of the loaf — it should sound hollow. Rest on a wire rack for at least 1 hour before cutting. The first slice will tell you whether the bulk fermentation was correct: an even, open crumb with irregular holes throughout is right. A dense, uniform crumb means under-fermentation. Large tunnels near the top mean over-fermentation or improper shaping.",
   leftovers_note: "Sourdough keeps well at room temperature for 3–4 days stored cut-side-down on a board (not in a bag, which makes the crust soft). After day 2, toast it — the flavour improves with toasting. Do not refrigerate; cold temperatures stale bread faster than room temperature. Freeze sliced for up to 3 months — toast from frozen directly. A stale sourdough loaf is excellent as panzanella, ribollita, or breadcrumbs.",
+  not_yet_shipping: true,
 };
 
 const RISOTTO: Recipe = {
@@ -1362,6 +1370,7 @@ const RISOTTO: Recipe = {
   ],
   finishing_note: "Pull the pan off the heat before the risotto looks ready — it will keep cooking from retained heat for a minute. Add the cold butter in cubes and the Parmesan, then beat vigorously with the wooden spoon. This is mantecatura: the friction creates an emulsion that binds fat, starch, and liquid into something that moves in a single glossy wave when you tilt the pan. If it sits still, it's too thick. If it runs like water, it needs another minute. Taste for salt — risotto is regularly under-seasoned because the Parmesan adds salt gradually and it's easy to underestimate. Serve immediately: risotto waits for no one and will seize and thicken within a couple of minutes off heat.",
   leftovers_note: "Risotto keeps two days in the fridge. It will seize solid — this is expected. Reheat in a pan with a splash of stock or water over medium heat, stirring constantly, until it loosens again. Do not microwave — uneven heat ruins the texture. The classic Italian use of leftover risotto is arancini: roll into balls, stuff with mozzarella, coat in breadcrumbs, and deep-fry until golden. Freezing is not recommended — the starch structure breaks and you get a gluey result on reheating.",
+  not_yet_shipping: true,
 };
 
 const FISH_TACOS: Recipe = {
@@ -1461,6 +1470,7 @@ const FISH_TACOS: Recipe = {
   ],
   finishing_note: "The batter is ready when a small drop flicked into the oil sizzles immediately and floats to the surface. Dip each strip of fish in the batter, let the excess drip for a second, then lower gently into the oil away from you. Fry 2–3 minutes until the batter is pale gold and audibly crunchy — it will take on more colour after draining. Season with flaked salt immediately out of the oil, while the surface is still hot and the salt adheres. Build the tacos: warm tortilla, crema, cabbage, fish, and a squeeze of fresh lime. Eat immediately — battered fish has a window of about 3 minutes before it begins to steam itself soft.",
   leftovers_note: "Battered fish does not store — the crust goes completely soft within 30 minutes. Make only what will be eaten immediately. The chipotle crema keeps 5 days in the fridge. The uncooked batter keeps 1 day refrigerated, but make it fresh if possible — the leavening weakens overnight. Raw fish strips can be refrigerated for 1 day before battering and frying.",
+  not_yet_shipping: true,
 };
 
 const THAI_GREEN_CURRY: Recipe = {
@@ -1676,6 +1686,7 @@ const FRENCH_ONION_SOUP: Recipe = {
   ],
   finishing_note: "Before assembling the bowls, taste the soup for seasoning — it should be deeply sweet, beefy, and savoury, with the wine fully integrated. Under-seasoned soup at this point will not be saved by the cheese. Ladle the hot soup into the crocks, then float one or two toasted baguette slices on top. Cover generously with grated Gruyère — more than looks reasonable. Place under the hot grill for 3–4 minutes until the cheese is bubbling, beginning to brown, and has spread to seal the edges of the crock. Serve immediately in the crocks; the bowls will be extremely hot. Warn the user before they touch them.",
   leftovers_note: "Store the soup base without the bread or cheese — both go to mush in the fridge. The soup keeps 4 days and freezes well for 3 months. Reheat to a simmer, taste and adjust seasoning, then reassemble with fresh croutons and cheese under the grill. The caramelised onions themselves can be made ahead and refrigerated for 3 days or frozen — this is the time-consuming part of the recipe and making a double batch is efficient.",
+  not_yet_shipping: true,
 };
 
 const PAD_THAI: Recipe = {
@@ -1890,6 +1901,7 @@ const BRAISED_SHORT_RIBS: Recipe = {
   ],
   finishing_note: "Remove the ribs carefully — they are delicate and will pull from the bone if handled roughly (which is fine, but keep them presentable). Strain the braising liquid through a fine-mesh strainer, pressing the vegetables to extract all the liquid. Skim the fat from the surface — there will be a significant amount from the marbling. Reduce the strained liquid at a rolling boil until it coats a spoon and has a glossy, slightly viscous quality — 15–20 minutes. Taste for salt. Spoon the sauce over the ribs rather than serving it alongside — it should pool around the base and glaze the top. Serve over mashed potato or polenta; the sauce is too rich for plain rice.",
   leftovers_note: "Braised short ribs improve overnight as the collagen continues to redistribute through the meat. Keep refrigerated for 4 days — the sauce will gel solid. Skim the solidified fat from the surface before reheating (it is easier to remove cold than hot). Reheat gently in the braising liquid in a 150°C oven for 20 minutes, covered. Freezes for up to 3 months; freeze in the sauce. Shredded short rib meat from leftovers is excellent in tacos, pasta, or on toast with horseradish.",
+  not_yet_shipping: true,
 };
 
 const RAMEN: Recipe = {
@@ -1998,6 +2010,7 @@ const RAMEN: Recipe = {
   ],
   finishing_note: "Assembly order matters: tare in the bowl first, then noodles, then hot broth ladled directly over so it carries the tare through. Toppings go on last in distinct sections — egg, pork, nori, spring onion, bamboo shoots — each visually separate. This isn't decoration: it lets you eat each element alone or combine them at will. Taste the broth before it goes in — it should be rich but slightly underseasoned; the tare in the bowl finishes it. The whole bowl should be very hot; if the bowl or the broth are even slightly warm, not scalding, the dish falls flat. Serve immediately — ramen waits for no one.",
   leftovers_note: "Store broth, noodles, and toppings separately — never assembled. The noodles will absorb all the broth and go soft within 30 minutes. Broth keeps 4 days in the fridge or 3 months frozen — it improves overnight. Reheat broth to a rolling boil before re-assembling. Cook fresh noodles each time. Chashu keeps 5 days in the fridge in the braising liquid; slice as needed.",
+  not_yet_shipping: true,
 };
 
 const BEEF_WELLINGTON: Recipe = {
@@ -2083,6 +2096,7 @@ const BEEF_WELLINGTON: Recipe = {
   ],
   finishing_note: "Score the pastry lightly with a knife in a crosshatch pattern — this is cosmetic but also helps it puff evenly. Egg wash twice: once before going in, once halfway through. Bake at 220°C until the pastry is deep golden and the internal temperature reads 55°C — about 22–25 minutes. Rest for 10 minutes before cutting, uncovered on a wire rack. Slice with a serrated knife in one confident movement per slice — sawing back and forth collapses the layers. The cross-section should show a ring of pink fillet, a thin dark layer of duxelles, then golden pastry. If the fillet is grey throughout, it was overcooked.",
   leftovers_note: "Beef Wellington does not reheat without overcooking the fillet. Eat it the day it is made. Leftover slices can be served at room temperature — the pastry loses its crispness but the flavour holds. The duxelles can be made 2 days ahead and refrigerated; the assembled, wrapped fillet (before pastry) can be refrigerated overnight and brought to cold before baking.",
+  not_yet_shipping: true,
 };
 
 const DAL: Recipe = {
@@ -2193,6 +2207,7 @@ const DAL: Recipe = {
   ],
   finishing_note: "Before the final combine, taste the cooked lentils — they should be fully soft, almost dissolved, and currently under-seasoned (the tarka brings the salt and spice). After combining, simmer together for 5 minutes so the flavours merge. The finished dal should coat a spoon but still pour easily — not thick like cement, not watery like soup. If it's too thick, add a splash of water. If it's too thin, cook uncovered a few more minutes. Taste for salt. The garam masala goes in at the end, not the beginning — added early it turns bitter from the heat. Serve over basmati rice with a small wedge of lime on the side.",
   leftovers_note: "Tarka dal improves significantly overnight as the spices deepen. Keeps 4 days in the fridge and freezes well for up to 3 months. It will thicken in the fridge — add a splash of water and reheat over medium heat, stirring, until it returns to the right consistency. Do not reheat in the microwave without covering and adding water, or it will go solid and scorch. One batch feeds 4 as a side or 2 as a main; it scales straightforwardly.",
+  not_yet_shipping: true,
 };
 
 const SCRAMBLED_EGGS: Recipe = {
@@ -2262,6 +2277,7 @@ const SCRAMBLED_EGGS: Recipe = {
   ],
   finishing_note: "The eggs should come off the heat while they still look slightly underdone — the residual heat in the pan finishes them. Add the crème fraîche or cold butter and fold it through with the spatula; it both stops the cooking and gives the final texture. Season with salt and white pepper only now. The curd should be large, glossy, and soft — not dry or broken into small granules. If they look like scrambled eggs from a hotel buffet, they've gone too far. Eat immediately from the pan or plate — eggs continue cooking on a warm plate.",
   leftovers_note: "Scrambled eggs do not store. They continue cooking from retained heat and go rubbery within minutes. Make only what you will eat immediately. If you need to feed more people, make two separate batches rather than doubling the quantity in the same pan — a larger mass of egg cooks unevenly and is harder to control.",
+  not_yet_shipping: true,
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -2478,6 +2494,7 @@ const AGLIO_E_OLIO: Recipe = {
   ],
   finishing_note: "Transfer the pasta to the garlic pan while the pasta is still slightly underdone — it finishes cooking in the sauce. Add the reserved pasta water in splashes and toss continuously; the starch cools the oil slightly and creates the emulsion. You are looking for a sauce that coats the strands and glistens, not pools of oil in the bottom of the pan. Taste for salt — pasta water varies in saltiness and the dish can need a final pinch. Add parsley off the heat. Serve immediately in warm bowls. Aglio e olio is one of the fastest dishes to go from perfect to cold and clumped — it will not wait.",
   leftovers_note: "Aglio e olio does not store well — the pasta absorbs all the oil overnight and the emulsion breaks on reheating. Make only what you will eat. If you have leftover pasta, toss with a little olive oil to prevent it clumping, store in the fridge up to one day, and reheat in a pan with a splash of water over medium heat — not the microwave, which makes it clumped and uneven.",
+  not_yet_shipping: true,
 };
 
 const MUJADARA: Recipe = {
@@ -2576,6 +2593,7 @@ const MUJADARA: Recipe = {
   ],
   finishing_note: "Before plating, taste the grain mixture for salt — it should be well-seasoned, not bland. If the rice sat in an under-salted pot, it is hard to recover at the end; you can only add so much on the surface. Tip the mujadara onto a wide platter rather than a deep bowl — the spread helps the steam escape and the grains stay separate. Crown generously with the crispy onions — they should make a visible, thick layer, not a sprinkle. Serve the cold yoghurt directly alongside; the cool, sour contrast is what makes the dish land.",
   leftovers_note: "Mujadara keeps well for three days in the fridge and genuinely improves — the spices deepen and the grains absorb any remaining moisture overnight. Reheat in a pot with a splash of water and the lid on over low heat for 5 minutes, or in the microwave covered with a damp paper towel to prevent it drying out. The crispy onions will soften in storage — reheat them separately in a dry pan or under a grill for a minute to restore some crunch. Freezes for up to 2 months; the texture changes slightly but the flavour holds.",
+  not_yet_shipping: true,
 };
 
 const SHEET_PAN_HARISSA_CHICKEN: Recipe = {
@@ -2688,6 +2706,7 @@ const SHEET_PAN_HARISSA_CHICKEN: Recipe = {
   ],
   finishing_note: "Pull the tray at 40–45 minutes — the chicken skin should be charred in places and deeply coloured, and the chickpeas should have shrunk slightly and turned crispy at their edges. If the skin is pale at 40 minutes, switch to the grill for 3–5 minutes to finish. Rest the chicken on the tray for 5 minutes before serving — this settles the juices. Squeeze the lemon over everything, scatter the parsley, and serve with cool yoghurt alongside. The cool yoghurt against the heat and spice is the contrast that makes the dish.",
   leftovers_note: "Keeps 3 days in the fridge. The chickpeas will soften overnight — they are still good but not crispy. Reheat in a 200°C oven for 10 minutes rather than the microwave, which makes the chicken skin rubbery and the chickpeas wet. Cold leftovers pulled off the bone work well in a grain bowl or flatbread wrap. The cooking juices and harissa left on the tray make an excellent sauce — don't discard them.",
+  not_yet_shipping: true,
 };
 
 const EGG_FRIED_RICE: Recipe = {
@@ -2775,6 +2794,7 @@ const EGG_FRIED_RICE: Recipe = {
   ],
   finishing_note: "The rice should have some individual grains with lightly browned, slightly charred edges — that is wok hei. If the whole batch is uniformly pale and soft, the heat was insufficient or the pan was overloaded. Add the soy and sesame in the last 30 seconds and toss hard so the liquid flashes off rather than pools. Taste for salt — soy varies. Spring onion goes in off the heat. Serve immediately; fried rice does not wait.",
   leftovers_note: "Leftover fried rice keeps 2 days in the fridge. Reheat in a hot wok or pan with a splash of water and a drizzle of oil — it will not be as good as the first cook, but it is still a meal. Do not microwave; it goes uneven and wet. Fried rice is itself a leftover dish — making it from fresh-cooked rice defeats the purpose.",
+  not_yet_shipping: true,
 };
 
 const LAMB_SHAWARMA: Recipe = {
@@ -2900,6 +2920,7 @@ const LAMB_SHAWARMA: Recipe = {
   ],
   finishing_note: "Taste a shred of lamb from the tray before serving. It should be deeply spiced, savoury, slightly caramelised at the edges. Season the assembled tray with a little extra salt if the meat needs it — the shredded pieces vary in how much marinade clings to each. The wrap needs three things to be balanced: fatty, spiced lamb + creamy tahini or toum + the sharp acid of pickled turnips. If the pickled turnips you bought are not actually sour, add a splash of white wine vinegar to a bowl of sliced raw onion as a quick substitute.",
   leftovers_note: "\"This is built for leftovers. Shredded shawarma keeps 3 days in the fridge, freezes well, and reheats best in a pan with a splash of water — not the microwave.\"",
+  not_yet_shipping: true,
 };
 
 const CHICKEN_SHAWARMA: Recipe = {
@@ -3184,6 +3205,7 @@ const NASI_LEMAK: Recipe = {
   ],
   finishing_note: "Taste the sambal before plating — it should be deeply savoury, spicy, and slightly sweet from the caramelised onion. If it tastes sharp or raw, it needs more time over low heat. The coconut rice should be separate-grained and fragrant; if it is sticky or wet, steam it a further 5 minutes with the lid on. Plate the rice in a mound in the centre, then arrange the sambal, ikan bilis, peanuts, cucumber, and egg around it — each element distinct, not mixed. Nasi lemak is eaten by combining each element on the fork, not by stirring them together into one mass.",
   leftovers_note: "Store each component separately — combined, they go soft quickly. The sambal keeps 5 days in the fridge and improves; freeze up to 3 months. The coconut rice goes hard in the fridge — reheat with a splash of water in a covered pan. The ikan bilis will soften overnight; re-crisp in a dry pan or low oven for 5 minutes. Do not store the cucumber or egg with the other components.",
+  not_yet_shipping: true,
 };
 
 const BEEF_RENDANG: Recipe = {
@@ -3313,6 +3335,7 @@ const BEEF_RENDANG: Recipe = {
   ],
   finishing_note: "The rendang is done when the coconut oil has fully separated, the paste is visibly frying around the beef in the oil rather than simmering in liquid, and the colour is dark mahogany — not pale yellow or caramel. At this point the beef should be tender enough to pull apart with a spoon but not dissolving. Stir in the pounded kerisik and taste: it should be deeply savoury, rich, and spiced, with no sharp or raw note. Season with salt. Rest for 10 minutes before serving — the oil redistributes slightly and the flavour sharpens. Serve over plain jasmine or coconut rice. The flavour is significantly better the next day.",
   leftovers_note: "Beef rendang is one of the few dishes that genuinely improves over days. Keeps 5 days in the fridge and the flavour deepens markedly by day 2. Reheat in a pan over low heat with a splash of water if it has tightened up. Freezes well for up to 3 months — freeze in portions. The coconut fat will solidify on top in the fridge; this is normal. Scrape it into the pot when reheating.",
+  not_yet_shipping: true,
 };
 
 const CURRY_LAKSA: Recipe = {
@@ -3470,6 +3493,7 @@ const CURRY_LAKSA: Recipe = {
   ],
   finishing_note: "Taste the broth before assembling — it should be rich, coconutty, and spiced, with a clear prawn flavour underneath. If it tastes flat, check the salt and add a small squeeze of lime. The broth should be hot enough to cook the prawns in the bowl in about 90 seconds once ladled. Bowl up in this order: noodles first, then prawns and tofu, then broth ladled over hot, then toppings. The laksa leaves go in at the very end off the heat — they are not a garnish, they are the herb that completes the flavour. Serve immediately; noodles absorb broth fast.",
   leftovers_note: "Store broth and noodles separately. The noodles absorb all the broth within 30 minutes and go soft — combine only when serving. Broth keeps 3 days in the fridge and freezes well for 2 months. Prawns do not reheat well; cook fresh each time. Tofu can be reheated in a dry pan. The broth will thicken slightly from the coconut milk in the fridge — add a splash of water when reheating.",
+  not_yet_shipping: true,
 };
 
 const CHAR_KWAY_TEOW: Recipe = {
@@ -3579,6 +3603,7 @@ const CHAR_KWAY_TEOW: Recipe = {
   ],
   finishing_note: "The finished noodles should have some strands with dark, slightly charred edges — that is wok hei. The eggs should be visible as separate, glossy curds folded through rather than coating the noodles. The bean sprouts should still have some crunch — they go in at the very end and are moved no more than twice. Taste before plating: char kway teow should be savoury, slightly smoky, and deeply umami. A good squeeze of fresh lime at the table cuts the richness. Serve immediately, directly from the wok. Do not cover — trapped steam kills the texture.",
   leftovers_note: "Char kway teow does not store well — the noodles continue absorbing the sauce and go stodgy, and the wok hei dissipates completely. Make and eat immediately. If you have leftovers, reheat in a very hot pan (not microwave) with a dash of water to prevent sticking — it will be passable but not the original dish.",
+  not_yet_shipping: true,
 };
 
 const BUTTER_CHICKEN: Recipe = {
@@ -3833,6 +3858,7 @@ const SAAG_PANEER: Recipe = {
   ],
   finishing_note: "Before the paneer goes back in, taste the spinach masala — it should be well-seasoned, gently spiced, and earthy rather than sharp. If it tastes acidic, the tomatoes need another minute of cooking. Fold the fried paneer cubes in carefully and let them warm through for 2–3 minutes — stirring too aggressively breaks them up. Add the cream or yoghurt off the heat, stirring in gently. The finished dish should be deep green, glossy, and thick enough to coat the paneer without pooling. Serve over basmati with warm roti or naan alongside.",
   leftovers_note: "Saag paneer keeps well for 3 days in the fridge and the spices deepen overnight. Reheat gently in a pan over low heat with a splash of water — the cream or yoghurt can split on high heat. If using yoghurt instead of cream, add a little extra when reheating to freshen it. The paneer will soften slightly from soaking in the sauce — this is fine and some people prefer it. Does not freeze well; the spinach becomes watery and the paneer rubbery.",
+  not_yet_shipping: true,
 };
 
 const CHICKEN_KATSU: Recipe = {
@@ -3958,6 +3984,7 @@ const CHICKEN_KATSU: Recipe = {
   ],
   finishing_note: "The katsu is done when the panko is an even, deep golden-brown all over and the internal temperature reaches 74°C, or when a skewer inserted in the thickest part shows no resistance. Rest on a wire rack for 2–3 minutes — resting lets the crust set and the juices redistribute. Slice on a diagonal into 2cm strips before plating; this is how katsu is served and it allows the sauce to contact the cut surface. Plate over steamed short-grain rice, ladle the curry sauce alongside rather than poured over — the user can apply it themselves to keep the crust intact.",
   leftovers_note: "Store curry sauce and katsu separately. The katsu crust goes soft overnight as it absorbs moisture — reheat in a 200°C oven for 8–10 minutes on a wire rack to restore some crunch. The microwave makes the crust completely soft. Curry sauce keeps 4 days in the fridge or freezes for 2 months. Sliced leftover katsu is excellent in a sandwich with Japanese mayo and shredded cabbage (katsu sando).",
+  not_yet_shipping: true,
 };
 
 const TOM_YUM: Recipe = {
@@ -4091,6 +4118,7 @@ const TOM_YUM: Recipe = {
   ],
   finishing_note: "Season the broth before the prawns go in — taste fish sauce and lime juice together, adding each separately to get the balance right. The soup should be salty, sour, and hot in that order when you taste it on a spoon. Add the prawns last and cook just until pink and curled — 90 seconds in simmering broth, no more. Overcooked prawns are rubbery and the window is narrow. Ladle immediately into warmed bowls, making sure lemongrass, galangal, and kaffir lime leaves are distributed through each bowl. A final squeeze of fresh lime over the bowl at the table brightens it. Eat hot and immediately.",
   leftovers_note: "Tom yum does not store well once assembled — the prawns continue cooking in the residual heat and go rubbery, and the lime juice loses its brightness. Store broth separately without prawns for up to 2 days in the fridge. Reheat the broth to a gentle simmer and add fresh prawns each time. The aromatics (lemongrass, galangal, kaffir lime) can be reused once if kept in the broth — by the third use they are spent. Freezing is not recommended; the lime flavour becomes dull and flat.",
+  not_yet_shipping: true,
 };
 
 const BARRAMUNDI: Recipe = {
@@ -4308,9 +4336,9 @@ const FLOUR_TORTILLAS: Recipe = {
   tags: ['mexican', 'bread', 'weekend', 'from-scratch'],
   user_added: false,
   generated_by_claude: false,
-  source: {
+    source: {
     chef: 'Patrick Nasr',
-    notes: 'Original recipe — developed through testing to find the right flour protein level and technique for the home kitchen.',
+    notes: "Patrick's own recipe — soft, buttery, adapted over time from multiple sources.",
   },
   emoji: '🫓',
   hero_fallback: fallback('#C8A96E'),
@@ -4840,6 +4868,7 @@ const CHICKEN_VEG_STIR_FRY: Recipe = {
       why_note: "This is why takeaway stir-fries are always sent in foil-vented containers — the kitchens know steam is the enemy. At home, plate it and call everyone to the table.",
     },
   ],
+  not_yet_shipping: true,
 };
 
 const BEEF_LASAGNE: Recipe = {
@@ -5659,6 +5688,7 @@ const FALAFEL: Recipe = {
       why_note: "Falafel waits for nobody — five minutes on the bench and the crust softens. The classic Levantine sandwich is built in this exact order: hummus first as a moisture barrier on the bread, then falafel, then tahini, then salads, then pickles last for crunch and acid. Skip the order and the bread goes soggy from the bottom.",
     },
   ],
+  not_yet_shipping: true,
 };
 
 // ────────────────────────────────────────────────────────────────────────────

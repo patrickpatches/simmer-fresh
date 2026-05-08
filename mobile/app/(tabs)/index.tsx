@@ -34,7 +34,7 @@ import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import type { Recipe, CuisineId } from '../../src/data/types';
 import {
-  getAllRecipes,
+  getActiveRecipes,
   getFavoriteIds,
   toggleFavorite,
   getPlannedRecipeIds,
@@ -108,7 +108,7 @@ export default function KitchenHome() {
     let cancelled = false;
     async function load() {
       const [all, favs, planned] = await Promise.all([
-        getAllRecipes(db),
+        getActiveRecipes(db),
         getFavoriteIds(db),
         getPlannedRecipeIds(db),
       ]);
@@ -151,7 +151,7 @@ export default function KitchenHome() {
   }, [recipes]);
 
   // Filter + search
-  // Ingredient search: getAllRecipes eager-loads ingredients, so this is free
+  // Ingredient search: getActiveRecipes eager-loads ingredients, so this is free
   const results = recipes.filter((r) => {
     if (search.trim()) {
       const q = search.trim().toLowerCase();

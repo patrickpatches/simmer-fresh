@@ -67,7 +67,7 @@ import { Icon } from '../../src/components/Icon';
 import { VersionFooter } from '../../src/components/VersionFooter';
 import {
   clearAllPantryItems,
-  getAllRecipes,
+  getActiveRecipes,
   getPantryItems,
   getShoppingItems,
   upsertPantryItem,
@@ -237,7 +237,7 @@ export default function PantryTab() {
       try {
         const [items, recs, shop] = await Promise.all([
           getPantryItems(db),
-          getAllRecipes(db),
+          getActiveRecipes(db),
           getShoppingItems(db),
         ]);
         if (!cancelled) {

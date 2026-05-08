@@ -249,6 +249,24 @@ export async function getAllRecipes(db: SQLiteDatabase): Promise<Recipe[]> {
   );
 }
 
+/**
+ * Active (user-visible) recipes only — filters out anything flagged
+ * `not_yet_shipping`. Use this for browse, search, and pantry-match.
+ *
+ * `getRecipeById` and `getAllRecipes` stay unfiltered so deep links and
+ * existing meal-plan entries still resolve. Anything that lists recipes
+ * to the user goes through this helper.
+ *
+ * DECISION-013 (2026-05-08) — v1.0 ships 16 recipes only. The flag is
+ * stored on each Recipe (not in SQLite) so it's a pure JS filter. When
+ * later releases expand the launch set, flip the flag on those recipes
+ * in seed-recipes.ts; no migration required.
+ */
+export async function getActiveRecipes(db: SQLiteDatabase): Promise<Recipe[]> {
+  const all = await getAllRecipes(db);
+  return all.filter((r) => !r.not_yet_shipping);
+}
+
 export async function getRecipeById(
   db: SQLiteDatabase,
   id: string,
