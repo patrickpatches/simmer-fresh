@@ -3,7 +3,7 @@
     "name": "Hone",
     "slug": "hone",
     "scheme": "hone",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -29,8 +29,7 @@
         "android.permission.VIBRATE",
         "android.permission.WAKE_LOCK"
       ],
-      "versionCode": 47,
-      "softwareKeyboardLayoutMode": "pan"
+      "versionCode": 47
     },
     "web": {
       "bundler": "metro",
