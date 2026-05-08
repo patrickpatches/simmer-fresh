@@ -2902,6 +2902,161 @@ const LAMB_SHAWARMA: Recipe = {
   leftovers_note: "\"This is built for leftovers. Shredded shawarma keeps 3 days in the fridge, freezes well, and reheats best in a pan with a splash of water — not the microwave.\"",
 };
 
+const CHICKEN_SHAWARMA: Recipe = {
+  id: 'chicken-shawarma',
+  title: 'Home Oven Chicken Shawarma',
+  tagline: 'The Lebanese-shop staple — done at home with a hot oven and patience',
+  description: "Boneless chicken thighs marinated in warm Levantine spices, cooked hard in a hot oven until the edges char and the fat renders into the tray. Served in flatbread with garlic sauce, pickled vegetables, and fresh parsley — the same combination found in every Lebanese shawarma shop in Australia, made at home with ingredients from any supermarket.",
+  base_servings: 4,
+  time_min: 150,
+  difficulty: 'beginner',
+  tags: ['chicken', 'levantine', 'palestinian', 'lebanese', 'oven', 'marinade', 'wrap', 'street food'],
+  user_added: false,
+  generated_by_claude: false,
+  source: {
+    chef: 'Hone Kitchen',
+    notes: "A traditional Levantine method (Palestinian and Lebanese home cooking). No single chef attribution — this is a consensus home-oven adaptation of street-vendor shawarma.",
+  },
+  emoji: '🌯',
+  hero_fallback: fallback('#A0521E'),
+  ingredients: [
+    {
+      id: 'i1', name: 'Boneless, skinless chicken thighs', amount: 800, unit: 'g', scales: 'linear',
+      prep: '200 g per serve',
+      scaling_note: '200g raw per serve. For 6 serves, 1.2kg. For 8, 1.6kg — cook in two batches if your tray won\'t fit them without touching.',
+      substitutions: [
+        {
+          ingredient: 'Boneless chicken breast',
+          changes: 'Breast dries out at 220 °C before the surface colours properly. Lower to 200 °C and pull at 70 °C internal — the result is leaner but less flavourful and won\'t char the same way.',
+          quality: 'compromise',
+        },
+      ],
+    },
+    {
+      id: 'i2', name: 'Full-fat Greek yoghurt', amount: 3, unit: 'tbsp', scales: 'fixed',
+      prep: 'Coats the chicken; the lactic acid tenderises',
+      scaling_note: 'The marinade coats — for up to 1.2kg these quantities work. For more than 1.2kg, scale by 1.5×.',
+      substitutions: [
+        {
+          ingredient: 'Coconut yoghurt (dairy-free)',
+          changes: 'Lactic acid still tenderises; flavour is slightly sweeter but the spices dominate once the marinade is mixed.',
+          quality: 'good',
+        },
+      ],
+    },
+    { id: 'i3', name: 'Olive oil', amount: 3, unit: 'tbsp', scales: 'fixed', prep: 'Carries the spices; hedges against the lean thighs drying' },
+    { id: 'i4', name: 'Lemon juice', amount: 2, unit: 'tbsp', scales: 'fixed', prep: 'About 1 lemon — the acid in the marinade' },
+    {
+      id: 'i5', name: 'Garlic cloves, crushed', amount: 4, unit: '', scales: 'custom',
+      curve: { '4': 4, '6': 5, '8': 5 },
+      scaling_note: 'For 6–8 serves, add 1 extra clove only — beyond 4 cloves the garlic can turn harsh during the high-heat cook.',
+    },
+    { id: 'i6', name: 'Ground cumin', amount: 1.5, unit: 'tsp', scales: 'fixed', prep: 'The dominant earthy note in the marinade' },
+    { id: 'i7', name: 'Ground coriander', amount: 1, unit: 'tsp', scales: 'fixed' },
+    { id: 'i8', name: 'Smoked paprika', amount: 1, unit: 'tsp', scales: 'fixed', prep: 'For colour and mild smokiness' },
+    { id: 'i9', name: 'Ground turmeric', amount: 0.5, unit: 'tsp', scales: 'fixed', prep: 'For colour' },
+    {
+      id: 'i10', name: 'Ground allspice', amount: 0.5, unit: 'tsp', scales: 'fixed',
+      prep: 'Distinctly Levantine — separates shawarma from generic spiced chicken. Do not substitute',
+    },
+    { id: 'i11', name: 'Ground cinnamon', amount: 0.25, unit: 'tsp', scales: 'fixed', prep: 'Background warmth — keep it subtle' },
+    { id: 'i12', name: 'Ground cardamom', amount: 0.25, unit: 'tsp', scales: 'fixed' },
+    { id: 'i13', name: 'Cayenne pepper', amount: 0.25, unit: 'tsp', scales: 'fixed', prep: 'Or to taste — omit for households with children' },
+    {
+      id: 'i14', name: 'Salt', amount: 1.5, unit: 'tsp', scales: 'custom',
+      curve: { '4': 1.5, '6': 2, '8': 2.5 },
+      scaling_note: 'Salt the marinade to season the chicken through — it should taste well-seasoned, not timid.',
+    },
+    { id: 'i15', name: 'Black pepper', amount: 0.5, unit: 'tsp', scales: 'fixed' },
+    {
+      id: 'i16', name: 'Lebanese flatbread or pita', amount: 4, unit: 'pieces', scales: 'linear', prep: '1 per serve',
+      substitutions: [
+        { ingredient: 'Lavash', changes: 'Wraps more tightly around the filling.', quality: 'perfect_swap' },
+      ],
+    },
+    {
+      id: 'i17', name: 'Toum (Lebanese garlic sauce)', amount: 4, unit: 'tbsp', scales: 'linear',
+      prep: 'Available at Lebanese grocers in most major Australian cities; major supermarkets stock it in the international aisle',
+      substitutions: [
+        { ingredient: 'Garlic aioli', changes: 'Less pungent than toum but a clean substitute.', quality: 'good' },
+        { ingredient: 'Plain yoghurt + 1 crushed garlic clove + a squeeze of lemon', changes: 'Lighter, less garlicky. Acceptable in a pinch.', quality: 'compromise' },
+      ],
+    },
+    { id: 'i18', name: 'Tomato', amount: 1, unit: 'large', scales: 'linear', prep: 'Sliced thinly' },
+    {
+      id: 'i19', name: 'Pickled turnips or pickled cucumbers', amount: 1, unit: 'handful', scales: 'fixed',
+      prep: 'Optional but authentic — the acid cut is the counterpoint to the chicken and toum',
+      substitutions: [
+        { ingredient: 'Any pickled vegetable', changes: 'The acid cut is what matters — pickled cucumbers, capers, or even a light vinegar-onion mix all work.', quality: 'good' },
+      ],
+    },
+    { id: 'i20', name: 'Fresh flat-leaf parsley', amount: 1, unit: 'small bunch', scales: 'fixed', prep: 'Whole leaves, not chopped' },
+    { id: 'i21', name: 'Lemon wedges', amount: 4, unit: 'pieces', scales: 'linear', prep: 'For serving' },
+  ],
+  steps: [
+    {
+      id: 's1', title: 'Marinate (2 hours, ideally overnight)',
+      content: 'Mix the yoghurt, olive oil, lemon juice, crushed garlic, and all the spices and salt in a bowl until combined. Score each chicken thigh 2–3 times with a knife (shallower than 1cm — just breaks the surface to let the marinade penetrate). Add the chicken, coat thoroughly, cover, and refrigerate. Minimum 2 hours; overnight is noticeably better.',
+      timer_seconds: 7200,
+      stage_note: 'The marinade should look like it\'s adhering to each thigh rather than pooling at the bottom of the bowl.',
+      lookahead: 'Pull the chicken out of the fridge 15–20 min before cooking — cold chicken lowers the pan temperature and slows colour development.',
+      why_note: 'The marinade is the recipe. The cook itself is 25 minutes; what makes or breaks shawarma is the time the chicken spends in the spiced yoghurt. The lactic acid tenderises and the spices penetrate beyond just the surface.',
+    },
+    {
+      id: 's2', title: 'Arrange on a rack and roast at 220 °C fan-forced',
+      content: 'Preheat the oven to 220 °C fan-forced (230 °C conventional). Lay the chicken thighs on a rack-over-tray in a single layer with a small gap between each piece. Roast for 22–25 minutes. Do not open the oven for the first 15 minutes.',
+      timer_seconds: 1380,
+      stage_note: 'At 22 minutes the edges of the thighs should show dark golden-brown to light char marks. Juices run clear (not pink) when you press the thickest part. Internal 74 °C.',
+      lookahead: 'You\'re going to finish under the grill / broil for 2–3 minutes — keep an eye on it the moment that switches on.',
+      why_note: '220 °C fan-forced is higher than most chicken recipes. The high heat drives rapid Maillard browning on the exterior before the interior overcooks. Thighs are forgiving because their fat content keeps them moist even at this temperature. A flat tray with no rack traps the released liquid and braises the underside instead of roasting it — use the rack if you have one.',
+    },
+    {
+      id: 's3', title: 'Finish under the grill / broil (2–3 min)',
+      content: 'Switch the oven to grill / broil on high. Watch the chicken constantly. You want char marks on the edges — not blackened all over, but definitely darker than golden.',
+      timer_seconds: 150,
+      stage_note: 'You\'ll see and smell the edges starting to catch. The fat in the tray may smoke slightly — that\'s correct. Pull as soon as the highest-point edges are charred.',
+      why_note: 'The grill step replicates, imperfectly but meaningfully, the effect of a vertical rotisserie. The char is both flavour (Maillard compounds in the slightly burned fat and spices) and texture (crisp exterior against tender inside). If you over-char, taste a piece before discarding — the char on the outside of a thigh rarely penetrates the meat.',
+    },
+    {
+      id: 's4', title: 'Rest, then slice across the grain',
+      content: 'Remove from oven. Rest 2 minutes. Slice the thighs thinly across the grain — 5–7mm strips.',
+      timer_seconds: 120,
+      why_note: 'Shawarma is always sliced — it\'s not a piece-of-chicken dish. Thin strips stack into the flatbread and distribute flavour more evenly. Slicing straight from the oven loses the juices on the board; two minutes\' rest keeps them in the meat.',
+    },
+    {
+      id: 's5', title: 'Warm the flatbread, build, eat',
+      content: 'Warm the flatbreads briefly — 30 seconds directly on a dry pan, or 15 seconds in the microwave under a damp paper towel. Spread garlic sauce generously, add chicken strips, tomato, pickles, parsley, and a squeeze of lemon. Wrap tightly.',
+      why_note: 'A cold, stiff flatbread cracks when you wrap it and the filling falls out — this is one of the most common ways home shawarma assembly fails. Pliable bread is the difference between a wrap that holds and one that comes apart in your hand.',
+    },
+  ],
+  categories: { cuisines: ['levantine'], types: ['chicken'] },
+  total_time_minutes: 150,
+  active_time_minutes: 30,
+  equipment: [
+    "Large ziplock bag or covered bowl (for marinating)",
+    "Oven tray with a rack, or a large cast iron pan",
+    "Meat thermometer (optional but removes guesswork)",
+    "Sharp knife and board for slicing",
+  ],
+  before_you_start: [
+    "The marinade is the recipe. The cook itself is 25 minutes. What makes or breaks the dish is the time the chicken spends in the spiced yoghurt — minimum 2 hours, overnight is noticeably better. If you're cooking tonight, start the marinade now.",
+    "You need colour on the chicken. Pale, steamed-looking shawarma is wrong. The oven must be at 220 °C (fan-forced) and the tray must not be overcrowded — pieces touching means they steam instead of roast. A final 2–3 minutes under the grill / broil gets the char marks that make it taste right.",
+    "Rest before you slice. Chicken thighs sliced straight from the oven lose their juices on the board. Two minutes of rest keeps them in the meat.",
+  ],
+  mise_en_place: [
+    "Mix all marinade ingredients in a bowl until combined",
+    "Score each chicken thigh 2–3 times with a knife — shallow, just breaks the surface",
+    "Add chicken to marinade, coat thoroughly, cover and refrigerate (2 hours minimum, overnight ideal)",
+    "Pull chicken from the fridge 15–20 min before cooking — cold chicken kills colour development",
+    "Preheat oven to 220 °C fan-forced (230 °C conventional)",
+    "Slice tomatoes, pick parsley leaves, set out flatbreads",
+    "Have toum / garlic sauce ready at room temperature — cold toum is harder to spread",
+  ],
+  finishing_note: "Taste a strip of chicken before wrapping. It should be savoury, warmly spiced, and slightly smoky from the char. If it tastes flat, salt it directly on the sliced chicken — not in the sauce. If the garlic sauce is too heavy, thin with a few drops of lemon juice. The pickled vegetables are not optional garnish — their acidity is the counterpoint to the rich chicken and toum. Don't skip them.",
+  leftovers_note: "Cold shawarma sliced thin into a wrap with leftover toum is one of the better lunches you can have the next day — the spices deepen overnight. Refrigerate for up to 3 days. Reheat in a hot pan with a splash of water to prevent sticking; never microwave (it goes rubbery). Flatbreads don't store assembled — keep components separate and assemble fresh.",
+};
+
+
 
 // ────────────────────────────────────────────────────────────────────────────
 //  Phase 3 — Malaysian, Indian, Japanese, Thai, Australian
@@ -5541,6 +5696,7 @@ export const SEED_RECIPES: Recipe[] = [
   SHEET_PAN_HARISSA_CHICKEN,
   EGG_FRIED_RICE,
   LAMB_SHAWARMA,
+  CHICKEN_SHAWARMA,
   NASI_LEMAK,
   BEEF_RENDANG,
   CURRY_LAKSA,
