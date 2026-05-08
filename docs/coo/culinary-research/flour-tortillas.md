@@ -37,7 +37,7 @@ Base recipe: 200g flour → ~13 tortillas.
 | Unsalted butter | 40g | ~3g |
 | Water | 130ml | ~10ml |
 | Fine sea salt | 6g | ~0.5g |
-| **Total dough** | **376g** | **~29g per ball** |
+| **Total dough** | **376g** | **~30g per ball** |
 
 29g dough ball → ~12–13cm diameter tortilla (taco / street taco size). These are not wrap-sized — they are taco-sized. If a cook wants a larger wrap-style tortilla, they should use 50–55g balls from the same dough (which gives ~7 tortillas from 200g flour). Add this as a note in the app.
 
@@ -77,5 +77,5 @@ Soft, buttery flour tortillas made with high-protein bread flour — the kind th
 
 ## 4. What to Know Before You Start
 
-1. **Weigh every ingredient.** Flour tortillas are a hydration ratio. A heaped cup of flour versus a level one can be 20g apart, which produces a different dough entirely. This recipe was developed and tested by weight, not volume.
-2. **Use softened butter, not melted.** Softened butter rubs into the flour and coats the proteins — that coating is what makes the tortilla pliable and rich rather than bready. Me
+1. **Weigh every ingredient.** Flour tortillas are a hydration ratio. A heaped cup of flour versus a level one can be 20g apart, which produces a different dough entirely. This recipe was developed and tested by weight, not volume. Patrick uses a food scale for all bread making without exception — it removes the single biggest variable in the result.
+2. **Use softened butter, not melted.** Softened butter rub

@@ -376,7 +376,7 @@ min_servings:   6
 max_servings:   26
 ```
 
-Base recipe (200g flour) yields ~13 taco-sized tortillas (~12–13cm). Each ball is ~29g of dough. For larger wrap-size tortillas (20cm), use 50–55g balls — same dough, ~7 tortillas per batch.
+Base recipe (200g flour) yields ~13 taco-sized tortillas (~12–13cm). Each ball is ~30g of dough. For larger wrap-size tortillas (20cm), use 50–55g balls — same dough, ~7 tortillas per batch.
 
 **Scaling logic:**
 - Bread flour, 200g: `scales: linear`. `scaling_note: "Each tortilla needs ~15g of flour. To scale: multiply 200g by (desired tortillas ÷ 13). Scale all other ingredients by the same factor."`
