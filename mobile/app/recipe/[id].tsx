@@ -923,7 +923,14 @@ export default function RecipeDetailScreen() {
         )}
 
         {/* ── EQUIPMENT (DECISION-008) ──
-            Horizontal pill row from equipment[]. Omitted if empty. */}
+            v2 (2026-05-08, Patrick): vertical flex-wrap pill list, always
+            visible. Replaces the previous horizontal ScrollView which (a) hid
+            items off-screen, (b) was fragile inside the outer page ScrollView
+            on Android (gesture conflict), (c) added a side-scroll affordance
+            users had to discover. Vertical wrap shows everything at a glance
+            in 2-3 short rows. Schema cap (no formal max) means we wrap
+            naturally; recipes with >8 items would still all render — review
+            then if any get genuinely long. */}
         {!cooking && (recipe.equipment?.length ?? 0) > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
             <Text
@@ -936,7 +943,13 @@ export default function RecipeDetailScreen() {
             >
               Equipment
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 8,
+              }}
+            >
               {recipe.equipment!.map((item, idx) => (
                 <View
                   key={idx}
@@ -954,7 +967,7 @@ export default function RecipeDetailScreen() {
                   </Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           </View>
         )}
 
