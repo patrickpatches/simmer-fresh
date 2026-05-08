@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone · Scaling Control v2.2</title>
+<style>
+  :root {
+    --bg:          #E8F0E6;
+    --bg-deep:     #DEEADB;
+    --surface:     #FFFFFF;
+    --surface-low: #E2EDE0;
+    --ink:         #111410;
+    --ink-soft:    #3D3830;
+    --muted:       #7A766E;
+    --gold:        #B84030;
+    --gold-tint:   rgba(184,64,48,0.08);
+    --gold-line:   rgba(184,64,48,0.18);
+    --line:        #D8E4D6;
+    --line-strong: #C0D4BE;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-sans:    -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0F0F0D;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    padding: 48px 24px 100px;
+    color: var(--ink);
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: #F0EBE3;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .page-sub {
+    font-size: 12px;
+    color: #5A5650;
+    text-align: center;
+    margin-bottom: 52px;
+    line-height: 1.6;
+  }
+
+  /* ── Section heading ─────────────────────────────────────── */
+  .sec {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5A5650;
+    max-width: 900px;
+    margin: 48px auto 18px;
+  }
+  .sec:first-of-type { margin-top: 0; }
+
+  /* ── Component showcase strip ────────────────────────────── */
+  .showcase {
+    display: flex;
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .show-card {
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 20px 16px 16px;
+    width: 164px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+  }
+  .show-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  /* ── Servings row — the component ───────────────────────── */
+  .servings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .servings-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .servings-verb {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+  /* Leftover hint — appears below the verb when leftover mode is on */
+  .servings-hint {
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1;
+  }
+  .servings-ctrl {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    overflow: hidden;
+  }
+  .servings-btn {
+    width: 32px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    color: var(--gold);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    font-family: var(--font-sans);
+    transition: opacity 0.15s;
+  }
+  .servings-btn.disabled {
+    opacity: 0.28;
+    pointer-events: none;
+    cursor: default;
+  }
+  /* Centre cell — number + unit stacked */
+  .servings-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 40px;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    gap: 1px;
+  }
+  .servings-num {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.3px;
+  }
+  .servings-unit {
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 48px;
+  }
+
+  /* ── Full-width in-context demo ──────────────────────────── */
+  .context-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) { .context-grid { grid-template-columns: 1fr; } }
+  .context-card {
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 20px 16px 18px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+  }
+  .ctx-recipe {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 3px;
+    letter-spacing: -0.3px;
+  }
+  .ctx-tagline {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+  /* Mini ingredient list to show scaling in context */
+  .ctx-ingredient {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    margin-bottom: 5px;
+    font-size: 12px;
+  }
+  .ctx-ingred-name { color: var(--ink-soft); }
+  .ctx-ingred-amt { color: var(--muted); font-weight: 600; }
+  .ctx-servings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 10px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    margin-bottom: 12px;
+  }
+  .ctx-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 12px 0;
+  }
+
+  /* ── States panel ────────────────────────────────────────── */
+  .states-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) { .states-grid { grid-template-columns: 1fr 1fr; } }
+  .state-card {
+    background: var(--bg);
+    border-radius: 16px;
+    padding: 16px 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .state-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  /* ── Rationale & handoff ─────────────────────────────────── */
+  .doc {
+    max-width: 740px;
+    margin: 0 auto;
+  }
+  .doc h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: #F0EBE3;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .doc .lead {
+    font-size: 13px;
+    color: #5A5650;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .doc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .doc-grid { grid-template-columns: 1fr; } }
+  .doc-card {
+    background: #1A1A18;
+    border-radius: 12px;
+    border: 1px solid #2A2A26;
+    padding: 16px;
+  }
+  .doc-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .doc-card p {
+    font-size: 13px;
+    color: #8A8278;
+    line-height: 1.65;
+    margin-bottom: 6px;
+  }
+  .doc-card p:last-child { margin-bottom: 0; }
+  .handoff-block {
+    background: #1A1A18;
+    border-radius: 14px;
+    border: 1px solid #2A2A26;
+    padding: 22px;
+    margin-top: 14px;
+  }
+  .handoff-block h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+  }
+  .handoff-block h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #D8D0C8;
+    margin: 16px 0 6px;
+  }
+  .handoff-block p, .handoff-block li {
+    font-size: 13px;
+    color: #8A8278;
+    line-height: 1.65;
+  }
+  .handoff-block ul, .handoff-block ol {
+    padding-left: 18px;
+    margin-bottom: 8px;
+  }
+  .handoff-block li { margin-bottom: 5px; }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.07);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #C0A870;
+  }
+  .schema-block {
+    background: #111110;
+    border-radius: 10px;
+    border: 1px solid #2A2A26;
+    padding: 14px 16px;
+    margin: 10px 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: #A0C8A0;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 10px 0;
+  }
+  .tbl th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 6px 10px;
+    border-bottom: 1px solid #2A2A26;
+  }
+  .tbl td {
+    padding: 7px 10px;
+    color: #8A8278;
+    border-bottom: 1px solid #1E1E1C;
+    vertical-align: top;
+  }
+  .tbl td:first-child { color: #C0A870; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<p class="page-title">Scaling Control v2.2 — Dynamic serving label</p>
+<p class="page-sub">Serves N people · Makes N burgers · Makes 1 loaf · Makes 2 cups · Makes 8 tortillas<br>v0.7 sage tokens locked · Open in Chrome</p>
+
+<!-- ── 1. COMPONENT AT A GLANCE ───────────────────────────── -->
+<div class="sec">Component — all five unit types</div>
+
+<div class="showcase">
+
+  <!-- Pasta / people -->
+  <div class="show-card">
+    <div class="show-label">Pasta / people</div>
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Serves</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">person</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Serves</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">2</div>
+          <div class="servings-unit">people</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    </div>
+    <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center; font-style:italic;">1 = disabled −</div>
+  </div>
+
+  <!-- Burgers -->
+  <div class="show-card">
+    <div class="show-label">Smash Burger</div>
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">burger</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">4</div>
+          <div class="servings-unit">burgers</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    </div>
+    <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center; font-style:italic;">singular / plural</div>
+  </div>
+
+  <!-- Bread -->
+  <div class="show-card">
+    <div class="show-label">Sourdough / bread</div>
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+        <div class="servings-hint">scales ingredients</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">loaf</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+        <div class="servings-hint">scales ingredients</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">2</div>
+          <div class="servings-unit">loaves</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    </div>
+    <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center; font-style:italic;">loaf / loaves</div>
+  </div>
+
+  <!-- Cups (sauce/dip) -->
+  <div class="show-card">
+    <div class="show-label">Hummus / cups</div>
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">cup</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">2</div>
+          <div class="servings-unit">cups</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    </div>
+    <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center; font-style:italic;">cup / cups</div>
+  </div>
+
+  <!-- Tortillas / flatbreads -->
+  <div class="show-card">
+    <div class="show-label">Flatbread / count</div>
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">tortilla</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">8</div>
+          <div class="servings-unit">tortillas</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    </div>
+    <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center; font-style:italic;">tortilla / tortillas</div>
+  </div>
+
+</div><!-- /showcase -->
+
+<!-- ── 2. IN-CONTEXT DEMO ─────────────────────────────────── -->
+<div class="sec">In context — servings row in the recipe detail page</div>
+
+<div class="context-grid">
+
+  <!-- Pasta Carbonara -->
+  <div class="context-card">
+    <div class="ctx-recipe">Pasta Carbonara</div>
+    <div class="ctx-tagline">The Roman original — no cream, ever</div>
+    <div class="ctx-servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Serves</div>
+      </div>
+      <div class="servings-ctrl" style="border-color:var(--line-strong)">
+        <div class="servings-btn" onclick="stepServing(this,-1,1,'people','person')">−</div>
+        <div class="servings-center">
+          <div class="servings-num" id="n-pasta">2</div>
+          <div class="servings-unit" id="u-pasta">people</div>
+        </div>
+        <div class="servings-btn" onclick="stepServing(this,1,1,'people','person')">+</div>
+      </div>
+    </div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Spaghetti</span><span class="ctx-ingred-amt" id="ing-pasta-1">160 g</span></div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Guanciale</span><span class="ctx-ingred-amt" id="ing-pasta-2">100 g</span></div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Egg yolks</span><span class="ctx-ingred-amt" id="ing-pasta-3">3</span></div>
+  </div>
+
+  <!-- Smash Burger -->
+  <div class="context-card">
+    <div class="ctx-recipe">Smash Burger</div>
+    <div class="ctx-tagline">The crust is the point</div>
+    <div class="ctx-servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+      </div>
+      <div class="servings-ctrl" style="border-color:var(--line-strong)">
+        <div class="servings-btn" onclick="stepServing(this,-1,1,'burgers','burger')">−</div>
+        <div class="servings-center">
+          <div class="servings-num" id="n-burger">2</div>
+          <div class="servings-unit" id="u-burger">burgers</div>
+        </div>
+        <div class="servings-btn" onclick="stepServing(this,1,1,'burgers','burger')">+</div>
+      </div>
+    </div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Beef mince (80/20)</span><span class="ctx-ingred-amt" id="ing-burger-1">200 g</span></div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Brioche buns</span><span class="ctx-ingred-amt" id="ing-burger-2">2</span></div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">American cheese</span><span class="ctx-ingred-amt" id="ing-burger-3">2 slices</span></div>
+  </div>
+
+  <!-- Sourdough -->
+  <div class="context-card">
+    <div class="ctx-recipe">Sourdough Loaf</div>
+    <div class="ctx-tagline">48-hour cold proof, worth every hour</div>
+    <div class="ctx-servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+        <div class="servings-hint">scales ingredients</div>
+      </div>
+      <div class="servings-ctrl" style="border-color:var(--line-strong)">
+        <div class="servings-btn" onclick="stepServing(this,-1,1,'loaves','loaf')">−</div>
+        <div class="servings-center">
+          <div class="servings-num" id="n-bread">1</div>
+          <div class="servings-unit" id="u-bread">loaf</div>
+        </div>
+        <div class="servings-btn" onclick="stepServing(this,1,1,'loaves','loaf')">+</div>
+      </div>
+    </div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Bread flour</span><span class="ctx-ingred-amt" id="ing-bread-1">450 g</span></div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Water</span><span class="ctx-ingred-amt" id="ing-bread-2">320 ml</span></div>
+    <div class="ctx-ingredient"><span class="ctx-ingred-name">Starter</span><span class="ctx-ingred-amt" id="ing-bread-3">90 g</span></div>
+  </div>
+
+</div>
+
+<!-- ── 3. BUTTON STATES ───────────────────────────────────── -->
+<div class="sec">Button states</div>
+<div class="states-grid">
+
+  <div class="state-card">
+    <div class="state-label">At minimum (−&nbsp;disabled)</div>
+    <div class="servings-row">
+      <div class="servings-left"><div class="servings-verb">Makes</div></div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">loaf</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">− at opacity 0.28, pointer-events none</p>
+  </div>
+
+  <div class="state-card">
+    <div class="state-label">Normal (both active)</div>
+    <div class="servings-row">
+      <div class="servings-left"><div class="servings-verb">Makes</div></div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">4</div>
+          <div class="servings-unit">burgers</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">both buttons rust, full opacity</p>
+  </div>
+
+  <div class="state-card">
+    <div class="state-label">At maximum (+ disabled)</div>
+    <div class="servings-row">
+      <div class="servings-left"><div class="servings-verb">Serves</div></div>
+      <div class="servings-ctrl">
+        <div class="servings-btn">−</div>
+        <div class="servings-center">
+          <div class="servings-num">8</div>
+          <div class="servings-unit">people</div>
+        </div>
+        <div class="servings-btn disabled">+</div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">+ at opacity 0.28 — max 8</p>
+  </div>
+
+  <div class="state-card">
+    <div class="state-label">With leftover hint</div>
+    <div class="servings-row">
+      <div class="servings-left">
+        <div class="servings-verb">Makes</div>
+        <div class="servings-hint">scales ingredients</div>
+      </div>
+      <div class="servings-ctrl">
+        <div class="servings-btn disabled">−</div>
+        <div class="servings-center">
+          <div class="servings-num">1</div>
+          <div class="servings-unit">loaf</div>
+        </div>
+        <div class="servings-btn">+</div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">bread hint — no people-count framing</p>
+  </div>
+
+</div>
+
+<!-- ── 4. RATIONALE ───────────────────────────────────────── -->
+<div class="sec" style="margin-top:60px">Design rationale</div>
+
+<div class="doc">
+  <div class="doc-grid">
+
+    <div class="doc-card">
+      <div class="doc-card-title">Why the unit goes inside the stepper, not beside it</div>
+      <p>The number and its unit are one piece of information — "4 burgers" is atomic. Separating them (number inside stepper, unit outside) forces the user's eye to glue two separate elements together. The stacked layout (number above, unit below, within the centre cell) keeps them as a single readable chunk. It also means the label area on the left doesn't have to carry unit context — it stays clean as a single-word verb.</p>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-card-title">Verb derivation — one field, not two</div>
+      <p>The verb ("Serves" vs "Makes") is derived automatically: if the unit is "person/people", the verb is "Serves". Everything else uses "Makes". This means the recipe author only sets <code>serving_unit</code> — the UI handles the verb. No risk of mismatched data ("Makes 4 people" from a copy error).</p>
+      <p>This is a Golden Rule #2 consequence: bread scales by loaf count, not people. Labelling bread as "Serves N" is actively misleading — it implies one loaf feeds N, which isn't how bread works.</p>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-card-title">Singular / plural — two fields, one fallback</div>
+      <p>The schema adds <code>serving_unit_singular</code> and <code>serving_unit_plural</code>. Irregular plurals (loaf/loaves) need explicit storage — you can't derive "loaves" from "loaf" without a dictionary. Regular plurals (burger/burgers, cup/cups) can be derived with a simple + "s" fallback, so the plural field is optional.</p>
+      <p>The engineer should apply the fallback: if <code>serving_unit_plural</code> is absent, display <code>serving_unit_singular + 's'</code>. This keeps seed data minimal for regular-plural units.</p>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-card-title">Minimum / maximum bounds</div>
+      <p>Minimum is always 1 — you can't make 0 of anything. The − button disables (opacity 0.28, pointer-events none) at count = 1. Maximum defaults to 8 for people-based recipes and is recipe-defined for unit-based (bread: 4 loaves is a reasonable max for a home kitchen; tortillas: 24; burgers: 12). Defaults if unset: 8 for people, 8 for everything else.</p>
+      <p>The max isn't about blocking the user — it's about preventing ingredient amounts that become absurd (400g × 20 = 8kg of pasta water). Warn, not error.</p>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-card-title">The "scales ingredients" hint on bread</div>
+      <p>Bread is the edge case where users have learned to think of "servings" as people. A loaf doesn't serve 1 person — it serves 8-10 slices. The subtle italic hint "scales ingredients" below the verb on bread/baked-good recipes signals: this control changes how much you make, not who you're feeding. It's a disambiguation line, not an instruction. Muted, 10px italic — present for bread, absent for everything else.</p>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-card-title">Centre cell sizing</div>
+      <p>The centre cell grows from 28×32px to 52×40px. The 52px width accommodates "tortillas" (the longest unit label at 8 chars) without text overflow. The 40px height (up from 32px) gives the number and unit enough vertical breathing room to read as two distinct lines rather than a squashed stack. The stepper buttons stay at 32×40px — only the centre zone grows.</p>
+    </div>
+
+  </div>
+
+  <!-- Engineer handoff -->
+  <div class="handoff-block">
+    <h3>Engineer handoff — scaling control v2.2</h3>
+
+    <h4>Schema additions (additive, no breaking changes)</h4>
+    <div class="schema-block">// In mobile/src/data/types.ts — add to Recipe Zod schema:
+
+serving_unit_singular: z.string().optional(),
+// e.g. "person" | "burger" | "loaf" | "cup" | "tortilla"
+// If absent: defaults to "person"
+
+serving_unit_plural: z.string().optional(),
+// e.g. "people" | "burgers" | "loaves" | "cups" | "tortillas"
+// If absent: falls back to serving_unit_singular + "s"
+// (works for regular plurals; must be set for irregular ones)
+
+serving_max: z.number().int().positive().optional(),
+// Maximum stepper value. Default: 8</div>
+
+    <h4>Derived values (compute in component, not stored)</h4>
+    <div class="schema-block">// In recipe/[id].tsx ServingsSelector component:
+
+const unit = count === 1
+  ? (recipe.serving_unit_singular ?? 'person')
+  : (recipe.serving_unit_plural
+      ?? (recipe.serving_unit_singular
+          ? recipe.serving_unit_singular + 's'
+          : 'people'));
+
+const verb = (recipe.serving_unit_singular === 'person'
+  || !recipe.serving_unit_singular)
+  ? 'Serves'
+  : 'Makes';
+
+const showHint = verb === 'Makes'
+  && recipe.serving_unit_singular !== 'burger'
+  && recipe.serving_unit_singular !== 'cup';
+// Hint text: "scales ingredients"
+// Only shown for baked-goods / quantity items where
+// users might misread "Makes 1" as "serves 1 person"</div>
+
+    <h4>Component changes (recipe/[id].tsx — ServingsSelector or inline)</h4>
+    <ol>
+      <li>Centre cell: <code>width: 52, height: 40</code> (was <code>width: 28, lineHeight: 32</code>). Contains two <code>&lt;Text&gt;</code> nodes: number (15px bold ink) and unit (9px muted). <code>flexDirection: 'column'</code>, <code>alignItems: 'center'</code>, <code>justifyContent: 'center'</code>.</li>
+      <li>Left label area: render <code>verb</code> (13px semibold ink-soft). If <code>showHint</code> is true, render a second <code>&lt;Text&gt;</code> below: "scales ingredients" (10px italic muted).</li>
+      <li>− button: <code>opacity: count === 1 ? 0.28 : 1</code>, <code>pointerEvents: count === 1 ? 'none' : 'auto'</code>.</li>
+      <li>+ button: <code>opacity: count === (recipe.serving_max ?? 8) ? 0.28 : 1</code>, same pointer-events logic.</li>
+      <li>No other changes — tap logic, state, and ingredient scaling calculations are unchanged.</li>
+    </ol>
+
+    <h4>Seed data to update</h4>
+    <table class="tbl">
+      <tr><th>Recipe</th><th>serving_unit_singular</th><th>serving_unit_plural</th><th>serving_max</th></tr>
+      <tr><td>smash-burger</td><td>"burger"</td><td>"burgers"</td><td>12</td></tr>
+      <tr><td>sourdough (future)</td><td>"loaf"</td><td>"loaves"</td><td>4</td></tr>
+      <tr><td>hummus</td><td>"cup"</td><td>"cups"</td><td>8</td></tr>
+      <tr><td>flatbread/tortilla (future)</td><td>"tortilla"</td><td>"tortillas"</td><td>24</td></tr>
+      <tr><td>all others</td><td colspan="3">omit — defaults to person/people/8</td></tr>
+    </table>
+
+    <h4>Files to touch</h4>
+    <ul>
+      <li><code>mobile/src/data/types.ts</code> — add 3 fields to Recipe schema</li>
+      <li><code>mobile/app/recipe/[id].tsx</code> — update ServingsSelector or inline stepper</li>
+      <li><code>mobile/src/data/seed-recipes.ts</code> — add unit fields to smash-burger and hummus (the only current seed recipes that aren't people-based)</li>
+    </ul>
+
+    <h4>Sequencing</h4>
+    <p>This is parallel to the Designer's visual pass — engineer ships functional first (unit label live, correct counts, correct scaling). Designer's v2.2 prototype is the visual polish target. No schema dependencies on other open handoffs.</p>
+
+    <h4>What does NOT change</h4>
+    <p>Ingredient scaling logic in <code>scale.ts</code> is unchanged — it already operates on count multiples of <code>base_servings</code>. The new fields only affect display labels and stepper bounds. The scaling math is identical.</p>
+  </div>
+</div>
+
+<script>
+// Interactive servings steppers in the in-context demo
+
+function stepServing(btn, delta, base, plural, singular) {
+  const row = btn.closest('.ctx-servings-row') || btn.closest('.servings-row');
+  const numEl = row.querySelector('.servings-num');
+  const unitEl = row.querySelector('.servings-unit');
+  let n = parseInt(numEl.textContent);
+  n = Math.max(1, Math.min(8, n + delta));
+  numEl.textContent = n;
+  unitEl.textContent = n === 1 ? singular : plural;
+
+  // Update disabled states
+  const btns = row.querySelectorAll('.servings-btn');
+  btns[0].classList.toggle('disabled', n === 1);
+  btns[1].classList.toggle('disabled', n === 8);
+
+  // Naive ingredient scaling for demo
+  const id = numEl.id; // e.g. "n-pasta"
+  const key = id.replace('n-', '');
+  const scaleFactor = n / 2; // base servings = 2
+
+  if (key === 'pasta') {
+    document.getElementById('ing-pasta-1').textContent = Math.round(160 * scaleFactor) + ' g';
+    document.getElementById('ing-pasta-2').textContent = Math.round(100 * scaleFactor) + ' g';
+    document.getElementById('ing-pasta-3').textContent = Math.round(3 * scaleFactor);
+  }
+  if (key === 'burger') {
+    document.getElementById('ing-burger-1').textContent = Math.round(200 * scaleFactor) + ' g';
+    document.getElementById('ing-burger-2').textContent = Math.round(2 * scaleFactor);
+    document.getElementById('ing-burger-3').textContent = Math.round(2 * scaleFactor) + ' slices';
+  }
+  if (key === 'bread') {
+    const bf = n; // 1 loaf = base
+    document.getElementById('ing-bread-1').textContent = Math.round(450 * bf) + ' g';
+    document.getElementById('ing-bread-2').textContent = Math.round(320 * bf) + ' ml';
+    document.getElementById('ing-bread-3').textContent = Math.round(90 * bf) + ' g';
+  }
+}
+
+// Init disabled states
+document.querySelectorAll('.servings-ctrl').forEach(ctrl => {
+  const num = ctrl.querySelector('.servings-num');
+  if (num && parseInt(num.textContent) === 1) {
+    ctrl.querySelectorAll('.servings-btn')[0].classList.add('disabled');
+  }
+});
+</script>
+</body>
+</html>
