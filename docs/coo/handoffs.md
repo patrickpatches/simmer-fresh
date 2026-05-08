@@ -25,6 +25,124 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Patrick · 2026-05-08 · ON-DEVICE VALIDATION (build #95 — five fixes incl. v0.5.0 bump, smash-burger sauce split, Equipment redesign, CHICKEN_SHAWARMA, DECISION-013 launch scope)
+**From:** Senior Engineer
+**Subject:** Five-commit package on `4c4daf9`; build #95 dispatched on Patrick's go.
+
+**Commits:**
+- `08529ff` — chore(version): bump to v0.5.0 per DECISION-012
+- `a03f0e1` — fix(seed): SMASH_BURGER — burger sauce split into mayo + ketchup + mustard (Patrick on-device 8 May: compound name landed as one shop-list row)
+- `f8a4750` — feat(recipe): Equipment as vertical wrap pill list (was horizontal scroll). Recommended over collapsible dropdown — zero-tap, consistent with Prep section, no Android gesture conflict
+- `d7c7c5a` — feat(seed): CHICKEN_SHAWARMA new recipe (replaces lamb in v1.0 launch slot per Patrick 8 May)
+- `4c4daf9` — feat(seed,ui): DECISION-013 — `not_yet_shipping` flag + filter 30 non-launch recipes; FLOUR_TORTILLAS chef = 'Patrick Nasr'
+
+**State on origin/main after this batch:**
+- App version: 0.5.0
+- Recipes total: 46 (added CHICKEN_SHAWARMA; LAMB_SHAWARMA stays as not_yet_shipping)
+- Recipes user-visible in v1.0: 16 (the launch-16 from DECISION-013)
+- Recipes with full DECISION-008 sections: 45 of 46 (sourdough-maintenance still empty by intent — placeholder renders)
+- Build #95 queued: https://github.com/patrickpatches/hone/actions/runs/25532238312
+
+**On-device checks Patrick should walk through after the APK lands:**
+
+For DECISION-013 (launch-scope):
+1. Kitchen browse — exactly 16 recipes visible. No CHICKEN_ADOBO, no FALAFEL, no KAFTA, no LAMB_SHAWARMA.
+2. Search "rendang" → no results (not_yet_shipping).
+3. Pantry-match — only suggests from the 16. Even if pantry contains lamb + chickpeas, lamb-shawarma and falafel won't appear.
+
+For SMASH_BURGER:
+4. Open Smash Burger → 'Plan this recipe' → switch to Shop tab. Should see three separate items: Mayonnaise, Tomato ketchup, American (yellow) mustard. NOT a single 'Burger sauce (mayo + ketchup + mustard)' row.
+5. Tap Mayonnaise on the recipe screen → substitution sheet should show Kewpie + Aioli swaps.
+
+For Equipment UX:
+6. Open any recipe with Equipment populated. Should show a vertical wrap of pills, NOT a horizontal side-scroll.
+7. Items wrap onto 2-3 lines naturally. Smash Burger (4 items) likely fits 1 line; Beef Wellington (7 items) wraps to 2-3.
+
+For CHICKEN_SHAWARMA:
+8. Open chicken-shawarma. Title should read 'Home Oven Chicken Shawarma'. Total time 150 min. Method has 5 steps including "Marinate (2 hours, ideally overnight)". Equipment shows 4 items. Prep shows 7 items.
+
+For FLOUR_TORTILLAS:
+9. Open Soft Buttery Flour Tortillas. Source attribution should read 'Patrick Nasr', not 'Hone Kitchen'. Notes: "Patrick's own recipe — soft, buttery, adapted over time from multiple sources."
+
+For v0.5.0 version bump:
+10. Settings (or wherever app version is displayed) should show 0.5.0 not 0.4.1.
+
+**Per CLAUDE.md:** GitHub issues NOT closed. Patrick validates on-device and closes himself.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-08 · DONE ✅ (DECISION-013 — scope build to 16 launch recipes; tag the rest)
+**Closed by Senior Engineer 2026-05-08 in commit `4c4daf9`.** All five sub-tasks landed:
+- Schema field `not_yet_shipping?: boolean` added to types.ts (optional, not default(false), so launch-set recipes don't need explicit declarations)
+- `getActiveRecipes(db)` helper added to db/database.ts
+- 30 non-launch recipes flagged (was 29 in handoff; +1 = CHICKEN_VEG_STIR_FRY which the handoff's "plus any others not in the launch 16" caught)
+- Kitchen browse + Pantry match wired through getActiveRecipes
+- Shop tab kept on getAllRecipes (lookup map for meal-plan source breakdowns; recipes already in plans must still resolve)
+- FLOUR_TORTILLAS chef = 'Patrick Nasr', source.notes updated, video_url removed
+
+### HANDOFF → Senior Engineer · 2026-05-08 · DONE ✅ (CHICKEN_SHAWARMA — new recipe required for v1.0 launch slot)
+**Closed by Senior Engineer 2026-05-08 in commit `d7c7c5a`.** New CHICKEN_SHAWARMA const created using cook's research file (chicken-shawarma.md, committed by COO in 6dbbe8e) as content source. Inserted directly after LAMB_SHAWARMA in the seed file and the SEED_RECIPES export array. LAMB_SHAWARMA flagged `not_yet_shipping: true` in commit `4c4daf9` (DECISION-013 batch). Method: 5 steps, 21 ingredients, full DECISION-008 sections. Cultural tag: levantine + chicken.
+
+### HANDOFF → Senior Engineer · 2026-05-08 · DONE ✅ (DECISION-012 — bump version to v0.5.0 on next push)
+**Closed by Senior Engineer 2026-05-08 in commit `08529ff`.** Single line change in mobile/app.json: expo.version "0.4.1" → "0.5.0". No other changes.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-08 · OPEN URGENT — superseded by DONE entry above (DECISION-013 — scope build to 16 launch recipes; tag the rest)
+**From:** Patrick (via COO)
+**Subject:** Add `not_yet_shipping` schema flag, tag 29 non-launch recipes, ensure Patrick's flour tortilla attribution is correct
+**Why:** Per DECISION-013 (decision-log.md, 8 May), v1.0 ships with 16 specific recipes only. The other 29 stay in the seed file but must be hidden from the build. Patrick's own flour tortilla recipe is the 16th and needs attribution set to him.
+
+**The 16 launch recipes (everything else gets `not_yet_shipping: true`):**
+1. Roast Chicken
+2. Spaghetti Bolognese
+3. Spaghetti Carbonara
+4. Butter Chicken
+5. Smash Burger
+6. Thai Green Curry
+7. Chicken Schnitzel
+8. Beef Lasagne
+9. Roast Lamb with Rosemary & Garlic
+10. Fish & Chips
+11. Pan-Fried Fish (Barramundi)
+12. Pavlova
+13. **Chicken** Shawarma (NOT lamb — separate handoff already open to create CHICKEN_SHAWARMA const)
+14. Hummus
+15. Pad Thai
+16. **Soft Buttery Flour Tortillas — Patrick's recipe**
+
+**What's needed:**
+1. Add `not_yet_shipping: z.boolean().default(false)` to the Recipe Zod schema in `mobile/src/data/types.ts`. Additive only.
+2. In `mobile/src/data/seed-recipes.ts`, set `not_yet_shipping: true` on every recipe NOT in the 16 above (29 recipes — `LAMB_SHAWARMA`, `MUSAKHAN`, `KAFTA`, `FATTOUSH`, `MUJADARA`, `RISOTTO`, `RAMEN`, `SCRAMBLED_EGGS`, `AGLIO_E_OLIO`, `DAL`, `EGG_FRIED_RICE`, `NASI_LEMAK`, `BEEF_RENDANG`, `CURRY_LAKSA`, `CHAR_KWAY_TEOW`, `SAAG_PANEER`, `CHICKEN_KATSU`, `TOM_YUM`, `CHICKEN_ADOBO`, `BEEF_STEW`, `SOURDOUGH_LOAF`, `SOURDOUGH_MAINTENANCE`, `FRENCH_ONION_SOUP`, `BRAISED_SHORT_RIBS`, `BEEF_WELLINGTON`, `SHEET_PAN_HARISSA_CHICKEN`, `PRAWN_TACOS_PINEAPPLE`, `FISH_TACOS`, plus any others not in the launch 16). The 16 launch recipes default to `false` — leave them unset or explicit `false`.
+3. Update browse, search, and pantry-match queries to filter `WHERE not_yet_shipping = false` (or equivalent). Hidden from all user-visible surfaces in v1.0.
+4. **Patrick's flour tortillas (FLOUR_TORTILLAS const):**
+   - `chef`: `"Patrick Nasr"`
+   - `source.notes`: `"Patrick's own recipe — soft, buttery, adapted over time from multiple sources"`
+   - `source.video_url`: `null`
+   - The cook's existing `docs/coo/culinary-research/flour-tortillas.md` is the structural template. Content alignment with Patrick's actual recipe is a separate cook handoff (Patrick provides his ingredient ratios and technique; cook re-formats to 10-section template).
+   - Mark FLOUR_TORTILLAS as `not_yet_shipping: false` so it ships in v1.0.
+
+**Files touched:** `mobile/src/data/types.ts`, `mobile/src/data/seed-recipes.ts`, `mobile/app/(tabs)/index.tsx` (Kitchen browse query), `mobile/app/(tabs)/pantry.tsx` (match query), `mobile/db/database.ts` if queries live there.
+**Cost:** ~30 minutes for schema + tagging + query updates.
+**Blocks:** v1.0 launch scope. Until this lands, the build still shows all 45 recipes to users.
+
+---
+
+### HANDOFF → Culinary Verifier · 2026-05-08 · OPEN (Patrick's flour tortilla recipe — content alignment)
+**From:** Patrick (via COO)
+**Subject:** Re-author `docs/coo/culinary-research/flour-tortillas.md` to match Patrick's actual recipe with him as the chef
+**Why:** Per DECISION-013, Patrick's own flour tortilla recipe is the 16th launch recipe. The current `flour-tortillas.md` research file you wrote in Batch 2/3 may have used a different chef attribution or source. Patrick is the chef-of-record now: it's his recipe, learnt and tweaked from multiple sources over time.
+**What's needed:**
+1. Open `docs/coo/culinary-research/flour-tortillas.md`.
+2. Update the Hero section: `chef: Patrick Nasr`. `source.notes`: "Patrick's own recipe — soft, buttery, adapted over time from multiple sources." `source.video_url`: null.
+3. Patrick will provide his actual ingredient ratios and technique notes in a follow-up message in this chat. Reformat his input to the 10-section template (Hero / At a glance / Description / What to know before you start / Equipment / Ingredients / Prep / Cook steps / Finishing & tasting / Leftovers & storage).
+4. Apply your pre-flight checklist before declaring it ready — ingredient/step parity, hidden time accounted for, doneness cues on every step, scaling annotations populated, Australian English throughout.
+5. Add an entry to `docs/coo/culinary-research/launch-recipe-units.md` for tortillas: unit = "tortilla", default = 8, "make extra" = "+N tortillas".
+**Files touched:** `docs/coo/culinary-research/flour-tortillas.md`, `docs/coo/culinary-research/launch-recipe-units.md`
+**Blocks:** Engineer's flour tortilla migration into seed-recipes.ts (so FLOUR_TORTILLAS can ship in v1.0)
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-08 · OPEN (CHICKEN_SHAWARMA — new recipe required for v1.0 launch slot)
 **From:** Culinary & Cultural Verifier
 **Subject:** Author `CHICKEN_SHAWARMA` recipe const; flag `LAMB_SHAWARMA` as not yet shipping
@@ -795,81 +913,4 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 - `desiccated coconut` → `kerisik` ("kerisik" is opaque, no substring relationship to "coconut")
 
 **Also included (for UI annotation "from your X →" even though substring already catches them):**
-- `lemon`/`lime` → juice/zest; `garlic` → paste/crushed/minced; `ginger` → grated/paste
-- `cumin seeds`/`coriander seeds`/`black peppercorns`/`allspice berries`/`cardamom pods`/
-  `cinnamon stick`/`whole cloves`/`nutmeg`/`mustard seeds` → their ground forms
-- `tomatoes` → tinned/crushed/paste (with honest compromise `prep_note`s)
-- `fresh herbs` (thyme, rosemary, mint, coriander, parsley) → their variants
-- `bread` → `breadcrumbs`, `panko breadcrumbs`, `stale bread`
-- `pitta bread` → `stale pitta bread`, `flatbread`
-- `lemongrass` → `lemongrass paste`
-- `dried chickpeas` → `tinned chickpeas`/`cooked chickpeas`
-- `pure cream`/`double cream` → each other, `thickened cream`
-
-**What the Engineer needs to do (Phase 2):**
-1. Import `DERIVATION_LOOKUP` and `getDerivationEntry` from `./ingredient-derivations`
-2. In `scoreRecipeAgainstPantry()`, expand `isMatch()` to check: after the existing
-   direct-name checks fail, loop over `haveNorms`, call `DERIVATION_LOOKUP.get(p)`,
-   and test whether `norm` matches any derived name (run normalizeForMatch on each
-   derived name before comparing)
-3. When a derivation match fires, add the source pantry item + `DerivationEntry`
-   to a side-channel so the UI can show "from your eggs →" and the prep icon
-4. Count derivation matches as full matches (not partial) in `haveCount`
-5. Designer coordination: small "from your X" annotation below matched ingredient row;
-   `prep_note` shown on tap if present; "requires prep" icon if `prep_note` is set
-
----
-
-### HANDOFF → Product Designer · 2026-05-04 · DONE (delivered 2026-05-03)
-**Delivered:** `docs/prototypes/pantry-v3.html` — inline search (Alt 1 rounded-rect, recommended), Clear all relocated to title row with confirmation modal, "Getting close" banner replaced with gold "See all" pill CTA. Engineer handoff block included.
-**From:** Patrick (via COO)
-**Subject:** Pantry v3 — revisit full-screen search, fix Clear-all hazard, clarify "Getting close" element
-**Why:** Patrick spent on-device time today after engineer shipped Pantry v2 (3 back-and-forths). He's flagged three specific issues. Honest note from COO: the full-screen search pattern was my recommendation in the previous Pantry handoff, and Patrick is rightly questioning it. Don't feel bound to keep it — the better answer may be inline.
-
-**Issues:**
-
-0. **Search bar itself needs a holistic rethink — not just relocation.** Patrick (5 May, on-device): "I want the product designer not just move the location, I want them to think what is the best way, font, location size, to display the search box that should look good as well as functional." Currently the "Search or add an ingredient..." reads more like a section heading than a tappable input — there's no visible boundary, no shape, no affordance. It also sits awkwardly between the page heading and the pill cluster, and the "Clear all" is tucked underneath it which makes the whole zone feel cramped. Don't just move it. Treat the search box as a first-class design problem and recommend the right shape, weight, position, and affordance for an "augmenting your pantry" task. Reference apps to consider: how Notion handles its search input, how Apple Notes treats the search bar, how Things 3 surfaces "add a task." All of those make the input field unambiguously a tappable surface, not text. Propose at least two alternatives (e.g., a pill-shaped input near the bottom of the pantry zone vs a top-bar search like Spotify) and pick one with rationale.
-
-1. **Full-screen search may not be the right pattern.** When Patrick taps the search bar, the page transitions away from the Pantry view and into a full-screen ingredient browser. He notices that he loses his pantry context (the pills he's already added) while searching, which feels wrong for an *augmentation* flow rather than a *navigation* flow. Reference apps to consider: Spotify keeps the pantry-like context visible while showing search results inline; Apple Notes does full-screen takeover. Material Design 3 default is full-screen. Your call — research, recommend, mock both options if unclear which is better, and write a one-paragraph rationale. Also: the leaf emoji is on a separate line from the ingredient name, which feels disjointed. Either drop the emoji or get it inline with the name.
-
-2. **Clear all is too easy to press accidentally.** It currently sits right under the search bar, in thumb-tap territory. The 5-second undo toast (from v0.3, may or may not still be present in v0.7 dark) is helpful but not enough — accidental destructive actions should be harder to trigger in the first place. Options to consider: (a) move Clear all into a long-press menu on a pantry pill, (b) move it to a Settings/More sheet, (c) require a confirmation modal with the count ("Clear all 4 ingredients?"), (d) hold-to-clear gesture. Pick the one you think fits best, propose it.
-
-3. **"Getting close" element looks like a button — is it?** The "Getting close · 6 matches · ranked by coverage →" element with the right-pointing arrow reads as tappable. Patrick can't tell if it does anything. If it's tappable and goes to a fuller match-results screen, the destination needs to be designed; if it's not tappable, drop the arrow and treat it as a section header. Coordinate with Senior Engineer on what (if anything) the current behaviour is, then propose either a clear destination or a static section header.
-
-**Constraint:** Dark v0.7 tokens locked. Pill style for added ingredients locked. Don't touch what works.
-
-**Deliverable:** Update `docs/prototypes/pantry-redesign-v2.html` (or new `pantry-v3.html` if the changes are large), with all three fixes shown, plus rationale at the bottom and engineer handoff block.
-
-**Files touched:** `docs/prototypes/pantry-v3.html` (new) or update existing
-**Blocks:** Engineer's next Pantry-related work. Patrick reviews the mockup as soon as you ship.
-
-### HANDOFF → Patrick · 2026-05-02 · OPEN (awaiting on-device validation)
-**From:** Senior Engineer
-**Subject:** Pantry v0.5.0 redesign — install build #90 and smoke-test
-**Why:** Full pantry redesign delivered and committed to main. Build #90 running.
-**What's done:**
-- `pantry-helpers.ts`: `RecipeMatchResult` now includes `missingIngredients[]` (name + amount + unit); missing ingredients sorted by substitution availability
-- `IngredientSearchOverlay.tsx` (new): full-screen slide-up search modal with autofocus, have-it pills row, SectionList grouped by category, query highlighting
-- `pantry.tsx` v0.5.0: tappable search bar → overlay; horizontal scrollable pills row; gold match summary banner; Variant A chips (add to shopping list + undo toast); % badge removed
-**What's needed:** Patrick installs APK from build #90, runs through smoke-test checklist in `docs/sessions/Hone_Session_Report_2_May_2026.md`
-**Files:** `docs/sessions/Hone_Session_Report_2_May_2026.md` (full checklist + rationale)
-**Commit:** `f7cb9e077c689df2df8eb84425927c324c95b6e0`
-
----
-
-### HANDOFF → Product Designer · 2026-05-01 · DONE (delivered 2 May 2026)
-**From:** Patrick (via COO)
-**Subject:** Pantry screen redesign — fix search dropdown layering, rethink missing-ingredient affordance, preserve pill style
-**Why:** Patrick is unable to shoot photography this weekend (away on personal commitments — weekend 1 slipped). He's redirecting team energy to design and function improvements that don't depend on him being at his PC. The Pantry screen is the kill feature ("Cook with what you have"), so it needs to land cleanly. Patrick took two screenshots of the current Pantry and identified specific issues. Fix is needed at the design level before engineer touches code.
-
-**Context — what Patrick said specifically:**
-- "Many windows like Pantry have the right idea but the way the search displays is no where near desirable."
-- "The search looks very messy when ingredients are populating."
-- "I like the pills style display of the food i have added like brown onion and Paprika."
-- "Looking toward you and the team to offer better suggestions or better execution."
-
-**Issues identified from Patrick's screenshots (current state — Pantry screen, v0.4.1 build 44, dark v0.7 tokens applied):**
-
-1. **Search dropdown layering / opacity is broken.** When the user types into the search bar, the autocomplete dropdown ("Onion powder", "Brown onion · also yellow onion", with category labels like "Spices & Seasonings", "Produce") is rendering with insufficient z-index or transparent background. The recipe carousel content underneath ("CLOSEST MATCHES", "1 OF 9 MATCHED", "Hummus from Scratch", recipe photo) bleeds through the dropdown visually. Looks half-finished. **Fix direction:** dropdown needs solid background that fully obscures content behind it. Consider a full-screen takeover when the search is active (Material Design search pattern) so the user is fully focused on ingredient selection rather than competing visual hierarchy.
-
-2. **The "+" symbol on missing ingredients reads as "tap to add to pantry" but isn't.** Beneath the recipe match card ("Classic Beef Stew · 10% match · 1 OF 10 MATCHED"), the missing ingredients are shown as `+ Beef chuck   + Carrots   + Potatoes   + Tomato paste`. The plus sign is the universal "add" affordance, so the user expects tapping these to add them to their pantry. Right now it's purely decorative/informational. Either (a) make the action match the affordance — tapping `+ Beef chuck` adds it to the shopping list or pantry, OR (b) change the icon to something that means "missing" not "add" (e.g., a small dot, 
+- `lemon`/`lime` → juice/zest; `garlic` → paste/crushed/minced; `ging
