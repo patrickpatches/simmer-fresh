@@ -25,6 +25,35 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-09 · OPEN (scaling control visual polish — implement v2.2 design)
+**From:** Product Designer
+**Subject:** Visual polish pass for the per-recipe scaling control — wire in the v2.2 design spec on top of the functional build shipped in `ce3ff2b`
+**Why:** Per Patrick's direction, Engineer shipped the functional unit-aware scaling control first. This handoff closes the parallel design track — v2.2 prototype is done and delivers the visual treatment the functional build doesn't yet have.
+
+**What's done:**
+- `docs/prototypes/recipe-detail-v2.2.html` — full interactive prototype with:
+  - 5 component states (person / burger / loaf / cup / tortilla) in singular and plural
+  - Centre cell resized to 52×40px (was 28×32px) to accommodate stacked number + unit label
+  - Number sits above the unit label; unit label in `var(--text-secondary)` at 11px
+  - 3 interactive in-context demos (Carbonara / Smash Burger / Sourdough) with live ingredient scaling
+  - 4 button states: normal, min (− dimmed at 0.28 opacity + `pointerEvents: none`), max (+ dimmed), with hint
+  - "Make extra for tomorrow" reads recipe-specific `extra_for_tomorrow_label`; falls back to generic hint when absent
+  - Conditional rendering: entire extra-for-tomorrow row omits when field is absent — no broken UI on old seed recipes
+
+**What's needed:**
+
+1. **Resize the centre cell** on `ServingsSelector.tsx` from its current dimensions to `width: 52px, height: 40px`. Stack number and unit label vertically (`flexDirection: 'column', alignItems: 'center', justifyContent: 'center'`).
+2. **Unit label row**: `fontFamily: fonts.sans, fontSize: 11, color: tokens.textSecondary, marginTop: 2`. Reads the derived unit string (`output_unit_plural ?? output_unit + 's'` or `"people"` for serve-unit recipes).
+3. **Disabled-state spec**: `opacity: 0.28` + `pointerEvents: 'none'` on − when `count === 1`; same on + when `count === output_max` (if `output_max` is absent, no upper clamp).
+4. **Extra-for-tomorrow row**: if `extra_for_tomorrow_label` is present on the recipe, render it verbatim. If absent, keep current generic fallback. If no `extra_for_tomorrow_label` AND no generic concept applies, omit the row entirely.
+5. Reference `docs/prototypes/recipe-detail-v2.2.html` for all visual measurements. All tokens already exist in v0.7 — no new token additions required.
+
+**Files touched:** `mobile/app/recipe/[id].tsx` (ServingsSelector usage), `mobile/src/components/ServingsSelector.tsx`
+
+**Blocks:** v0.6.x polish milestone. Functional build is already live — this is cosmetic only, non-blocking for Patrick's on-device validation of build #96.
+
+---
+
 ### HANDOFF → Patrick · 2026-05-08 · ON-DEVICE VALIDATION (build #96 — DECISION-014 portion-sizing live)
 **From:** Senior Engineer
 **Subject:** Per-recipe units shipped on `ce3ff2b`. v0.6.0 milestone work landed. Build #96 dispatched on Patrick's go.
@@ -108,7 +137,9 @@ Backwards-compatible: non-launch recipes fall back to legacy "people / portions"
 
 ---
 
-### HANDOFF → Product Designer · 2026-05-08 · OPEN (portion-sizing visual treatment — new scaling control)
+### HANDOFF → Product Designer · 2026-05-08 · DONE ✅ (portion-sizing visual treatment — new scaling control)
+**Closed by Product Designer 2026-05-09 — `docs/prototypes/recipe-detail-v2.2.html` delivered. Implementation handoff issued above (→ Senior Engineer · 2026-05-09).**
+
 **From:** Patrick (via COO)
 **Subject:** Design the new per-recipe scaling control to display the right unit per recipe ("Makes 4 burgers" / "Makes 1 loaf" / "Serves 4 people")
 **Why:** The current "Servings = 4" component on the recipe-detail screen treats every recipe identically. Engineer is migrating the schema and logic per Cook's spec; you need to design how the new scaling reads on-screen.
@@ -866,46 +897,4 @@ Output to per-recipe `.md` files in `docs/coo/culinary-research/`. Engineer migr
 
 **Regression discipline ask (NEW — Patrick raised this; Designer reinforced it):**
 
-The carousel snap was fixed in session 29 April and reintroduced during the dark restyle / Pantry v2 work. The OneDrive null-byte issue happened once and has the potential to recur. Two regressions in three weeks is a pattern, not bad luck. Please do this small piece of structural work the next time you fix BUG 2:
-
-- Create `docs/regression-checklist.md` with a simple format: previously-fixed bug name, one-line description, repro steps, the commit hash that originally fixed it.
-- Seed it with the carousel snap regression and the OneDrive null-byte issue.
-- Add an entry to `docs/SMOKE-TEST.md` linking to it: "Run regression checklist before every release tag."
-- Going forward: every bug you fix that took non-trivial work to find gets one line in this checklist. Cheap on the way out, saves rediscovery cost.
-
-This becomes the seed for QA Test Lead's eventual smoke-test scope. Don't wait for QA — start the file now.
-
-**Files this session will touch (rough estimate):**
-- `mobile/src/components/IngredientSearchOverlay.tsx` (DELETE)
-- `mobile/app/(tabs)/pantry.tsx` (Pantry v3 + BUG 1 + BUG 2)
-- `mobile/src/data/seed-recipes.ts` (six new recipes)
-- `mobile/src/data/types.ts` (already updated for `scaling_note` per DECISION-007 — verify still in)
-- `mobile/src/data/pantry-helpers.ts` (Phase 2 derivation matching)
-- `docs/regression-checklist.md` (NEW)
-- `docs/SMOKE-TEST.md` (link to regression-checklist)
-
-**Existing handoffs to read in detail (in sequence order above):**
-- `Senior Engineer · 2026-05-03 · OPEN (Pantry v3 implementation)` — full Designer spec
-- `Senior Engineer · 2026-05-05 · OPEN (two pantry bugs)` — both bugs detailed
-- `Senior Engineer · 2026-04-29 · IN PROGRESS (multi-task)` — Task 3 (six recipes) is now unblocked
-- `Culinary Verifier → Senior Engineer · 2026-05-04 · OPEN (derivation matching)` — Phase 2
-
-When all of the above is complete, write a single consolidated session report (`docs/sessions/Hone_Session_Report_DD_Month_YYYY.md` or `_2.md` if it's the second of the day) and update each existing handoff to DONE status.
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-03 · DONE (2026-05-03)
-**From:** Product Designer
-**Subject:** Implement the three Pantry v3 design fixes from `docs/prototypes/pantry-v3.html`
-**Why:** Pantry v3 prototype delivered in response to Patrick's on-device feedback. Three UX problems identified; all fixed in the prototype. Engineer needs to wire them into `pantry.tsx`.
-
-**What's done (Designer):**
-- `docs/prototypes/pantry-v3.html` — full annotated prototype with three screen states, component comparison, and this engineer handoff.
-
-**What's needed (Engineer — implement in this order):**
-
-**1. Delete `IngredientSearchOverlay.tsx` and switch to inline search.**
-The full-screen takeover was the wrong pattern for an augmentation flow. Inline is correct.
-- Remove `IngredientSearchOverlay.tsx` from `mobile/src/components/`.
-- Remove the import and modal render from `pantry.tsx`.
-- When `isSearchActive === true`, freeze the header (pills row stays visible) and replace the `SectionList` data source with autocomplete results — no navigation, 
+The carousel snap was fixed in session 29 April and reintroduced during the dark restyle / Pantry v2 work. The OneDrive null-byte issue happened once and has the potential to recur. Two regressions in three weeks is a pattern, not bad luck. Please do this small piece of structural work the next t
