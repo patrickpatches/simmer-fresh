@@ -25,6 +25,121 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Patrick · 2026-05-08 · ON-DEVICE VALIDATION (build #96 — DECISION-014 portion-sizing live)
+**From:** Senior Engineer
+**Subject:** Per-recipe units shipped on `ce3ff2b`. v0.6.0 milestone work landed. Build #96 dispatched on Patrick's go.
+
+**Commit:** `ce3ff2b` — DECISION-014 per-recipe portion units (4 launch-only files: types.ts, seed-recipes.ts, ServingsSelector.tsx, recipe/[id].tsx, RecipeCard.tsx)
+
+**State after this commit:**
+- Schema has 4 new optional fields: `output_unit`, `output_unit_plural`, `output_default`, `extra_for_tomorrow_label`. All `.optional()` — non-launch recipes untouched.
+- 16 launch recipes carry their unit data verbatim from cook's `launch-recipe-units.md`.
+- ServingsSelector renders "Makes 4 burgers" / "Serves 4 people" / "Makes 1 loaf" / "Makes 13 tortillas" / "Makes 2 cups" depending on the recipe.
+- RecipeCard chip on the Kitchen screen reads "4 burgers" / "1 chicken" / "8 tortillas" instead of bare "4".
+- Default count on recipe-open uses `output_default ?? base_servings`.
+- "Make extra for tomorrow" reads recipe-specific label when authored, falls back to generic leftover hint when not.
+
+**On-device checklist Patrick should walk:**
+1. **Smash Burger** opens at "4 burgers" (not "4 people"). Stepper increments: "1 burger / 2 burgers / 3 burgers". Right side reads "Makes 4 burgers".
+2. **Roast Chicken** opens at "1 chicken". Stepper goes 1 → 2 (capped UI side at 20 by the existing stepper guards). Right side reads "Makes 1 chicken".
+3. **Hummus** opens at "2 cups". Stepper increments cups. Right side reads "Makes 2 cups".
+4. **Flour Tortillas** opens at "13 tortillas". Right side reads "Makes 13 tortillas".
+5. **Pasta Carbonara** opens at "4 serves". Right side reads "Serves 4 serves" — note: this reads slightly oddly because the unit is "serve" and the prefix becomes "Serves", giving "Serves 4 serves". If you want this to read "Serves 4 people" we'll need to set `output_unit_plural: "people"` on those recipes (or special-case the "serve" unit). Flag this if it bothers you and we'll tighten in a follow-up.
+6. Tap a non-tonight leftover mode (lunch / 3-day / week). On Smash Burger the hint reads "Make only what you'll eat — smash burgers don't reheat once the crust softens" instead of the generic "+1 portion per person — tomorrow's lunch sorted." Verify recipe-specific labels surface correctly on butter chicken, bolognese, hummus.
+7. **Kitchen browse cards**: each card's meta chip should show the unit ("4 burgers", "1 chicken") instead of just "4".
+8. **Non-launch recipes** (e.g., open via deep link to `chicken-adobo`): should fall back to legacy "people / portions" rendering, no errors.
+
+**Designer parallel handoff:** still open below. Designer is producing the visual treatment for the new scaling control. This shipped commit is the functional version per Patrick's "ship functional first" direction. Visual polish lands as a follow-up commit.
+
+**Issue that needs your call:** the "Serves 4 serves" oddity above. Three options:
+- (a) Special-case unit==='serve' to render right-side caption as "people" (so it reads "Serves 4 people"). Cleanest UX but a magic string in the UI.
+- (b) Update each cook-spec recipe's `output_unit_plural` to "people" for the serve-unit recipes (so it reads "Serves 4 people"). Data-driven.
+- (c) Leave as-is. "Serves 4 serves" is grammatically valid even if it reads odd.
+
+I recommend (a) — it's a 2-line code change and keeps the cook's spec verbatim. Confirm preference and I'll ship it as a small follow-on.
+
+**Per CLAUDE.md:** GitHub issue NOT closed. Patrick validates on-device and closes himself.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-08 · DONE ✅ (portion-sizing redesign — recipe-aware units per Cook's spec)
+**Closed by Senior Engineer 2026-05-08 in commit `ce3ff2b`.** All five sub-tasks landed:
+- Schema additions (4 fields, all optional)
+- 16 launch recipes migrated from cook's launch-recipe-units.md
+- ServingsSelector rebuilt with recipe-aware copy + recipe-aware mode hint
+- recipe/[id].tsx wires the new props + uses output_default for first-render count
+- RecipeCard meta chip on Kitchen surface uses the per-recipe unit
+
+Backwards-compatible: non-launch recipes fall back to legacy "people / portions" rendering. tsc clean. Brace/paren balance 0.
+
+### Original handoff (preserved for audit) → Senior Engineer · 2026-05-08 · OPEN URGENT (portion-sizing redesign — recipe-aware units per Cook's spec)
+**From:** Patrick (via COO)
+**Subject:** Replace the generic "Servings = N people" scaling model with per-recipe units (burger / loaf / cup / person / item) per Cook's `launch-recipe-units.md`
+**Why:** The current scaling math is wrong because it treats every recipe as if "servings" means "people." Burgers are per-person, hummus is by cup, sourdough is one loaf regardless, tortillas are per-tortilla. Cook has authored the per-recipe unit spec at `docs/coo/culinary-research/launch-recipe-units.md` — engineer needs to wire it into the schema and the scaling UI. Cook owns the chef knowledge; engineer owns the math that respects it (per DECISION-007).
+
+**What's needed:**
+
+1. **Schema additions** to `mobile/src/data/types.ts` Recipe Zod schema. Additive only:
+   - `output_unit: z.string()` — e.g., `"burger"`, `"loaf"`, `"cup"`, `"person"`, `"tortilla"`, `"piece"`, `"batch"`
+   - `output_unit_plural: z.string().optional()` — e.g., `"burgers"`, `"loaves"`, `"cups"`, `"people"`, `"tortillas"`. If omitted, default to `output_unit + "s"`.
+   - `output_default: z.number().int().positive()` — sensible default count for one batch (e.g., 4 burgers, 1 loaf, 8 tortillas, 4 people)
+   - `extra_for_tomorrow_label: z.string().optional()` — what tapping "Make extra for tomorrow" actually does for THIS recipe (e.g., `"+1 extra burger"`, `"Double the batch"`, `"+4 extra tortillas"`). If omitted, default to `+1 ${output_unit}`.
+
+2. **Migrate the 16 launch recipes' values from Cook's spec.** Read `docs/coo/culinary-research/launch-recipe-units.md`, populate the four new fields per recipe in `seed-recipes.ts`. The 29 not-yet-shipping recipes can stay with sensible defaults for now; cook handles them in v1.1.
+
+3. **Rebuild the scaling control on `mobile/app/recipe/[id].tsx`.** Replace "Servings: 4" with `"Makes ${count} ${output_unit_plural}"` (or `"Serves ${count} ${output_unit_plural}"` when `output_unit === "person"`). The +/− stepper adjusts count, ingredients re-scale per existing `scales` flag + `scaling_note`. UI label updates dynamically: "Makes 4 burgers" → "Makes 6 burgers" → "Makes 8 burgers."
+
+4. **Make "Make extra for tomorrow" recipe-aware.** Read `extra_for_tomorrow_label` for the recipe; if absent, fall back to `+1 ${output_unit}`. Stop the current generic-leftover behaviour that just adds one person.
+
+5. **Designer handoff is in flight in parallel** (separate handoff below). Coordinate with Designer on the visual treatment of the new scaling control once their mockup lands. Don't block engineering on designer — ship the functional version first; restyle in a second pass if needed.
+
+**Files touched:** `mobile/src/data/types.ts`, `mobile/src/data/seed-recipes.ts`, `mobile/app/recipe/[id].tsx`, possibly the Pantry recipe-match-card if it shows serving info.
+
+**Cost:** ~1 session.
+
+**Validation gate:**
+- `npx tsc --noEmit` clean
+- Recipe screen shows correct unit per recipe — burger says burgers, sourdough says loaf, hummus says cups
+- Scaling math respects existing `scales` and `scaling_note` per ingredient
+- "Make extra for tomorrow" produces the right delta per recipe
+- All 16 launch recipes verified on-device
+
+**Blocks:** v0.6.0 milestone (per DECISION-012, v0.6.0 marks "portion-sizing redesign live").
+
+---
+
+### HANDOFF → Product Designer · 2026-05-08 · OPEN (portion-sizing visual treatment — new scaling control)
+**From:** Patrick (via COO)
+**Subject:** Design the new per-recipe scaling control to display the right unit per recipe ("Makes 4 burgers" / "Makes 1 loaf" / "Serves 4 people")
+**Why:** The current "Servings = 4" component on the recipe-detail screen treats every recipe identically. Engineer is migrating the schema and logic per Cook's spec; you need to design how the new scaling reads on-screen.
+
+**What's needed:**
+
+1. Update or extend `docs/prototypes/recipe-detail-v2.html` (or a new `recipe-detail-v2.2.html`) showing the scaling control across these recipe types:
+   - **Person-scaled** ("Serves 4 people" — bolognese, butter chicken, carbonara, lamb)
+   - **Item-scaled** ("Makes 4 burgers" — smash burger, schnitzel)
+   - **Loaf-scaled** ("Makes 1 loaf" — sourdough)
+   - **Cup/batch-scaled** ("Makes 2 cups" — hummus, sauces)
+   - **Piece-scaled** ("Makes 8 tortillas" — flour tortillas)
+
+2. The control still has a +/− stepper; the *label* changes per recipe.
+
+3. The "Make extra for tomorrow" toggle/button should display the recipe-specific label (Engineer is wiring the data: `extra_for_tomorrow_label`). Show how this reads: `"+1 lunch tomorrow"` for person-scaled, `"+1 extra burger"` for burgers, `"Double the batch"` for hummus, etc.
+
+4. **Constraint:** v0.7 dark sage tokens locked. No visual direction change — same surfaces, same gold accent, same Inter/Playfair type. Just relabel the control honestly.
+
+5. Engineer handoff block at the bottom of the prototype — implementation notes, conditional rendering rules, accessibility labels.
+
+**Files touched:** `docs/prototypes/recipe-detail-v2.html` (update) or `docs/prototypes/recipe-detail-v2.2.html` (new).
+
+**Cost:** ~half a session.
+
+**Coordination:** Engineer's handoff (above) is in flight in parallel. They will ship the functional version first; your visual treatment lands as a polish pass on top. Don't be blocked on Engineer; ship the mockup at your own pace.
+
+**Blocks:** Engineer's polish pass on the scaling control. Functional version ships without you.
+
+---
+
 ### HANDOFF → Patrick · 2026-05-08 · ON-DEVICE VALIDATION (build #95 — five fixes incl. v0.5.0 bump, smash-burger sauce split, Equipment redesign, CHICKEN_SHAWARMA, DECISION-013 launch scope)
 **From:** Senior Engineer
 **Subject:** Five-commit package on `4c4daf9`; build #95 dispatched on Patrick's go.
@@ -793,124 +908,4 @@ When all of the above is complete, write a single consolidated session report (`
 The full-screen takeover was the wrong pattern for an augmentation flow. Inline is correct.
 - Remove `IngredientSearchOverlay.tsx` from `mobile/src/components/`.
 - Remove the import and modal render from `pantry.tsx`.
-- When `isSearchActive === true`, freeze the header (pills row stays visible) and replace the `SectionList` data source with autocomplete results — no navigation, no overlay, no z-index fight.
-- Transition: `withTiming(opacity, { duration: 150 })` on the results list entering/leaving.
-- Search bar becomes active-state when focused: `border-color: #E8B830` + `box-shadow: 0 0 0 3px rgba(232,184,48,0.10)`. A "Cancel" text button appears to the right; tapping it clears query and collapses back to browse state.
-- **Shape spec for the search input** (Alt 1 — rounded rect):
-  - `background: #1A1A1A` (surface token), `border: 1.5px solid rgba(232,184,48,0.22)` at idle
-  - `border-radius: 14px`, padding `12px 14px`
-  - Magnifying glass icon left, placeholder "Search or add an ingredient…" in `#8A7E72` (muted)
-  - On active: border goes solid gold, focus ring as above
-
-**2. Emoji inline — leaf emoji and ingredient name must be in the same flex row.**
-Currently the leaf emoji is on its own line in autocomplete results (disjointed). Fix: `flexDirection: 'row'`, `alignItems: 'center'`, emoji and name in the same `<Text>` or side-by-side `<Text>` nodes. No line-break between them.
-
-**3. Relocate "Clear all" and add confirmation modal.**
-- Remove "Clear all" from its current position below the search bar.
-- Add a trash icon button (`Ionicons name="trash-outline"`) to the right side of the Pantry screen title row (same row as "My Pantry" heading).
-- Icon should be `#8A7E72` (muted) at rest — low prominence, hard to hit accidentally.
-- On press: show a `Modal` (not `Alert` — Alert cannot be styled to match dark tokens) with:
-  - Copy: `"Clear [N] stocked ingredients?"` — N is the live count, not the string "all"
-  - Destructive button: `"Clear [N] ingredients"` in red (`#E05252` or similar)
-  - Cancel button: `"Keep my pantry"` (phrased positively — this is the safe default)
-  - Semi-transparent scrim behind modal (`rgba(0,0,0,0.70)`)
-
-**4. Update match banner — replace bare `›` with explicit "See all" pill CTA.**
-The "Getting close" element currently reads as ambiguous (tappable? header?). Replace with:
-- Copy: `"[N] recipes you can cook now · [M] more within 1–3 ingredients"`
-- Remove the bare `›` arrow.
-- Add a small gold pill button labelled `"See all"` at the right end of the banner row.
-- If `"See all"` is not yet wired to a destination screen, navigate to recipe-search filtered by pantry ingredients (or no-op with a `TODO` comment — do not silently do nothing without the comment).
-- Banner colour: stays gold-tinted as currently implemented.
-
-**Files to touch:**
-- `mobile/src/components/IngredientSearchOverlay.tsx` — **DELETE**
-- `mobile/app/(tabs)/pantry.tsx` — inline search, clear-all modal, banner update, emoji fix
-- `mobile/src/components/` — no new components needed for these changes
-
-**Does NOT block:** Derivation-aware matching (Phase 2) — that lands on top of these changes independently.
-**Blocks:** Patrick's next on-device review session.
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-05 · DONE (2026-05-03)
-**From:** Patrick (via COO)
-**Subject:** Two bugs found on-device in v0.4.1 build 49
-**Why:** Patrick spent on-device time today walking through the pantry-match flow. Found two issues that need engineer triage. Both should also be logged as GitHub Issues per CLAUDE.md (Patrick can do this from phone, OR engineer creates them when working the fix).
-
-**BUG 1 — Match counter stale after pantry change.**
-- **Severity:** P1 (feature broken in user-visible way)
-- **Repro:** Open Pantry. Add "Spaghetti", "Sumac", "Black pepper", "Salt" to pantry. Pasta Carbonara recipe card shows "3 OF 7 MATCHED" badge. Tap the "+" affordance on a missing ingredient (e.g., "Whole egg" or "Pecorino Romano"). Observe: badge does NOT update — still says "3 OF 7."
-- **Root cause hypotheses to investigate:**
-  - "+" tap might be adding to shopping list (not pantry) — in which case counter shouldn't change, but the visual feedback for the user needs to be much clearer that "shopping list" ≠ "pantry"
-  - OR pantry state IS updating but the recipe-card badge isn't re-rendering on state change (memo/key issue)
-  - OR the matching algorithm is recomputing but the displayed count is cached
-- **Fix:** Investigate and resolve. If "shopping list ≠ pantry" is the intended behaviour, work with Designer (open handoff) on visual clarity so user sees what tapping "+" actually does. If it's a stale-state bug, fix the state propagation.
-
-**BUG 2 — Recipe carousel snap regression.**
-- **Severity:** P2 (polish regression)
-- **Repro:** Open Pantry with stocked ingredients. In the "Closest Matches" horizontal carousel, swipe between recipe cards. Observe: cards no longer snap cleanly to one card per view — partial cards visible on left and right edges (e.g., "...bled Eggs" / "Mujadara" both partially shown).
-- **History:** This was reportedly fixed in session 29 April: *"Recipe card carousel: Fixed the card snap behaviour so cards settle cleanly on one card instead of bouncing between two."* Suggests regression — likely reintroduced during the dark-direction restyle or Pantry v2 changes.
-- **Fix:** Reinstate the snap-to-card behaviour. Bonus: add a regression test or visual smoke check so this doesn't return.
-- **Note for QA Test Lead** (when spun up): two regressions caught in the past week (this carousel + the prior plan.tsx OneDrive corruption). Worth thinking about a regression-prevention layer in the smoke test.
-
-**Files touched:** `mobile/app/(tabs)/pantry.tsx` (BUG 1 state), recipe-card carousel component (BUG 2)
-**Blocks:** Pantry experience polish.
-
----
-
-### HANDOFF → Culinary Verifier (first) → Senior Engineer (second) · 2026-05-04 · DONE ✅ (Phase 1 ✅ 2026-05-03 · Phase 2 ✅ 2026-05-05 — pantry-helpers.ts already had full derivation matching implemented)
-**From:** Patrick (via COO)
-**Subject:** Pantry needs derivation-aware ingredient matching — "I have eggs" should match recipes calling for "egg yolks"
-**Why:** Patrick discovered on-device that the pantry-match algorithm treats every ingredient as atomic. He has eggs in his pantry. Pasta Carbonara wants egg yolks. The match misses entirely. This is one of many cases — chicken stock comes from a whole chicken, lemon zest from lemons, ground spices from whole spices, etc. The pantry-match feature is the kill feature; right now it's quietly under-counting matches and making the recipe library look thinner than it actually is.
-
-**The split (handoff has two phases):**
-
-**PHASE 1 — Culinary Verifier defines the derivations.**
-- Create `mobile/src/data/ingredient-derivations.ts` (or equivalent — coordinate location with Engineer).
-- The structure is a map from "source ingredient" → list of "derived ingredients."
-- Examples to seed:
-  - `eggs` → `egg yolks`, `egg whites`
-  - `whole chicken` → `chicken breast`, `chicken thighs`, `chicken stock`, `chicken bones`
-  - `lemon` → `lemon juice`, `lemon zest`
-  - `lime` → `lime juice`, `lime zest`
-  - `cumin seeds` → `ground cumin`
-  - `coriander seeds` → `ground coriander`
-  - `whole peppercorns` → `ground black pepper`
-  - `garlic` → `crushed garlic`, `minced garlic`, `garlic paste`
-  - `ginger` → `grated ginger`, `ginger paste`
-  - `tomatoes` → `diced tomatoes`, `crushed tomatoes` (only when fresh substitutes for tinned — flag as compromise)
-  - `parmesan` → `grated parmesan`
-  - `pecorino` → `grated pecorino`
-- Walk through the existing seed library and the 6 new recipes you're writing — every derived ingredient that appears as a recipe ingredient needs a parent in this map.
-- For ambiguous ones (canned vs fresh tomatoes, dried vs fresh herbs), flag them with a `prep_note` so the user sees "you have fresh tomatoes — for the depth this dish wants, tinned is better, but fresh works."
-
-**PHASE 2 — Senior Engineer updates the matching algorithm.**
-- After Verifier ships the derivations file, update `mobile/src/data/pantry-helpers.ts` (the existing scoring file).
-- New matching rule: an ingredient in the user's pantry counts as "matched" for a recipe ingredient if EITHER (a) the names match directly, OR (b) the recipe ingredient is in the derivations list under one of the user's pantry ingredients.
-- Surface the derivation in the UI: when a derivation match happens, show a small "from your eggs" annotation under the matched ingredient row, and optionally a small icon indicating "requires prep." Coordinate with Designer on visual treatment.
-- Update the match percentage / "X of Y matched" counter to count derivation matches as full matches (not partial).
-
-**Sequencing:** Phase 1 must complete before Phase 2 starts. Engineer is blocked until derivations file exists.
-**Files touched:** `mobile/src/data/ingredient-derivations.ts` (new, by Verifier), `mobile/src/data/pantry-helpers.ts` (by Engineer), `mobile/app/(tabs)/pantry.tsx` (UI surface, by Engineer + Designer)
-**Blocks:** Pantry feature accuracy. Currently every recipe with a derived ingredient under-counts the match.
-
----
-
-**PHASE 1 COMPLETE — 2026-05-03 (Culinary Verifier)**
-
-`mobile/src/data/ingredient-derivations.ts` delivered. Summary for the Engineer:
-
-**Genuine gaps the current matcher MISSES (where this file fixes real bugs):**
-- `eggs` → `egg yolks`, `egg whites`, `egg yolk`, `egg white`, `beaten egg`, `egg wash`
-  — the plural/component split breaks all substring and token checks
-- `parmesan` ↔ `parmigiano` / `parmigiano reggiano`
-  — the Bolognese recipe uses the Italian name; these share no substring
-- `whole chicken` → `chicken stock` (stock-making is a transformation)
-- `beef bones` → `beef stock`
-- `prawns` → `prawn stock` (from reserved shells — Laksa recipe)
-- `unsalted butter` / `butter` → `ghee`
-- `desiccated coconut` → `kerisik` ("kerisik" is opaque, no substring relationship to "coconut")
-
-**Also included (for UI annotation "from your X →" even though substring already catches them):**
-- `lemon`/`lime` → juice/zest; `garlic` → paste/crushed/minced; `ging
+- When `isSearchActive === true`, freeze the header (pills row stays visible) and replace the `SectionList` data source with autocomplete results — no navigation, 
