@@ -148,19 +148,45 @@ const SMASH_BURGER: Recipe = {
         },
       ],
     },
-    // Sauce and salt — HTML marked these 'fixed' but that makes 2 tbsp sauce for
-    // 8 people, which is absurd. They're per-patty condiments, so linear is right.
+    // Burger sauce split into three ingredients (Patrick's call 2026-05-08).
+    // Compound names like "Burger sauce (mayo + ketchup + mustard)" landed as
+    // a single shopping-list row — the user couldn't add the components to
+    // their list independently, and substitutions read awkwardly. Split the
+    // condiment into its real ingredients. Standard 4:1:1 ratio (mayo : ketchup
+    // : mustard) so 2 tbsp mayo + 2 tsp ketchup + 2 tsp mustard ≈ 2 tbsp finished
+    // sauce per burger. Substitutions move onto the mayo line where they belong.
     {
-      id: 'i6', name: 'Burger sauce (mayo + ketchup + mustard)', amount: 2, unit: 'tbsp', scales: 'linear',
+      id: 'i6a', name: 'Mayonnaise', amount: 2, unit: 'tbsp', scales: 'linear',
+      prep: 'Kewpie or whole-egg style mayo gives the richest result',
       substitutions: [
         {
-          ingredient: 'Aioli + tomato relish',
-          changes: 'More grown-up flavour, less sweetness. No mustard sharpness. Works very well with good cheese and fresh tomato.',
+          ingredient: 'Kewpie mayo',
+          changes: 'Japanese mayo — richer, slightly more umami than standard. A genuine upgrade in any burger sauce.',
           quality: 'good',
         },
         {
-          ingredient: 'Kewpie mayo alone',
-          changes: 'Japanese mayo is richer and slightly more umami than standard mayo. Skip the ketchup and mustard — use pickles and the beef flavour to do the work.',
+          ingredient: 'Aioli',
+          changes: 'Garlicky, slightly thinner consistency. Holds up well in the sauce mix. Reduce the mustard slightly to compensate.',
+          quality: 'good',
+        },
+      ],
+    },
+    {
+      id: 'i6b', name: 'Tomato ketchup', amount: 2, unit: 'tsp', scales: 'linear',
+      substitutions: [
+        {
+          ingredient: 'Tomato relish',
+          changes: 'Less sweet, more tomato-forward. Fewer additives in most Australian brands. A grown-up swap.',
+          quality: 'good',
+        },
+      ],
+    },
+    {
+      id: 'i6c', name: 'American (yellow) mustard', amount: 2, unit: 'tsp', scales: 'linear',
+      substitutions: [
+        {
+          ingredient: 'Dijon mustard',
+          changes: 'Sharper and a little more acidic than yellow mustard. Use slightly less if you find it punchy.',
           quality: 'good',
         },
       ],
@@ -5483,7 +5509,8 @@ const FALAFEL: Recipe = {
 // ────────────────────────────────────────────────────────────────────────────
 //  Export — order reflects hone.html ordering, then kept v0 recipe, then
 //  originals at the end.
-// ────────────────────────────────────────────────────────────────────────────
+// ─────
+// ─────────────────────────────────────────────────────
 
 export const SEED_RECIPES: Recipe[] = [
   SMASH_BURGER,
