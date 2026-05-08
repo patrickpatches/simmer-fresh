@@ -25,6 +25,20 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-08 · OPEN (CHICKEN_SHAWARMA — new recipe required for v1.0 launch slot)
+**From:** Culinary & Cultural Verifier
+**Subject:** Author `CHICKEN_SHAWARMA` recipe const; flag `LAMB_SHAWARMA` as not yet shipping
+**Why:** Patrick confirmed 2026-05-08 that the v1.0 launch slot is chicken shawarma, not lamb. The library currently has `LAMB_SHAWARMA` only. A new recipe needs to be created.
+**What's done:** Portion sizing spec is locked in `docs/coo/culinary-research/launch-recipe-units.md` (section 13). `LAMB_SHAWARMA` stays in the seed file but must be flagged `not_yet_shipping` — it is a v1.2 candidate.
+**What's needed:**
+1. Create a new `CHICKEN_SHAWARMA` recipe const in `seed-recipes.ts`. Use the existing `LAMB_SHAWARMA` recipe object as the structural template — replace lamb with boneless chicken thighs, update marinade ratios, adjust cook time to 25–30 min at 220°C, update attribution.
+2. Set `LAMB_SHAWARMA` status to `not_yet_shipping` (or remove from the launch set — whichever the schema supports).
+3. Culinary Verifier will need to author a full DECISION-009 research file for `CHICKEN_SHAWARMA` before it can pass the pre-flight checklist — create a skeleton `.md` file at `docs/coo/culinary-research/chicken-shawarma.md` as a placeholder so the Verifier knows it's needed.
+**Files touched:** `mobile/src/data/seed-recipes.ts`, `docs/coo/culinary-research/launch-recipe-units.md`
+**Blocks:** DECISION-009 migration for the shawarma slot; photography scheduling
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-08 · OPEN (DECISION-012 — bump version to v0.5.0 on next push)
 **From:** Patrick (via COO)
 **Subject:** Set `version` in `mobile/app.json` to `"0.5.0"` on the next commit. Adopt new versioning policy.
@@ -858,16 +872,4 @@ The "Getting close" element currently reads as ambiguous (tappable? header?). Re
 
 1. **Search dropdown layering / opacity is broken.** When the user types into the search bar, the autocomplete dropdown ("Onion powder", "Brown onion · also yellow onion", with category labels like "Spices & Seasonings", "Produce") is rendering with insufficient z-index or transparent background. The recipe carousel content underneath ("CLOSEST MATCHES", "1 OF 9 MATCHED", "Hummus from Scratch", recipe photo) bleeds through the dropdown visually. Looks half-finished. **Fix direction:** dropdown needs solid background that fully obscures content behind it. Consider a full-screen takeover when the search is active (Material Design search pattern) so the user is fully focused on ingredient selection rather than competing visual hierarchy.
 
-2. **The "+" symbol on missing ingredients reads as "tap to add to pantry" but isn't.** Beneath the recipe match card ("Classic Beef Stew · 10% match · 1 OF 10 MATCHED"), the missing ingredients are shown as `+ Beef chuck   + Carrots   + Potatoes   + Tomato paste`. The plus sign is the universal "add" affordance, so the user expects tapping these to add them to their pantry. Right now it's purely decorative/informational. Either (a) make the action match the affordance — tapping `+ Beef chuck` adds it to the shopping list or pantry, OR (b) change the icon to something that means "missing" not "add" (e.g., a small dot, a strikethrough, or no icon at all and just a "Missing:" label). Patrick hasn't told me which way to go — propose both options as variants.
-
-3. **Pill style for added ingredients works.** "Brown onion ×" and "Paprika ×" sage-green pills are clean. Don't redesign these. Carry the same idiom into the search dropdown so when the user taps an ingredient, it visually transitions into a pill below the search bar.
-
-**Other things worth thinking about while you're in the Pantry screen:**
-- The match percentage (10%) is prominent in gold corner badge — do users actually understand "10%" or would "1 of 10 ingredients" as primary feel more useful?
-- The "1 OF 10 MATCHED" pill is clear but redundant with the percentage. Could one or the other go?
-- "CLOSEST MATCHES · 6 dishes · ranked by match" header is clean, keep.
-- The empty-state vs typing-state should be visually obvious — when search is active, the page should feel like search mode; when search is empty, the page should feel like browse mode.
-
-**What's needed:**
-1. **Mockup of the redesigned Pantry screen** at `docs/prototypes/pantry-redesign-v2.html`. Show three states: empty pantry, pantry with 2-3 ingredients added (current state in screenshot 1), and active search with autocomplete dropdown (current state in screenshot 2). Use v0.7 dark tokens — bg `#111111`, cards `#1A1A1A`, gold accent `#E8B830`.
-2. **For the missing-ingredient affordance**, propose two variants in the same prototype file (variant A: tap-to-add, variant B: missing-label-only). Patric
+2. **The "+" symbol on missing ingredients reads as "tap to add to pantry" but isn't.** Beneath the recipe match card ("Classic Beef Stew · 10% match · 1 OF 10 MATCHED"), the missing ingredients are shown as `+ Beef chuck   + Carrots   + Potatoes   + Tomato paste`. The plus sign is the universal "add" affordance, so the user expects tapping these to add them to their pantry. Right now it's purely decorative/informational. Either (a) make the action match the affordance — tapping `+ Beef chuck` adds it to the shopping list or pantry, OR (b) change the icon to something that means "missing" not "add" (e.g., a small dot, 

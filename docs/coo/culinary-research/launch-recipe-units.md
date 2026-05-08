@@ -294,9 +294,9 @@ max_servings:   4
 
 ---
 
-### 13 · LAMB_SHAWARMA · Home Oven Lamb Shawarma
+### 13 · CHICKEN_SHAWARMA · Home Oven Chicken Shawarma
 
-**⚠️ NAMING FLAG — Patrick's shortlist says "chicken shawarma" but the library recipe is `LAMB_SHAWARMA` attributed to Hone Kitchen. These are different recipes. This file locks lamb shawarma. If the intent is chicken shawarma, a new recipe needs to be authored. Patrick to confirm before v1.0 lock.**
+**Confirmed 2026-05-08: chicken shawarma ships in v1.0. `LAMB_SHAWARMA` stays in the seed file flagged `not_yet_shipping` and is a candidate for v1.2. A new `CHICKEN_SHAWARMA` recipe const needs to be authored — see engineer handoff in `handoffs.md`.**
 
 ```
 serving_unit:   "serve"
@@ -306,11 +306,12 @@ max_servings:   8
 ```
 
 **Scaling logic:**
-- Lamb leg or shoulder (boneless): `linear`. 150g per serve.
-- Shawarma marinade (spices, garlic, lemon, yoghurt): `custom`. ⚠️ Marinade is a coating. For up to 600g of lamb, the base recipe's marinade is sufficient. For 800g+, increase by 1.5× not 2×. `scaling_note: "Marinade coats the lamb — for more than 600g, increase by 1.5×. Doubling it wastes marinade and dilutes the flavour per piece."`
-- Flatbreads, hummus, pickled vegetables (for serving): `linear`.
+- Boneless chicken thighs: `linear`. ~200g per serve (thighs render down during cook).
+- Shawarma marinade (spices, garlic, lemon, yoghurt, olive oil): `custom`. ⚠️ Marinade is a coating. Base recipe covers ~800g of chicken. Above 1.2kg, scale by 1.5× not 2×. `scaling_note: "Marinade coats the chicken — for more than 800g, increase by 1.5×. Doubling it wastes marinade and dilutes the spice concentration per piece."`
+- Flatbreads: `linear`. 1 per serve.
+- Garlic sauce / toum, pickles, tomato (for serving): `linear`.
 
-**Make extra note:** Cold shawarma sliced thin over a flatbread with pickles and tahini is as good the next day. If you're feeding 4, roast enough for 6 and eat the rest cold. The marinade can be applied up to 24 hours in advance — the flavour only improves.
+**Make extra note:** Cold shawarma shredded into a wrap with pickles and tahini is excellent the next day. Chicken keeps well for 3 days refrigerated. The marinade can be applied up to 24 hours in advance — the spice penetration only improves overnight.
 
 ---
 
@@ -380,7 +381,7 @@ max_servings:   48
 | `FISH_AND_CHIPS` | serve | 4 | 2 | 6 | Batter fixed; fry in batches of 3–4 max |
 | `PAVLOVA` | serve | 10 | 8 | 12 | Never scale down; meringue chemistry is fixed |
 | `HUMMUS` | cup | 2 | 1 | 4 | Tahini, garlic, lemon all scale at 0.75× not 1× |
-| `LAMB_SHAWARMA` | serve | 4 | 2 | 8 | Marinade coats to ~600g; scales 1.5× above |
+| `CHICKEN_SHAWARMA` | serve | 4 | 2 | 8 | Marinade coats to ~800g; scales 1.5× above (new recipe — needs authoring) |
 | `PAD_THAI` | serve | 2 | 1 | 4 | 2 serves per wok session max; batch cook for 4 |
 | `FALAFEL` | piece | 24 | 12 | 48 | Dried chickpeas only; baking powder at 0.75× |
 
@@ -399,4 +400,4 @@ max_servings:   48
 
 ---
 
-*Written 2026-05-08 by Culinary & Cultural Verifier. Lock this file before engineering begins `scale.ts` work.*
+*Written 2026-05-08 by Culinary & Cultural Verifier. Lock this file bef
