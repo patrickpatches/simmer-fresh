@@ -81,7 +81,7 @@ Add: "A smash burger is not a recipe, it's a technique — one that produces a c
 
 ## 7. Mise en Place
 
-- Weigh and roll the beef into 100g balls — don't overwork, just enough to form a rough sphere. Set on a plate. Do NOT pack tightly.
+- Divide and roll the beef into one ball per patty — don't overwork, just enough to form a rough sphere. Set on a plate. Do NOT pack tightly.
 - Mix burger sauce (mayo, ketchup, mustard — adjust ratios to taste)
 - Slice pickles, dice onion finely
 - Have baking paper squares cut and ready (1 per patty)
@@ -94,8 +94,9 @@ Add: "A smash burger is not a recipe, it's a technique — one that produces a c
 *(existing steps are excellent — strong why_notes throughout. Adding doneness cues only)*
 
 **Step 1 — Ball and season**  
-*Existing content correct.*  
-**Doneness cue:** "The ball should hold together loosely — you're not making a rissole. If it's packed tight, it won't smash properly and will spring back."
+Divide the beef into one ball per patty. Don't pack it — a loose ball smashes better than a dense one. Season the outside of each ball directly in the pan immediately before smashing, not before. Salt on the surface before cooking draws moisture out and ruins the crust.
+
+**Doneness cue:** The ball holds together when picked up but is not compact. If you squeeze it and it feels solid all the way through, it's too tight — pull it apart and reroll more loosely.
 
 **Step 2 — Get the pan screaming (3 min)**  
 *Existing content and why_note correct.*  
@@ -151,8 +152,4 @@ No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes 
 **Attribution:** CONDITIONAL — Andy Cooks with specific YouTube URL. URL not yet verified live.
 **Cultural origin:** PASS — American diner. No contested labelling.
 **Substitutions:** PASS — lean beef correctly flagged 'compromise'. Cheddar cheese correctly flagged 'compromise' (inferior melt). Honest throughout.
-**Whole-food claim:** RESOLVED — concept retired across the repo on 2026-05-07. No data to clean up here.
-**Australian English:** PASS — no issues.
-**Voice:** PASS — urgent, short steps match the fast cook. "Eat immediately" is the right closing.
-**Recommendation:** FIX BEFORE SHIP — attribution verification pending.
-```
+**Whole-food claim:** RESOLVED — concept r

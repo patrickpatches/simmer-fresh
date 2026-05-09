@@ -29,7 +29,8 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
-| #98 | `b4e83f2` | Polish — "Serves N portions" for per-person dishes (was "Serves N serves"); ServingsSelector special-cases unit==='serve'/'person' to render "portion/portions" while keeping cook's authored data verbatim |
+| #99 | `418f8eb` | **Critical fix** — DECISION-014 portion-sizing fields now reach SQLite. Builds #96–#98 shipped the schema/seed/UI but the DB layer was blind to the new fields, so every recipe rendered the legacy "people / portions" fallback on-device. This commit adds schema migration 8 (4 new columns: output_unit, output_unit_plural, output_default, extra_for_tomorrow_label), extends RecipeRow / rowToRecipe / insertRecipe in database.ts, and extends refreshSeedRecipeFields in seed.ts. On Patrick's existing APK, migration 8 ALTERs the columns onto his recipes table on first launch; refreshSeedRecipeFields then UPDATEs the 16 launch rows with their authored values. **Install #99 to actually see "Makes 4 burgers" etc.** |
+| #98 | `b4e83f2` | Polish — "Serves N portions" for per-person dishes (was "Serves N serves"); ServingsSelector special-cases unit==='serve'/'person' to render "portion/portions" while keeping cook's authored data verbatim. _NOTE: portion-sizing did not actually work on-device — see #99 fix._ |
 | #97 | `b43ae55` | Docs only (COO push) — no app code change vs #96. Adds Designer's `docs/prototypes/recipe-detail-v2.2.html` + handoffs/decision-log updates. Functional behaviour identical to #96 |
 | #96 | `ce3ff2b` | DECISION-014 per-recipe portion units (functional) — schema fields + 16 launch recipes migrated + ServingsSelector + Kitchen card chips + recipe-aware leftover hint |
 | #95 | `4c4daf9` | v0.5.0 version bump + DECISION-013 launch scoping (16 user-visible) + CHICKEN_SHAWARMA created + LAMB_SHAWARMA flagged not_yet_shipping + FLOUR_TORTILLAS attributed to Patrick Nasr + burger sauce 3 separate shop rows + Equipment vertical wrap |
@@ -37,6 +38,45 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → Senior Engineer · 2026-05-09 · OPEN (scaling-disparity fix — remove hardcoded quantities from step content in seed-recipes.ts)
+**From:** COO (Culinary Research)
+**Subject:** Five recipes in seed-recipes.ts have hardcoded ingredient quantities in step `content` or `mise` fields that don't scale when the user changes serving count. Research files have been corrected — engineer applies the fixes to seed-recipes.ts.
+**Why:** Step content with "Combine 200g flour..." still shows 200g at 3× scale. The ingredient list scales correctly; the step text doesn't. This is a UX lie — the user sees a scaled ingredient list, then reads a step telling them the unscaled amount.
+
+**What's needed — exact changes to seed-recipes.ts:**
+
+1. **SMASH_BURGER** — Step "Ball and season" `content`:
+   - REMOVE: `"Divide the beef into 100g balls per patty."`
+   - REPLACE WITH: `"Divide the beef into one ball per patty. Don't pack it — a loose ball smashes better than a dense one. Season the outside of each ball directly in the pan immediately before smashing, not before."`
+
+2. **PASTA_CARBONARA** — Step "Cook pasta" `content` (whichever step reserves pasta water):
+   - REMOVE: `"Reserve 200ml of pasta water before draining."`
+   - REPLACE WITH: `"Reserve a generous ladleful of pasta water before draining."`
+
+3. **BUTTER_CHICKEN** — Step "Marinate the chicken" `content` AND matching mise:
+   - REMOVE all inline quantities: `"Mix yoghurt, lemon juice, 4 crushed garlic cloves, half the grated ginger, kashmiri chilli, 1 tsp garam masala, cumin, coriander, turmeric, and 1 tsp salt into a paste."`
+   - REPLACE WITH: `"Combine all marinade ingredients into a paste — the yoghurt, lemon juice, crushed garlic, half the grated ginger, and all the marinade spices."`
+
+4. **CHICKEN_SCHNITZEL** — Mise `content` (breading station setup):
+   - REMOVE: `"Dish 2: 2 beaten eggs"`
+   - REPLACE WITH: `"Dish 2: the beaten eggs"`
+   Also Step 0 brine `content` (if present):
+   - REMOVE: `"Dissolve the salt in 1 L of cold water."`
+   - REPLACE WITH: `"Dissolve the salt in enough cold water to fully submerge the chicken."`
+
+5. **FLOUR_TORTILLAS** — Step "Divide and rest" `content` AND matching mise:
+   - REMOVE: `"Divide the dough into 13 pieces of ~30g each."` (or similar with "13")
+   - REPLACE WITH: `"Divide the dough into one piece per tortilla, each roughly 30g."`
+
+**Recipes confirmed CLEAN (no changes needed):** WEEKDAY_BOLOGNESE, THAI_GREEN_CURRY, BEEF_LASAGNE, ROAST_CHICKEN, ROAST_LAMB, FISH_AND_CHIPS, PAVLOVA, HUMMUS, PAD_THAI, FALAFEL, CHICKEN_SHAWARMA. All number references in these are temperatures, times, or cut sizes — not ingredient quantities.
+
+**Files touched:** `mobile/src/data/seed-recipes.ts` (5 recipe consts)
+**Reference files:** See engineer-fix notes at the bottom of each corresponding research file in `docs/coo/culinary-research/`
+
+**Blocks:** Content accuracy guarantee for all 16 launch recipes at any serving count.
+
+---
 
 ### HANDOFF → Senior Engineer · 2026-05-09 · OPEN (scaling control visual polish — implement v2.2 design)
 **From:** Product Designer
@@ -859,45 +899,4 @@ Recipes remaining (in seed-recipes.ts order):
 - [ ] beef-wellington
 - [ ] tarka-dal
 - [ ] scrambled-eggs
-- [ ] spaghetti-aglio-e-olio
-- [ ] mujadara
-- [ ] sheet-pan-harissa-chicken
-- [ ] egg-fried-rice
-- [ ] nasi-lemak
-- [ ] beef-rendang
-- [ ] curry-laksa
-- [ ] char-kway-teow
-- [ ] saag-paneer
-- [ ] chicken-katsu
-- [ ] tom-yum-goong
-- [ ] flour-tortillas
-
-For each recipe, additions to author:
-- At-a-glance numbers (total_time_minutes, active_time_minutes, difficulty)
-- 1–3 "what to know" framings
-- Equipment list
-- Mise en place tasks (discrete pre-heat prep)
-- Finishing & tasting paragraph
-- Leftovers & storage note
-- Ingredient `scales` flags + `scaling_note` where chef knowledge matters
-
-Output to per-recipe `.md` files in `docs/coo/culinary-research/`. Engineer migrates content into seed-recipes.ts in their second pass.
-**Cost remaining:** ~30 min per recipe × ~28 recipes = ~14 hours across multiple sessions.
-**Sequencing:** Proceeds independently — markdown is unstructured, no schema dependency.
-**Blocks:** Engineer's seed-recipes.ts repopulation. Launch quality.
-
----
-
-### SYNC NOTE → Senior Engineer · 2026-05-05 · DONE (2026-05-03)
-**From:** COO
-**Subject:** Pantry track is fully unblocked — here is the right sequence across the four open Engineer handoffs
-**Why this exists:** Both Designer and Culinary Verifier wrapped sessions today. Their outputs unblock work that was previously waiting. There are now four open Engineer handoffs (Pantry v3 implementation, two bugs from on-device, six new recipes, derivation-aware matching). Doing them in random order causes throwaway work — e.g., fixing BUG 1 before Pantry v3 means the bug fix lands in code that's about to be deleted. Read this sync block before opening any other handoff.
-
-**What just landed (verified by COO):**
-- ✅ `docs/prototypes/pantry-v3.html` — Product Designer's Pantry v3 prototype with full annotated implementation spec for four UX fixes (inline search, emoji inline with name, Clear-all confirmation modal, "Getting close" banner clarity).
-- ✅ `docs/coo/culinary-research/` — Culinary Verifier shipped all six source recipe files (chicken-schnitzel, chicken-vegetable-stir-fry, beef-lasagne, roast-lamb-rosemary-garlic, fish-and-chips, falafel). Each carries chef attribution, Australian English, metric units, substitutions with quality flags, and per DECISION-007 every ingredient has the `scales` flag set with `scaling_note` populated where chef knowledge changes the answer.
-- ✅ `mobile/src/data/ingredient-derivations.ts` — Phase 1 of the joint handoff. Verifier defined the source→derived ingredient map ("eggs" → "egg yolks" + "egg whites", etc.) covering both the existing seed library and the six new recipes.
-
-**Recommended sequence (do in this order):**
-
-1. **Pantry v3 implementation FIRST** — see the existing `Senior Engineer · 2026-05-03` handoff below. Largest refactor; sets the structural surface that everything downstream lands on. While doing this, **incorporate the fix for BUG 1 (stale match counter)** into the new state model. The "+" affordan
+- [ ] spag

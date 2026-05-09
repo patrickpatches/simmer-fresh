@@ -114,7 +114,7 @@ Prep: The acid cuts the richness — don't treat this as garnish.
 
 - Place each chicken breast between two sheets of cling film. Pound with the flat face of a mallet starting at the centre, working outwards — 1–1.5 cm throughout. This takes about 60 seconds of deliberate pounding per breast; don't rush it.
 - Pat breasts dry with paper towel. Season directly on both sides with salt and white pepper.
-- Set up the breading station in order: **Dish 1** plain flour spread flat / **Dish 2** 2 beaten eggs / **Dish 3** panko spread flat.
+- Set up the breading station in order: **Dish 1** plain flour spread flat / **Dish 2** the beaten eggs / **Dish 3** panko spread flat.
 - Set a wire rack over a baking tray next to the hob.
 - Pour oil into the pan to 3–4 cm depth. Do not heat yet.
 - If making gravy: slice onion, measure stock, have flour and butter ready alongside the hob.
@@ -204,13 +204,9 @@ The crust should shatter cleanly on a fork, not flex. If it flexes, the oil was 
 
 ## Audit Notes
 
+**⚠️ Engineer fix — scaling violation in seed-recipes.ts:** The step 0 brine content reads "Dissolve the salt in 1 L of cold water." Change to: "Dissolve the salt in enough cold water to fully submerge the chicken." The original quantity does not scale and breaks the step at 6+ serves. This research file does not include the brine step — if seed-recipes.ts keeps a brine step 0, ensure the content matches the corrected language above.
+
 **Australian English:** Plain flour ✓ · neutral oil ✓ · no US terminology ✓
 **Cultural origin:** Australian pub tradition derived from Central European schnitzel — no contested labelling issues.
 **Photography priority:** HIGHEST — first shoot weekend target.
-Key shots needed:
-1. Three-stage breading station (flour / egg / panko dishes in a line with a raw breast)
-2. Schnitzel being pressed into panko (hands, close-up, drama of the press)
-3. Schnitzel frying in oil — golden colour developing
-4. Schnitzel on rack just out of the pan — steam, golden crust, dry surface
-5. Plated with lemon quarter and gravy alongside (not over)
-6. Cut cross-section — white cooked chicken, thin golden crust, contrast
+Key

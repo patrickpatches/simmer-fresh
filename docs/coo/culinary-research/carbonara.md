@@ -102,8 +102,9 @@ No changes needed. 8-minute timer is realistic.
 **Add doneness cue:** "The cubes should be golden and crisp on the outside with some give in the centre — not completely hard all the way through. The fat in the pan will be clear and golden."
 
 **Step 3 — Cook pasta in well-salted water** *(existing)*  
-No changes. "Tastes like the sea" is the right cue.  
-**Add lookahead:** "Get the mug ready — you need to catch the pasta water before you even think about draining."
+No changes to the main content. "Tastes like the sea" is the right cue.  
+**Add lookahead:** "Get the mug ready — you need to catch the pasta water before you even think about draining."  
+**⚠️ Engineer fix — scaling violation in seed-recipes.ts:** The step currently contains "Reserve 200ml of pasta water before draining." Change to: "Reserve a generous ladleful of pasta water before draining." The original quantity does not scale and breaks the step at 4+ serves.
 
 **Step 4 — Combine off heat** *(existing)*  
 This is the most important step. The existing content is correct.  
@@ -147,7 +148,4 @@ Carbonara does not keep. The egg sauce continues to cook in the residual heat as
 **Cultural origin:** PASS — Italian (Roman). No contested labelling issues.
 **Substitutions:** PASS — quality flags are honest. Bacon correctly flagged 'compromise', whole egg swap correctly flagged 'compromise'.
 **Australian English:** PASS — no issues found.
-**Voice:** PASS — second person, present tense, doneness cues used. Step 4 title ("Combine off heat — this is the critical step") is slightly food-blog emphatic but acceptable given the importance of the step.
-**Data fix required:** whole egg ingredient must change from scales: 'fixed' to scales: 'linear'. Engineer task.
-**Recommendation:** FIX BEFORE SHIP (data fix + attribution verification). Content is strong.
-```
+**Voice:** PASS — second person, present tense, doneness cues used. Step 4 title ("Combine off heat — this is the

@@ -88,7 +88,7 @@ Includes the Kundan Lal Gujral / Kundan Lal Jaggi origin story — good. Keep it
 ## 7. Mise en Place
 
 *(Day before / 4+ hours ahead)*
-- Combine all marinade ingredients (yoghurt, lemon, 4 crushed garlic, half the grated ginger, Kashmiri chilli, 1 tsp garam masala, cumin, coriander, turmeric, 1 tsp salt) into a paste
+- Combine all marinade ingredients into a paste — the yoghurt, lemon juice, crushed garlic, half the grated ginger, and all the marinade spices (Kashmiri chilli, garam masala, cumin, coriander, turmeric, and salt)
 - Cut chicken thighs into large chunks (roughly 5–6cm), coat thoroughly in marinade, cover and refrigerate
 
 *(Day of, 30 min before cooking)*
@@ -104,9 +104,11 @@ Includes the Kundan Lal Gujral / Kundan Lal Jaggi origin story — good. Keep it
 *(existing steps are strong — adding doneness cues and recovery)*
 
 **Step 1 — Marinate the chicken (4h–overnight)**  
-*Existing content correct.*  
-**Add before you start framing** (already captured in section 4).  
-**Doneness cue:** "After 4 hours, the chicken surface will look opaque and slightly cured — the yoghurt will have adhered to the surface. The spice colour should have deepened into the meat."
+Combine all marinade ingredients into a paste — the yoghurt, lemon juice, crushed garlic, half the grated ginger, and all the marinade spices. Cut the chicken thighs into large chunks, coat thoroughly, cover, and refrigerate. Minimum 4 hours; overnight gives a noticeably better result.
+
+**Doneness cue:** After 4 hours the chicken surface will look opaque and slightly cured — the yoghurt will have adhered and the spice colour will have deepened into the meat.
+
+**⚠️ Engineer fix — scaling violation in seed-recipes.ts:** Step 1 content currently reads "Mix yoghurt, lemon juice, 4 crushed garlic cloves, half the grated ginger, kashmiri chilli, 1 tsp garam masala, cumin, coriander, turmeric, and 1 tsp salt into a paste." Replace with the rewritten step above — all quantities belong in the ingredient list only.
 
 **Step 2 — Grill or roast the chicken hard (15–18 min)**  
 *Existing content correct. Stage note and why_note are excellent.*  
@@ -158,9 +160,4 @@ The sauce genuinely improves overnight — the spices integrate and the sweetnes
 ## butter-chicken · Butter Chicken from Scratch · indian/chicken
 **Audited:** 2026-05-05 by Culinary Verifier
 **Attribution:** CONDITIONAL — Joshua Weissman with specific YouTube URL. URL not yet verified live. Flag for verification before ship.
-**Cultural origin:** PASS — Indian (North Indian / murgh makhani origin). Historical context in description is accurate and well-sourced.
-**Substitutions:** PASS — quality flags honest. Coconut cream dairy-free swap flagged accurately. Ground ginger flagged 'compromise' correctly — it is a last resort.
-**Australian English:** PASS — "thickened cream" listed as perfect_swap for double cream. Correct.
-**Data fix required:** time_min must change from 90 to reflect real total (4h 30m minimum). UX critical.
-**Recommendation:** FIX BEFORE SHIP — time display issue is the most important fix; attribution needs verification.
-```
+**Cultural origin:** PASS — Indian (North Indian / murgh makhani or
