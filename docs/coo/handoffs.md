@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #102 | `e663cfd` | Designer v2.2 visual polish for ServingsSelector — single-pill stepper with stacked number+unit in 52×40 centre cell. Drops the redundant top header label and right-side "Makes N portions" block; verb ("Serves"/"Makes") moves to the left of the stepper. Stepper buttons 32×40 with opacity 0.28 + disabled state at min. Ingredient scaling math unchanged — only the visible chrome is rebuilt. |
 | #101 | `7be6b3b` | Cook's 5 scaling-disparity fixes (SMASH_BURGER / PASTA_CARBONARA / BUTTER_CHICKEN / CHICKEN_SCHNITZEL / FLOUR_TORTILLAS — strip hardcoded quantities from step content & mise). Plus FALAFEL/BARRAMUNDI launch swap per Patrick — FALAFEL `not_yet_shipping=true→false` with placeholder DECISION-014 fields (`serve` / 4); BARRAMUNDI flipped to not_yet_shipping. Launch count stays exactly 16. |
 | #100 | `9f53396` | UX polish — stripped "Scaled N× up" chip from recipe header. A multiplier with no visible baseline confused more than it clarified. Header now shows just "HOW MANY BURGERS" / etc. on the left; the stepper + "Makes N burgers" label already conveyed everything the chip did. |
 | #99 | `418f8eb` | **Critical fix** — DECISION-014 portion-sizing fields now reach SQLite. Builds #96–#98 shipped the schema/seed/UI but the DB layer was blind to the new fields, so every recipe rendered the legacy "people / portions" fallback on-device. This commit adds schema migration 8 (4 new columns: output_unit, output_unit_plural, output_default, extra_for_tomorrow_label), extends RecipeRow / rowToRecipe / insertRecipe in database.ts, and extends refreshSeedRecipeFields in seed.ts. On Patrick's existing APK, migration 8 ALTERs the columns onto his recipes table on first launch; refreshSeedRecipeFields then UPDATEs the 16 launch rows with their authored values. **Install #99 to actually see "Makes 4 burgers" etc.** |
@@ -40,6 +41,39 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → COO · 2026-05-09 · IN PROGRESS (build #102 — three-item bundle: 2 already shipped earlier, 1 just shipped)
+**From:** Senior Engineer
+**Subject:** Build #102 dispatched on commit `e663cfd`. Two of the three URGENT items had already shipped in earlier builds before this handoff was written; the third (Designer v2.2 visual polish) is what just shipped in #102. Per R-015, marking IN PROGRESS — awaiting Patrick on-device validation, will not self-close.
+
+**Item-by-item state:**
+
+1. **Strip "Scaled N× up" chip** — already shipped in **build #100** (commit `9f53396`). Patrick saw it on his existing #99 install because that build pre-dates the strip. Once Patrick installs #100 or later, the chip is gone. No work needed.
+2. **Designer v2.2 visual polish** — shipped in **build #102** (commit `e663cfd`, this commit). Single-pill stepper, stacked number+unit in 52×40 centre cell, dimmed buttons at 0.28 opacity. Drops the previously-redundant top header label and the right-side "Makes N portions" block.
+3. **Cook's 5 scaling-disparity fixes** — already shipped in **build #101** (commit `7be6b3b`). SMASH_BURGER, PASTA_CARBONARA, BUTTER_CHICKEN, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS — step content & mise stripped of hardcoded ingredient quantities. Note: cook's quoted OLD strings for 3 of the 5 didn't match seed-recipes.ts verbatim, so I applied her intent against the actual wording — see the COO note above this one.
+
+**Patrick should install build #102 to see all three together** — it's the cumulative head of main. Older builds work but only show their own slice.
+
+**On-device validation Patrick should walk after installing #102:**
+1. Open Smash Burger → header is gone; you should see a single pill: "Makes" on the left, stepper on the right with "2" / "burgers" stacked inside the centre cell. No right-side "Makes N portions" block.
+2. Tap − until count = 1. The − button should dim to 28% opacity and stop responding to taps.
+3. Tap + a few times — number increments, unit caption switches "burger" ↔ "burgers" automatically.
+4. Open Pasta Carbonara → reads "Serves" + stacked "4 / people" in the centre cell.
+5. Open Roast Chicken → "Makes" + "1 / chicken" in the centre cell.
+6. Open Hummus → "Makes" + "2 / cups". Stepper drops to "1 / cup" at min.
+7. Open Flour Tortillas → "Makes" + "13 / tortillas".
+8. Tap a leftover-mode pill (lunch / 3-day / week). The recipe-aware hint underneath should change as before. Note: there's no longer a separately-rendered scaled-total number — the consequence is communicated by the mode pill copy + the extra_for_tomorrow_label hint.
+9. Cook's 5 fixes: scale Smash Burger to 6× and confirm step text reads "Divide the beef into one ball per patty" (not "100g balls"). Same drill on the other four.
+
+**Behaviour change worth flagging:** v2.2 removes the previously-visible scaled-total number ("Makes 8 portions" when in leftover mode at base 4). The scale math is unchanged — ingredients still reflect the leftover mode — but the user no longer sees a separate "you'll end up with N total" number. If Patrick wants the scaled total resurrected somewhere, that's a follow-up; the Designer's prototype intentionally consolidates.
+
+**Files touched (this commit only):** `mobile/src/components/ServingsSelector.tsx` (rewrite — 308 lines)
+
+**Blocks:** Nothing. Visual polish is cosmetic; functional behaviour intact.
+
+**Status:** **shipped, awaiting Patrick on-device validation** per R-015.
+
+---
 
 ### HANDOFF → COO · 2026-05-09 · OPEN (launch-roster correction — FALAFEL replaces BARRAMUNDI; FALAFEL needs proper unit spec from Cook)
 **From:** Senior Engineer
