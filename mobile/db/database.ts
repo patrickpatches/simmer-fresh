@@ -44,6 +44,11 @@ interface RecipeRow {
   mise_en_place: string | null;    // JSON string → string[]
   finishing_note: string | null;
   leftovers_note: string | null;
+  // DECISION-014 per-recipe portion-sizing fields (2026-05-09 migration 8)
+  output_unit: string | null;
+  output_unit_plural: string | null;
+  output_default: number | null;
+  extra_for_tomorrow_label: string | null;
 }
 
 interface IngredientRow {
@@ -147,6 +152,11 @@ function rowToRecipe(
     mise_en_place: row.mise_en_place ? (JSON.parse(row.mise_en_place) as string[]) : undefined,
     finishing_note: row.finishing_note ?? undefined,
     leftovers_note: row.leftovers_note ?? undefined,
+    // DECISION-014 per-recipe portion-sizing fields
+    output_unit: row.output_unit ?? undefined,
+    output_unit_plural: row.output_unit_plural ?? undefined,
+    output_default: row.output_default ?? undefined,
+    extra_for_tomorrow_label: row.extra_for_tomorrow_label ?? undefined,
   };
 }
 
@@ -303,8 +313,9 @@ export async function insertRecipe(
       tags, source_chef, source_video_url, source_notes, hero_url, hero_fallback,
       emoji, user_added, generated_by_claude, leftover_extra_servings, leftover_note,
       total_time_minutes, active_time_minutes, equipment, before_you_start,
-      mise_en_place, finishing_note, leftovers_note
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      mise_en_place, finishing_note, leftovers_note,
+      output_unit, output_unit_plural, output_default, extra_for_tomorrow_label
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       recipe.id,
       recipe.title,
@@ -331,6 +342,11 @@ export async function insertRecipe(
       recipe.mise_en_place ? JSON.stringify(recipe.mise_en_place) : null,
       recipe.finishing_note ?? null,
       recipe.leftovers_note ?? null,
+      // DECISION-014 per-recipe portion-sizing
+      recipe.output_unit ?? null,
+      recipe.output_unit_plural ?? null,
+      recipe.output_default ?? null,
+      recipe.extra_for_tomorrow_label ?? null,
     ],
   );
 

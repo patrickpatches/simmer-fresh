@@ -3,7 +3,7 @@
  * flag set inside `initDatabase`.
  *
  * The job here is deliberately thin:
- *   1. iterate SEED_RECIPES
+ *   1. iterate `SEED_RECIPES`
  *   2. validate each one at runtime against the Zod schema
  *   3. write it through the same `insertRecipe` CRUD path user-added recipes use
  *
@@ -80,7 +80,7 @@ export async function syncNewSeedRecipes(db: SQLiteDatabase): Promise<void> {
  *
  * Only updates rows where user_added = 0 and generated_by_claude = 0 —
  * user recipes are never clobbered. Silently skips recipes that fail
- * validation (safeParse) so a broken seed entry cannot crash the launch.
+ * validation (safeParse) so a broken seed entry can't crash the launch.
  */
 export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void> {
   for (const raw of SEED_RECIPES) {
@@ -90,10 +90,10 @@ export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void>
       'SELECT id FROM recipes WHERE id = ? AND user_added = 0 AND generated_by_claude = 0',
       [recipeId],
     );
-    if (!existing) continue;
+    if (!existing) continue; // Not yet seeded — syncNewSeedRecipes will handle it
 
     const parsed = RecipeSchema.safeParse(raw);
-    if (!parsed.success) continue;
+    if (!parsed.success) continue; // Don't crash on refresh — bad entry, skip
 
     const r = parsed.data;
     await db.runAsync(
@@ -105,7 +105,11 @@ export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void>
         mise_en_place = ?,
         finishing_note = ?,
         leftovers_note = ?,
-        difficulty = ?
+        difficulty = ?,
+        output_unit = ?,
+        output_unit_plural = ?,
+        output_default = ?,
+        extra_for_tomorrow_label = ?
        WHERE id = ? AND user_added = 0`,
       [
         r.total_time_minutes ?? null,
@@ -116,6 +120,11 @@ export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void>
         r.finishing_note ?? null,
         r.leftovers_note ?? null,
         r.difficulty,
+        // DECISION-014 per-recipe portion-sizing
+        r.output_unit ?? null,
+        r.output_unit_plural ?? null,
+        r.output_default ?? null,
+        r.extra_for_tomorrow_label ?? null,
         r.id,
       ],
     );

@@ -13,7 +13,7 @@
  */
 
 /** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 /**
  * Full schema for a fresh install.
@@ -47,6 +47,10 @@ export const SCHEMA_SQL: string[] = [
     mise_en_place          TEXT,
     finishing_note         TEXT,
     leftovers_note         TEXT,
+    output_unit            TEXT,
+    output_unit_plural     TEXT,
+    output_default         INTEGER,
+    extra_for_tomorrow_label TEXT,
     created_at             TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
 
@@ -227,5 +231,18 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
     // column" as non-fatal so older installs that never had the column
     // (somehow skipped v2) don't fail to upgrade.
     `ALTER TABLE recipes DROP COLUMN whole_food_verified`,
+  ],
+  8: [
+    // 2026-05-09 — DECISION-014 per-recipe portion-sizing fields.
+    // Four new columns on the recipes table — all nullable so non-launch
+    // recipes (which don't author these fields) keep working. Without this
+    // migration the values authored in seed-recipes.ts fall on the floor
+    // at the SQLite hop and the UI renders the legacy "people / portions"
+    // fallback. refreshSeedRecipeFields (seed.ts) populates them for seed
+    // recipes on every launch after this migration runs.
+    `ALTER TABLE recipes ADD COLUMN output_unit TEXT`,
+    `ALTER TABLE recipes ADD COLUMN output_unit_plural TEXT`,
+    `ALTER TABLE recipes ADD COLUMN output_default INTEGER`,
+    `ALTER TABLE recipes ADD COLUMN extra_for_tomorrow_label TEXT`,
   ],
 };
