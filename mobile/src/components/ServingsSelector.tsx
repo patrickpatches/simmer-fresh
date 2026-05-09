@@ -84,13 +84,6 @@ export function ServingsSelector({
 }: Props) {
   const option = leftoverById(leftoverKey);
   const totalPortions = totalPortionsFor(option, people, baseServings);
-  const factor = totalPortions / baseServings;
-  const scaledBadge =
-    factor === 1
-      ? 'At original proportions'
-      : factor > 1
-        ? `Scaled ${factor.toFixed(factor < 2 ? 1 : 0)}× up`
-        : `Scaled ${factor.toFixed(1)}× down`;
 
   // DECISION-014: pick wording per recipe.
   // Person-equivalent units render as "portions" (Patrick 2026-05-08) so
@@ -135,15 +128,10 @@ export function ServingsSelector({
         elevation: 2,
       }}
     >
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 14,
-        }}
-      >
+      {/* Header. Patrick 2026-05-09 — stripped the "Scaled N× up" chip;
+          a multiplier with no visible baseline confused more than it clarified.
+          The stepper + "Makes N burgers" label already convey everything. */}
+      <View style={{ marginBottom: 14 }}>
         <Text
           style={{
             fontFamily: fonts.sansBold,
@@ -154,15 +142,6 @@ export function ServingsSelector({
           }}
         >
           {headerLabel}
-        </Text>
-        <Text
-          style={{
-            fontFamily: fonts.sans,
-            fontSize: 11,
-            color: factor === 1 ? tokens.sageDeep : tokens.primaryInk,
-          }}
-        >
-          {scaledBadge}
         </Text>
       </View>
 
