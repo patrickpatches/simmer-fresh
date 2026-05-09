@@ -194,7 +194,7 @@ const SMASH_BURGER: Recipe = {
     { id: 'i7', name: 'Salt', amount: 0.5, unit: 'tsp', scales: 'linear' },
   ],
   steps: [
-    { id: 's1', title: 'Ball and season', content: "Divide the beef into 100g balls per patty — don't pack them tightly. Season only the outside with salt right before cooking. Salting early draws moisture and stops the crust forming.", why_note: 'Pre-salting denatures proteins and pulls water to the surface, which steams instead of browning. You want a dry surface hitting that hot iron.' },
+    { id: 's1', title: 'Ball and season', content: "Divide the beef into one ball per patty — don't pack them tightly. Season only the outside with salt right before cooking, not before. Salting early draws moisture and stops the crust forming.", why_note: 'Pre-salting denatures proteins and pulls water to the surface, which steams instead of browning. You want a dry surface hitting that hot iron.' },
     { id: 's2', title: 'Get the pan screaming', content: 'Cast iron or heavy steel pan on highest heat for at least 3 minutes. No oil — the beef fat does the work. It should be starting to smoke.', timer_seconds: 180, why_note: 'Maillard browning needs metal above 180°C. A warm pan just steams the meat. Three minutes on max heat gets cast iron where it needs to be.' },
     { id: 's3', title: 'Smash hard and hold', content: 'Place a ball on the pan, put a piece of baking paper on top, and press down with a flat spatula as hard as you can. Hold for 10 full seconds. The patty should be 1cm thin.', timer_seconds: 10, why_note: 'The smash maximises surface contact with hot metal. More contact = more Maillard = more crust. The paper stops the spatula sticking.' },
     { id: 's4', title: 'Cook and cheese', content: 'Cook 90 seconds without touching — you want a deep brown crust forming. Flip once, immediately add the cheese slice. Cook 45 more seconds. The cheese melts from the residual heat.', timer_seconds: 90, why_note: 'Single flip. Moving the patty cools the surface and breaks the crust formation. Cheese goes on right after the flip so it has the full second side cook time to melt properly.' },
@@ -216,7 +216,7 @@ const SMASH_BURGER: Recipe = {
     "Season outside only, right before cooking. Salt on the ball draws moisture to the surface, which kills the crust. Season the outside of the ball, in the pan, immediately before smashing.",
   ],
   mise_en_place: [
-    "Weigh and roll the beef into 100g balls — don't overwork, just enough to form a rough sphere. Set on a plate. Do NOT pack tightly.",
+    "Roll the beef into one ball per patty — don't overwork, just enough to form a rough sphere. Set on a plate. Do NOT pack tightly.",
     "Mix burger sauce (mayo, ketchup, mustard — adjust ratios to taste)",
     "Slice pickles, dice onion finely",
     "Have baking paper squares cut and ready (1 per patty)",
@@ -405,7 +405,7 @@ const PASTA_CARBONARA: Recipe = {
   steps: [
     { id: 's1', title: 'Mix the sauce off-heat', content: 'Whisk yolks, whole egg, and pecorino into a thick paste. Add cracked pepper. This is your sauce — make it before anything else.', why_note: "Cold eggs mixed with cold cheese form a stable emulsion. Mixing it warm causes the eggs to start cooking before they hit the pasta, and you'll get scrambled eggs instead of silk." },
     { id: 's2', title: 'Render the guanciale', content: 'Cook guanciale cubes in a cold, dry pan over medium heat. The fat renders slowly and the meat crisps without burning. Remove and leave the fat in the pan.', timer_seconds: 480, why_note: 'Starting cold renders the fat gradually — starting hot burns the outside before the inside renders. The rendered fat is your cooking medium for the whole dish.' },
-    { id: 's3', title: 'Cook pasta in well-salted water', content: 'Salt your pasta water until it tastes like the sea. Cook pasta 2 minutes short of package time — it finishes cooking in the sauce. Reserve 200ml of pasta water before draining.', why_note: "Pasta water is starch and salt. It's the only liquid that can loosen carbonara sauce without breaking it. Plain water dilutes and ruins it." },
+    { id: 's3', title: 'Cook pasta in well-salted water', content: 'Salt your pasta water until it tastes like the sea. Cook pasta 2 minutes short of package time — it finishes cooking in the sauce. Reserve a generous ladleful of pasta water before draining.', why_note: "Pasta water is starch and salt. It's the only liquid that can loosen carbonara sauce without breaking it. Plain water dilutes and ruins it." },
     { id: 's4', title: 'Combine off heat — this is the critical step', content: 'Add drained pasta to the guanciale pan. Take the pan completely off heat. Add egg mixture, toss constantly, adding pasta water a splash at a time until you have a creamy sauce that coats every strand. If it seizes, add more water.', why_note: "Eggs scramble above 70°C. Off heat, the pasta's residual heat (around 65°C) is exactly right to cook the eggs without curdling. Adding water regulates the temperature and creates the emulsion. This is why carbonara has a reputation — the temperature window is narrow." },
     { id: 's5', title: 'Serve immediately', content: 'Plate immediately, top with extra pecorino and more black pepper. Carbonara does not wait — it thickens rapidly as it cools.' },
   ],
@@ -3730,7 +3730,7 @@ const BUTTER_CHICKEN: Recipe = {
     },
   ],
   steps: [
-    { id: 's1', title: 'Marinate the chicken — minimum 4 hours', content: 'Mix yoghurt, lemon juice, 4 crushed garlic cloves, half the grated ginger, kashmiri chilli, 1 tsp garam masala, cumin, coriander, turmeric, and 1 tsp salt into a paste. Coat chicken thoroughly. Cover and refrigerate 4 hours minimum — overnight is better.', timer_seconds: 14400, why_note: 'The yoghurt marinade does two things: the lactic acid tenderises the surface proteins, and the fat in the yoghurt helps the spices penetrate. Four hours is the minimum for flavour to reach the centre of large chicken pieces. Under-marinated chicken tastes of sauce, not of spiced chicken.' },
+    { id: 's1', title: 'Marinate the chicken — minimum 4 hours', content: 'Combine all marinade ingredients into a paste — the yoghurt, lemon juice, crushed garlic, half the grated ginger, and all the marinade spices. Coat chicken thoroughly. Cover and refrigerate 4 hours minimum — overnight is better.', timer_seconds: 14400, why_note: 'The yoghurt marinade does two things: the lactic acid tenderises the surface proteins, and the fat in the yoghurt helps the spices penetrate. Four hours is the minimum for flavour to reach the centre of large chicken pieces. Under-marinated chicken tastes of sauce, not of spiced chicken.' },
     { id: 's2', title: 'Grill or roast the chicken hard', content: 'Set oven to 230°C grill/broil. Spread marinated chicken on a rack over a baking tray — the rack is important, it lets heat circulate underneath. Grill 15–18 minutes, turning once, until charred at the edges and cooked through (75°C internal). Some burning is correct — you want those slightly charred bits.', timer_seconds: 1080, stage_note: 'Charred edges, not raw pink centres. Some blackened spots on the edges are the goal — this is the tikka quality.', why_note: 'The char is not a mistake — it\'s the tandoor effect. Those blackened proteins add a smoky, complex note to the sauce that butter and cream alone can\'t provide. Missing this step is why restaurant butter chicken often tastes flat.' },
     { id: 's3', title: 'Build the makhani sauce', content: 'In a heavy pot, melt butter with oil on medium. Add cardamom, cloves, and cinnamon — fry 30 seconds. Add onion and fry 10–12 minutes until deeply golden, stirring often. Add remaining garlic and ginger, fry 2 minutes. Add crushed tomatoes, remaining garam masala, and salt. Simmer 20 minutes until thick.', timer_seconds: 2040, why_note: 'The whole-spice blooming in butter-oil releases fat-soluble flavour compounds from the cardamom and cloves — this is what gives makhani sauce its complexity beyond just tomato and cream. The deep golden onion is also non-negotiable: pale onions give a raw, sharp flavour; deeply golden onions give sweetness and depth.' },
     { id: 's4', title: 'Blend the sauce smooth', content: 'Remove the cinnamon stick. Carefully blend the sauce until completely smooth — use a stick blender in the pot or carefully transfer to a blender in batches. This silky-smooth sauce is the signature.', why_note: 'Blending transforms the onion and tomato into an emulsified, restaurant-quality sauce. Many home versions skip this and end up chunky. A chunk of onion in butter chicken sauce is jarring.' },
@@ -3751,7 +3751,7 @@ const BUTTER_CHICKEN: Recipe = {
     "Blend the sauce completely smooth. A stick blender in the pot is fine. The silk is non-negotiable — chunks of onion in butter chicken sauce are a different dish.",
   ],
   mise_en_place: [
-    "Combine all marinade ingredients (yoghurt, lemon, 4 crushed garlic, half the grated ginger, Kashmiri chilli, 1 tsp garam masala, cumin, coriander, turmeric, 1 tsp salt) into a paste",
+    "Combine all marinade ingredients into a paste — yoghurt, lemon, crushed garlic, half the grated ginger, Kashmiri chilli, garam masala, cumin, coriander, turmeric, salt",
     "Cut chicken thighs into large chunks (roughly 5–6cm), coat thoroughly in marinade, cover and refrigerate",
     "Take chicken out of the fridge to temper slightly — straight-from-fridge chicken won't char properly",
     "Dice the onion finely",
@@ -4244,6 +4244,7 @@ const BARRAMUNDI: Recipe = {
   output_unit: "serve",
   output_default: 4,
   extra_for_tomorrow_label: "+1 lunch tomorrow — fish reheats gently in a low oven; eat the same day for crispy skin",
+  not_yet_shipping: true,
 };
 
 const PAVLOVA: Recipe = {
@@ -4464,7 +4465,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 's5',
       title: 'Divide into balls',
-      content: 'Divide the dough into five pieces of about 40g each. Round each piece in your palm. They don\'t need to be perfect spheres — roughly even is enough.',
+      content: 'Divide the dough into one piece per tortilla, about 40g each. Round each piece in your palm. They don\'t need to be perfect spheres — roughly even is enough.',
     },
     {
       id: 's6',
@@ -4521,7 +4522,7 @@ const FLOUR_TORTILLAS: Recipe = {
     "Combine the flour and salt in a large bowl and mix through.",
     "Rub the lard into the flour with your fingertips until the mixture looks like fine breadcrumbs with no visible clumps of fat. This takes 3–4 minutes and is worth doing thoroughly.",
     "Add the hot water and mix until a rough dough forms, then knead for 5–8 minutes until smooth and silky. Do not add more flour — the dough starts tacky and resolves with kneading.",
-    "Divide into five equal balls of about 40g each. Cover with a damp tea towel and rest at room temperature for at least 45–60 minutes.",
+    "Divide into one ball per tortilla, about 40g each. Cover with a damp tea towel and rest at room temperature for at least 45–60 minutes.",
   ],
   finishing_note: "A properly rested dough ball should roll to 2–3mm thickness — roughly the size of a small side plate — without springing back. If it resists, cover it and rest it 5 more minutes before trying again. Cook in a dry pan over medium heat. Three flips: 10 seconds on the first side, 15 seconds on the second, then the third flip produces the puff — steam inflates a pocket between the two layers like a balloon. When it settles back, it is done. Stack immediately in a lidded pot with a tea towel inside the lid to catch condensation. The steam in the pot is what keeps them soft and pliable for up to 20 minutes. Left on a bare plate, they stiffen in 2 minutes.",
   leftovers_note: "Flour tortillas keep 2–3 days at room temperature in an airtight bag, or refrigerated for up to a week. To reheat: 15–20 seconds in a dry hot pan, or wrapped in a damp paper towel in the microwave for 20 seconds. Freeze between layers of baking paper for up to 2 months — thaw at room temperature. Stale tortillas that have gone dry can be cut into triangles, fried briefly in hot oil, and used as totopos (chips) for guacamole or bean dip.",
@@ -4572,7 +4573,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
   mise_en_place: [
     "Place each breast between two sheets of cling film; pound to 1–1.5 cm throughout — about 60 seconds per breast working from the centre outwards.",
     "Pat breasts dry with paper towel; season directly on both sides with salt and white pepper.",
-    "Set up breading station in order: Dish 1 plain flour / Dish 2 2 beaten eggs / Dish 3 panko spread flat.",
+    "Set up breading station in order: Dish 1 plain flour / Dish 2 the beaten eggs / Dish 3 panko spread flat.",
     "Set a wire rack over a baking tray next to the hob.",
     "Pour oil into the pan to 3–4 cm depth. Do not heat yet.",
   ],
@@ -4590,7 +4591,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
     },
     {
       id: 'salt_brine', name: 'Table salt (for brine)', amount: 50, unit: 'g',
-      scales: 'linear', prep: 'Dissolved in 1 L cold water',
+      scales: 'linear', prep: 'Dissolved in cold water',
       scaling_note: "Concentration matters, not volume. The brine is 5% salt by water (50 g salt per 1 L water). When scaling down to 1–2 schnitzels, keep the ratio: 250 ml water + 12.5 g salt. Don't dilute below 5%; the brine stops working.",
       substitutions: [
         { ingredient: 'Sea salt flakes', changes: 'No flavour difference at the brine stage. Flakes are less dense, so use 70 g per 1 L water.', quality: 'perfect_swap', quantity_note: 'Use 70 g per 1 L water.' },
@@ -4656,7 +4657,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
   steps: [
     {
       id: 'step_1_brine', title: 'Brine the chicken',
-      content: 'Dissolve the salt in 1 L of cold water in a bowl big enough to hold the chicken flat. Slip the butterflied breasts in, cover, and rest in the fridge for 30 minutes. The salt is doing two jobs: seasoning the inside of the meat, and restructuring the proteins so they hold onto moisture while the crumb has time to crisp.',
+      content: 'Dissolve the salt in enough cold water to fully submerge the chicken in a single layer. Slip the butterflied breasts in, cover, and rest in the fridge for 30 minutes. The salt is doing two jobs: seasoning the inside of the meat, and restructuring the proteins so they hold onto moisture while the crumb has time to crisp.',
       stage_note: 'Brine for 30 minutes — no longer. Past 45 the texture turns slightly springy.',
       lookahead: 'While the brine works, set up your three-tray crumbing line.',
       timer_seconds: 1800,
@@ -5736,7 +5737,9 @@ const FALAFEL: Recipe = {
       why_note: "Falafel waits for nobody — five minutes on the bench and the crust softens. The classic Levantine sandwich is built in this exact order: hummus first as a moisture barrier on the bread, then falafel, then tahini, then salads, then pickles last for crunch and acid. Skip the order and the bread goes soggy from the bottom.",
     },
   ],
-  not_yet_shipping: true,
+  // DECISION-014 — placeholder defaults; cook to refine to "ball" + specific count if she wants per-piece scaling
+  output_unit: "serve",
+  output_default: 4,
 };
 
 // ────────────────────────────────────────────────────────────────────────────
