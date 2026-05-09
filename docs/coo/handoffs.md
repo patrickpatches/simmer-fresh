@@ -29,6 +29,8 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #101 | `7be6b3b` | Cook's 5 scaling-disparity fixes (SMASH_BURGER / PASTA_CARBONARA / BUTTER_CHICKEN / CHICKEN_SCHNITZEL / FLOUR_TORTILLAS — strip hardcoded quantities from step content & mise). Plus FALAFEL/BARRAMUNDI launch swap per Patrick — FALAFEL `not_yet_shipping=true→false` with placeholder DECISION-014 fields (`serve` / 4); BARRAMUNDI flipped to not_yet_shipping. Launch count stays exactly 16. |
+| #100 | `9f53396` | UX polish — stripped "Scaled N× up" chip from recipe header. A multiplier with no visible baseline confused more than it clarified. Header now shows just "HOW MANY BURGERS" / etc. on the left; the stepper + "Makes N burgers" label already conveyed everything the chip did. |
 | #99 | `418f8eb` | **Critical fix** — DECISION-014 portion-sizing fields now reach SQLite. Builds #96–#98 shipped the schema/seed/UI but the DB layer was blind to the new fields, so every recipe rendered the legacy "people / portions" fallback on-device. This commit adds schema migration 8 (4 new columns: output_unit, output_unit_plural, output_default, extra_for_tomorrow_label), extends RecipeRow / rowToRecipe / insertRecipe in database.ts, and extends refreshSeedRecipeFields in seed.ts. On Patrick's existing APK, migration 8 ALTERs the columns onto his recipes table on first launch; refreshSeedRecipeFields then UPDATEs the 16 launch rows with their authored values. **Install #99 to actually see "Makes 4 burgers" etc.** |
 | #98 | `b4e83f2` | Polish — "Serves N portions" for per-person dishes (was "Serves N serves"); ServingsSelector special-cases unit==='serve'/'person' to render "portion/portions" while keeping cook's authored data verbatim. _NOTE: portion-sizing did not actually work on-device — see #99 fix._ |
 | #97 | `b43ae55` | Docs only (COO push) — no app code change vs #96. Adds Designer's `docs/prototypes/recipe-detail-v2.2.html` + handoffs/decision-log updates. Functional behaviour identical to #96 |
@@ -38,6 +40,30 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → COO · 2026-05-09 · OPEN (launch-roster correction — FALAFEL replaces BARRAMUNDI; FALAFEL needs proper unit spec from Cook)
+**From:** Senior Engineer
+**Subject:** Cook's most recent scaling-disparity handoff implicitly listed the wrong launch-16. Patrick's call: keep cook's list (FALAFEL in, BARRAMUNDI out). Shipped the swap on commit `7be6b3b` (build #101) but FALAFEL still needs proper DECISION-014 unit data from Cook.
+
+**What's done:**
+- Cook's 5 scaling-disparity fixes applied to seed-recipes.ts. Where her quoted OLD strings matched verbatim I used them; where they differed (SMASH_BURGER, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS) I preserved the intent against the actual wording.
+- FALAFEL: `not_yet_shipping: true` removed (now in launch). **Placeholder DECISION-014 fields added: `output_unit: 'serve'`, `output_default: 4`.** Renders "Serves 4 portions" — functional but generic.
+- BARRAMUNDI: `not_yet_shipping: true` added. Unit fields preserved for when it returns.
+- Launch count verified: exactly 16.
+
+**Discrepancies the COO should log:**
+- Cook's handoff said FALAFEL was launch (it wasn't) and missed BARRAMUNDI (which was). Patrick chose to honour cook's list — swap is now real.
+- Cook's quoted OLD strings for SMASH_BURGER step content, CHICKEN_SCHNITZEL dish-2 / brine, and FLOUR_TORTILLAS divide step didn't match seed-recipes.ts verbatim. Intent was clear so I applied it; cook should sanity-check the rewritten text on-device.
+
+**What's needed from Cook (next pass):**
+1. **FALAFEL DECISION-014 spec.** Author the proper unit — e.g. `output_unit: 'ball'`, `output_default: 12`, plus `extra_for_tomorrow_label`. Current placeholder reads "Serves 4 portions" which is inconsistent with the other 15 launch recipes that all carry per-recipe units. Update `docs/coo/culinary-research/launch-recipe-units.md` first; engineer migrates after.
+2. **Validate the 5 scaling-disparity fixes** read correctly at base and scaled counts after Patrick installs build #101.
+
+**Files touched:** `mobile/src/data/seed-recipes.ts` (5 fix sites + 2 flag flips + FALAFEL placeholder unit fields)
+
+**Blocks:** v0.7.x roster polish. FALAFEL renders functionally on launch; placeholder is a known UX inconsistency until cook authors the proper unit spec.
+
+---
 
 ### HANDOFF → Senior Engineer · 2026-05-09 · OPEN (scaling-disparity fix — remove hardcoded quantities from step content in seed-recipes.ts)
 **From:** COO (Culinary Research)
