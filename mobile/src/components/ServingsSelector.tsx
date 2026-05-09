@@ -60,6 +60,18 @@ function isPersonUnit(unit: string | undefined): boolean {
   return unit === 'serve' || unit === 'person';
 }
 
+/**
+ * Pick the displayed caption for a unit. Person-equivalent units render as
+ * "portion / portions" so "Serves 4 portions" reads naturally — the data
+ * unit is "serve" but the user thinks in portions. Patrick 2026-05-08.
+ * Item units (burger, tortilla, loaf, cup) display verbatim from the
+ * recipe's authored unit / plural.
+ */
+function captionFor(unit: string, plural: string | undefined, n: number): string {
+  if (isPersonUnit(unit)) return n === 1 ? 'portion' : 'portions';
+  return pluralise(unit, plural, n);
+}
+
 export function ServingsSelector({
   people,
   setPeople,
@@ -81,15 +93,17 @@ export function ServingsSelector({
         : `Scaled ${factor.toFixed(1)}× down`;
 
   // DECISION-014: pick wording per recipe.
+  // Person-equivalent units render as "portions" (Patrick 2026-05-08) so
+  // "Serves 4 portions" reads naturally instead of "Serves 4 serves".
   const stepperCaption = outputUnit
-    ? pluralise(outputUnit, outputUnitPlural, people)
+    ? captionFor(outputUnit, outputUnitPlural, people)
     : people === 1 ? 'person' : 'people';
   const headerLabel = outputUnit
-    ? `How many ${pluralise(outputUnit, outputUnitPlural, 2)}`
+    ? `How many ${captionFor(outputUnit, outputUnitPlural, 2)}`
     : 'How many people';
   const makesPrefix = isPersonUnit(outputUnit) ? 'Serves' : 'Makes';
   const totalCaption = outputUnit
-    ? pluralise(outputUnit, outputUnitPlural, totalPortions)
+    ? captionFor(outputUnit, outputUnitPlural, totalPortions)
     : 'portions';
 
   const step = (delta: number) => {
