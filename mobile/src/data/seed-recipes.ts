@@ -5743,57 +5743,83 @@ const FALAFEL: Recipe = {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-//  Export — order reflects hone.html ordering, then kept v0 recipe, then
-//  originals at the end.
-// ─────
-// ─────────────────────────────────────────────────────
+//  Export — the launch roster.
+//
+//  This array is the ONLY thing the seeder consumes. Recipes not in this
+//  array physically cannot reach SQLite. To promote a recipe from the
+//  holding list below to launch: move its name from SEED_RECIPES_HOLDING
+//  into SEED_RECIPES. That is the only step.
+//
+//  v1.0 launch = 16 recipes. The runtime smoke alarm in setupDatabase
+//  (db/seed.ts) screams in dev if the count drifts.
+// ────────────────────────────────────────────────────────────────────────────
 
 export const SEED_RECIPES: Recipe[] = [
   SMASH_BURGER,
-  CHICKEN_ADOBO,
   PASTA_CARBONARA,
-  BEEF_STEW,
   ROAST_CHICKEN,
+  HUMMUS,
+  THAI_GREEN_CURRY,
+  PAD_THAI,
+  WEEKDAY_BOLOGNESE,
+  CHICKEN_SHAWARMA,
+  BUTTER_CHICKEN,
+  PAVLOVA,
+  FLOUR_TORTILLAS,
+  CHICKEN_SCHNITZEL,
+  BEEF_LASAGNE,
+  ROAST_LAMB,
+  FISH_AND_CHIPS,
+  FALAFEL,
+];
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Holding pen — recipes ready in code but NOT user-visible in v1.0.
+//
+//  Defined here so the consts compile and tsc still validates them, but
+//  this array is NEVER inserted into SQLite. It is documentation + future
+//  promotion source.
+//
+//  When promoting one to launch: move its name into SEED_RECIPES above
+//  AND remove the `not_yet_shipping: true` field from its const for
+//  consistency with the rest of the launch roster.
+//
+//  Patrick's standing rule (2026-05-09): the 30 below DO NOT enter the
+//  build until they are explicitly promoted. Splitting the arrays
+//  removes the only mechanism by which they could re-appear after a
+//  refresh — the seeder no longer sees them.
+// ────────────────────────────────────────────────────────────────────────────
+
+export const SEED_RECIPES_HOLDING: Recipe[] = [
+  CHICKEN_ADOBO,
+  BEEF_STEW,
   MUSAKHAN,
   KAFTA,
-  HUMMUS,
   FATTOUSH,
   PRAWN_TACOS_PINEAPPLE,
   SOURDOUGH_MAINTENANCE,
   SOURDOUGH_LOAF,
   RISOTTO,
   FISH_TACOS,
-  THAI_GREEN_CURRY,
   FRENCH_ONION_SOUP,
-  PAD_THAI,
   BRAISED_SHORT_RIBS,
   RAMEN,
   BEEF_WELLINGTON,
   DAL,
   SCRAMBLED_EGGS,
-  WEEKDAY_BOLOGNESE,
   AGLIO_E_OLIO,
   MUJADARA,
   SHEET_PAN_HARISSA_CHICKEN,
   EGG_FRIED_RICE,
   LAMB_SHAWARMA,
-  CHICKEN_SHAWARMA,
   NASI_LEMAK,
   BEEF_RENDANG,
   CURRY_LAKSA,
   CHAR_KWAY_TEOW,
-  BUTTER_CHICKEN,
   SAAG_PANEER,
   CHICKEN_KATSU,
   TOM_YUM,
   BARRAMUNDI,
-  PAVLOVA,
-  FLOUR_TORTILLAS,
-  // Phase 2 culinary-research batch (2026-05-03)
-  CHICKEN_SCHNITZEL,
   CHICKEN_VEG_STIR_FRY,
-  BEEF_LASAGNE,
-  ROAST_LAMB,
-  FISH_AND_CHIPS,
-  FALAFEL,
 ];
+

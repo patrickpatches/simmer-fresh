@@ -51,7 +51,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { tokens } from '../src/theme/tokens';
 import { initDatabase } from '../db/database';
-import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields } from '../db/seed';
+import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields, pruneOrphanedSeedRecipes, smokeAlarmSeedCount } from '../db/seed';
 
 /**
  * Full database bootstrap sequence, called once by SQLiteProvider on open.
@@ -62,6 +62,11 @@ import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields } from '../db
  *   3. syncNewSeedRecipes  — Every launch: insert seed recipes added after first install.
  *   4. refreshSeedRecipeFields — Every launch: UPDATE DECISION-009 fields on seed rows
  *                                so new content data ships without requiring a reinstall.
+ *   5. pruneOrphanedSeedRecipes — Every launch: delete seeded rows whose ids no
+ *                                longer appear in SEED_RECIPES. Cleans up
+ *                                installs after launch-roster changes.
+ *   6. smokeAlarmSeedCount — Dev-only: loud console.error if seeded-row count
+ *                                drifts from SEED_RECIPES.length.
  */
 async function setupDatabase(db: SQLiteDatabase): Promise<void> {
   // Step 1: tables + migrations only — no seeding.
@@ -81,6 +86,16 @@ async function setupDatabase(db: SQLiteDatabase): Promise<void> {
   // Steps 3 & 4: idempotent passes on every launch — cheap, safe to repeat.
   await syncNewSeedRecipes(db);
   await refreshSeedRecipeFields(db);
+
+  // Step 5 (2026-05-09): prune any seed-origin rows whose ids are no longer
+  // in SEED_RECIPES. Cleans up existing installs after Patrick's launch
+  // roster split (DECISION-013 architectural fix). Idempotent — no-op once
+  // the DB matches the launch list.
+  await pruneOrphanedSeedRecipes(db);
+
+  // Step 6 (2026-05-09): dev-only smoke alarm. Loud console.error if the
+  // seeded-row count drifts from SEED_RECIPES.length. Silent in production.
+  await smokeAlarmSeedCount(db);
 }
 
 // Keep splash up until fonts are loaded — avoids system-font flash.

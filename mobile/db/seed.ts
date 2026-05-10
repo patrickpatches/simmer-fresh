@@ -151,3 +151,72 @@ export async function updateSubstitutions(db: SQLiteDatabase): Promise<void> {
     }
   }
 }
+
+
+/**
+ * Prune any seed-origin rows that are no longer in SEED_RECIPES.
+ *
+ * Background: Patrick's launch roster is exactly 16 recipes (DECISION-013).
+ * Earlier seeds wrote 46 rows; the 30 non-launch ones used to be filtered
+ * at the JS layer via a `not_yet_shipping` flag, but that flag never reached
+ * SQLite, so on every launch the DB read returned all 46 with `undefined`
+ * flags and the launch filter passed all of them through. Patrick saw the
+ * launch list "creep back" four times in a row.
+ *
+ * Architectural fix (2026-05-09): SEED_RECIPES is now exactly 16. The other
+ * 30 live in SEED_RECIPES_HOLDING and are never inserted. This routine
+ * cleans up existing installs by deleting any seeded row whose id is no
+ * longer in the launch array. ON DELETE CASCADE handles meal_plan,
+ * favorites, and ingredient_swaps cleanup automatically.
+ *
+ * Idempotent: once Patrick's DB matches the launch roster, this is a no-op
+ * (one SELECT, zero deletes). Cheap to run every launch.
+ *
+ * Only deletes seeded rows (`user_added = 0 AND generated_by_claude = 0`) —
+ * user-added recipes and Claude-generated recipes are never touched.
+ */
+export async function pruneOrphanedSeedRecipes(db: SQLiteDatabase): Promise<number> {
+  const validIds = new Set(SEED_RECIPES.map((r) => r.id));
+  const seeded = await db.getAllAsync<{ id: string }>(
+    'SELECT id FROM recipes WHERE user_added = 0 AND generated_by_claude = 0',
+  );
+  const orphans = seeded.map((r) => r.id).filter((id) => !validIds.has(id));
+  for (const id of orphans) {
+    await db.runAsync('DELETE FROM recipes WHERE id = ?', [id]);
+  }
+  return orphans.length;
+}
+
+/**
+ * Dev-only smoke alarm — counts seeded rows in SQLite and screams in the
+ * console if the count drifts from SEED_RECIPES.length.
+ *
+ * Not a guard: it doesn't change UI or block startup. It's a tripwire that
+ * fires loudly the next time something accidentally puts a 17th seeded row
+ * into the DB (or removes one). Gated on `__DEV__` so the installed APK
+ * stays silent.
+ */
+export async function smokeAlarmSeedCount(db: SQLiteDatabase): Promise<void> {
+  // eslint-disable-next-line no-undef
+  if (!(typeof __DEV__ !== 'undefined' && __DEV__)) return;
+  const row = await db.getFirstAsync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM recipes WHERE user_added = 0 AND generated_by_claude = 0',
+  );
+  const actual = row?.n ?? 0;
+  const expected = SEED_RECIPES.length;
+  if (actual !== expected) {
+    const seeded = await db.getAllAsync<{ id: string }>(
+      'SELECT id FROM recipes WHERE user_added = 0 AND generated_by_claude = 0',
+    );
+    const inDb = new Set(seeded.map((r) => r.id));
+    const inSeed = new Set(SEED_RECIPES.map((r) => r.id));
+    const orphans = [...inDb].filter((id) => !inSeed.has(id));
+    const missing = [...inSeed].filter((id) => !inDb.has(id));
+    // eslint-disable-next-line no-console
+    console.error(
+      `[seed smoke alarm] expected ${expected} seeded recipes, found ${actual}. ` +
+        `Orphans (in DB but not in SEED_RECIPES): ${JSON.stringify(orphans)}. ` +
+        `Missing (in SEED_RECIPES but not in DB): ${JSON.stringify(missing)}.`,
+    );
+  }
+}

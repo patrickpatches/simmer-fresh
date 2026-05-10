@@ -260,21 +260,27 @@ export async function getAllRecipes(db: SQLiteDatabase): Promise<Recipe[]> {
 }
 
 /**
- * Active (user-visible) recipes only — filters out anything flagged
- * `not_yet_shipping`. Use this for browse, search, and pantry-match.
+ * Active (user-visible) recipes — alias for getAllRecipes after the
+ * 2026-05-09 architectural fix.
  *
- * `getRecipeById` and `getAllRecipes` stay unfiltered so deep links and
- * existing meal-plan entries still resolve. Anything that lists recipes
- * to the user goes through this helper.
+ * Background: previously this filtered on a `not_yet_shipping` flag that
+ * only existed in memory (never persisted to SQLite). On every launch the
+ * DB reload returned all 46 recipes with `undefined` flags and the filter
+ * passed all 46 through — Patrick saw the launch roster "creep back" four
+ * times in a row.
  *
- * DECISION-013 (2026-05-08) — v1.0 ships 16 recipes only. The flag is
- * stored on each Recipe (not in SQLite) so it's a pure JS filter. When
- * later releases expand the launch set, flip the flag on those recipes
- * in seed-recipes.ts; no migration required.
+ * Architectural fix: SEED_RECIPES now contains exactly the launch roster
+ * (16). The 30 holding recipes live in SEED_RECIPES_HOLDING, defined in
+ * seed-recipes.ts but never inserted. The seeder loop physically cannot
+ * see them. So at this point in the code there is nothing left to filter
+ * — the DB only ever contains the launch roster + any user-added recipes.
+ *
+ * Kept as an alias so the 2 callers (Kitchen and Pantry) don't need to
+ * be touched and the intent ("give me what should be visible") stays
+ * named at the call site.
  */
 export async function getActiveRecipes(db: SQLiteDatabase): Promise<Recipe[]> {
-  const all = await getAllRecipes(db);
-  return all.filter((r) => !r.not_yet_shipping);
+  return getAllRecipes(db);
 }
 
 export async function getRecipeById(
