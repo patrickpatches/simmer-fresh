@@ -211,7 +211,7 @@ Patrick should install build #103 — it's cumulative HEAD of main.
 
 5. **FLOUR_TORTILLAS** — Step "Divide and rest" `content` AND matching mise:
    - REMOVE: `"Divide the dough into 13 pieces of ~30g each."` (or similar with "13")
-   - REPLACE WITH: `"Divide the dough into one piece per tortilla, each roughly 30g."`
+   - REPLACE WITH: `"Divide the dough into one piece per tortilla, each roughly 40g."`
 
 **Recipes confirmed CLEAN (no changes needed):** WEEKDAY_BOLOGNESE, THAI_GREEN_CURRY, BEEF_LASAGNE, ROAST_CHICKEN, ROAST_LAMB, FISH_AND_CHIPS, PAVLOVA, HUMMUS, PAD_THAI, FALAFEL, CHICKEN_SHAWARMA. All number references in these are temperatures, times, or cut sizes — not ingredient quantities.
 
