@@ -256,15 +256,24 @@ export default function PantryTab() {
     };
   }, [db]);
 
-  // Re-sync shopping items every time the user comes back to the Pantry tab.
-  // This is the one-way bridge that lets a Shop-tab X-removal show up here
-  // as the chip reverting to "+ need". REGN-007 path #5.
+  // Re-sync shopping items AND pantry items every time the user comes back
+  // to the Pantry tab. The shopping refetch is the REGN-007 path #5 bridge
+  // (Shop-tab X-removal -> chip reverts to "+ need"). The pantry refetch
+  // (added 2026-05-10) is the bridge for the new shop -> pantry mirror:
+  // when the user ticks an item in Shop, that item lands in pantry as
+  // have_it=true, and the recipe-match counters on this carousel should
+  // reflect it the moment the user returns. Without this refetch the pantry
+  // state stays stale and the counters don't move.
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      getShoppingItems(db).then((items) => {
-        if (!cancelled) setShoppingItems(items);
-      }).catch((e) => console.error('shopping-list refetch failed', e));
+      Promise.all([getShoppingItems(db), getPantryItems(db)])
+        .then(([shop, pantry]) => {
+          if (cancelled) return;
+          setShoppingItems(shop);
+          setPantryItems(pantry);
+        })
+        .catch((e) => console.error('shop/pantry refetch failed', e));
       return () => {
         cancelled = true;
       };

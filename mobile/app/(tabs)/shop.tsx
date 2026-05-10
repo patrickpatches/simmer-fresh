@@ -62,8 +62,10 @@ import {
   getPlannedEntries,
   getShoppingItems,
   replaceShoppingItems,
+  upsertPantryItem,
   type ShoppingItem,
   type ShoppingSource,
+  type PantryItem,
 } from '../../db/database';
 import type { Recipe } from '../../src/data/types';
 import {
@@ -72,6 +74,8 @@ import {
   matchedAlias,
   cleanIngredientName,
   normalizeForMatch,
+  pantryId,
+  categorizeIngredient,
   SHOPPING_SECTION_ORDER,
   SHOPPING_SECTION_LABEL,
   CATEGORY_EMOJI,
@@ -264,10 +268,37 @@ export default function ShopTab() {
 
   const handleToggleInCart = useCallback(
     (id: string) => {
+      const item = items.find((it) => it.id === id);
+      if (!item) return;
+      const willBeInCart = !item.in_cart;
       Haptics.selectionAsync().catch(() => {});
       persist(toggleInCart(items, id));
+
+      // 2026-05-10 — mirror tick state into the pantry. When the user marks an
+      // item as "got it" (in_cart -> true), it lands in pantry as have_it=true
+      // so the recipe-match counters on the Pantry tab reflect the new
+      // ingredient. Untick (true -> false) sets have_it=false symmetrically;
+      // we don't delete the row because pantry rows may carry quantity/unit
+      // the user set elsewhere, and the row is also used by initializePantryItems
+      // as a recipe-match catalog. Same architectural family as REGN-007 (chip
+      // state derived from shopping list).
+      const cleaned = cleanIngredientName(item.name) || item.name;
+      const pantryRow: PantryItem = {
+        id: pantryId(cleaned),
+        name: cleaned,
+        category:
+          (item.category as PantryCategory | undefined) ??
+          categorizeIngredient(cleaned),
+        quantity: item.quantity ?? null,
+        unit: item.unit ?? null,
+        have_it: willBeInCart,
+      };
+      upsertPantryItem(db, pantryRow).catch((e) =>
+        // eslint-disable-next-line no-console
+        console.error('shop -> pantry mirror failed', e),
+      );
     },
-    [items, persist],
+    [items, persist, db],
   );
 
   const handleRemove = useCallback(

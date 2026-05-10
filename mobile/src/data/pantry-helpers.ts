@@ -146,14 +146,18 @@ export interface RecipeMatchResult {
   /** Full ingredient info for Variant A chips — name + amount + unit. */
   missingIngredients: Array<{ name: string; amount: number; unit: string }>;
   /**
-   * Phase 2 — derivation matches. Each entry records an ingredient matched
-   * via derivation (e.g. "egg yolks" matched because user has "Eggs").
-   * UI surface: "from your Eggs →" annotation + prep icon in ingredient row.
+   * Phase 2 — ingredients matched via derivation, not direct pantry ownership.
+   * E.g. "egg yolks" matched because the user has "Eggs".
+   * Used by the UI to show "from your eggs →" annotations and the prep icon.
+   * Empty array when no derivation matches occurred.
    */
   derivationMatches: Array<{
-    ingredientName: string;   // cleaned recipe ingredient name
-    derivedFrom: string;      // pantry item that produced this match
-    entry: DerivationEntry;   // prep_note + quality for UI annotation
+    /** Cleaned recipe ingredient name. E.g. "egg yolks" */
+    ingredientName: string;
+    /** The pantry item that yields this ingredient. E.g. "Eggs" */
+    derivedFrom: string;
+    /** Full derivation entry — includes prep_note and quality flag. */
+    entry: DerivationEntry;
   }>;
 }
 
@@ -161,40 +165,67 @@ export function scoreRecipeAgainstPantry(
   recipe: Recipe,
   pantryItems: PantryItem[],
 ): RecipeMatchResult {
-  const haveItems = pantryItems.filter((p) => p.have_it);
-  const haveNorms = haveItems.map((p) => normalizeForMatch(p.name));
+  const havePantryItems = pantryItems.filter((p) => p.have_it);
+  const haveNorms = havePantryItems.map((p) => normalizeForMatch(p.name));
 
-  // Build derivation source map: derived-norm → [{pantryName, entry}]
-  // This lets isMatch() check derivation hits in O(1) after build.
-  const derivationSourceMap = new Map<string, Array<{ pantryName: string; entry: DerivationEntry }>>();
-  for (const item of haveItems) {
-    const norm = normalizeForMatch(item.name);
-    const derivations = DERIVATION_LOOKUP.get(norm) ?? [];
+  // ── Phase 2: build a derivation lookup for this pantry ───────────────────
+  //
+  // For each pantry item the user has, look up what ingredients it can produce
+  // (e.g. "Eggs" → egg yolks, egg whites, egg wash). We build a map from the
+  // DERIVED ingredient's normalised name → the best pantry source for that
+  // derivation. This lets isMatch() resolve recipe ingredients that aren't
+  // literally in the pantry but can be produced from something that is.
+  //
+  // WHY: "egg yolks" does not substring-match "eggs" (singular ≠ plural, no
+  // common substring longer than 3 chars). Without this, Carbonara and Pavlova
+  // score zero on the egg axis even when the user has eggs.
+  //
+  // The map stores all sources per derived norm so the UI can display the most
+  // relevant "from your X →" annotation. The scoring function records only the
+  // first (best-quality) source per match.
+
+  const derivationSourceMap = new Map<string, Array<{
+    pantryName: string;
+    entry: DerivationEntry;
+  }>>();
+
+  for (const pantryItem of havePantryItems) {
+    const sourceNorm = normalizeForMatch(pantryItem.name);
+    const derivations = DERIVATION_LOOKUP.get(sourceNorm) ?? [];
     for (const entry of derivations) {
       const derivedNorm = normalizeForMatch(entry.derived);
       const existing = derivationSourceMap.get(derivedNorm) ?? [];
-      existing.push({ pantryName: item.name, entry });
+      existing.push({ pantryName: pantryItem.name, entry });
       derivationSourceMap.set(derivedNorm, existing);
     }
   }
 
-  // Side-channel: derivation hits recorded during isMatch() calls
+  // Accumulates as isMatch() runs — one entry per recipe ingredient that was
+  // matched via derivation rather than direct pantry ownership.
   const derivationHits: RecipeMatchResult['derivationMatches'] = [];
+
+  // ── Core match predicate ─────────────────────────────────────────────────
 
   const isMatch = (recipeName: string): boolean => {
     const norm = normalizeForMatch(recipeName);
-    // Direct match first
-    const directHit = haveNorms.some((p) => {
+
+    // 1. Direct match — the existing phase-1 logic.
+    const directMatch = haveNorms.some((p) => {
       if (norm === p) return true;
       if (norm.length > 4 && p.length > 4 && (norm.includes(p) || p.includes(norm))) return true;
       const ta = norm.split(' ').filter((t) => t.length > 2);
       const tb = p.split(' ').filter((t) => t.length > 2);
       return ta.filter((t) => tb.includes(t)).length >= 2;
     });
-    if (directHit) return true;
-    // Derivation match
+    if (directMatch) return true;
+
+    // 2. Derivation match — Phase 2.
+    //    Check whether any pantry item can PRODUCE this ingredient via a known
+    //    culinary transformation. Record the match for UI display.
     const sources = derivationSourceMap.get(norm);
     if (sources && sources.length > 0) {
+      // Use the first source — if multiple pantry items can derive this
+      // ingredient, the first one in the pantry list is fine for display.
       const { pantryName, entry } = sources[0];
       derivationHits.push({
         ingredientName: cleanIngredientName(recipeName),
@@ -203,8 +234,11 @@ export function scoreRecipeAgainstPantry(
       });
       return true;
     }
+
     return false;
   };
+
+  // ── Score ─────────────────────────────────────────────────────────────────
 
   let matched = 0;
   const missingRaw: Array<{ name: string; amount: number; unit: string }> = [];
@@ -253,7 +287,7 @@ export function scoreRecipeAgainstPantry(
   };
 }
 
-function pantryId(name: string): string {
+export function pantryId(name: string): string {
   return (
     'pantry-' +
     name
