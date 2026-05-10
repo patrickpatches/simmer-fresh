@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #105 | `b6d0c70` | Kitchen Editorial redesign — full rewrite of `(tabs)/index.tsx` per Designer prototype (`docs/prototypes/kitchen-editorial-v1.html`). Day/time + 'hone.' wordmark with gold period; gold-bordered search; 178dp hero card (Tonight badge + Cook → / Plan + CTA, falls back to top of active filter); 'Browse by cuisine' label + horizontal category tiles (All + 8 cuisines, active = solid gold fill + dark label); recipe list rendered as full-width rows with 58×58 thumb, gold cuisine tag, Playfair title, meta strip, planned-gold badge. Removed: mode chips (All/Quick/Weekend/Favourites/Yours), 'Cooking tonight' amber banner, old hero headline. Token change: `gold #F2CC2A` + `goldDim` added fresh — no callers existed for the COO-named `tokens.gold` previously, so no regression scan was applicable. Two files: tokens.ts, index.tsx. |
 | #104 | `d52397f` | Shop -> pantry -> match-counter wiring. Ticking an item in Shop now upserts the pantry row with `have_it = true` (untick = false). Pantry tab `useFocusEffect` extended to refetch pantry items alongside shopping items, so the recipe-match carousel counters recompute on tab return. `pantryId` exported from pantry-helpers so shop.tsx hits the same row on upsert. Same architectural family as REGN-007 — derived state across surfaces. Files: shop.tsx, pantry.tsx, pantry-helpers.ts. |
 | #103 | `d974880` | **Root-cause fix for the 4×-recurring 46-recipes regression.** seed-recipes.ts split into two arrays at the source: `SEED_RECIPES` (16 launch only — the seeder consumes this) and `SEED_RECIPES_HOLDING` (30 holding — defined but never inserted into SQLite). Holding recipes physically cannot reach the DB. Added `pruneOrphanedSeedRecipes` to clean Patrick's existing install (deletes any seeded row whose id is no longer in SEED_RECIPES on every launch — idempotent). Collapsed `getActiveRecipes` to an alias for `getAllRecipes`. Added dev-only `smokeAlarmSeedCount` tripwire that console.errors loudly if the seeded-row count drifts from `SEED_RECIPES.length`. R-016 root-cause closed. |
 | #102 | `e663cfd` | Designer v2.2 visual polish for ServingsSelector — single-pill stepper with stacked number+unit in 52×40 centre cell. Drops the redundant top header label and the right-side "Makes N portions" block; verb ("Serves"/"Makes") moves to the left of the stepper. Stepper buttons 32×40 with opacity 0.28 + disabled state at min. Ingredient scaling math unchanged. |
@@ -43,6 +44,51 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → COO · 2026-05-10 · IN PROGRESS (build #105 — Kitchen Editorial redesign + gold accent introduced)
+**From:** Senior Engineer
+**Subject:** Build #105 dispatched on commit `b6d0c70`. Per R-015 — shipped, awaiting Patrick on-device validation. Not self-closing.
+
+**Token change note for the audit trail:**
+The COO handoff specified migrating `tokens.gold` from `#C9A84C` to `#F2CC2A`. The codebase did **not** have a `gold` token previously — closest neighbours were `ochre` (`#C07038`, mise en place zone) and `amber` (`#1E1408` dark amber tint). No callers of `tokens.gold` existed anywhere in the mobile tree. So this commit **adds the token fresh** rather than migrating one. There is nothing to regression-scan because there were no prior callers.
+
+```
+gold:    '#F2CC2A',
+goldDim: 'rgba(242,204,42,0.15)',
+```
+
+**Implementation per Designer spec:**
+1. Header — day-of-week + period (`dayTimeLabel(new Date())`) above 'hone.' wordmark in Playfair 30sp; period rendered with `tokens.gold`. Avatar circle (32dp) on the right with the user initial 'P'.
+2. Search — surface bg, `borderWidth: 1.5, borderColor: tokens.gold`, ingredient search behaviour preserved.
+3. Hero card — 178dp, full-width, 20px radius. Picks the first planned recipe → `Tonight` gold badge + `Cook →` rust CTA. Otherwise picks the top of the active filter → cuisine name badge + `Plan +` CTA. Gradient overlay over the recipe's `hero_fallback` bands (no expo-image dependency in the hero so it always renders).
+4. Category tiles — `Browse by cuisine` label, then horizontal scroll of 9 tiles (All + Levantine, Indian, Japanese, Italian, Malaysian, Thai, French, Australian — Designer-locked order). Tiles hide if no recipe in the active roster carries that cuisine. Active tile: solid gold fill + dark label. 62dp width.
+5. Recipe rows — `(tabs)/index.tsx` now renders rows instead of cards. 58×58 thumbnail (gradient bands + emoji), gold cuisine tag (uppercase 9sp), Playfair title 14sp 700, meta strip (chef · time · difficulty in muted ink), Planned badge in gold-dim, chevron right.
+
+**Removed (intentional):**
+- Mode chips (All / Quick / Weekend / Favourites / Yours). Editorial spec is cuisine-only filtering. If you want quick/weekend/favourites back as a separate surface, that's a follow-up.
+- 'Cooking tonight' amber banner — superseded by the hero card's 'Tonight' badge.
+- Old 'What are you cooking tonight?' hero text — replaced by wordmark + day/time line.
+
+**Visual regression scan:**
+- Searched for `tokens.gold` callers across `mobile/`: zero. The new token has no upstream legacy.
+- `ochre`, `amber`, `primary`, `sage` callers untouched — those tokens did not change colour.
+- The Editorial direction does not yet apply to other tabs (Pantry, Shop, Plan, recipe detail). Those screens will continue rendering with their existing palette. If Patrick wants the gold accent rolled into the recipe detail eyebrow or anywhere else, that's a separate pass.
+
+**Colour clashes to flag:** none observed in static review. The new gold reads cleanly on `tokens.cream` (card surface) and against `tokens.bg` (screen). The dark text on solid gold (`#0F1A14` literal in the active tile and goldDim badges via `tokens.gold` text) gives high contrast for the active state. Will verify on-device.
+
+**On-device validation Patrick should walk:**
+1. Open Kitchen → header reads day + time + 'hone.' with a gold period; avatar 'P' top right.
+2. Search bar has a thin gold border.
+3. Hero card: if a recipe is planned, hero is that recipe with 'Tonight' gold badge and 'Cook →' rust pill. If nothing is planned, hero is the top of the All filter with cuisine name as badge and 'Plan +' rust pill.
+4. Tap a category tile (e.g. Italian) → it fills with solid gold; the recipe rows below filter to that cuisine. Tap All to clear.
+5. Recipe rows are tight 58×58-thumb + cuisine-tag + title + meta. Ingredient search still narrows the list.
+6. Tap any row or the hero → recipe detail opens as before.
+
+**Files touched (2):** `mobile/src/theme/tokens.ts`, `mobile/app/(tabs)/index.tsx`.
+
+**Status:** **shipped, awaiting Patrick on-device validation** per R-015. Not self-closing.
+
+---
 
 ### HANDOFF → COO · 2026-05-10 · IN PROGRESS (build #104 — shop tick mirrors to pantry, carousel match counter updates)
 **From:** Senior Engineer
