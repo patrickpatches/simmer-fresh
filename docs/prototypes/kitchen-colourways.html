@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone — Colourway Exploration</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #080808;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 48px 24px 80px;
+    color: #fafaf7;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 52px;
+  }
+  .page-header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    color: #fafaf7;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: rgba(250,250,247,0.5);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .frames {
+    display: flex;
+    gap: 36px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .frame-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    flex: 0 0 auto;
+  }
+
+  .frame-label {
+    text-align: center;
+  }
+  .frame-label h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fafaf7;
+    margin-bottom: 3px;
+  }
+  .frame-label p {
+    font-size: 11px;
+    color: rgba(250,250,247,0.45);
+    max-width: 220px;
+    line-height: 1.5;
+  }
+
+  /* ── phone shell ── */
+  .phone {
+    width: 264px;
+    height: 572px;
+    border-radius: 40px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    box-shadow:
+      0 28px 70px rgba(0,0,0,0.65),
+      0 0 0 1px rgba(0,0,0,0.45);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 0;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .scroll {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* shared structure classes */
+  .s-header { padding: 10px 16px 0; display: flex; align-items: flex-end; justify-content: space-between; }
+  .s-day { font-size: 10px; font-weight: 500; margin-bottom: 1px; letter-spacing: 0.2px; }
+  .s-wordmark { font-family: 'Playfair Display', Georgia, serif; font-size: 27px; font-weight: 900; letter-spacing: -0.8px; line-height: 1; }
+  .s-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; margin-bottom: 2px; }
+
+  .s-search { margin: 10px 16px 0; border-radius: 12px; padding: 9px 12px; display: flex; align-items: center; gap: 7px; font-size: 12px; }
+
+  .s-hero { margin: 11px 16px 0; border-radius: 17px; overflow: hidden; height: 160px; position: relative; flex-shrink: 0; }
+  .s-hero-bg { width: 100%; height: 100%; }
+  .s-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.88) 100%); }
+  .s-hero-badge { position: absolute; top: 10px; right: 10px; border-radius: 7px; padding: 3px 8px; font-size: 9px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; backdrop-filter: blur(4px); }
+  .s-hero-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; }
+  .s-hero-cuisine { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 3px; }
+  .s-hero-title { font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #fafaf7; line-height: 1.15; margin-bottom: 5px; }
+  .s-hero-strip { display: flex; align-items: center; justify-content: space-between; }
+  .s-hero-meta { font-size: 9px; color: rgba(250,250,247,0.6); display: flex; gap: 5px; }
+  .s-hero-cta { border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 600; color: white; }
+
+  .s-cats-label { padding: 12px 16px 7px; font-size: 10px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+  .s-cats { display: flex; gap: 7px; padding: 0 16px 2px; overflow: hidden; }
+  .s-tile { flex: 0 0 auto; width: 56px; border-radius: 12px; padding: 8px 4px 6px; display: flex; flex-direction: column; align-items: center; gap: 3px; border: 1px solid transparent; }
+  .s-tile-icon { font-size: 18px; line-height: 1; }
+  .s-tile-name { font-size: 8.5px; text-align: center; font-weight: 500; }
+
+  .s-recipes-label { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
+  .s-recipes-title { font-size: 11px; font-weight: 600; }
+  .s-recipes-count { font-size: 10px; }
+
+  .s-list { padding: 0 16px; display: flex; flex-direction: column; gap: 7px; }
+  .s-row { display: flex; gap: 10px; align-items: center; border-radius: 12px; padding: 9px 10px; border: 1px solid transparent; }
+  .s-thumb { width: 52px; height: 52px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .s-body { flex: 1; min-width: 0; }
+  .s-cuisine { font-size: 9px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 2px; }
+  .s-title { font-family: 'Playfair Display', Georgia, serif; font-size: 13px; font-weight: 700; line-height: 1.2; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .s-meta { font-size: 9px; display: flex; gap: 5px; }
+  .s-arrow { font-size: 15px; }
+
+  .s-nav { display: flex; justify-content: space-around; padding: 7px 0 12px; flex-shrink: 0; border-top-width: 1px; border-top-style: solid; }
+  .s-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: 0.38; }
+  .s-nav-item.on { opacity: 1; }
+  .s-nav-icon { font-size: 17px; }
+  .s-nav-label { font-size: 8px; font-weight: 500; }
+
+  /* ════════════════════════════════════════
+     COLOURWAY 0 — CURRENT (Dark Sage)
+  ════════════════════════════════════════ */
+  .c0 { --bg: #0F1A14; --sur: #1A2B20; --sur2: #223328; --ink: #FAFAF7; --ink2: rgba(250,250,247,0.58); --ink3: rgba(250,250,247,0.30); --acc: #C9A84C; --acc2: #B84030; --line: rgba(250,250,247,0.09); background: var(--bg); }
+  .c0 .status-row { color: var(--ink); }
+  .c0 .s-day { color: var(--ink3); }
+  .c0 .s-wordmark { color: var(--ink); }
+  .c0 .s-wordmark em { color: var(--acc); font-style: normal; }
+  .c0 .s-avatar { background: var(--sur2); color: var(--ink2); border: 1.5px solid rgba(250,250,247,0.12); }
+  .c0 .s-search { background: var(--sur); border: 1px solid rgba(250,250,247,0.12); color: var(--ink3); }
+  .c0 .s-hero-bg { background: linear-gradient(160deg, #3d2515 0%, #2a1a0e 40%, #1a1008 100%); }
+  .c0 .s-hero-badge { background: rgba(15,26,20,0.68); border: 1px solid rgba(201,168,76,0.4); color: var(--acc); }
+  .c0 .s-hero-cuisine { color: var(--acc); }
+  .c0 .s-hero-cta { background: var(--acc2); }
+  .c0 .s-cats-label { color: var(--ink2); }
+  .c0 .s-tile { background: var(--sur); border-color: rgba(250,250,247,0.10); }
+  .c0 .s-tile-name { color: var(--ink2); }
+  .c0 .s-tile.on { background: rgba(201,168,76,0.22); border-color: rgba(201,168,76,0.55); }
+  .c0 .s-tile.on .s-tile-name { color: var(--acc); }
+  .c0 .s-recipes-title { color: var(--ink); }
+  .c0 .s-recipes-count { color: var(--ink3); }
+  .c0 .s-row { background: var(--sur); border-color: var(--line); }
+  .c0 .s-cuisine { color: var(--acc); }
+  .c0 .s-title { color: var(--ink); }
+  .c0 .s-meta { color: var(--ink3); }
+  .c0 .s-arrow { color: var(--ink3); }
+  .c0 .s-nav { background: var(--sur); border-color: var(--line); }
+  .c0 .s-nav-item { color: var(--ink2); }
+  .c0 .s-nav-item.on .s-nav-label { color: var(--acc2); }
+  .c0 .thumb-a { background: linear-gradient(135deg, #3d2515, #2a1a0e); }
+  .c0 .thumb-b { background: linear-gradient(135deg, #3a5230, #243318); }
+  .c0 .thumb-c { background: linear-gradient(135deg, #3d3320, #2a2210); }
+
+  /* ════════════════════════════════════════
+     COLOURWAY 1 — WARM EDITORIAL (Light)
+     Cream + Terracotta + Deep Brown
+  ════════════════════════════════════════ */
+  .c1 { --bg: #F7F2EA; --sur: #FFFFFF; --sur2: #EDE8DF; --ink: #1C1208; --ink2: rgba(28,18,8,0.55); --ink3: rgba(28,18,8,0.35); --acc: #C4531A; --acc2: #7A9B5A; --line: rgba(28,18,8,0.08); background: var(--bg); }
+  .c1 .status-row { color: var(--ink); }
+  .c1 .s-day { color: var(--ink3); }
+  .c1 .s-wordmark { color: var(--ink); }
+  .c1 .s-wordmark em { color: var(--acc); font-style: normal; }
+  .c1 .s-avatar { background: var(--sur2); color: var(--ink2); border: 1.5px solid var(--line); }
+  .c1 .s-search { background: var(--sur); border: 1px solid var(--line); color: var(--ink3); }
+  .c1 .s-hero-bg { background: linear-gradient(160deg, #8B3510 0%, #5A2208 40%, #3A1505 100%); }
+  .c1 .s-hero-badge { background: rgba(247,242,234,0.85); border: 1px solid rgba(196,83,26,0.3); color: var(--acc); }
+  .c1 .s-hero-cuisine { color: #F5C49A; }
+  .c1 .s-hero-cta { background: var(--acc); }
+  .c1 .s-cats-label { color: var(--ink2); }
+  .c1 .s-tile { background: var(--sur); border-color: var(--line); }
+  .c1 .s-tile-name { color: var(--ink2); }
+  .c1 .s-tile.on { background: rgba(196,83,26,0.12); border-color: rgba(196,83,26,0.5); }
+  .c1 .s-tile.on .s-tile-name { color: var(--acc); }
+  .c1 .s-recipes-title { color: var(--ink); }
+  .c1 .s-recipes-count { color: var(--ink3); }
+  .c1 .s-row { background: var(--sur); border-color: var(--line); }
+  .c1 .s-cuisine { color: var(--acc); }
+  .c1 .s-title { color: var(--ink); }
+  .c1 .s-meta { color: var(--ink3); }
+  .c1 .s-arrow { color: var(--ink3); }
+  .c1 .s-nav { background: var(--sur); border-color: var(--line); }
+  .c1 .s-nav-item { color: var(--ink2); }
+  .c1 .s-nav-item.on .s-nav-label { color: var(--acc); }
+  .c1 .thumb-a { background: linear-gradient(135deg, #C4823A, #8B4E1A); }
+  .c1 .thumb-b { background: linear-gradient(135deg, #7A9B5A, #4A6B35); }
+  .c1 .thumb-c { background: linear-gradient(135deg, #C4A83A, #8B7018); }
+
+  /* ════════════════════════════════════════
+     COLOURWAY 2 — MIDNIGHT SPICE
+     True black + Saffron + Chili
+  ════════════════════════════════════════ */
+  .c2 { --bg: #0B0B0D; --sur: #16161A; --sur2: #1E1E24; --ink: #F5F4EE; --ink2: rgba(245,244,238,0.55); --ink3: rgba(245,244,238,0.28); --acc: #E8A020; --acc2: #D44E1A; --line: rgba(245,244,238,0.07); background: var(--bg); }
+  .c2 .status-row { color: var(--ink); }
+  .c2 .s-day { color: var(--ink3); }
+  .c2 .s-wordmark { color: var(--ink); }
+  .c2 .s-wordmark em { color: var(--acc); font-style: normal; }
+  .c2 .s-avatar { background: var(--sur2); color: var(--ink2); border: 1.5px solid rgba(245,244,238,0.10); }
+  .c2 .s-search { background: var(--sur); border: 1px solid rgba(245,244,238,0.10); color: var(--ink3); }
+  .c2 .s-hero-bg { background: linear-gradient(160deg, #3A2005 0%, #251502 40%, #150D01 100%); }
+  .c2 .s-hero-badge { background: rgba(11,11,13,0.75); border: 1px solid rgba(232,160,32,0.45); color: var(--acc); }
+  .c2 .s-hero-cuisine { color: var(--acc); }
+  .c2 .s-hero-cta { background: var(--acc2); }
+  .c2 .s-cats-label { color: var(--ink2); }
+  .c2 .s-tile { background: var(--sur); border-color: rgba(245,244,238,0.08); }
+  .c2 .s-tile-name { color: var(--ink2); }
+  .c2 .s-tile.on { background: rgba(232,160,32,0.18); border-color: rgba(232,160,32,0.55); }
+  .c2 .s-tile.on .s-tile-name { color: var(--acc); }
+  .c2 .s-recipes-title { color: var(--ink); }
+  .c2 .s-recipes-count { color: var(--ink3); }
+  .c2 .s-row { background: var(--sur); border-color: var(--line); }
+  .c2 .s-cuisine { color: var(--acc); }
+  .c2 .s-title { color: var(--ink); }
+  .c2 .s-meta { color: var(--ink3); }
+  .c2 .s-arrow { color: var(--ink3); }
+  .c2 .s-nav { background: var(--sur); border-color: var(--line); }
+  .c2 .s-nav-item { color: var(--ink2); }
+  .c2 .s-nav-item.on .s-nav-label { color: var(--acc); }
+  .c2 .thumb-a { background: linear-gradient(135deg, #3A2005, #251502); }
+  .c2 .thumb-b { background: linear-gradient(135deg, #2A3520, #1A2212); }
+  .c2 .thumb-c { background: linear-gradient(135deg, #3A1A08, #250E02); }
+
+  /* ════════════════════════════════════════
+     COLOURWAY 3 — CHARCOAL & COPPER
+     Warm dark + Copper + Bone white
+  ════════════════════════════════════════ */
+  .c3 { --bg: #100F0D; --sur: #1C1A16; --sur2: #242118; --ink: #F0EBE0; --ink2: rgba(240,235,224,0.55); --ink3: rgba(240,235,224,0.28); --acc: #C48B3A; --acc2: #8C5A2A; --line: rgba(240,235,224,0.08); background: var(--bg); }
+  .c3 .status-row { color: var(--ink); }
+  .c3 .s-day { color: var(--ink3); }
+  .c3 .s-wordmark { color: var(--ink); }
+  .c3 .s-wordmark em { color: var(--acc); font-style: normal; }
+  .c3 .s-avatar { background: var(--sur2); color: var(--ink2); border: 1.5px solid rgba(240,235,224,0.10); }
+  .c3 .s-search { background: var(--sur); border: 1px solid rgba(240,235,224,0.10); color: var(--ink3); }
+  .c3 .s-hero-bg { background: linear-gradient(160deg, #3A2A10 0%, #251C08 40%, #181204 100%); }
+  .c3 .s-hero-badge { background: rgba(16,15,13,0.72); border: 1px solid rgba(196,139,58,0.45); color: var(--acc); }
+  .c3 .s-hero-cuisine { color: var(--acc); }
+  .c3 .s-hero-cta { background: var(--acc2); }
+  .c3 .s-cats-label { color: var(--ink2); }
+  .c3 .s-tile { background: var(--sur); border-color: rgba(240,235,224,0.09); }
+  .c3 .s-tile-name { color: var(--ink2); }
+  .c3 .s-tile.on { background: rgba(196,139,58,0.20); border-color: rgba(196,139,58,0.55); }
+  .c3 .s-tile.on .s-tile-name { color: var(--acc); }
+  .c3 .s-recipes-title { color: var(--ink); }
+  .c3 .s-recipes-count { color: var(--ink3); }
+  .c3 .s-row { background: var(--sur); border-color: var(--line); }
+  .c3 .s-cuisine { color: var(--acc); }
+  .c3 .s-title { color: var(--ink); }
+  .c3 .s-meta { color: var(--ink3); }
+  .c3 .s-arrow { color: var(--ink3); }
+  .c3 .s-nav { background: var(--sur); border-color: var(--line); }
+  .c3 .s-nav-item { color: var(--ink2); }
+  .c3 .s-nav-item.on .s-nav-label { color: var(--acc); }
+  .c3 .thumb-a { background: linear-gradient(135deg, #3A2A10, #251C08); }
+  .c3 .thumb-b { background: linear-gradient(135deg, #2A3A20, #182412); }
+  .c3 .thumb-c { background: linear-gradient(135deg, #3A1818, #251008); }
+
+  /* swatch strip */
+  .swatches {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .swatch {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Hone — Colourway Comparison</h1>
+  <p>Same layout, same components. Pure colour and tone exploration. Pick what feels right.</p>
+</div>
+
+<div class="frames">
+
+  <!-- ═══ CURRENT — Dark Sage ═══ -->
+  <div class="frame-col">
+    <div class="phone c0">
+      <div class="status-row"><span>9:41</span><span style="font-size:10px;opacity:0.7">●●● WiFi 88%</span></div>
+      <div class="scroll">
+        <div class="s-header">
+          <div><div class="s-day">Saturday evening</div><div class="s-wordmark">hone<em>.</em></div></div>
+          <div class="s-avatar">P</div>
+        </div>
+        <div class="s-search"><span style="opacity:0.38;font-size:12px">🔍</span><span>Search recipes…</span></div>
+        <div class="s-hero">
+          <div class="s-hero-bg"></div>
+          <div class="s-hero-overlay"></div>
+          <div class="s-hero-badge">Tonight</div>
+          <div class="s-hero-content">
+            <div class="s-hero-cuisine">Australian · Beef</div>
+            <div class="s-hero-title">Beef Wellington</div>
+            <div class="s-hero-strip">
+              <div class="s-hero-meta"><span>Alla Wolf-Tasker</span><span>·</span><span>120 min</span></div>
+              <div class="s-hero-cta">Plan ＋</div>
+            </div>
+          </div>
+        </div>
+        <div class="s-cats-label">Browse by cuisine</div>
+        <div class="s-cats">
+          <div class="s-tile on"><div class="s-tile-icon">🍽️</div><div class="s-tile-name">All</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇱🇧</div><div class="s-tile-name">Levantine</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇳</div><div class="s-tile-name">Indian</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇯🇵</div><div class="s-tile-name">Japanese</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇹</div><div class="s-tile-name">Italian</div></div>
+        </div>
+        <div class="s-recipes-label"><span class="s-recipes-title">All recipes</span><span class="s-recipes-count">16</span></div>
+        <div class="s-list">
+          <div class="s-row"><div class="s-thumb thumb-a">🍝</div><div class="s-body"><div class="s-cuisine">Italian</div><div class="s-title">Pasta Carbonara</div><div class="s-meta"><span>30 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-b">🍔</div><div class="s-body"><div class="s-cuisine">American</div><div class="s-title">Smash Burger</div><div class="s-meta"><span>20 min</span><span>·</span><span>Easy</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-c">🥙</div><div class="s-body"><div class="s-cuisine">Levantine</div><div class="s-title">Chicken Shawarma</div><div class="s-meta"><span>150 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+        </div>
+      </div>
+      <div class="s-nav" style="background:#1A2B20;border-color:rgba(250,250,247,0.08)">
+        <div class="s-nav-item on"><span class="s-nav-icon">🍳</span><span class="s-nav-label" style="color:#B84030">Kitchen</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">🥬</span><span class="s-nav-label">Pantry</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">📋</span><span class="s-nav-label">Plan</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">🛒</span><span class="s-nav-label">Shop</span></div>
+      </div>
+    </div>
+    <div class="frame-label">
+      <h3>Current — Dark Sage</h3>
+      <p>Forest green base, rust action, gold identity</p>
+    </div>
+    <div class="swatches">
+      <div class="swatch" style="background:#0F1A14"></div>
+      <div class="swatch" style="background:#B84030"></div>
+      <div class="swatch" style="background:#C9A84C"></div>
+      <div class="swatch" style="background:#4A7C59"></div>
+    </div>
+  </div>
+
+  <!-- ═══ COLOURWAY 1 — Warm Editorial ═══ -->
+  <div class="frame-col">
+    <div class="phone c1">
+      <div class="status-row" style="color:#1C1208"><span>9:41</span><span style="font-size:10px;opacity:0.5">●●● WiFi 88%</span></div>
+      <div class="scroll">
+        <div class="s-header">
+          <div><div class="s-day">Saturday evening</div><div class="s-wordmark">hone<em>.</em></div></div>
+          <div class="s-avatar">P</div>
+        </div>
+        <div class="s-search"><span style="opacity:0.38;font-size:12px">🔍</span><span>Search recipes…</span></div>
+        <div class="s-hero">
+          <div class="s-hero-bg"></div>
+          <div class="s-hero-overlay"></div>
+          <div class="s-hero-badge">Tonight</div>
+          <div class="s-hero-content">
+            <div class="s-hero-cuisine">Australian · Beef</div>
+            <div class="s-hero-title">Beef Wellington</div>
+            <div class="s-hero-strip">
+              <div class="s-hero-meta"><span>Alla Wolf-Tasker</span><span>·</span><span>120 min</span></div>
+              <div class="s-hero-cta">Plan ＋</div>
+            </div>
+          </div>
+        </div>
+        <div class="s-cats-label">Browse by cuisine</div>
+        <div class="s-cats">
+          <div class="s-tile on"><div class="s-tile-icon">🍽️</div><div class="s-tile-name">All</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇱🇧</div><div class="s-tile-name">Levantine</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇳</div><div class="s-tile-name">Indian</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇯🇵</div><div class="s-tile-name">Japanese</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇹</div><div class="s-tile-name">Italian</div></div>
+        </div>
+        <div class="s-recipes-label"><span class="s-recipes-title">All recipes</span><span class="s-recipes-count" style="color:rgba(28,18,8,0.35)">16</span></div>
+        <div class="s-list">
+          <div class="s-row"><div class="s-thumb thumb-a">🍝</div><div class="s-body"><div class="s-cuisine">Italian</div><div class="s-title">Pasta Carbonara</div><div class="s-meta"><span>30 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-b">🍔</div><div class="s-body"><div class="s-cuisine">American</div><div class="s-title">Smash Burger</div><div class="s-meta"><span>20 min</span><span>·</span><span>Easy</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-c">🥙</div><div class="s-body"><div class="s-cuisine">Levantine</div><div class="s-title">Chicken Shawarma</div><div class="s-meta"><span>150 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+        </div>
+      </div>
+      <div class="s-nav" style="background:#FFFFFF;border-color:rgba(28,18,8,0.08)">
+        <div class="s-nav-item on" style="color:#1C1208"><span class="s-nav-icon">🍳</span><span class="s-nav-label" style="color:#C4531A">Kitchen</span></div>
+        <div class="s-nav-item" style="color:#1C1208"><span class="s-nav-icon">🥬</span><span class="s-nav-label">Pantry</span></div>
+        <div class="s-nav-item" style="color:#1C1208"><span class="s-nav-icon">📋</span><span class="s-nav-label">Plan</span></div>
+        <div class="s-nav-item" style="color:#1C1208"><span class="s-nav-icon">🛒</span><span class="s-nav-label">Shop</span></div>
+      </div>
+    </div>
+    <div class="frame-label">
+      <h3>Warm Editorial</h3>
+      <p>Cream base, terracotta accent. Bon Appétit, Mediterranean cookbook</p>
+    </div>
+    <div class="swatches">
+      <div class="swatch" style="background:#F7F2EA;border-color:rgba(0,0,0,0.2)"></div>
+      <div class="swatch" style="background:#C4531A"></div>
+      <div class="swatch" style="background:#D4963A"></div>
+      <div class="swatch" style="background:#7A9B5A"></div>
+    </div>
+  </div>
+
+  <!-- ═══ COLOURWAY 2 — Midnight Spice ═══ -->
+  <div class="frame-col">
+    <div class="phone c2">
+      <div class="status-row"><span>9:41</span><span style="font-size:10px;opacity:0.7">●●● WiFi 88%</span></div>
+      <div class="scroll">
+        <div class="s-header">
+          <div><div class="s-day">Saturday evening</div><div class="s-wordmark">hone<em>.</em></div></div>
+          <div class="s-avatar">P</div>
+        </div>
+        <div class="s-search"><span style="opacity:0.38;font-size:12px">🔍</span><span>Search recipes…</span></div>
+        <div class="s-hero">
+          <div class="s-hero-bg"></div>
+          <div class="s-hero-overlay"></div>
+          <div class="s-hero-badge">Tonight</div>
+          <div class="s-hero-content">
+            <div class="s-hero-cuisine">Australian · Beef</div>
+            <div class="s-hero-title">Beef Wellington</div>
+            <div class="s-hero-strip">
+              <div class="s-hero-meta"><span>Alla Wolf-Tasker</span><span>·</span><span>120 min</span></div>
+              <div class="s-hero-cta">Plan ＋</div>
+            </div>
+          </div>
+        </div>
+        <div class="s-cats-label">Browse by cuisine</div>
+        <div class="s-cats">
+          <div class="s-tile on"><div class="s-tile-icon">🍽️</div><div class="s-tile-name">All</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇱🇧</div><div class="s-tile-name">Levantine</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇳</div><div class="s-tile-name">Indian</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇯🇵</div><div class="s-tile-name">Japanese</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇹</div><div class="s-tile-name">Italian</div></div>
+        </div>
+        <div class="s-recipes-label"><span class="s-recipes-title">All recipes</span><span class="s-recipes-count">16</span></div>
+        <div class="s-list">
+          <div class="s-row"><div class="s-thumb thumb-a">🍝</div><div class="s-body"><div class="s-cuisine">Italian</div><div class="s-title">Pasta Carbonara</div><div class="s-meta"><span>30 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-b">🍔</div><div class="s-body"><div class="s-cuisine">American</div><div class="s-title">Smash Burger</div><div class="s-meta"><span>20 min</span><span>·</span><span>Easy</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-c">🥙</div><div class="s-body"><div class="s-cuisine">Levantine</div><div class="s-title">Chicken Shawarma</div><div class="s-meta"><span>150 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+        </div>
+      </div>
+      <div class="s-nav" style="background:#16161A;border-color:rgba(245,244,238,0.07)">
+        <div class="s-nav-item on"><span class="s-nav-icon">🍳</span><span class="s-nav-label" style="color:#E8A020">Kitchen</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">🥬</span><span class="s-nav-label">Pantry</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">📋</span><span class="s-nav-label">Plan</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">🛒</span><span class="s-nav-label">Shop</span></div>
+      </div>
+    </div>
+    <div class="frame-label">
+      <h3>Midnight Spice</h3>
+      <p>True black, saffron + chili. Premium, modern, no green tint</p>
+    </div>
+    <div class="swatches">
+      <div class="swatch" style="background:#0B0B0D"></div>
+      <div class="swatch" style="background:#D44E1A"></div>
+      <div class="swatch" style="background:#E8A020"></div>
+      <div class="swatch" style="background:#2A3520"></div>
+    </div>
+  </div>
+
+  <!-- ═══ COLOURWAY 3 — Charcoal & Copper ═══ -->
+  <div class="frame-col">
+    <div class="phone c3">
+      <div class="status-row"><span>9:41</span><span style="font-size:10px;opacity:0.7">●●● WiFi 88%</span></div>
+      <div class="scroll">
+        <div class="s-header">
+          <div><div class="s-day">Saturday evening</div><div class="s-wordmark">hone<em>.</em></div></div>
+          <div class="s-avatar">P</div>
+        </div>
+        <div class="s-search"><span style="opacity:0.38;font-size:12px">🔍</span><span>Search recipes…</span></div>
+        <div class="s-hero">
+          <div class="s-hero-bg"></div>
+          <div class="s-hero-overlay"></div>
+          <div class="s-hero-badge">Tonight</div>
+          <div class="s-hero-content">
+            <div class="s-hero-cuisine">Australian · Beef</div>
+            <div class="s-hero-title">Beef Wellington</div>
+            <div class="s-hero-strip">
+              <div class="s-hero-meta"><span>Alla Wolf-Tasker</span><span>·</span><span>120 min</span></div>
+              <div class="s-hero-cta">Plan ＋</div>
+            </div>
+          </div>
+        </div>
+        <div class="s-cats-label">Browse by cuisine</div>
+        <div class="s-cats">
+          <div class="s-tile on"><div class="s-tile-icon">🍽️</div><div class="s-tile-name">All</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇱🇧</div><div class="s-tile-name">Levantine</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇳</div><div class="s-tile-name">Indian</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇯🇵</div><div class="s-tile-name">Japanese</div></div>
+          <div class="s-tile"><div class="s-tile-icon">🇮🇹</div><div class="s-tile-name">Italian</div></div>
+        </div>
+        <div class="s-recipes-label"><span class="s-recipes-title">All recipes</span><span class="s-recipes-count">16</span></div>
+        <div class="s-list">
+          <div class="s-row"><div class="s-thumb thumb-a">🍝</div><div class="s-body"><div class="s-cuisine">Italian</div><div class="s-title">Pasta Carbonara</div><div class="s-meta"><span>30 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-b">🍔</div><div class="s-body"><div class="s-cuisine">American</div><div class="s-title">Smash Burger</div><div class="s-meta"><span>20 min</span><span>·</span><span>Easy</span></div></div><div class="s-arrow">›</div></div>
+          <div class="s-row"><div class="s-thumb thumb-c">🥙</div><div class="s-body"><div class="s-cuisine">Levantine</div><div class="s-title">Chicken Shawarma</div><div class="s-meta"><span>150 min</span><span>·</span><span>Medium</span></div></div><div class="s-arrow">›</div></div>
+        </div>
+      </div>
+      <div class="s-nav" style="background:#1C1A16;border-color:rgba(240,235,224,0.08)">
+        <div class="s-nav-item on"><span class="s-nav-icon">🍳</span><span class="s-nav-label" style="color:#C48B3A">Kitchen</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">🥬</span><span class="s-nav-label">Pantry</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">📋</span><span class="s-nav-label">Plan</span></div>
+        <div class="s-nav-item"><span class="s-nav-icon">🛒</span><span class="s-nav-label">Shop</span></div>
+      </div>
+    </div>
+    <div class="frame-label">
+      <h3>Charcoal & Copper</h3>
+      <p>Warm charcoal, copper accent. Artisanal, craft kitchen, no cold tones</p>
+    </div>
+    <div class="swatches">
+      <div class="swatch" style="background:#100F0D"></div>
+      <div class="swatch" style="background:#8C5A2A"></div>
+      <div class="swatch" style="background:#C48B3A"></div>
+      <div class="swatch" style="background:#4A6B3A"></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
