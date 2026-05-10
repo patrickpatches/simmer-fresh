@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone — Kitchen Editorial (Direction B)</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #0F1A14;
+    --surface:     #1A2B20;
+    --surface2:    #223328;
+    --surface3:    #2a3e30;
+    --ink:         #FAFAF7;
+    --ink2:        rgba(250,250,247,0.60);
+    --ink3:        rgba(250,250,247,0.32);
+    --rust:        #B84030;
+    --rust-light:  #d4594a;
+    --rust-dim:    rgba(184,64,48,0.18);
+    --sage:        #4A7C59;
+    --sage-dim:    rgba(74,124,89,0.22);
+    --gold:        #F2CC2A;
+    --gold-dim:    rgba(201,168,76,0.15);
+    --line:        rgba(250,250,247,0.08);
+    --line2:       rgba(250,250,247,0.14);
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-sans:    'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #080e0a;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    padding: 48px 24px 80px;
+    color: var(--ink);
+  }
+
+  /* ── page ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--ink2);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .frames {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .frame-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .frame-col h3 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--ink3);
+  }
+
+  /* ── phone shell ── */
+  .phone {
+    width: 290px;
+    height: 628px;
+    background: var(--bg);
+    border-radius: 44px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    box-shadow:
+      0 32px 80px rgba(0,0,0,0.7),
+      0 0 0 1px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* notch + status */
+  .notch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px 0;
+    flex-shrink: 0;
+  }
+  .notch-time { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .notch-icons { display: flex; gap: 5px; align-items: center; font-size: 10px; color: var(--ink2); }
+
+  /* scrollable area */
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ══════════════════════════
+     HEADER
+  ══════════════════════════ */
+  .kitch-header {
+    padding: 10px 18px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .kitch-wordmark-group {}
+  .kitch-day {
+    font-size: 11px;
+    color: var(--ink3);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin-bottom: 1px;
+  }
+  .kitch-wordmark {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .kitch-wordmark em {
+    font-style: normal;
+    color: var(--gold);
+  }
+  .kitch-avatar {
+    width: 32px; height: 32px;
+    background: var(--surface2);
+    border-radius: 50%;
+    border: 1.5px solid var(--line2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--ink2);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  /* ══════════════════════════
+     SEARCH BAR
+  ══════════════════════════ */
+  .kitch-search {
+    margin: 12px 18px 0;
+    background: var(--surface);
+    border-radius: 13px;
+    border: 1.5px solid var(--gold);
+    padding: 10px 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: text;
+  }
+  .kitch-search-icon { font-size: 13px; opacity: 0.38; }
+  .kitch-search-text { font-size: 13px; color: var(--ink3); flex: 1; }
+
+  /* ══════════════════════════
+     HERO CARD
+  ══════════════════════════ */
+  .kitch-hero {
+    margin: 14px 18px 0;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 178px;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .kitch-hero-bg {
+    width: 100%; height: 100%;
+    position: relative;
+  }
+  .kitch-hero-img {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kitch-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(15,26,20,0.08) 0%,
+      rgba(15,26,20,0.28) 45%,
+      rgba(15,26,20,0.92) 100%
+    );
+  }
+  .kitch-hero-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(15,26,20,0.68);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 8px;
+    padding: 4px 9px;
+    font-size: 9px; color: var(--gold);
+    font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+  }
+  .kitch-hero-content {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 14px 14px 14px;
+  }
+  .kitch-hero-cuisine {
+    font-size: 10px; color: var(--gold);
+    font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .kitch-hero-title {
+    font-family: var(--font-display);
+    font-size: 19px; font-weight: 700;
+    color: var(--ink); line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .kitch-hero-strip {
+    display: flex; align-items: center; gap: 6px;
+    justify-content: space-between;
+  }
+  .kitch-hero-meta {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .kitch-hero-meta span { font-size: 10px; color: rgba(250,250,247,0.65); }
+  .kitch-hero-meta .dot { color: rgba(250,250,247,0.25); }
+  .kitch-hero-cta {
+    background: var(--rust);
+    border-radius: 9px;
+    padding: 5px 11px;
+    font-size: 10px; color: white; font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  /* ══════════════════════════
+     CATEGORY TILES
+  ══════════════════════════ */
+  .cats-label {
+    padding: 16px 18px 8px;
+    font-size: 11px; font-weight: 600;
+    color: var(--ink2);
+    letter-spacing: 0.3px;
+  }
+  .cats-scroll {
+    display: flex;
+    gap: 9px;
+    padding: 0 18px 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cats-scroll::-webkit-scrollbar { display: none; }
+
+  .cat-tile {
+    flex: 0 0 auto;
+    width: 62px;
+    background: var(--surface);
+    border: 1px solid var(--line2);
+    border-radius: 14px;
+    padding: 9px 4px 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .cat-tile:active { transform: scale(0.95); }
+  .cat-tile.active {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .cat-tile.active .cat-name { color: #0F1A14; font-weight: 600; }
+  .cat-tile.active .cat-icon { filter: none; }
+
+  .cat-icon { font-size: 20px; line-height: 1; }
+  .cat-name {
+    font-size: 9px; color: var(--ink2);
+    text-align: center; line-height: 1.2;
+    font-weight: 500;
+  }
+
+  /* ══════════════════════════
+     RECIPE LIST
+  ══════════════════════════ */
+  .recipes-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 10px;
+  }
+  .recipes-label-text {
+    font-size: 12px; font-weight: 600; color: var(--ink);
+  }
+  .recipes-count {
+    font-size: 11px; color: var(--ink3);
+  }
+
+  .recipe-list {
+    padding: 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 24px;
+  }
+
+  .recipe-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .recipe-row:active { border-color: var(--line2); }
+
+  .recipe-thumb {
+    width: 58px; height: 58px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .recipe-thumb-emoji { font-size: 26px; z-index: 1; }
+
+  .recipe-body { flex: 1; min-width: 0; }
+  .recipe-cuisine-tag {
+    font-size: 9px; color: var(--gold);
+    font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase; margin-bottom: 3px;
+  }
+  .recipe-title {
+    font-family: var(--font-display);
+    font-size: 14px; font-weight: 700;
+    color: var(--ink); line-height: 1.2;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .recipe-meta {
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .recipe-meta span { font-size: 10px; color: var(--ink3); }
+  .recipe-meta .mdot { color: var(--line2); }
+
+  .recipe-badge {
+    padding: 2px 7px; border-radius: 20px;
+    font-size: 8.5px; font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .badge-planned {
+    background: var(--gold-dim);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+  .badge-pantry {
+    background: var(--sage-dim);
+    color: var(--sage);
+    border: 1px solid rgba(74,124,89,0.3);
+  }
+
+  .recipe-arrow {
+    font-size: 16px; color: var(--ink3);
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════
+     FOOD BACKGROUNDS
+  ══════════════════════════ */
+  .bg-1 { background: linear-gradient(145deg, #3d2515 0%, #2a1a0e 100%); }
+  .bg-2 { background: linear-gradient(145deg, #3a5230 0%, #243318 100%); }
+  .bg-3 { background: linear-gradient(145deg, #3d3320 0%, #2a2210 100%); }
+  .bg-4 { background: linear-gradient(145deg, #2a3d4e 0%, #18262e 100%); }
+  .bg-5 { background: linear-gradient(145deg, #4a2820 0%, #301810 100%); }
+  .bg-6 { background: linear-gradient(145deg, #2e3a2e 0%, #1a221a 100%); }
+  .bg-7 { background: linear-gradient(145deg, #3a2c1a 0%, #241c10 100%); }
+  .bg-8 { background: linear-gradient(145deg, #3a1e2e 0%, #221018 100%); }
+
+  /* hero backgrounds per concept */
+  .hero-bg-a { background: linear-gradient(160deg, #3d2515 0%, #2a1a0e 40%, #1a1008 100%); }
+  .hero-bg-b { background: linear-gradient(160deg, #1e3824 0%, #142818 40%, #0c1c10 100%); }
+
+  /* ══════════════════════════
+     BOTTOM NAV
+  ══════════════════════════ */
+  .bottom-nav {
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 14px;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    opacity: 0.45;
+    cursor: pointer;
+  }
+  .nav-item.active { opacity: 1; }
+  .nav-icon { font-size: 18px; }
+  .nav-label { font-size: 8.5px; color: var(--ink2); font-weight: 500; }
+  .nav-item.active .nav-label { color: var(--rust); }
+
+  /* ══════════════════════════
+     NOTES SECTION
+  ══════════════════════════ */
+  .notes {
+    max-width: 640px;
+    margin: 60px auto 0;
+    padding: 0 16px;
+  }
+  .notes h2 {
+    font-family: var(--font-display);
+    font-size: 20px; color: var(--ink);
+    margin-bottom: 24px; text-align: center;
+  }
+  .notes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .note-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid var(--line);
+  }
+  .note-card h4 {
+    font-size: 11px; font-weight: 600;
+    color: var(--gold); letter-spacing: 0.6px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .note-card p { font-size: 12px; color: var(--ink2); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Kitchen — Editorial Direction</h1>
+  <p>Two states: default browse and a category filtered. Same screen, same components.</p>
+</div>
+
+<div class="frames">
+
+  <!-- ═══ STATE 1: Default / All ═══ -->
+  <div class="frame-col">
+    <h3>Default — All recipes</h3>
+    <div class="phone">
+      <div class="notch-row">
+        <span class="notch-time">9:41</span>
+        <div class="notch-icons"><span>●●●</span><span>WiFi</span><span>88%</span></div>
+      </div>
+
+      <div class="scroll-area">
+
+        <!-- header -->
+        <div class="kitch-header">
+          <div class="kitch-wordmark-group">
+            <div class="kitch-day">Saturday evening</div>
+            <div class="kitch-wordmark">hone<em>.</em></div>
+          </div>
+          <div class="kitch-avatar">P</div>
+        </div>
+
+        <!-- search -->
+        <div class="kitch-search">
+          <span class="kitch-search-icon">🔍</span>
+          <span class="kitch-search-text">Search recipes or ingredients…</span>
+        </div>
+
+        <!-- hero -->
+        <div class="kitch-hero">
+          <div class="kitch-hero-bg hero-bg-a">
+            <div class="kitch-hero-img">
+              <span style="font-size:64px;opacity:0.22">🥩</span>
+            </div>
+            <div class="kitch-hero-overlay"></div>
+          </div>
+          <div class="kitch-hero-badge">Tonight</div>
+          <div class="kitch-hero-content">
+            <div class="kitch-hero-cuisine">Australian · Beef</div>
+            <div class="kitch-hero-title">Beef Wellington</div>
+            <div class="kitch-hero-strip">
+              <div class="kitch-hero-meta">
+                <span>Alla Wolf-Tasker</span>
+                <span class="dot">·</span>
+                <span>120 min</span>
+                <span class="dot">·</span>
+                <span>Challenging</span>
+              </div>
+              <div class="kitch-hero-cta">Plan ＋</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- categories -->
+        <div class="cats-label">Browse by cuisine</div>
+        <div class="cats-scroll">
+          <div class="cat-tile active">
+            <div class="cat-icon">🍽️</div>
+            <div class="cat-name">All</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇱🇧</div>
+            <div class="cat-name">Levantine</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇮🇳</div>
+            <div class="cat-name">Indian</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇯🇵</div>
+            <div class="cat-name">Japanese</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇮🇹</div>
+            <div class="cat-name">Italian</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇲🇾</div>
+            <div class="cat-name">Malaysian</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇹🇭</div>
+            <div class="cat-name">Thai</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇫🇷</div>
+            <div class="cat-name">French</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇦🇺</div>
+            <div class="cat-name">Australian</div>
+          </div>
+        </div>
+
+        <!-- list -->
+        <div class="recipes-label">
+          <span class="recipes-label-text">All recipes</span>
+          <span class="recipes-count">16</span>
+        </div>
+        <div class="recipe-list">
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-1"><span class="recipe-thumb-emoji">🍝</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Italian</div>
+              <div class="recipe-title">Pasta Carbonara</div>
+              <div class="recipe-meta">
+                <span>Lucio Galletto</span><span class="mdot">·</span>
+                <span>30 min</span><span class="mdot">·</span>
+                <span>Medium</span>
+                <span class="recipe-badge badge-planned">Planned</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-2"><span class="recipe-thumb-emoji">🍔</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">American</div>
+              <div class="recipe-title">Smash Burger</div>
+              <div class="recipe-meta">
+                <span>Neil Perry</span><span class="mdot">·</span>
+                <span>20 min</span><span class="mdot">·</span>
+                <span>Easy</span>
+                <span class="recipe-badge badge-pantry">Pantry match</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-3"><span class="recipe-thumb-emoji">🥙</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Levantine</div>
+              <div class="recipe-title">Chicken Shawarma</div>
+              <div class="recipe-meta">
+                <span>Home Oven</span><span class="mdot">·</span>
+                <span>150 min</span><span class="mdot">·</span>
+                <span>Medium</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-4"><span class="recipe-thumb-emoji">🍗</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Indian</div>
+              <div class="recipe-title">Butter Chicken</div>
+              <div class="recipe-meta">
+                <span>Maggie Beer</span><span class="mdot">·</span>
+                <span>45 min</span><span class="mdot">·</span>
+                <span>Easy</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-5"><span class="recipe-thumb-emoji">🥩</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">French · Beef</div>
+              <div class="recipe-title">Beef Wellington</div>
+              <div class="recipe-meta">
+                <span>Alla Wolf-Tasker</span><span class="mdot">·</span>
+                <span>120 min</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-6"><span class="recipe-thumb-emoji">🍞</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Baking</div>
+              <div class="recipe-title">Sourdough</div>
+              <div class="recipe-meta">
+                <span>Patrick Nasr</span><span class="mdot">·</span>
+                <span>36 hr</span><span class="mdot">·</span>
+                <span>Challenging</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- bottom nav -->
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <span class="nav-icon">🍳</span>
+          <span class="nav-label" style="color:var(--rust)">Kitchen</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">🥬</span>
+          <span class="nav-label">Pantry</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Plan</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">🛒</span>
+          <span class="nav-label">Shop</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STATE 2: Category filtered — Levantine ═══ -->
+  <div class="frame-col">
+    <h3>Filtered — Levantine</h3>
+    <div class="phone">
+      <div class="notch-row">
+        <span class="notch-time">9:41</span>
+        <div class="notch-icons"><span>●●●</span><span>WiFi</span><span>88%</span></div>
+      </div>
+
+      <div class="scroll-area">
+
+        <div class="kitch-header">
+          <div class="kitch-wordmark-group">
+            <div class="kitch-day">Saturday evening</div>
+            <div class="kitch-wordmark">hone<em>.</em></div>
+          </div>
+          <div class="kitch-avatar">P</div>
+        </div>
+
+        <div class="kitch-search">
+          <span class="kitch-search-icon">🔍</span>
+          <span class="kitch-search-text">Search recipes or ingredients…</span>
+        </div>
+
+        <!-- hero — Levantine specific -->
+        <div class="kitch-hero">
+          <div class="kitch-hero-bg hero-bg-b">
+            <div class="kitch-hero-img">
+              <span style="font-size:64px;opacity:0.22">🫒</span>
+            </div>
+            <div class="kitch-hero-overlay"></div>
+          </div>
+          <div class="kitch-hero-badge" style="color:rgba(250,250,247,0.7);border-color:var(--line2)">Levantine</div>
+          <div class="kitch-hero-content">
+            <div class="kitch-hero-cuisine">Lebanese · Chicken</div>
+            <div class="kitch-hero-title">Chicken Shawarma</div>
+            <div class="kitch-hero-strip">
+              <div class="kitch-hero-meta">
+                <span>Home Oven</span>
+                <span class="dot">·</span>
+                <span>150 min</span>
+                <span class="dot">·</span>
+                <span>Medium</span>
+              </div>
+              <div class="kitch-hero-cta">Cook →</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- categories — Levantine active -->
+        <div class="cats-label">Browse by cuisine</div>
+        <div class="cats-scroll">
+          <div class="cat-tile">
+            <div class="cat-icon">🍽️</div>
+            <div class="cat-name">All</div>
+          </div>
+          <div class="cat-tile active">
+            <div class="cat-icon">🇱🇧</div>
+            <div class="cat-name">Levantine</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇮🇳</div>
+            <div class="cat-name">Indian</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇯🇵</div>
+            <div class="cat-name">Japanese</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇮🇹</div>
+            <div class="cat-name">Italian</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇲🇾</div>
+            <div class="cat-name">Malaysian</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇹🇭</div>
+            <div class="cat-name">Thai</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇫🇷</div>
+            <div class="cat-name">French</div>
+          </div>
+          <div class="cat-tile">
+            <div class="cat-icon">🇦🇺</div>
+            <div class="cat-name">Australian</div>
+          </div>
+        </div>
+
+        <!-- filtered list -->
+        <div class="recipes-label">
+          <span class="recipes-label-text">Levantine</span>
+          <span class="recipes-count">4</span>
+        </div>
+        <div class="recipe-list">
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-3"><span class="recipe-thumb-emoji">🥙</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Lebanese · Chicken</div>
+              <div class="recipe-title">Chicken Shawarma</div>
+              <div class="recipe-meta">
+                <span>Home Oven</span><span class="mdot">·</span>
+                <span>150 min</span><span class="mdot">·</span>
+                <span>Medium</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-7"><span class="recipe-thumb-emoji">🧆</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Levantine · Veg</div>
+              <div class="recipe-title">Hummus</div>
+              <div class="recipe-meta">
+                <span>Patrick Nasr</span><span class="mdot">·</span>
+                <span>15 min</span><span class="mdot">·</span>
+                <span>Easy</span>
+                <span class="recipe-badge badge-pantry">Pantry match</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-8"><span class="recipe-thumb-emoji">🥗</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Lebanese · Salad</div>
+              <div class="recipe-title">Fattoush Salad</div>
+              <div class="recipe-meta">
+                <span>Greg Malouf</span><span class="mdot">·</span>
+                <span>20 min</span><span class="mdot">·</span>
+                <span>Easy</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+          <div class="recipe-row">
+            <div class="recipe-thumb bg-2"><span class="recipe-thumb-emoji">🫕</span></div>
+            <div class="recipe-body">
+              <div class="recipe-cuisine-tag">Levantine · Lamb</div>
+              <div class="recipe-title">Kafta bil Sayniyeh</div>
+              <div class="recipe-meta">
+                <span>Bethany Kehdy</span><span class="mdot">·</span>
+                <span>50 min</span><span class="mdot">·</span>
+                <span>Easy</span>
+              </div>
+            </div>
+            <div class="recipe-arrow">›</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <span class="nav-icon">🍳</span>
+          <span class="nav-label" style="color:var(--rust)">Kitchen</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">🥬</span>
+          <span class="nav-label">Pantry</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Plan</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">🛒</span>
+          <span class="nav-label">Shop</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Design notes ── -->
+<div class="notes">
+  <h2>Design decisions</h2>
+  <div class="notes-grid">
+
+    <div class="note-card">
+      <h4>The wordmark</h4>
+      <p>Playfair Display 900 weight, lowercase. The gold period is the only brand accent — small but distinctive. The day context line above it grounds the screen without taking space.</p>
+    </div>
+
+    <div class="note-card">
+      <h4>Hero card</h4>
+      <p>Changes when a category is active — it promotes the top recipe in that filter, not a static featured recipe. Hero becomes a navigation cue, not decoration.</p>
+    </div>
+
+    <div class="note-card">
+      <h4>Category tiles</h4>
+      <p>Visual tiles beat text chips. Flag emoji gives instant cultural recognition. The row scrolls — 9 cuisines accessible without any overflow chrome. Active state is rust-tinted, not a filled pill.</p>
+    </div>
+
+    <div class="note-card">
+      <h4>Recipe rows vs grid</h4>
+      <p>List rows show chef + cuisine + time in one scan, no tap needed. Grid cards require tapping to get metadata. For a library this curated, list gives faster decisions.</p>
+    </div>
+
+    <div class="note-card">
+      <h4>Gold cuisine tag</h4>
+      <p>The small uppercase gold tag above each recipe title is the visual connector between the category tiles and the list. It tells you exactly what tradition the dish belongs to before your eye reaches the title.</p>
+    </div>
+
+    <div class="note-card">
+      <h4>Engineer notes</h4>
+      <p>No new tokens needed. All existing v0.7 values. Category tiles replace the current chip row 1:1. Hero card is a new component above the list, conditionally shows planned recipe or top result of active filter.</p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
