@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #104 | `d52397f` | Shop -> pantry -> match-counter wiring. Ticking an item in Shop now upserts the pantry row with `have_it = true` (untick = false). Pantry tab `useFocusEffect` extended to refetch pantry items alongside shopping items, so the recipe-match carousel counters recompute on tab return. `pantryId` exported from pantry-helpers so shop.tsx hits the same row on upsert. Same architectural family as REGN-007 — derived state across surfaces. Files: shop.tsx, pantry.tsx, pantry-helpers.ts. |
 | #103 | `d974880` | **Root-cause fix for the 4×-recurring 46-recipes regression.** seed-recipes.ts split into two arrays at the source: `SEED_RECIPES` (16 launch only — the seeder consumes this) and `SEED_RECIPES_HOLDING` (30 holding — defined but never inserted into SQLite). Holding recipes physically cannot reach the DB. Added `pruneOrphanedSeedRecipes` to clean Patrick's existing install (deletes any seeded row whose id is no longer in SEED_RECIPES on every launch — idempotent). Collapsed `getActiveRecipes` to an alias for `getAllRecipes`. Added dev-only `smokeAlarmSeedCount` tripwire that console.errors loudly if the seeded-row count drifts from `SEED_RECIPES.length`. R-016 root-cause closed. |
 | #102 | `e663cfd` | Designer v2.2 visual polish for ServingsSelector — single-pill stepper with stacked number+unit in 52×40 centre cell. Drops the redundant top header label and the right-side "Makes N portions" block; verb ("Serves"/"Makes") moves to the left of the stepper. Stepper buttons 32×40 with opacity 0.28 + disabled state at min. Ingredient scaling math unchanged. |
 | #101 | `7be6b3b` | Cook's 5 scaling-disparity fixes (SMASH_BURGER / PASTA_CARBONARA / BUTTER_CHICKEN / CHICKEN_SCHNITZEL / FLOUR_TORTILLAS — strip hardcoded quantities from step content & mise). Plus FALAFEL/BARRAMUNDI launch swap per Patrick — FALAFEL `not_yet_shipping=true→false` with placeholder DECISION-014 fields (`serve` / 4); BARRAMUNDI flipped to not_yet_shipping. |
@@ -42,6 +43,34 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → COO · 2026-05-10 · IN PROGRESS (build #104 — shop tick mirrors to pantry, carousel match counter updates)
+**From:** Senior Engineer
+**Subject:** Build #104 dispatched on commit `d52397f`. Per R-015 — shipped, awaiting Patrick on-device validation. Not self-closing.
+
+**Diagnosis matched the COO hypothesis exactly:**
+1. `handleToggleInCart` in `shop.tsx` only toggled `in_cart` on the shopping row — no side-effect into pantry.
+2. Pantry tab's `useFocusEffect` re-fetched shopping items but not pantry items, so even if the DB were updated, the carousel stayed stale on tab return.
+3. Match counters are derived from `pantryItems` state correctly — they just never saw the new ingredient.
+
+**Fix (3 files, 1 commit):**
+- `mobile/app/(tabs)/shop.tsx` — `handleToggleInCart` now also `upsertPantryItem(db, { ..., have_it: willBeInCart })`. Tick adds to pantry; untick clears `have_it` (we set false rather than delete so quantity/unit/category set elsewhere isn't clobbered, and so the pantry catalog stays whole for `initializePantryItems`' purposes).
+- `mobile/src/data/pantry-helpers.ts` — `pantryId` exported (was file-private). shop.tsx needs to compute the same id so an existing pantry row is hit on UPSERT instead of a duplicate created.
+- `mobile/app/(tabs)/pantry.tsx` — `useFocusEffect` now `Promise.all`s `getShoppingItems` + `getPantryItems`. Carousel match counters recompute via the existing `useMemo` on `pantryItems`.
+
+**On-device validation Patrick should walk:**
+1. Open a recipe with missing ingredients (e.g. Smash Burger when pantry is empty).
+2. Tap a chip on the recipe to add the ingredient to the shopping list.
+3. Go to Shop tab. Tick the item.
+4. Return to Pantry tab. The recipe-match counter on the carousel for that recipe should now show that ingredient as matched, and the count should be one higher than before.
+5. Go back to Shop tab. Untick the item.
+6. Return to Pantry tab. The counter should drop back.
+
+**Files touched:** 3 — `mobile/app/(tabs)/shop.tsx`, `mobile/app/(tabs)/pantry.tsx`, `mobile/src/data/pantry-helpers.ts`.
+
+**Status:** **shipped, awaiting Patrick on-device validation** per R-015. Not self-closing.
+
+---
 
 ### HANDOFF → COO · 2026-05-10 · IN PROGRESS (build #103 — R-016 root-cause fix + 3 prior items cumulative)
 **From:** Senior Engineer
