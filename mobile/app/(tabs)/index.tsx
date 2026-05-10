@@ -1,25 +1,31 @@
 /**
- * Kitchen -- the anchor tab.
+ * Kitchen — the anchor tab.
  *
- * Editorial hero, search bar, filter chips, recipe card list.
- * Matches hone.html layout: kicker -> headline -> recipe count ->
- * search -> filter chips -> cards.
+ * Editorial direction (locked 2026-05-10, prototype:
+ * docs/prototypes/kitchen-editorial-v1.html). Replaces the previous layout
+ * (hero headline + mode chips + cuisine pill row + card grid) with:
  *
- * BUG-001 FIX: FlatList renders the header as part of the scroll
- * -- no separate sticky header to fight with. The list content starts
- * from insets.top so nothing is obscured.
+ *   header (day/time + 'hone.' wordmark + avatar)
+ *   ↓
+ *   gold-bordered search bar
+ *   ↓
+ *   hero card  — tonight's planned recipe if any, else top of active filter
+ *   ↓
+ *   "Browse by cuisine" + horizontal category tiles  (All + 8 cuisines)
+ *   ↓
+ *   recipe list as full-width rows (58×58 thumb + cuisine tag + title + meta)
  *
- * BUG-002 FIX: keyboardShouldPersistTaps="handled" so the search bar
- * remains focusable through the FlatList.
+ * Why rows instead of cards: at the 16-recipe launch scale, the hero card
+ * already gives one big visual anchor. The list below is for scanning, not
+ * browsing — rows compress the vertical space so users can see 5-6 titles
+ * at once instead of 1.5 cards.
  *
- * DECISION-012 Kitchen improvements:
- *   1. Active chip label -> tokens.onPrimary (legible on rust pill)
- *   2. Dynamic subtitle -- changes based on active filter
- *   3. Ingredient search -- matches ingredient names too
- *   4. "Cooking tonight" pinned row -- surfaces planned recipes
- *   5. Cuisine filter chips -- browse by origin
+ * Why a single gold accent: the introduced `tokens.gold` (#F2CC2A) is the
+ * one editorial cue — period in 'hone.', search border, cuisine tag, active
+ * tile, planned/tonight badges. Anything else (chef name, time, difficulty)
+ * stays muted so the gold reads as the eyebrow of the page.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -36,24 +42,36 @@ import type { Recipe, CuisineId } from '../../src/data/types';
 import {
   getActiveRecipes,
   getFavoriteIds,
-  toggleFavorite,
   getPlannedRecipeIds,
 } from '../../db/database';
-import { RecipeCard } from '../../src/components/RecipeCard';
 import { Icon } from '../../src/components/Icon';
 import { tokens, fonts, shadows } from '../../src/theme/tokens';
 
-// ---------------------------------------------------------------------------
-// Filter types -- mode chips + cuisine chips share the same state
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
+// Categories (Editorial direction — Designer-locked list of 8 + All)
+// ────────────────────────────────────────────────────────────────────────────
 
-type ModeFilter = 'All' | 'Quick' | 'Weekend' | 'Favourites' | 'Yours';
-type Filter = ModeFilter | CuisineId;
+type CategoryId = 'all' | CuisineId;
 
-const MODE_FILTERS: ModeFilter[] = ['All', 'Quick', 'Weekend', 'Favourites', 'Yours'];
+interface Category {
+  id: CategoryId;
+  label: string;
+  emoji: string;
+}
 
-// Display labels for each cuisine ID
-// Only cuisines that have at least one recipe are shown (derived at runtime)
+const CATEGORIES: Category[] = [
+  { id: 'all',        label: 'All',        emoji: '🍽️' },
+  { id: 'levantine',  label: 'Levantine',  emoji: '🇱🇧' },
+  { id: 'indian',     label: 'Indian',     emoji: '🇮🇳' },
+  { id: 'japanese',   label: 'Japanese',   emoji: '🇯🇵' },
+  { id: 'italian',    label: 'Italian',    emoji: '🇮🇹' },
+  { id: 'malaysian',  label: 'Malaysian',  emoji: '🇲🇾' },
+  { id: 'thai',       label: 'Thai',       emoji: '🇹🇭' },
+  { id: 'french',     label: 'French',     emoji: '🇫🇷' },
+  { id: 'australian', label: 'Australian', emoji: '🇦🇺' },
+];
+
+// Display labels for cuisines used outside CATEGORIES (e.g. cuisine tags)
 const CUISINE_LABELS: Record<CuisineId, string> = {
   levantine:  'Levantine',
   indian:     'Indian',
@@ -69,29 +87,51 @@ const CUISINE_LABELS: Record<CuisineId, string> = {
   chinese:    'Chinese',
 };
 
-// ---------------------------------------------------------------------------
-// Dynamic subtitle -- tells the user what they're looking at
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
+// Day / time-of-day greeting — drives the line above the wordmark.
+// ────────────────────────────────────────────────────────────────────────────
 
-function buildSubtitle(
-  filter: Filter,
-  results: Recipe[],
-  totalCount: number,
-): string {
-  const n = results.length;
-  const r = n === 1 ? 'recipe' : 'recipes';
-  switch (filter) {
-    case 'All':        return `${totalCount} recipes · chef-inspired, honestly adapted`;
-    case 'Quick':      return `${n} quick ${r} · under 30 minutes`;
-    case 'Weekend':    return `${n} weekend ${r} · worth the time`;
-    case 'Favourites': return n === 0 ? 'No favourites yet' : `${n} ${n === 1 ? 'favourite' : 'favourites'}`;
-    case 'Yours':      return n === 0 ? 'No recipes added yet' : `${n} of your ${r}`;
-    default: {
-      const label = CUISINE_LABELS[filter as CuisineId] ?? filter;
-      return `${n} ${label} ${r}`;
-    }
-  }
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function dayTimeLabel(now: Date = new Date()): string {
+  const day = DAY_NAMES[now.getDay()];
+  const h = now.getHours();
+  const period = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  return `${day} ${period}`;
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Helpers — cuisine label, time-of-day, recipe meta
+// ────────────────────────────────────────────────────────────────────────────
+
+function recipeCuisineLabel(recipe: Recipe): string {
+  const cuisines = recipe.categories?.cuisines ?? [];
+  if (cuisines.length === 0) return '';
+  const first = cuisines[0]!;
+  return CUISINE_LABELS[first] ?? first;
+}
+
+/**
+ * "Australian · Beef" style line for the hero. Uses the first cuisine and the
+ * first type. Falls back to just the cuisine if no type exists.
+ */
+function recipeHeroEyebrow(recipe: Recipe): string {
+  const cuisine = recipeCuisineLabel(recipe);
+  const types = recipe.categories?.types ?? [];
+  const firstType = types[0];
+  if (!cuisine && !firstType) return '';
+  if (!firstType) return cuisine;
+  // Capitalise the type id (e.g. 'beef' -> 'Beef')
+  const t = firstType.charAt(0).toUpperCase() + firstType.slice(1);
+  return cuisine ? `${cuisine} · ${t}` : t;
+}
+
+// User initial — Patrick.
+const USER_INITIAL = 'P';
+
+// ────────────────────────────────────────────────────────────────────────────
+// Screen
+// ────────────────────────────────────────────────────────────────────────────
 
 export default function KitchenHome() {
   const db = useSQLiteContext();
@@ -101,7 +141,7 @@ export default function KitchenHome() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [plannedIds, setPlannedIds]   = useState<Set<string>>(new Set());
   const [loading, setLoading]         = useState(true);
-  const [filter, setFilter]           = useState<Filter>('All');
+  const [category, setCategory]       = useState<CategoryId>('all');
 
   // Initial load
   useEffect(() => {
@@ -119,40 +159,36 @@ export default function KitchenHome() {
         setLoading(false);
       }
     }
-    load().catch(console.error);
+    load().catch((e) => console.error('Kitchen load failed', e));
     return () => { cancelled = true; };
   }, [db]);
 
-  // Refresh plan state when tab is focused (keep in sync with Plan tab toggles)
+  // Refresh plan state when tab is focused (keep in sync with Plan/Recipe toggles)
   useFocusEffect(
     React.useCallback(() => {
-      getPlannedRecipeIds(db).then(setPlannedIds).catch(console.error);
+      getPlannedRecipeIds(db).then(setPlannedIds).catch((e) =>
+        console.error('plan refresh failed', e),
+      );
     }, [db]),
   );
 
-  const handleToggleFavorite = async (id: string) => {
-    await toggleFavorite(db, id);
-    setFavoriteIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  // ──────────────────────────────────────────────────────────────────────────
+  // Derived
+  // ──────────────────────────────────────────────────────────────────────────
 
-  // Derive which cuisines have at least one recipe -- cuisine row only shows
-  // what actually exists in the library (no orphan chips for empty cuisines)
-  const availableCuisines = React.useMemo((): CuisineId[] => {
-    const seen = new Set<CuisineId>();
+  // Which categories actually have content — hide the empty ones.
+  const availableCategoryIds = useMemo<Set<CategoryId>>(() => {
+    const seen = new Set<CategoryId>(['all']);
     for (const r of recipes) {
-      for (const c of (r.categories?.cuisines ?? [])) seen.add(c);
+      for (const c of r.categories?.cuisines ?? []) seen.add(c);
     }
-    // Preserve the display order from CUISINE_LABELS
-    return (Object.keys(CUISINE_LABELS) as CuisineId[]).filter((c) => seen.has(c));
+    return seen;
   }, [recipes]);
 
-  // Filter + search
-  // Ingredient search: getActiveRecipes eager-loads ingredients, so this is free
-  const results = recipes.filter((r) => {
+  const visibleCategories = CATEGORIES.filter((c) => availableCategoryIds.has(c.id));
+
+  // Filter + search. Ingredient search stays from the previous Kitchen.
+  const results = useMemo(() => recipes.filter((r) => {
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       const hit =
@@ -163,20 +199,26 @@ export default function KitchenHome() {
         r.ingredients.some((i) => i.name.toLowerCase().includes(q));
       if (!hit) return false;
     }
-    switch (filter) {
-      case 'Quick':      return r.time_min <= 30;
-      case 'Weekend':    return r.time_min > 45;
-      case 'Favourites': return favoriteIds.has(r.id);
-      case 'Yours':      return r.user_added;
-      case 'All':        return true;
-      default:
-        // Cuisine filter
-        return r.categories?.cuisines.includes(filter as CuisineId) ?? false;
-    }
-  });
+    if (category === 'all') return true;
+    return r.categories?.cuisines.includes(category as CuisineId) ?? false;
+  }), [recipes, search, category]);
 
-  // All planned recipes (regardless of current filter) for the pinned banner
-  const allPlannedRecipes = recipes.filter((r) => plannedIds.has(r.id));
+  // Pick the hero recipe.
+  //   1. First planned recipe (regardless of filter) — that's "tonight".
+  //   2. Else first recipe in the filtered list.
+  const heroRecipe = useMemo<Recipe | undefined>(() => {
+    const plannedRecipe = recipes.find((r) => plannedIds.has(r.id));
+    if (plannedRecipe) return plannedRecipe;
+    return results[0];
+  }, [recipes, plannedIds, results]);
+
+  const heroIsPlanned = !!heroRecipe && plannedIds.has(heroRecipe.id);
+
+  // Recipes shown in the list — hide the hero from the list to avoid duplicate.
+  const listResults = useMemo(
+    () => results.filter((r) => r.id !== heroRecipe?.id),
+    [results, heroRecipe?.id],
+  );
 
   if (loading) {
     return (
@@ -197,310 +239,562 @@ export default function KitchenHome() {
     <ScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
-        paddingTop: insets.top + 20,
-        paddingHorizontal: 20,
+        paddingTop: insets.top + 10,
         paddingBottom: 140,
         backgroundColor: tokens.bg,
       }}
       style={{ backgroundColor: tokens.bg }}
       showsVerticalScrollIndicator={false}
     >
-      {/* ── HEADER ── */}
-      <View style={{ marginBottom: 20 }}>
-        {/* Kicker */}
-        <Text
-          style={{
-            fontFamily: fonts.sansBold,
-            fontSize: 11,
-            letterSpacing: 2,
-            textTransform: 'uppercase',
-            color: tokens.primaryInk,
-            marginBottom: 4,
-          }}
-        >
-          hone
-        </Text>
-
-        {/* Hero headline */}
-        <Text
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 36,
-            lineHeight: 40,
-            color: tokens.ink,
-          }}
-        >
-          What are you{'\n'}
+      {/* ── HEADER — day/time + wordmark + avatar ─────────────────────────── */}
+      <View
+        style={{
+          paddingHorizontal: 18,
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+        }}
+      >
+        <View>
           <Text
             style={{
-              fontFamily: fonts.displayItalic,
-              fontStyle: 'italic',
-              color: tokens.primary,
+              fontFamily: fonts.sansBold,
+              fontSize: 11,
+              color: tokens.muted,
+              letterSpacing: 0.3,
+              marginBottom: 1,
             }}
           >
-            cooking
-          </Text>{' '}
-          tonight?
-        </Text>
-
-        {/* Dynamic subtitle — responds to active filter */}
-        <Text
-          style={{
-            marginTop: 8,
-            fontFamily: fonts.sans,
-            fontSize: 12,
-            color: tokens.muted,
-          }}
-        >
-          {buildSubtitle(filter, results, recipes.length)}
-        </Text>
-
-        {/* Search bar — matches title, tagline, tags, chef, AND ingredients */}
+            {dayTimeLabel()}
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 30,
+              color: tokens.ink,
+              letterSpacing: -1,
+              lineHeight: 32,
+            }}
+          >
+            hone
+            <Text style={{ color: tokens.gold }}>.</Text>
+          </Text>
+        </View>
         <View
           style={{
-            marginTop: 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 13,
+            width: 32,
+            height: 32,
             borderRadius: 16,
             backgroundColor: tokens.cream,
-            borderWidth: 1,
+            borderWidth: 1.5,
             borderColor: tokens.lineDark,
-            gap: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 2,
+          }}
+          accessibilityLabel="Profile"
+        >
+          <Text style={{ fontFamily: fonts.sansBold, fontSize: 12, color: tokens.inkSoft }}>
+            {USER_INITIAL}
+          </Text>
+        </View>
+      </View>
+
+      {/* ── SEARCH — gold border ──────────────────────────────────────────── */}
+      <View
+        style={{
+          marginHorizontal: 18,
+          marginTop: 12,
+          paddingHorizontal: 13,
+          paddingVertical: 10,
+          borderRadius: 13,
+          backgroundColor: tokens.cream,
+          borderWidth: 1.5,
+          borderColor: tokens.gold,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        <Icon name="search" size={14} color={tokens.muted} />
+        <TextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search recipes or ingredients…"
+          placeholderTextColor={tokens.muted}
+          style={{
+            flex: 1,
+            color: tokens.ink,
+            fontFamily: fonts.sans,
+            fontSize: 13,
+            padding: 0,
+          }}
+          returnKeyType="search"
+          accessibilityLabel="Search"
+        />
+        {search ? (
+          <Pressable
+            onPress={() => setSearch('')}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+          >
+            <Icon name="x" size={14} color={tokens.muted} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {/* ── HERO CARD ─────────────────────────────────────────────────────── */}
+      {heroRecipe ? (
+        <Pressable
+          onPress={() => router.push(`/recipe/${heroRecipe.id}` as never)}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${heroRecipe.title}`}
+          style={{
+            marginHorizontal: 18,
+            marginTop: 14,
+            height: 178,
+            borderRadius: 20,
+            overflow: 'hidden',
             ...shadows.card,
           }}
         >
-          <Icon name="search" size={16} color={tokens.muted} />
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search recipes, chefs, ingredients…"
-            placeholderTextColor={tokens.muted}
+          <HeroBackground recipe={heroRecipe} />
+          {/* Gradient — top transparent → 88% bottom */}
+          <View
             style={{
-              flex: 1,
-              color: tokens.ink,
-              fontFamily: fonts.sans,
-              fontSize: 14,
-              padding: 0,
+              position: 'absolute',
+              left: 0, right: 0, top: 0, bottom: 0,
+              backgroundColor: 'rgba(15,15,15,0.55)',
             }}
-            returnKeyType="search"
           />
-          {search ? (
-            <Pressable
-              onPress={() => setSearch('')}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel="Clear search"
-            >
-              <Icon name="x" size={14} color={tokens.muted} />
-            </Pressable>
-          ) : null}
-        </View>
 
-        {/* Mode chips — All / Quick / Weekend / Favourites / Yours */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingTop: 14 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {MODE_FILTERS.map((chip) => {
-            const active = filter === chip;
-            return (
-              <Pressable
-                key={chip}
-                onPress={() => setFilter(chip)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
+          {/* Top-right badge */}
+          <View
+            style={{
+              position: 'absolute',
+              top: 12, right: 12,
+              backgroundColor: 'rgba(15,15,15,0.68)',
+              borderWidth: 1,
+              borderColor: heroIsPlanned
+                ? 'rgba(242,204,42,0.4)'
+                : tokens.lineDark,
+              borderRadius: 8,
+              paddingHorizontal: 9, paddingVertical: 4,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 9,
+                letterSpacing: 0.5,
+                textTransform: 'uppercase',
+                color: heroIsPlanned ? tokens.gold : tokens.inkSoft,
+              }}
+            >
+              {heroIsPlanned ? 'Tonight' : recipeCuisineLabel(heroRecipe) || 'Featured'}
+            </Text>
+          </View>
+
+          {/* Bottom content */}
+          <View
+            style={{
+              position: 'absolute',
+              left: 0, right: 0, bottom: 0,
+              padding: 14,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 10,
+                letterSpacing: 0.5,
+                textTransform: 'uppercase',
+                color: tokens.gold,
+                marginBottom: 4,
+              }}
+              numberOfLines={1}
+            >
+              {recipeHeroEyebrow(heroRecipe)}
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.display,
+                fontSize: 19,
+                color: tokens.ink,
+                lineHeight: 22,
+                marginBottom: 6,
+              }}
+              numberOfLines={2}
+            >
+              {heroRecipe.title}
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 6,
+              }}
+            >
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                {heroRecipe.source?.chef ? (
+                  <>
+                    <Text style={metaText} numberOfLines={1}>
+                      {heroRecipe.source.chef}
+                    </Text>
+                    <Text style={metaDot}>·</Text>
+                  </>
+                ) : null}
+                <Text style={metaText}>{heroRecipe.time_min} min</Text>
+                <Text style={metaDot}>·</Text>
+                <Text style={metaText}>{heroRecipe.difficulty}</Text>
+              </View>
+              <View
                 style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderRadius: 999,
-                  backgroundColor: active ? tokens.primary : tokens.cream,
-                  borderWidth: 1,
-                  borderColor: active ? tokens.primary : tokens.lineDark,
-                  ...(active ? shadows.card : null),
+                  backgroundColor: tokens.primary,
+                  borderRadius: 9,
+                  paddingHorizontal: 11,
+                  paddingVertical: 5,
                 }}
               >
                 <Text
                   style={{
                     fontFamily: fonts.sansBold,
-                    fontSize: 12,
-                    color: active ? tokens.onPrimary : tokens.inkSoft,
+                    fontSize: 10,
+                    color: tokens.onPrimary,
+                    letterSpacing: 0.2,
                   }}
                 >
-                  {chip}
+                  {heroIsPlanned ? 'Cook →' : 'Plan +'}
                 </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      ) : null}
 
-        {/* Cuisine chips — second row, only rendered when recipes exist.
-            Tap again to deselect (returns to All).
-            Uses sage-green accent to distinguish from mode chips (rust).
-            Why separate rows: mode chips are always relevant; cuisine chips
-            are a secondary browsing layer — two rows makes hierarchy clear. */}
-        {availableCuisines.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingTop: 8 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            {availableCuisines.map((cuisine) => {
-              const active = filter === cuisine;
-              return (
-                <Pressable
-                  key={cuisine}
-                  onPress={() => setFilter(active ? 'All' : cuisine)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 999,
-                    backgroundColor: active ? tokens.sage : tokens.cream,
-                    borderWidth: 1,
-                    borderColor: active ? tokens.sage : tokens.lineDark,
-                    ...(active ? shadows.card : null),
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontFamily: fonts.sansBold,
-                      fontSize: 12,
-                      color: active ? tokens.onPrimary : tokens.inkSoft,
-                    }}
-                  >
-                    {CUISINE_LABELS[cuisine]}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        )}
-
-        {/* Cooking tonight banner — shown when any recipes are planned.
-            Uses amber surface to stand out without competing with the rust primary.
-            Tapping navigates to the Shop tab (shopping list). */}
-        {allPlannedRecipes.length > 0 && (
-          <Pressable
-            onPress={() => router.push('/shop' as never)}
-            accessibilityRole="button"
-            accessibilityLabel={`Cooking tonight: ${allPlannedRecipes.length} ${allPlannedRecipes.length === 1 ? 'recipe' : 'recipes'} planned`}
-            style={{
-              marginTop: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 14,
-              paddingVertical: 11,
-              borderRadius: 14,
-              backgroundColor: tokens.amber,
-              borderWidth: 1,
-              borderColor: tokens.amberLine,
-              gap: 10,
-              ...shadows.card,
-            }}
-          >
-            <Text style={{ fontSize: 16 }}>{'🍽️'}</Text>
-            <View style={{ flex: 1 }}>
+      {/* ── CATEGORY TILES ────────────────────────────────────────────────── */}
+      <Text
+        style={{
+          paddingHorizontal: 18,
+          paddingTop: 16,
+          paddingBottom: 8,
+          fontFamily: fonts.sansBold,
+          fontSize: 11,
+          color: tokens.inkSoft,
+          letterSpacing: 0.3,
+        }}
+      >
+        Browse by cuisine
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 9, paddingHorizontal: 18, paddingBottom: 4 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {visibleCategories.map((cat) => {
+          const active = cat.id === category;
+          return (
+            <Pressable
+              key={cat.id}
+              onPress={() => setCategory(cat.id)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={cat.label}
+              style={{
+                width: 62,
+                paddingTop: 9,
+                paddingBottom: 7,
+                paddingHorizontal: 4,
+                backgroundColor: active ? tokens.gold : tokens.cream,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: active ? tokens.gold : tokens.lineDark,
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Text style={{ fontSize: 20, lineHeight: 22 }}>{cat.emoji}</Text>
               <Text
                 style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 11,
-                  color: tokens.ochre,
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                }}
-              >
-                Cooking tonight
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.sans,
-                  fontSize: 12,
-                  color: tokens.warmBrown,
-                  marginTop: 2,
+                  fontFamily: active ? fonts.sansBold : fonts.sans,
+                  fontSize: 9,
+                  textAlign: 'center',
+                  color: active ? '#0F1A14' : tokens.inkSoft,
+                  lineHeight: 11,
                 }}
                 numberOfLines={1}
               >
-                {allPlannedRecipes.map((r) => r.title).join(' · ')}
+                {cat.label}
               </Text>
-            </View>
-            <Icon name="arrow-right" size={14} color={tokens.ochre} />
-          </Pressable>
-        )}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      {/* ── RECIPE LIST HEADER ─────────────────────────────────────────────── */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 18,
+          paddingTop: 14,
+          paddingBottom: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: fonts.sansBold,
+            fontSize: 12,
+            color: tokens.ink,
+          }}
+        >
+          {category === 'all' ? 'All recipes' : CUISINE_LABELS[category as CuisineId] ?? 'Recipes'}
+        </Text>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+          {results.length} {results.length === 1 ? 'recipe' : 'recipes'}
+        </Text>
       </View>
 
-      {/* ── RECIPE CARDS ──
-          Plain .map() — no FlatList virtualisation. 17 active recipes at
-          ~340px each = ~5.8 KB of DOM; trivial memory cost. Without FlatList
-          there is no estimated-position step and no first-scroll jump. */}
-      {results.length > 0 ? (
-        results.map((item) => (
-          <View key={item.id} style={{ marginBottom: 16 }}>
-            <RecipeCard
-              recipe={item}
-              onPress={(r) => router.push(`/recipe/${r.id}`)}
-              favorite={favoriteIds.has(item.id)}
-              onToggleFavorite={handleToggleFavorite}
-              isPlanned={plannedIds.has(item.id)}
+      {/* ── RECIPE ROWS ────────────────────────────────────────────────────── */}
+      {listResults.length > 0 ? (
+        <View style={{ paddingHorizontal: 18, gap: 8 }}>
+          {listResults.map((r) => (
+            <RecipeRow
+              key={r.id}
+              recipe={r}
+              isPlanned={plannedIds.has(r.id)}
+              isFavorite={favoriteIds.has(r.id)}
+              onPress={() => router.push(`/recipe/${r.id}` as never)}
             />
-          </View>
-        ))
+          ))}
+        </View>
       ) : (
         <View
           style={{
-            marginTop: 24,
-            paddingVertical: 36,
+            marginHorizontal: 18,
+            marginTop: 12,
+            paddingVertical: 32,
             paddingHorizontal: 24,
             backgroundColor: tokens.cream,
-            borderRadius: 18,
+            borderRadius: 16,
             borderWidth: 1,
-            borderColor: tokens.line,
+            borderColor: tokens.lineDark,
             alignItems: 'center',
-            ...shadows.card,
           }}
         >
-          <View
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: tokens.primaryLight,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 14,
-            }}
-          >
-            <Text style={{ fontSize: 26 }}>{'🍽️'}</Text>
-          </View>
-          <Text
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 18,
-              color: tokens.ink,
-              marginBottom: 6,
-            }}
-          >
-            Nothing matches
+          <Text style={{ fontFamily: fonts.display, fontSize: 16, color: tokens.ink, marginBottom: 4 }}>
+            Nothing here yet
           </Text>
           <Text
             style={{
               fontFamily: fonts.sans,
-              fontSize: 13,
+              fontSize: 12,
               color: tokens.muted,
               textAlign: 'center',
-              lineHeight: 18,
-              maxWidth: 260,
+              lineHeight: 17,
+              maxWidth: 240,
             }}
           >
-            Try clearing the search or switching the filter to see more.
+            Clear the search or pick a different cuisine to see more.
           </Text>
         </View>
       )}
     </ScrollView>
   );
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// HeroBackground — recipe.hero_url with image fallback to gradient bands
+// ────────────────────────────────────────────────────────────────────────────
+
+function HeroBackground({ recipe }: { recipe: Recipe }) {
+  // Without expo-image we'd risk crashing; the existing RecipeCard uses
+  // expo-image, but for the hero we use a simple gradient + emoji fallback
+  // that always renders. If a hero_url is set the recipe screen handles
+  // photography downstream — the Kitchen hero stays a clean editorial card.
+  const bands = recipe.hero_fallback ?? [tokens.bgDeep, tokens.cream, tokens.bgDeep];
+  return (
+    <View style={{ position: 'absolute', inset: 0 as unknown as number, width: '100%', height: '100%' }}>
+      <View style={{ flex: 1, backgroundColor: bands[0] }} />
+      <View style={{ flex: 1, backgroundColor: bands[1] }} />
+      <View style={{ flex: 1, backgroundColor: bands[2] }} />
+      {recipe.emoji ? (
+        <Text
+          style={{
+            position: 'absolute',
+            bottom: 40, right: 18,
+            fontSize: 64,
+            opacity: 0.22,
+          }}
+        >
+          {recipe.emoji}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// RecipeRow — list row per the Editorial spec
+// ────────────────────────────────────────────────────────────────────────────
+
+function RecipeRow({
+  recipe,
+  isPlanned,
+  isFavorite: _isFavorite,
+  onPress,
+}: {
+  recipe: Recipe;
+  isPlanned: boolean;
+  isFavorite: boolean;
+  onPress: () => void;
+}) {
+  const cuisine = recipeCuisineLabel(recipe);
+  const bands = recipe.hero_fallback ?? [tokens.bgDeep, tokens.cream, tokens.bgDeep];
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${recipe.title}. ${recipe.time_min} minutes. ${recipe.difficulty}.`}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        backgroundColor: tokens.cream,
+        borderRadius: 14,
+        padding: 11,
+        borderWidth: 1,
+        borderColor: tokens.line,
+      }}
+    >
+      {/* Thumbnail */}
+      <View
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: 10,
+          overflow: 'hidden',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+        }}
+      >
+        <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[0] }} />
+        <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[1] }} />
+        <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[2] }} />
+        {recipe.emoji ? (
+          <Text
+            style={{
+              position: 'absolute',
+              fontSize: 26,
+              opacity: 0.92,
+            }}
+          >
+            {recipe.emoji}
+          </Text>
+        ) : null}
+      </View>
+
+      {/* Body */}
+      <View style={{ flex: 1, minWidth: 0 }}>
+        {cuisine ? (
+          <Text
+            style={{
+              fontFamily: fonts.sansBold,
+              fontSize: 9,
+              color: tokens.gold,
+              letterSpacing: 0.4,
+              textTransform: 'uppercase',
+              marginBottom: 3,
+            }}
+            numberOfLines={1}
+          >
+            {cuisine}
+          </Text>
+        ) : null}
+        <Text
+          style={{
+            fontFamily: fonts.display,
+            fontSize: 14,
+            color: tokens.ink,
+            lineHeight: 17,
+            marginBottom: 4,
+          }}
+          numberOfLines={1}
+        >
+          {recipe.title}
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+          {recipe.source?.chef ? (
+            <>
+              <Text style={metaSmall} numberOfLines={1}>
+                {recipe.source.chef}
+              </Text>
+              <Text style={metaSmallDot}>·</Text>
+            </>
+          ) : null}
+          <Text style={metaSmall}>{recipe.time_min} min</Text>
+          <Text style={metaSmallDot}>·</Text>
+          <Text style={metaSmall}>{recipe.difficulty}</Text>
+          {isPlanned ? (
+            <View
+              style={{
+                marginLeft: 4,
+                paddingHorizontal: 7,
+                paddingVertical: 2,
+                borderRadius: 20,
+                backgroundColor: tokens.goldDim,
+                borderWidth: 1,
+                borderColor: 'rgba(242,204,42,0.3)',
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 8.5,
+                  color: tokens.gold,
+                  letterSpacing: 0.2,
+                }}
+              >
+                Planned
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+
+      {/* Chevron */}
+      <Text style={{ fontSize: 16, color: tokens.muted, fontFamily: fonts.sans }}>›</Text>
+    </Pressable>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Shared text styles
+// ────────────────────────────────────────────────────────────────────────────
+
+const metaText = {
+  fontFamily: fonts.sans,
+  fontSize: 10,
+  color: 'rgba(245,239,232,0.65)',
+};
+const metaDot = {
+  fontFamily: fonts.sans,
+  fontSize: 10,
+  color: 'rgba(245,239,232,0.25)',
+};
+const metaSmall = {
+  fontFamily: fonts.sans,
+  fontSize: 10,
+  color: tokens.muted,
+};
+const metaSmallDot = {
+  fontFamily: fonts.sans,
+  fontSize: 10,
+  color: tokens.lineDark as unknown as string,
+};

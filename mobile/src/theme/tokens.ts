@@ -30,7 +30,7 @@
  *   inkSoft #C4B8A8   ~8.5:1  AAA body
  *   muted   #8A7E72   ~4.2:1  AA large text + UI components
  *   primary #B84030   ~3.8:1  AA large text + UI components (rust on near-black)
- *   sage    #52B87A   ~5.1:1  AA — readable as pill text and icons on dark
+ *   sage    #2E5E3E   ~2.9:1  use for icons/badges only, not body text
  */
 
 export const tokens = {
@@ -56,9 +56,9 @@ export const tokens = {
   // Secondary — forest green (Pantry/Shop eyebrow, "See all" chip, "why" callouts,
   //   step completion, checked states).
   // Text on solid forest = tokens.onPrimary (#FAFAF7).
-  sage:      '#52B87A',                      // brightened for AA contrast on dark bg (~5:1)
-  sageDeep:  '#2E6B48',
-  sageLight: 'rgba(82,184,122,0.14)',        // tinted from brighter sage hue
+  sage:      '#3A7050',                      // slightly lightened for dark bg legibility
+  sageDeep:  '#1E4E2E',
+  sageLight: 'rgba(46,94,62,0.20)',          // raised opacity for dark bg
 
   // Tertiary — amber/ochre (mise en place zone, badges, highlights).
   ochre:     '#C07038',                      // slightly lightened for dark bg
@@ -75,6 +75,13 @@ export const tokens = {
   sky:      '#7AAABB',
   skyDeep:  '#5A8A9B',
   skyLight: 'rgba(122,170,187,0.20)',
+
+  // Gold — Editorial accent (introduced 2026-05-10). Used by the Kitchen
+  // wordmark period, search border, active category tile fill, recipe
+  // cuisine tags, and 'Tonight'/'Planned' badges. Single source of truth
+  // for the gold accent so any future tweak propagates everywhere at once.
+  gold:    '#F2CC2A',
+  goldDim: 'rgba(242,204,42,0.15)',
 
   // Structural — white-alpha on dark surfaces
   line:     'rgba(255,255,255,0.07)',   // subtle dividers
