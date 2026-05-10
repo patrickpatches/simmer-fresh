@@ -17,7 +17,7 @@
 | `seed-recipes.ts` — `chef` field | `'Patrick Nasr'` | Change to `'Patrick N.'` |
 | `seed-recipes.ts` — `notes` field | Old wording | Change to: `"Patrick's own recipe — soft, buttery, adapted over time from multiple sources."` |
 | `seed-recipes.ts` — `base_servings` | `5` | Change to `13` |
-| `seed-recipes.ts` — ingredient amounts | 200g flour / 40g lard / 130ml water / 4g salt | Flour → 300g; fat → butter 50g (range 40–60g); water → 170ml (range 165–180ml); salt stays 6g. |
+| `seed-recipes.ts` — ingredient amounts | 200g flour / 40g lard / 130ml water / 4g salt | Flour → 300g; fat → butter 50g (range 40–60g); water → 170ml (range 165–180ml); salt → 8g. |
 | `seed-recipes.ts` — butter substitution text | "still delicious" | Remove "delicious" — voice violation |
 
 **Engineer action required:** Apply all fixes in the left column to `seed-recipes.ts` before this recipe is considered migration-complete.
@@ -33,14 +33,14 @@ Base recipe: 300g flour → ~13 tortillas.
 | Bread flour | 300g | ~23g |
 | Unsalted butter | 50g | ~4g |
 | Water | 170ml | ~13ml |
-| Fine sea salt | 6g | ~0.5g |
-| **Total dough** | **526g** | **~40g per ball** |
+| Fine sea salt | 8g | ~0.5g |
+| **Total dough** | **528g** | **~40g per ball** |
 
 40g dough ball → ~20cm diameter tortilla (proper flour tortilla / soft taco size). Rolled paper-thin.
 
 Hydration: 170ml water / 300g flour = 56.7% (flour basis). Butter adds ~9g water (butter is ~18% water), so effective hydration is ~59.7%. Slightly tighter than some flour tortilla recipes — the full rest is essential for rolling paper-thin without spring-back.
 
-Salt: 6g / 300g flour = 2% — on the mild side, appropriate here because the fillings carry the seasoning. Weigh this — do not measure by volume. Fine sea salt at 6g is approximately 1 level teaspoon, not 2.
+Salt: 8g / 300g flour = 2.67% — properly seasoned. The tortilla should taste worth eating plain; this is the level that makes the wheat and butter flavours come forward. Weigh this — do not measure by volume. Fine sea salt at 8g is approximately 1.5 level teaspoons, but measuring by volume is unreliable: weigh it.
 
 Fat range: 40–60g. The lower end produces a slightly lighter tortilla; the higher end is richer and more pliable. 50g is the reliable midpoint.
 
@@ -107,7 +107,7 @@ Soft, buttery flour tortillas made with high-protein bread flour — the kind th
 
 - **Water, 170ml, heated to 60–70°C** — `scales: linear`. Range: 165–180ml. Too hot to hold a finger in comfortably. `scaling_note: "The hydration ratio is fixed at roughly 56–60% by flour weight. Do not add extra water if the dough feels sticky — stickiness resolves with kneading."`
 
-- **Fine sea salt, 6g** — `scales: linear`. Weigh this — do not measure by volume. Fine sea salt at 6g is approximately 1 level teaspoon; measuring by volume risks doubling the salt. `scaling_note: "Scale linearly with flour weight."`
+- **Fine sea salt, 8g** — `scales: linear`. Weigh this — do not measure by volume. Fine sea salt at 8g is approximately 1.5 level teaspoons. Measuring by volume is unreliable — weigh it. `scaling_note: "Scale linearly with flour weight."`
   - *Substitution:* Kosher salt — `perfect_swap`. Same weight, same result. Do not substitute by volume.
 
 ---
@@ -128,7 +128,7 @@ Soft, buttery flour tortillas made with high-protein bread flour — the kind th
 **Step 1 — Weigh everything first (2 min)**  
 Get the scale out before anything else. Weigh all four ingredients into separate containers. Baking rewards precision — guessing volumes produces a different dough every time.
 
-*Why note:* Fine sea salt at 6g is about 1 level teaspoon. If you measure by volume and use 2 teaspoons, you have doubled the salt. Weight is the only reliable measure.
+*Why note:* Fine sea salt at 8g is approximately 1.5 level teaspoons. Measuring by volume is unreliable enough to ruin the ratio — weigh it. Weight is the only reliable measure.
 
 ---
 
@@ -259,11 +259,11 @@ Keep 2–3 days at room temperature in an airtight bag, or refrigerated for up t
   every step.
 **Recipe maths verified (updated):** 300g flour / 13 tortillas = ~40g dough balls =
   ~20cm tortillas. Hydration 56.7% flour basis (effective ~59.7% with butter water
-  content). Salt 2% — mild, appropriate given bold fillings. All checks out.
+  content). Salt 2.67% — properly seasoned at Michelin level; makes the tortilla worth eating plain. All checks out.
 **Scaling-disparity:** PASS — "one piece per tortilla, roughly 40g" in mise and step 5.
   No hardcoded count in step or mise content.
 **Data fixes required (engineer):** Primary fat butter not lard; chef name; source
   notes; base_servings 13; ingredient amounts (300g flour / 50g butter / 170ml water /
-  6g salt); remove "delicious" from substitution.
+  8g salt); remove "delicious" from substitution.
 **Recommendation:** FIX BEFORE SHIP — pending engineer data fixes to seed-recipes.ts.
 ```
