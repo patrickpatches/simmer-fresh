@@ -29,9 +29,6 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
-| #102 | `e663cfd` | Designer v2.2 visual polish for ServingsSelector — single-pill stepper with stacked number+unit in 52×40 centre cell. Drops the redundant top header label and right-side "Makes N portions" block; verb ("Serves"/"Makes") moves to the left of the stepper. Stepper buttons 32×40 with opacity 0.28 + disabled state at min. Ingredient scaling math unchanged — only the visible chrome is rebuilt. |
-| #101 | `7be6b3b` | Cook's 5 scaling-disparity fixes (SMASH_BURGER / PASTA_CARBONARA / BUTTER_CHICKEN / CHICKEN_SCHNITZEL / FLOUR_TORTILLAS — strip hardcoded quantities from step content & mise). Plus FALAFEL/BARRAMUNDI launch swap per Patrick — FALAFEL `not_yet_shipping=true→false` with placeholder DECISION-014 fields (`serve` / 4); BARRAMUNDI flipped to not_yet_shipping. Launch count stays exactly 16. |
-| #100 | `9f53396` | UX polish — stripped "Scaled N× up" chip from recipe header. A multiplier with no visible baseline confused more than it clarified. Header now shows just "HOW MANY BURGERS" / etc. on the left; the stepper + "Makes N burgers" label already conveyed everything the chip did. |
 | #99 | `418f8eb` | **Critical fix** — DECISION-014 portion-sizing fields now reach SQLite. Builds #96–#98 shipped the schema/seed/UI but the DB layer was blind to the new fields, so every recipe rendered the legacy "people / portions" fallback on-device. This commit adds schema migration 8 (4 new columns: output_unit, output_unit_plural, output_default, extra_for_tomorrow_label), extends RecipeRow / rowToRecipe / insertRecipe in database.ts, and extends refreshSeedRecipeFields in seed.ts. On Patrick's existing APK, migration 8 ALTERs the columns onto his recipes table on first launch; refreshSeedRecipeFields then UPDATEs the 16 launch rows with their authored values. **Install #99 to actually see "Makes 4 burgers" etc.** |
 | #98 | `b4e83f2` | Polish — "Serves N portions" for per-person dishes (was "Serves N serves"); ServingsSelector special-cases unit==='serve'/'person' to render "portion/portions" while keeping cook's authored data verbatim. _NOTE: portion-sizing did not actually work on-device — see #99 fix._ |
 | #97 | `b43ae55` | Docs only (COO push) — no app code change vs #96. Adds Designer's `docs/prototypes/recipe-detail-v2.2.html` + handoffs/decision-log updates. Functional behaviour identical to #96 |
@@ -42,60 +39,79 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → COO · 2026-05-09 · IN PROGRESS (build #102 — three-item bundle: 2 already shipped earlier, 1 just shipped)
-**From:** Senior Engineer
-**Subject:** Build #102 dispatched on commit `e663cfd`. Two of the three URGENT items had already shipped in earlier builds before this handoff was written; the third (Designer v2.2 visual polish) is what just shipped in #102. Per R-015, marking IN PROGRESS — awaiting Patrick on-device validation, will not self-close.
+### HANDOFF → Senior Engineer · 2026-05-10 · OPEN (Kitchen screen redesign — Editorial direction)
+**From:** Product Designer
+**Subject:** Redesign the Kitchen browse screen to the locked Editorial direction
+**Why:** Patrick approved the Editorial layout, category tile design, gold search border, and updated gold token. This replaces the current Kitchen screen layout entirely.
 
-**Item-by-item state:**
+**What's done:**
+- Full prototype at `docs/prototypes/kitchen-editorial-v1.html` — two states (All / Levantine filtered), bottom nav, all components
+- Colourway exploration at `docs/prototypes/kitchen-colourways.html` (reference only — dark sage direction confirmed)
 
-1. **Strip "Scaled N× up" chip** — already shipped in **build #100** (commit `9f53396`). Patrick saw it on his existing #99 install because that build pre-dates the strip. Once Patrick installs #100 or later, the chip is gone. No work needed.
-2. **Designer v2.2 visual polish** — shipped in **build #102** (commit `e663cfd`, this commit). Single-pill stepper, stacked number+unit in 52×40 centre cell, dimmed buttons at 0.28 opacity. Drops the previously-redundant top header label and the right-side "Makes N portions" block.
-3. **Cook's 5 scaling-disparity fixes** — already shipped in **build #101** (commit `7be6b3b`). SMASH_BURGER, PASTA_CARBONARA, BUTTER_CHICKEN, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS — step content & mise stripped of hardcoded ingredient quantities. Note: cook's quoted OLD strings for 3 of the 5 didn't match seed-recipes.ts verbatim, so I applied her intent against the actual wording — see the COO note above this one.
+**Locked design decisions:**
 
-**Patrick should install build #102 to see all three together** — it's the cumulative head of main. Older builds work but only show their own slice.
+1. **Gold token updated** — `#F2CC2A` replaces `#C9A84C` throughout. Update `tokens.ts` first; everything downstream inherits it.
 
-**On-device validation Patrick should walk after installing #102:**
-1. Open Smash Burger → header is gone; you should see a single pill: "Makes" on the left, stepper on the right with "2" / "burgers" stacked inside the centre cell. No right-side "Makes N portions" block.
-2. Tap − until count = 1. The − button should dim to 28% opacity and stop responding to taps.
-3. Tap + a few times — number increments, unit caption switches "burger" ↔ "burgers" automatically.
-4. Open Pasta Carbonara → reads "Serves" + stacked "4 / people" in the centre cell.
-5. Open Roast Chicken → "Makes" + "1 / chicken" in the centre cell.
-6. Open Hummus → "Makes" + "2 / cups". Stepper drops to "1 / cup" at min.
-7. Open Flour Tortillas → "Makes" + "13 / tortillas".
-8. Tap a leftover-mode pill (lunch / 3-day / week). The recipe-aware hint underneath should change as before. Note: there's no longer a separately-rendered scaled-total number — the consequence is communicated by the mode pill copy + the extra_for_tomorrow_label hint.
-9. Cook's 5 fixes: scale Smash Burger to 6× and confirm step text reads "Divide the beef into one ball per patty" (not "100g balls"). Same drill on the other four.
+2. **Wordmark header** — Replace current screen title with:
+   - Small day/time context line above: derive from `new Date()`, format as `{dayName} {morning/afternoon/evening}`
+   - `hone.` in Playfair Display 900, lowercase, 30sp. The period is `#F2CC2A`.
+   - User avatar (initial) top-right, 32dp circle, `surface2` fill
 
-**Behaviour change worth flagging:** v2.2 removes the previously-visible scaled-total number ("Makes 8 portions" when in leftover mode at base 4). The scale math is unchanged — ingredients still reflect the leftover mode — but the user no longer sees a separate "you'll end up with N total" number. If Patrick wants the scaled total resurrected somewhere, that's a follow-up; the Designer's prototype intentionally consolidates.
+3. **Gold search border** — Search bar: `border: 1.5px solid #F2CC2A` (solid). Background stays `surface`.
 
-**Files touched (this commit only):** `mobile/src/components/ServingsSelector.tsx` (rewrite — 308 lines)
+4. **Category tiles** (replaces current horizontal chip row):
+   - Scrollable row, each tile 62dp wide, `surface` bg, `borderRadius: 14`
+   - Emoji (20sp) stacked above cuisine label (9sp, `ink2`)
+   - Section label above: "Browse by cuisine" 11sp uppercase `ink2`
+   - **Active: solid `#F2CC2A` fill + border, label `#0F1A14` weight 600**
+   - Order: All · Levantine · Indian · Japanese · Italian · Malaysian · Thai · French · Australian
+   - Tapping filters the recipe list to that cuisine
 
-**Blocks:** Nothing. Visual polish is cosmetic; functional behaviour intact.
+5. **Hero card** — full-width, `borderRadius: 20`, height 178dp, above category row:
+   - Tonight's planned recipe if one exists; otherwise top recipe in active filter
+   - Gradient overlay top→bottom (transparent to 88% dark)
+   - Badge top-right: "Tonight" or cuisine name
+   - Bottom: gold cuisine tag → Playfair title 19sp → chef · time strip + rust CTA pill
 
-**Status:** **shipped, awaiting Patrick on-device validation** per R-015.
+6. **Recipe list rows** (replaces card grid):
+   - Full-width rows, `surface` bg, `borderRadius: 14`, `border: 1px solid line`
+   - 58×58dp thumbnail left, `borderRadius: 10`
+   - Gold cuisine tag (9sp uppercase) → Playfair title (14sp 700) → meta (chef · time · difficulty, `ink3`)
+   - Chevron right. Planned badge: gold-dim. Pantry match: sage-dim.
+
+7. **Section header** above list: recipe count right-aligned `ink3`.
+
+**Files touched:** `mobile/src/constants/tokens.ts`, `mobile/app/(tabs)/index.tsx`, new components in `mobile/src/components/`
+
+**Prototype:** `docs/prototypes/kitchen-editorial-v1.html`
+
+**Blocks:** COO to sequence. `tokens.gold` change will propagate everywhere — verify no regressions on other screens before shipping.
 
 ---
 
-### HANDOFF → COO · 2026-05-09 · OPEN (launch-roster correction — FALAFEL replaces BARRAMUNDI; FALAFEL needs proper unit spec from Cook)
-**From:** Senior Engineer
-**Subject:** Cook's most recent scaling-disparity handoff implicitly listed the wrong launch-16. Patrick's call: keep cook's list (FALAFEL in, BARRAMUNDI out). Shipped the swap on commit `7be6b3b` (build #101) but FALAFEL still needs proper DECISION-014 unit data from Cook.
+### HANDOFF → Senior Engineer · 2026-05-09 · OPEN URGENT (build #100 — three items, one build)
+**From:** Patrick (via COO)
+**Subject:** Three items Patrick wants in the next build, all small, all queued. Bundle into one commit / one build.
+**Why:** Patrick installed #99, portion sizing now actually shows on-device (good), but two things he's asked for previously haven't been actioned yet, plus the cook just shipped a content-disparity fix. Group them into build #100.
 
-**What's done:**
-- Cook's 5 scaling-disparity fixes applied to seed-recipes.ts. Where her quoted OLD strings matched verbatim I used them; where they differed (SMASH_BURGER, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS) I preserved the intent against the actual wording.
-- FALAFEL: `not_yet_shipping: true` removed (now in launch). **Placeholder DECISION-014 fields added: `output_unit: 'serve'`, `output_default: 4`.** Renders "Serves 4 portions" — functional but generic.
-- BARRAMUNDI: `not_yet_shipping: true` added. Unit fields preserved for when it returns.
-- Launch count verified: exactly 16.
+**What's needed:**
 
-**Discrepancies the COO should log:**
-- Cook's handoff said FALAFEL was launch (it wasn't) and missed BARRAMUNDI (which was). Patrick chose to honour cook's list — swap is now real.
-- Cook's quoted OLD strings for SMASH_BURGER step content, CHICKEN_SCHNITZEL dish-2 / brine, and FLOUR_TORTILLAS divide step didn't match seed-recipes.ts verbatim. Intent was clear so I applied it; cook should sanity-check the rewritten text on-device.
+1. **Remove the "Scaled Nx up" chip from the recipe screen.** It still shows on-device after picking a non-default count (e.g., "Scaled 1.3x up"). The chip is meaningless — user has no baseline to compare to. The +/− stepper and the "Makes N burgers" copy already convey everything needed. Strip the chip from `mobile/app/recipe/[id].tsx` (or wherever it renders). ~5 minutes.
 
-**What's needed from Cook (next pass):**
-1. **FALAFEL DECISION-014 spec.** Author the proper unit — e.g. `output_unit: 'ball'`, `output_default: 12`, plus `extra_for_tomorrow_label`. Current placeholder reads "Serves 4 portions" which is inconsistent with the other 15 launch recipes that all carry per-recipe units. Update `docs/coo/culinary-research/launch-recipe-units.md` first; engineer migrates after.
-2. **Validate the 5 scaling-disparity fixes** read correctly at base and scaled counts after Patrick installs build #101.
+2. **Implement the Designer's v2.2 visual polish** per the existing handoff below ("scaling control visual polish — implement v2.2 design"). Centre cell resize to 52×40px, stack number + unit label vertically, dimmed +/− on min/max with pointerEvents:none, conditional render of extra-for-tomorrow row. Reference `docs/prototypes/recipe-detail-v2.2.html` for measurements. Designer's mockup has been waiting; ship it now. ~half a session.
 
-**Files touched:** `mobile/src/data/seed-recipes.ts` (5 fix sites + 2 flag flips + FALAFEL placeholder unit fields)
+3. **Apply the cook's 5-recipe content fixes** per the existing handoff below ("scaling-disparity fix"). Five recipes (SMASH_BURGER, PASTA_CARBONARA, BUTTER_CHICKEN, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS) need their step content / mise text updated to remove hardcoded ingredient quantities so step copy stops lying when the user scales. Exact replacements listed in that handoff. ~30 minutes.
 
-**Blocks:** v0.7.x roster polish. FALAFEL renders functionally on launch; placeholder is a known UX inconsistency until cook authors the proper unit spec.
+**Validation gate per R-015:**
+- `npx tsc --noEmit` clean
+- `tail -c 200` of every modified file confirms clean end of byte stream
+- Engineer does NOT declare done — declares "shipped to main, awaiting Patrick on-device validation"
+- Build log entry written for #100 in the table at the top of this file (per R-015 build-note rule)
+
+**Files touched:** `mobile/app/recipe/[id].tsx` (chip removal + v2.2 wiring), `mobile/src/components/ServingsSelector.tsx` (v2.2 visual), `mobile/src/data/seed-recipes.ts` (cook's 5 recipe content fixes).
+
+**Cost:** ~1 session combined.
+**Blocks:** Patrick installing build #100 and walking the validation list.
 
 ---
 
@@ -882,81 +898,4 @@ The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`
    - **Cook steps** stay as currently designed — photos, why-notes, doneness cues
    - **Finishing & tasting** is a final framing block, similar treatment to "What to know before you start" but at the end
    - **Leftovers & storage** is the last block — light, conclusive
-4. Preserve all current design tokens (v0.7 dark) — gold accent, dark surfaces, Playfair display, Inter body. No visual direction change.
-5. Engineer handoff block at the bottom of the prototype.
-6. Written rationale at the bottom — what changes, what stays, what risks.
-**Files touched:** `docs/prototypes/recipe-detail-v2.html`
-**Blocks:** Engineer's UI implementation (second engineer pass for DECISION-008).
-
----
-
-### HANDOFF → Culinary Verifier · 2026-05-05 · IN PROGRESS (DECISION-009 — Batch 1 ✅ Batch 2 ✅, Batch 3 open)
-**From:** Patrick (via COO)
-**Subject:** Apply full 10-section recipe template to every recipe in the database
-**Why:** DECISION-009 expanded scope from the 17 priority recipes to every recipe in `mobile/src/data/seed-recipes.ts` plus the six new recipes in `docs/coo/culinary-research/`. Every recipe gets the full template treatment. Patrick: *"I prefer to fix every single recipe, everyone in my database."*
-
-**BATCH 1 — Six new recipes — DONE ✅ (2026-05-05)**
-All six new recipe files written in `docs/coo/culinary-research/` with full 10-section template:
-- `chicken-schnitzel.md` ✅ — photography priority
-- `chicken-vegetable-stir-fry.md` ✅
-- `beef-lasagne.md` ✅ — after Marcella Hazan's Bolognese method
-- `roast-lamb-rosemary-garlic.md` ✅
-- `fish-and-chips.md` ✅
-- `falafel.md` ✅ — Levantine; Palestinian/Lebanese/Syrian/Jordanian attribution; no single chef fabricated
-
-Each carries: chef/traditional attribution, Australian English, metric units, substitutions with quality flags, per DECISION-007 every ingredient has `scales` flag + `scaling_note` where chef knowledge changes the answer, photography shot list.
-
-**BATCH 2 — 11 launch-priority existing recipes — DONE ✅ (2026-05-06)**
-All 11 launch-priority expansion files written in `docs/coo/culinary-research/` with full 10-section template + chef audit notes per recipe:
-- `carbonara.md` ✅ — whole egg scaling fix flagged for Engineer; attribution URL needs verification
-- `bolognese.md` ✅ — ATTRIBUTION FAIL flagged: channel URL not recipe URL; garlic timing why_note added
-- `butter-chicken.md` ✅ — time_min UX CRITICAL fix flagged (90 → 330 for overnight marinade)
-- `green-curry.md` ✅ — "Thai aubergine" → "Thai eggplant" fix flagged; attribution verification needed
-- `smash-burger.md` ✅ — whole-food claim flagged for Patrick (American cheese was the trigger; field has since been retired entirely)
-- `roast-chicken.md` ✅ — time_min fix flagged for overnight dry brine (14h+ commitment invisible)
-- `pavlova.md` ✅ — fan oven instruction moved to before-you-start; attribution verification needed
-- `barramundi.md` ✅ — salt/pepper ingredient split flagged; one of strongest recipes in library
-- `shawarma.md` ✅ — overnight marinade, "London kitchen" → "home kitchen", tags beef → lamb flagged
-- `hummus.md` ✅ — attribution URL → book citation fix flagged (Reem Kassis, *The Palestinian Table*)
-- `pad-thai.md` ✅ — tofu duplication decision flagged for Patrick; attribution verification needed
-
-**Data fixes for Engineer (from Batch 2 audit):**
-- Carbonara: `whole egg → scales: 'linear'` + scaling_note
-- Butter chicken: `time_min` 90 → 330
-- Roast chicken: `time_min` update to reflect overnight brine commitment
-- Shawarma: `time_min` update; description "London kitchen" → "home kitchen"; tags `'beef'` → `'lamb'`
-- Green curry: `'Thai aubergine'` → `'Thai eggplant'`
-- Bolognese: `video_url` — find specific Andy Cooks video or change `source.chef` to 'Hone Kitchen'
-- Hummus: attribution URL → book citation "After Reem Kassis, *The Palestinian Table* (Phaidon, 2017)"
-
-**Patrick decisions — BOTH RESOLVED ✅ (2026-05-06):**
-- Smash burger: **Drop the whole-food claim.** Rule was: only set true for completely unprocessed meals; American cheese fails. The field itself was retired across the entire repo on 2026-05-07 — schema and seed data no longer carry it.
-- Pad Thai: **Keep tofu as a listed ingredient (traditional prawn-and-tofu version).** Remove tofu from the prawns substitution array. Add correct substitutions: extra tofu (200g, good_swap, vegetarian), chicken thigh (great_swap), squid (great_swap). See `pad-thai.md` for full substitution spec.
-
-**Attribution URLs to verify before ship (all 4 flagged):**
-- Carbonara: `https://www.youtube.com/watch?v=5t7JLjr1FxQ` (Gordon Ramsay)
-- Butter Chicken: `https://www.youtube.com/watch?v=mrDJ2K3JXsA` (Joshua Weissman)
-- Green Curry: `https://www.youtube.com/watch?v=lleTlMtbN8Q` (Andy Cooks)
-- Pad Thai: `https://www.youtube.com/watch?v=6Lb1PyJxVQM` (Andy Cooks)
-
-**BATCH 3 — Remaining ~25 existing seed library recipes — OPEN (next session)**
-Walk through `mobile/src/data/seed-recipes.ts` and write expansion notes in `docs/coo/culinary-research/<recipe-slug>.md` for each remaining recipe.
-
-Recipes remaining (in seed-recipes.ts order):
-- [ ] chicken-adobo
-- [ ] classic-beef-stew
-- [ ] musakhan
-- [ ] kafta-meshwi
-- [ ] fattoush
-- [ ] prawn-tacos-pineapple-salsa
-- [ ] sourdough-starter
-- [ ] sourdough-country-loaf
-- [ ] mushroom-risotto
-- [ ] baja-fish-tacos
-- [ ] french-onion-soup
-- [ ] red-wine-braised-short-ribs
-- [ ] shoyu-ramen
-- [ ] beef-wellington
-- [ ] tarka-dal
-- [ ] scrambled-eggs
-- [ ] spag
+4. Preserve all current design tok
