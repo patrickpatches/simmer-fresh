@@ -29,6 +29,10 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #103 | `d974880` | **Root-cause fix for the 4×-recurring 46-recipes regression.** seed-recipes.ts split into two arrays at the source: `SEED_RECIPES` (16 launch only — the seeder consumes this) and `SEED_RECIPES_HOLDING` (30 holding — defined but never inserted into SQLite). Holding recipes physically cannot reach the DB. Added `pruneOrphanedSeedRecipes` to clean Patrick's existing install (deletes any seeded row whose id is no longer in SEED_RECIPES on every launch — idempotent). Collapsed `getActiveRecipes` to an alias for `getAllRecipes`. Added dev-only `smokeAlarmSeedCount` tripwire that console.errors loudly if the seeded-row count drifts from `SEED_RECIPES.length`. R-016 root-cause closed. |
+| #102 | `e663cfd` | Designer v2.2 visual polish for ServingsSelector — single-pill stepper with stacked number+unit in 52×40 centre cell. Drops the redundant top header label and the right-side "Makes N portions" block; verb ("Serves"/"Makes") moves to the left of the stepper. Stepper buttons 32×40 with opacity 0.28 + disabled state at min. Ingredient scaling math unchanged. |
+| #101 | `7be6b3b` | Cook's 5 scaling-disparity fixes (SMASH_BURGER / PASTA_CARBONARA / BUTTER_CHICKEN / CHICKEN_SCHNITZEL / FLOUR_TORTILLAS — strip hardcoded quantities from step content & mise). Plus FALAFEL/BARRAMUNDI launch swap per Patrick — FALAFEL `not_yet_shipping=true→false` with placeholder DECISION-014 fields (`serve` / 4); BARRAMUNDI flipped to not_yet_shipping. |
+| #100 | `9f53396` | UX polish — stripped "Scaled N× up" chip from recipe header. A multiplier with no visible baseline confused more than it clarified. Header now shows just "HOW MANY BURGERS" / etc. on the left; the stepper + "Makes N burgers" label already conveyed everything the chip did. |
 | #99 | `418f8eb` | **Critical fix** — DECISION-014 portion-sizing fields now reach SQLite. Builds #96–#98 shipped the schema/seed/UI but the DB layer was blind to the new fields, so every recipe rendered the legacy "people / portions" fallback on-device. This commit adds schema migration 8 (4 new columns: output_unit, output_unit_plural, output_default, extra_for_tomorrow_label), extends RecipeRow / rowToRecipe / insertRecipe in database.ts, and extends refreshSeedRecipeFields in seed.ts. On Patrick's existing APK, migration 8 ALTERs the columns onto his recipes table on first launch; refreshSeedRecipeFields then UPDATEs the 16 launch rows with their authored values. **Install #99 to actually see "Makes 4 burgers" etc.** |
 | #98 | `b4e83f2` | Polish — "Serves N portions" for per-person dishes (was "Serves N serves"); ServingsSelector special-cases unit==='serve'/'person' to render "portion/portions" while keeping cook's authored data verbatim. _NOTE: portion-sizing did not actually work on-device — see #99 fix._ |
 | #97 | `b43ae55` | Docs only (COO push) — no app code change vs #96. Adds Designer's `docs/prototypes/recipe-detail-v2.2.html` + handoffs/decision-log updates. Functional behaviour identical to #96 |
@@ -38,6 +42,41 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → COO · 2026-05-10 · IN PROGRESS (build #103 — R-016 root-cause fix + 3 prior items cumulative)
+**From:** Senior Engineer
+**Subject:** Build #103 dispatched on commit `d974880`. R-016 (the 4×-recurring "46 recipes coming back") root-caused and architecturally fixed. Per R-015 — shipped, awaiting Patrick on-device validation. Not self-closing.
+
+**Root cause of the regression:**
+
+The `not_yet_shipping` flag lived only in memory on each Recipe const. It was in the Zod schema and on each in-memory recipe, but **never persisted to SQLite** — no column, no INSERT, no rowToRecipe mapping, no UPDATE in `refreshSeedRecipeFields`. Every launch the DB read returned all 46 recipes with `r.not_yet_shipping === undefined`, the JS-side filter `!r.not_yet_shipping` evaluated `true` for every row, Kitchen showed all 46. Earlier "fixes" all touched the in-memory seed array — the data never reached SQLite.
+
+**Architectural fix instead of another patch:**
+
+1. `seed-recipes.ts` split at the source. `SEED_RECIPES` is exactly 16 launch recipes — the only array the seeder consumes. `SEED_RECIPES_HOLDING` holds the 30 (defined, never inserted). To promote one later: move its name from HOLDING into SEED_RECIPES.
+2. `pruneOrphanedSeedRecipes(db)` runs every launch in `setupDatabase`. Deletes any seeded row whose id is no longer in `SEED_RECIPES`. Cleans up Patrick's existing install where the 30 holding rows still sit in SQLite from earlier seeds. ON DELETE CASCADE handles meal_plan / favorites / ingredient_swaps.
+3. `getActiveRecipes` collapsed to an alias for `getAllRecipes` — the old filter was always a no-op at runtime. Kept the name so the 2 callers (Kitchen, Pantry) don't need to be touched.
+4. `smokeAlarmSeedCount(db)` dev-only tripwire. After seed/sync/refresh/prune, if seeded-row count != `SEED_RECIPES.length`, `console.error` with the offending ids. Production APK silent.
+
+**Cumulative state in build #103:**
+- Item 1 (chip removal) — already in #100 (`9f53396`)
+- Item 2 (Designer v2.2 polish) — already in #102 (`e663cfd`)
+- Item 3 (Cook's 5 fixes) — already in #101 (`7be6b3b`)
+- Item 4 (R-016 root-cause fix) — **this commit** (`d974880`, build #103)
+
+Patrick should install build #103 — it's cumulative HEAD of main.
+
+**On-device validation:**
+1. Open Kitchen → exactly 16 cards. Force-close, reopen → still 16. **The "creep back" is gone.**
+2. Open Pantry → "What I have" matching only considers the 16.
+3. Deep-link to Smash Burger / Carbonara / Roast Chicken / Hummus / Flour Tortillas / Falafel still works.
+4. Sanity: any meal-plan entries you set on a holding recipe (very unlikely since they were never browseable) will be cascade-deleted by the prune. Verify on-device.
+
+**Files touched (4):** `mobile/src/data/seed-recipes.ts`, `mobile/db/seed.ts`, `mobile/db/database.ts`, `mobile/app/_layout.tsx`.
+
+**Status:** **shipped, awaiting Patrick on-device validation** per R-015. Not self-closing.
+
+---
 
 ### HANDOFF → Senior Engineer · 2026-05-10 · OPEN (Kitchen screen redesign — Editorial direction)
 **From:** Product Designer
