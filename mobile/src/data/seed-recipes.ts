@@ -4363,7 +4363,7 @@ const FLOUR_TORTILLAS: Recipe = {
   id: 'flour-tortillas',
   title: 'Flour Tortillas',
   tagline: "Patrick's hand-rolled flour tortillas — paper-thin and impossibly soft",
-  base_servings: 5,
+  base_servings: 10,
   yield_unit: 'tortilla',
   time_min: 90,
   difficulty: 'intermediate',
@@ -4371,7 +4371,7 @@ const FLOUR_TORTILLAS: Recipe = {
   user_added: false,
   generated_by_claude: false,
     source: {
-    chef: 'Patrick Nasr',
+    chef: 'Patrick N.',
     notes: "Patrick's own recipe — soft, buttery, adapted over time from multiple sources.",
   },
   emoji: '🫓',
@@ -4380,7 +4380,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 'i1',
       name: 'Bread flour, high protein (~12.5g per 100g)',
-      amount: 200,
+      amount: 160,
       unit: 'g',
       scales: 'linear',
       prep: 'Lighthouse brand recommended — available at Coles and Woolworths but sells out quickly',
@@ -4394,16 +4394,16 @@ const FLOUR_TORTILLAS: Recipe = {
     },
     {
       id: 'i2',
-      name: 'Lard',
-      amount: 40,
+      name: 'Unsalted butter, softened',
+      amount: 30,
       unit: 'g',
       scales: 'linear',
-      prep: '30–50g to taste — more lard gives a flakier, richer tortilla',
+      prep: 'Softened, not melted — soft enough to press into the flour, not pourable',
       substitutions: [
         {
-          ingredient: 'Unsalted butter, softened',
-          changes: "Slightly less flaky but still delicious. Make sure it's softened, not melted — melted butter coats the flour differently and you lose the fine breadcrumb texture in the rubbing step.",
-          quality: 'great_swap',
+          ingredient: 'Lard',
+          changes: "Traditional choice for a slightly flakier, richer tortilla. Same weight. The classic Mexican-tortillería fat — coats the flour proteins in a way butter cannot fully match.",
+          quality: 'good_swap',
         },
         {
           ingredient: 'Coconut oil, solid',
@@ -4415,7 +4415,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 'i3',
       name: 'Hot water',
-      amount: 130,
+      amount: 100,
       unit: 'ml',
       scales: 'linear',
       prep: 'Heat to ~60°C — hot to touch but not boiling',
@@ -4423,10 +4423,10 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 'i4',
       name: 'Fine sea salt',
-      amount: 4,
+      amount: 5,
       unit: 'g',
       scales: 'linear',
-      prep: 'About 1¼ teaspoons — weigh it for accuracy',
+      prep: 'About 1 teaspoon — weigh it for accuracy',
       substitutions: [
         {
           ingredient: 'Kosher salt',
@@ -4440,7 +4440,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 's1',
       title: 'Weigh everything first',
-      content: 'Get your food scale out before anything else. Weigh 200g flour, 4g salt, 40g lard, and measure 130ml water into a separate container. Baking rewards precision — guessing volumes changes the hydration ratio and you end up with different dough every time.',
+      content: 'Get your food scale out before anything else. Weigh 160g bread flour, 5g salt, 30g softened butter, and measure 100ml water into a separate container. Baking rewards precision — guessing volumes changes the hydration ratio and you end up with different dough every time.',
       why_note: 'One gram of salt is a heaped teaspoon in one brand and a flat half in another. Weight removes that variable entirely. This is non-negotiable for consistent results.',
     },
     {
@@ -4451,7 +4451,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 's3',
       title: 'Rub in the fat',
-      content: 'Add the lard and work it into the flour with your fingertips. Pinch, press, and rub continuously — break up every clump until the mixture looks like fine, even breadcrumbs throughout. No large lumps of fat should remain. This step is worth doing properly.',
+      content: 'Add the butter and work it into the flour with your fingertips. Pinch, press, and rub continuously — break up every clump until the mixture looks like fine, even breadcrumbs throughout. No large lumps of fat should remain. This step is worth doing properly.',
       stage_note: 'Look for fine breadcrumbs with no large clumps of fat',
       why_note: "The fat coats the flour proteins before the water goes in — that's what gives tortillas their pliable, short texture rather than a bready chew. Clumpy fat means uneven texture across the tortilla.",
     },
@@ -4465,7 +4465,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 's5',
       title: 'Divide into balls',
-      content: 'Divide the dough into one piece per tortilla, about 40g each. Round each piece in your palm. They don\'t need to be perfect spheres — roughly even is enough.',
+      content: 'Divide the dough into one piece per tortilla, about 30g each. Round each piece in your palm. They don\'t need to be perfect spheres — roughly even is enough.',
     },
     {
       id: 's6',
@@ -4478,7 +4478,7 @@ const FLOUR_TORTILLAS: Recipe = {
     {
       id: 's7',
       title: 'Roll out paper-thin',
-      content: 'On a lightly floured surface, roll each ball until paper-thin — 2–3mm thick, roughly the size of a side plate. Work from the centre outward, rotating the dough a quarter-turn between rolls. If a ball resists and springs back, set it aside under the tea towel and move to the next one. Come back after 2–3 minutes.',
+      content: 'On a lightly floured surface, roll each ball until paper-thin — 2–3mm thick, roughly the size of a small saucer (12–13cm — taco size, not burrito size). Work from the centre outward, rotating the dough a quarter-turn between rolls. If a ball resists and springs back, set it aside under the tea towel and move to the next one. Come back after 2–3 minutes.',
     },
     {
       id: 's8',
@@ -4513,21 +4513,21 @@ const FLOUR_TORTILLAS: Recipe = {
   ],
   before_you_start: [
     "Weigh every ingredient. Flour tortillas are a hydration ratio — a heaped cup of flour versus a level one can be 20g different, which changes the dough character entirely. Baking rewards precision; this recipe was developed and tested by weight, not volume.",
-    "Use lard, not butter, not oil. Lard coats the flour proteins before the water touches them, which produces a short, pliable texture rather than a bready chew. Butter has too much water; vegetable oil doesn't coat the flour in the same way. If lard is unavailable, vegetable shortening is the next-best substitute.",
+    "Use unsalted butter, softened. Butter coats the flour proteins so the dough turns short and pliable rather than bready, and gives Patrick's tortillas their characteristic soft buttery flavour. Lard is the traditional substitute for a slightly flakier, richer tortilla; vegetable oil does not coat the flour the same way and is not recommended.",
     "The rest after kneading is not optional — it is the mechanism. Gluten tightens during kneading; 45–60 minutes of rest relaxes it so the dough rolls thin without springing back. A dough that resists rolling has not rested long enough. Set a timer and wait.",
   ],
   mise_en_place: [
-    "Weigh 200g plain flour, 4g salt, and 40g lard (or vegetable shortening) into separate containers before mixing begins.",
-    "Heat 130ml water to 60°C — hot but not scalding. A thermometer is useful; otherwise, it should be too hot to hold your finger in for more than 2 seconds.",
+    "Weigh 160g bread flour, 5g salt, and 30g softened unsalted butter into separate containers before mixing begins.",
+    "Heat 100ml water to 60°C — hot but not scalding. A thermometer is useful; otherwise, it should be too hot to hold your finger in for more than 2 seconds.",
     "Combine the flour and salt in a large bowl and mix through.",
-    "Rub the lard into the flour with your fingertips until the mixture looks like fine breadcrumbs with no visible clumps of fat. This takes 3–4 minutes and is worth doing thoroughly.",
+    "Rub the butter into the flour with your fingertips until the mixture looks like fine breadcrumbs with no visible clumps of fat. This takes 3–4 minutes and is worth doing thoroughly.",
     "Add the hot water and mix until a rough dough forms, then knead for 5–8 minutes until smooth and silky. Do not add more flour — the dough starts tacky and resolves with kneading.",
-    "Divide into one ball per tortilla, about 40g each. Cover with a damp tea towel and rest at room temperature for at least 45–60 minutes.",
+    "Divide into one ball per tortilla, about 30g each. Cover with a damp tea towel and rest at room temperature for at least 45–60 minutes.",
   ],
-  finishing_note: "A properly rested dough ball should roll to 2–3mm thickness — roughly the size of a small side plate — without springing back. If it resists, cover it and rest it 5 more minutes before trying again. Cook in a dry pan over medium heat. Three flips: 10 seconds on the first side, 15 seconds on the second, then the third flip produces the puff — steam inflates a pocket between the two layers like a balloon. When it settles back, it is done. Stack immediately in a lidded pot with a tea towel inside the lid to catch condensation. The steam in the pot is what keeps them soft and pliable for up to 20 minutes. Left on a bare plate, they stiffen in 2 minutes.",
+  finishing_note: "A properly rested dough ball should roll to 2–3mm thickness — roughly the size of a small saucer, 12–13cm across (taco size) — without springing back. If it resists, cover it and rest it 5 more minutes before trying again. Cook in a dry pan over medium heat. Three flips: 10 seconds on the first side, 15 seconds on the second, then the third flip produces the puff — steam inflates a pocket between the two layers like a balloon. When it settles back, it is done. Stack immediately in a lidded pot with a tea towel inside the lid to catch condensation. The steam in the pot is what keeps them soft and pliable for up to 20 minutes. Left on a bare plate, they stiffen in 2 minutes.",
   leftovers_note: "Flour tortillas keep 2–3 days at room temperature in an airtight bag, or refrigerated for up to a week. To reheat: 15–20 seconds in a dry hot pan, or wrapped in a damp paper towel in the microwave for 20 seconds. Freeze between layers of baking paper for up to 2 months — thaw at room temperature. Stale tortillas that have gone dry can be cut into triangles, fried briefly in hot oil, and used as totopos (chips) for guacamole or bean dip.",
   output_unit: "tortilla",
-  output_default: 13,
+  output_default: 10,
   extra_for_tomorrow_label: "+N tortillas — reheat in a dry pan in 15-20 sec with no quality loss; double batch keeps 2-3 days",
 };
 
