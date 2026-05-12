@@ -51,7 +51,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { tokens } from '../src/theme/tokens';
 import { initDatabase } from '../db/database';
-import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields, pruneOrphanedSeedRecipes, smokeAlarmSeedCount } from '../db/seed';
+import { seedDatabase, syncNewSeedRecipes, refreshSeedRecipeFields, pruneOrphanedSeedRecipes, smokeAlarmSeedCount, validateDecision015 } from '../db/seed';
 
 /**
  * Full database bootstrap sequence, called once by SQLiteProvider on open.
@@ -96,6 +96,12 @@ async function setupDatabase(db: SQLiteDatabase): Promise<void> {
   // Step 6 (2026-05-09): dev-only smoke alarm. Loud console.error if the
   // seeded-row count drifts from SEED_RECIPES.length. Silent in production.
   await smokeAlarmSeedCount(db);
+
+  // Step 7 (2026-05-12, DECISION-015): substitution quality sanity check +
+  // step_overrides validator. Counts green/yellow/red across SEED_RECIPES,
+  // screams if any legacy 4-tier values remain, and lists any step_overrides
+  // keys that don't match an actual step id on the parent recipe.
+  validateDecision015();
 }
 
 // Keep splash up until fonts are loaded — avoids system-font flash.

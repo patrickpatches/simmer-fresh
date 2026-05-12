@@ -1104,6 +1104,29 @@ export default function RecipeDetailScreen() {
               const numBadgeBg = done ? c.sage : (cooking ? c.cardBg : tokens.ink);
               const numBadgeFg = done ? tokens.ink : (cooking ? c.ink : '#FFF');
               const numBadgeBorder = cooking && !done ? c.lineDark : 'transparent';
+
+              // DECISION-015 — step_overrides resolution.
+              // Walk active swaps; the LAST one with an override for this
+              // step id wins (Object.entries preserves insertion order for
+              // string keys, so the most-recently-activated swap takes the
+              // step). Designer's spec calls for sage border on the step
+              // card + a single "adapted for your X swap" cue below.
+              let adaptedContent: string | undefined;
+              let adaptedSwapName: string | undefined;
+              for (const [ingId, swap] of Object.entries(activeSwaps)) {
+                if (!swap) continue;
+                const override = swap.step_overrides?.[step.id];
+                if (override) {
+                  adaptedContent = override;
+                  adaptedSwapName = swap.ingredient;
+                  // No break — keep walking so a later swap can win.
+                  // Defensive guardrail: if step_overrides references an
+                  // unknown step id, the lookup just misses and falls
+                  // through. The startup validator catches the bad mapping.
+                }
+                void ingId;
+              }
+              const isAdapted = !!adaptedContent;
               return (
                 <View
                   key={step.id}
@@ -1111,7 +1134,9 @@ export default function RecipeDetailScreen() {
                     backgroundColor: c.cardBg,
                     borderRadius: 18,
                     borderWidth: 1,
-                    borderColor: c.lineDark,
+                    // DECISION-015 — adapted step card uses sage border for
+                    // at-a-glance signalling per Designer's v2 spec.
+                    borderColor: isAdapted ? 'rgba(74,124,89,0.4)' : c.lineDark,
                     padding: 16,
                     opacity: done ? 0.55 : 1,
                     shadowColor: tokens.ink,
@@ -1159,8 +1184,37 @@ export default function RecipeDetailScreen() {
                         {step.title}
                       </Text>
                       <Text style={{ fontFamily: fonts.sans, fontSize: 14, lineHeight: 21, color: c.inkSoft }}>
-                        {step.content}
+                        {adaptedContent ?? step.content}
                       </Text>
+
+                      {/* DECISION-015 — "adapted for your swap" cue with sage
+                          divider. Only renders when a swap has authored an
+                          override for THIS step id. */}
+                      {isAdapted ? (
+                        <View
+                          style={{
+                            marginTop: 8,
+                            paddingTop: 8,
+                            borderTopWidth: 1,
+                            borderTopColor: 'rgba(74,124,89,0.25)',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          <Text style={{ fontSize: 11, color: c.sage }}>≈</Text>
+                          <Text
+                            style={{
+                              fontFamily: fonts.displayItalic,
+                              fontStyle: 'italic',
+                              fontSize: 11,
+                              color: c.sage,
+                            }}
+                          >
+                            adapted for your {adaptedSwapName} swap
+                          </Text>
+                        </View>
+                      ) : null}
 
                       {step.stage_note ? (
                         <Callout label="Look for" accent={c.primary} bg={c.bgDeep} bodyColor={c.inkSoft} italic text={step.stage_note} />

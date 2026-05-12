@@ -220,3 +220,81 @@ export async function smokeAlarmSeedCount(db: SQLiteDatabase): Promise<void> {
     );
   }
 }
+
+
+/**
+ * DECISION-015 — substitution quality sanity check + step_overrides validator.
+ *
+ * Runs in dev only (gated on __DEV__). Two checks:
+ *   1. Count substitution `quality` values across SEED_RECIPES. The 4-tier
+ *      legacy values (perfect_swap / great_swap / good_swap / good /
+ *      compromise) should be zero after the static migration in
+ *      seed-recipes.ts. If any appear, console.error loudly — the regression
+ *      pattern Patrick has been hit by must scream the moment it returns.
+ *   2. For every substitution with `step_overrides`, every key must match an
+ *      existing step id on the parent recipe. Bad keys silently fall through
+ *      to default step text — surface them so cook's mapping mistakes are
+ *      visible in dev.
+ *
+ * Production APK stays silent. Tripwire only.
+ */
+export function validateDecision015(): void {
+  // eslint-disable-next-line no-undef
+  if (!(typeof __DEV__ !== 'undefined' && __DEV__)) return;
+
+  const counts = { green: 0, yellow: 0, red: 0, legacy: 0 };
+  const legacyValues = new Set([
+    'perfect_swap',
+    'great_swap',
+    'good_swap',
+    'good',
+    'compromise',
+  ]);
+  const badOverrides: Array<{ recipe: string; ingredient: string; sub: string; key: string }> = [];
+
+  for (const recipe of SEED_RECIPES) {
+    const stepIds = new Set(recipe.steps.map((s) => s.id));
+    for (const ing of recipe.ingredients) {
+      for (const sub of ing.substitutions ?? []) {
+        const q = sub.quality as unknown as string;
+        if (q === 'green' || q === 'yellow' || q === 'red') {
+          counts[q] += 1;
+        } else if (legacyValues.has(q)) {
+          counts.legacy += 1;
+        }
+        if (sub.step_overrides) {
+          for (const key of Object.keys(sub.step_overrides)) {
+            if (!stepIds.has(key)) {
+              badOverrides.push({
+                recipe: recipe.id,
+                ingredient: ing.name,
+                sub: sub.ingredient,
+                key,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(
+    `[DECISION-015] substitution quality counts: green=${counts.green} yellow=${counts.yellow} red=${counts.red} legacy=${counts.legacy}`,
+  );
+
+  if (counts.legacy > 0) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[DECISION-015] LEGACY QUALITY VALUES STILL PRESENT in SEED_RECIPES (${counts.legacy} occurrences). The 4-tier migration to 3-colour has regressed.`,
+    );
+  }
+
+  if (badOverrides.length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[DECISION-015] step_overrides references ${badOverrides.length} unknown step id(s):`,
+      badOverrides,
+    );
+  }
+}

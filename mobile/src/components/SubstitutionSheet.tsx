@@ -10,11 +10,14 @@
  *
  * Requires BottomSheetModalProvider at the root layout (added in app/_layout.tsx).
  *
- * Quality pill colours (per design spec):
- *   perfect_swap → solid sage bg, bgDeep text
- *   great_swap   → sageLight bg, sage text
- *   good_swap / good → ochre bg, bgDeep text
- *   compromise   → bgDeep bg, muted text
+ * DECISION-015 quality pills (per Designer's v2 prototype,
+ * docs/prototypes/substitution-sheet-v2.html):
+ *   green  ✓  Great swap        — works as well or near-as-well
+ *   yellow ≈  Some difference   — honest tradeoff
+ *   red    ⚠  Noticeable change — works in a pinch, dish genuinely different
+ *
+ * Every pill carries colour + icon + text label. Never colour alone.
+ * accessibilityLabel = "{pill label} — {substitution.changes}".
  *
  * Cook mode: pass inCookMode=true; sheet surfaces switch to cookMode tokens.
  */
@@ -50,24 +53,35 @@ export interface SubstitutionSheetProps {
 
 type Staged = Substitution | 'original' | null;
 
-// ── Quality pill config ───────────────────────────────────────────────────────
+// ── Quality pill config (DECISION-015 v2 — green/yellow/red) ─────────────────
 
-function qualityConfig(quality: Substitution['quality']): {
-  label: string;
+// Three semantic colours per Designer's v2 prototype. Each pill carries:
+//   - colour (bg + border + text)
+//   - icon (✓ / ≈ / ⚠)
+//   - text label ("Great swap" / "Some difference" / "Noticeable change")
+// Three signals on every pill — accessibility requires it. Never colour alone.
+
+export interface PillConfig {
+  /** Foreground colour (text + icon + border). */
+  fg: string;
+  /** Background tint at ~14% opacity. */
   bg: string;
-  text: string;
-} {
-  switch (quality) {
-    case 'perfect_swap':
-      return { label: 'Perfect swap', bg: tokens.sage, text: tokens.bgDeep };
-    case 'great_swap':
-      return { label: 'Great swap', bg: tokens.sageLight, text: tokens.sage };
-    case 'good_swap':
-    case 'good':
-      return { label: 'Good swap', bg: tokens.ochre, text: tokens.bgDeep };
-    case 'compromise':
-      return { label: 'Tradeoff', bg: tokens.bgDeep, text: tokens.muted };
-  }
+  /** Border colour at ~40% opacity. */
+  border: string;
+  /** Glyph rendered to the left of the label. */
+  icon: string;
+  /** Human-readable label. */
+  label: string;
+}
+
+export const PILL_CONFIG: Record<'green' | 'yellow' | 'red', PillConfig> = {
+  green:  { fg: '#5DB870', bg: 'rgba(93,184,112,0.14)',  border: 'rgba(93,184,112,0.42)', icon: '✓', label: 'Great swap' },
+  yellow: { fg: '#F2CC2A', bg: 'rgba(242,204,42,0.14)',  border: 'rgba(242,204,42,0.42)', icon: '≈', label: 'Some difference' },
+  red:    { fg: '#D4663A', bg: 'rgba(212,102,58,0.14)',  border: 'rgba(212,102,58,0.40)', icon: '⚠', label: 'Noticeable change' },
+};
+
+function qualityConfig(quality: Substitution['quality']): PillConfig {
+  return PILL_CONFIG[quality];
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -350,10 +364,14 @@ function SubRow({
   description: string;
   quantityNote?: string;
   hardToFindNote?: string;
-  badge: { label: string; bg: string; text: string };
+  /** v2 pill config OR legacy badge shape for the 'Original' row. */
+  badge: PillConfig | { label: string; bg: string; text: string };
   isStaged: boolean;
   onPress: () => void;
 }) {
+  // Discriminate between the v2 pill (has fg/border/icon) and the legacy
+  // 'Original' row badge (has just label/bg/text). Both render as small pills.
+  const isV2 = 'icon' in badge && 'fg' in badge;
   return (
     <Pressable
       onPress={onPress}
@@ -422,17 +440,27 @@ function SubRow({
           </Text>
           <View
             style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
               backgroundColor: badge.bg,
               borderRadius: 999,
               paddingHorizontal: 8,
               paddingVertical: 3,
+              borderWidth: isV2 ? 1 : 0,
+              borderColor: isV2 ? (badge as PillConfig).border : 'transparent',
             }}
+            accessible
+            accessibilityLabel={isV2 ? `${(badge as PillConfig).label} — ${description}` : (badge as { label: string }).label}
           >
+            {isV2 ? (
+              <Text style={{ fontSize: 10, color: (badge as PillConfig).fg }}>{(badge as PillConfig).icon}</Text>
+            ) : null}
             <Text
               style={{
                 fontFamily: fonts.sansBold,
                 fontSize: 10,
-                color: badge.text,
+                color: isV2 ? (badge as PillConfig).fg : (badge as { text: string }).text,
                 letterSpacing: 0.3,
               }}
             >

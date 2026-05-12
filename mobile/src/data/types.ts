@@ -81,19 +81,49 @@ export type TypeId = z.infer<typeof TypeId>;
 // ---------------------------------------------------------------------------
 
 /**
- * Honest quality rating for an ingredient substitution.
+ * Substitution quality — DECISION-015 (2026-05-12). Three-colour system that
+ * replaces the prior four-tier model. Rendered as green / yellow / red pills
+ * with icon + label per Designer's v2 prototype.
  *
- * 'perfect_swap' — virtually identical result; most people wouldn't notice.
- * 'great_swap'   — excellent alternative; minor character difference only.
- * 'good_swap'    — solid swap with a small but acceptable trade-off.
- * 'good'         — legacy alias for good_swap (backward compat).
- * 'compromise'   — noticeable trade-off; dish works but something changes.
+ *   'green'  — works as well or near-as-well. No real compromise.
+ *              (was: perfect_swap, great_swap)
+ *   'yellow' — honest tradeoff. Dish still good. (was: good_swap, good)
+ *   'red'    — works in a pinch. Dish genuinely different. (was: compromise)
  *
- * There is no "bad substitute" in the schema — if the result is bad,
- * don't list it. The app never suggests something that ruins a dish.
+ * Migration: a `z.preprocess` step coerces any remaining legacy four-tier
+ * value to its new-colour equivalent and emits `console.warn` so a legacy
+ * value sneaking back in via a future commit is visible in dev logs. The
+ * canonical authored values in seed-recipes.ts have all been migrated
+ * statically to the 3-colour set — the preprocess is the defensive net.
+ *
+ * Cook may override per-swap as part of her DECISION-015 discrepancy work —
+ * see docs/coo/culinary-research/<recipe>.md tables.
+ *
+ * There is no 'bad substitute' in the schema — if the result is bad, don't
+ * list it. The app never suggests something that ruins a dish.
  */
-export const SwapQuality = z.enum(['good', 'compromise', 'good_swap', 'great_swap', 'perfect_swap']);
-export type SwapQuality = z.infer<typeof SwapQuality>;
+const LEGACY_QUALITY_MAP: Record<string, 'green' | 'yellow' | 'red'> = {
+  perfect_swap: 'green',
+  great_swap:   'green',
+  good_swap:    'yellow',
+  good:         'yellow',
+  compromise:   'red',
+};
+
+export const SwapQuality = z.preprocess(
+  (v) => {
+    if (typeof v === 'string' && Object.prototype.hasOwnProperty.call(LEGACY_QUALITY_MAP, v)) {
+      const mapped = LEGACY_QUALITY_MAP[v]!;
+      // Defensive log so a legacy value sneaking in is visible — never silent.
+      // eslint-disable-next-line no-console
+      console.warn('[DECISION-015] legacy substitution quality coerced:', v, '->', mapped);
+      return mapped;
+    }
+    return v;
+  },
+  z.enum(['green', 'yellow', 'red']),
+);
+export type SwapQuality = 'green' | 'yellow' | 'red';
 
 /**
  * A single substitution entry on an ingredient.
@@ -130,6 +160,18 @@ export const Substitution = z.object({
    * E.g. "Ask at Italian delis or Harris Farm Markets — Coles rarely stocks it."
    */
   local_alternative: z.string().optional(),
+  /**
+   * DECISION-015 step text overrides. Keyed by Step id (e.g. 's2', 's4').
+   * When this swap is active, the recipe screen renders the override text
+   * instead of the step's default `content` and shows the sage
+   * "adapted for your [name] swap" cue. Only authored where the swap
+   * genuinely changes technique — most swaps need no overrides.
+   *
+   * Most-recent-active swap wins when multiple swaps touch the same step.
+   * A console.warn fires at app start if a step id appears here that the
+   * recipe doesn't actually contain (silent-failure guardrail).
+   */
+  step_overrides: z.record(z.string(), z.string()).optional(),
 });
 export type Substitution = z.infer<typeof Substitution>;
 
