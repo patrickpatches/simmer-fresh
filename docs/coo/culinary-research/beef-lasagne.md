@@ -1,5 +1,40 @@
 # Beef Lasagne
 
+## DECISION-015: Substitution Colour Mapping
+
+`seed-recipes.ts const: BEEF_LASAGNE`
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Beef mince | 50/50 beef and pork mince | `perfect_swap` | 🟢 green | No | More traditional; the extra fat from pork is an improvement, not a compromise |
+| Beef mince | Veal mince (part — 250g veal + 500g beef) | `great_swap` | 🟡 yellow | No | Even closer to canonical Bolognese; more delicate texture |
+| Full-fat milk (béchamel) | Skim or low-fat milk | `compromise` | 🔴 red | No | Béchamel made with skim milk lacks body; the sauce is thin and won't hold its layer between the pasta sheets |
+| Full-fat milk (béchamel) | Skip | `compromise` | 🔴 red | No | No béchamel means no creamy binding layer; the lasagne is drier and the layers separate on the plate |
+| Dry white wine (ragù) | Dry red wine | `good_swap` | 🟡 yellow | No | Heavier, more tannic ragù; works well — a common regional variation |
+| Dry white wine (ragù) | Beef stock | `compromise` | 🔴 red | No | Loses the wine's acidity and complexity; the ragù is flatter and less layered in flavour |
+| Tinned whole peeled tomatoes | Whole peeled tomatoes (tinned), crushed by hand | `great_swap` | 🟢 green | No | Functionally identical — the same product, hand-crushed |
+| Tinned whole peeled tomatoes | Tomato puree (paste) | `compromise` | 🔴 red | **Yes — ragù step** | Concentrate is far too intense without heavy dilution; the ragù becomes thick and sharp |
+| Fresh lasagne sheets | Dried no-precook sheets | `good_swap` | 🟡 yellow | No | Slightly different texture than fresh; absorbs more sauce — ensure the ragù is well-sauced |
+| Fresh lasagne sheets | Dried sheets (precook required) | `good_swap` | 🟡 yellow | **Yes — assembly** | Follow packet time; pre-cook to just al dente only — they continue cooking in the oven |
+| Parmigiano Reggiano | Grana Padano | `perfect_swap` | 🟢 green | No | Younger and milder; most Australian households use it interchangeably with Parmigiano |
+| Parmigiano Reggiano | Pecorino Romano | `good_swap` | 🟡 yellow | No | Sharper and saltier; reduce the salt in the béchamel to compensate |
+| Fresh mozzarella | Bocconcini, drained and torn | `perfect_swap` | 🟢 green | No | Same cheese in smaller balls; no flavour or texture difference |
+| Fresh mozzarella | Pre-grated pizza mozzarella | `compromise` | 🔴 red | No | Anti-caking agents prevent proper melt; the cheese goes rubbery and oily rather than stretchy |
+| Fresh mozzarella | Omit and double the parmesan | `great_swap` | 🟡 yellow | No | More gratinéed top with no stretchy pull; excellent result if you prefer a firmer finish |
+
+**Colour summary:** 4 🟢 · 6 🟡 · 5 🔴
+
+### step_overrides authored
+
+**Tomato puree (paste) → ragù step:**
+*step_override → ragù step:* "Tomato paste needs to be cooked before liquid is added. Fry the paste in the oil for 2 minutes, stirring constantly, until it darkens slightly and smells less raw. Then dilute: use 200ml water per 100g of paste as a rough starting point and adjust. Skip this step and the ragù will taste sharp and starchy."
+
+**Dried lasagne sheets (precook required) → assembly:**
+*step_override → assembly:* "Pre-cook sheets to just al dente — 1 minute less than the packet says. They continue cooking in the oven. Undercooking here is correct; fully cooked sheets will go mushy during the bake."
+
+---
+
+
 ## 1 · Hero
 
 **Title:** Beef Lasagne

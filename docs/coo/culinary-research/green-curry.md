@@ -7,6 +7,51 @@
 
 ---
 
+## DECISION-015: Substitution Colour Mapping
+
+`seed-recipes.ts const: THAI_GREEN_CURRY`
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Chicken thighs | Prawns, peeled and deveined | `great_swap` | 🟡 yellow | **Yes — cook step** | Cooks in 3–4 min vs 10–15; add at the very end |
+| Chicken thighs | Firm tofu, pressed and cubed | `great_swap` | 🟡 yellow | **Yes — cook step** | Needs only 5 min to heat through; earlier addition causes crumbling |
+| Chicken thighs | Chicken breast, thinly sliced | `good_swap` | 🟡 yellow | No | Drier; overcooks at 12+ min; slice thinly and pull early |
+| Coconut milk | Coconut cream | `great_swap` | 🟡 yellow | No | Richer and thicker; dilute with 50ml water if the sauce seems too heavy |
+| Coconut milk | Light coconut milk | `compromise` | 🔴 red | No | Significantly less richness; the sauce is thin and the coconut character is diluted |
+| Green curry paste | Red curry paste | `good_swap` | 🟡 yellow | No | Spicier, earthier, different flavour profile; not a green curry but still excellent |
+| Green curry paste | Yellow curry paste | `good_swap` | 🟡 yellow | No | Milder, more turmeric-forward; a different but good curry |
+| Eggplant | Zucchini (courgette), cut in rounds | `perfect_swap` | 🟢 green | No | Cooks in the same time as eggplant; no flavour compromise |
+| Eggplant | Broccolini, cut into florets | `good_swap` | 🟡 yellow | No | More bitter, cruciferous note; works |
+| Eggplant | Snow peas or sugar snap peas | `good_swap` | 🟡 yellow | No | Crunchy, sweeter; add in the last 2 minutes |
+| Eggplant | Capsicum (red or green), sliced | `good_swap` | 🟡 yellow | No | Different vegetal note; works |
+| Eggplant | Butternut pumpkin, cut in 3cm cubes | `good_swap` | 🟡 yellow | **Yes — cook step** | Needs 15–20 min in the sauce; add at the start with the coconut milk |
+| Fish sauce | Light soy sauce | `good_swap` | 🟡 yellow | No | Less funky umami; vegan option; add extra pinch of salt to compensate |
+| Fish sauce | Coconut aminos | `compromise` | 🟡 yellow | No | Sweeter, milder; the sauce will be noticeably sweeter; upgrade from 'compromise' — it works, just different |
+| Palm sugar | Brown sugar | `great_swap` | 🟡 yellow | No | Lacks palm sugar's floral-caramel note; close enough in most contexts |
+| Palm sugar | Coconut sugar | `great_swap` | 🟡 yellow | No | Slightly caramel note; very close to palm sugar; works well |
+| Palm sugar | Honey | `good_swap` | 🟡 yellow | No | Floral note that's different from palm sugar; works |
+| Kaffir lime leaves | Lime zest, freshly grated | `compromise` | 🔴 red | No | Kaffir lime leaves have a distinctive citronella-floral character that lime zest cannot replicate; the curry tastes noticeably different |
+| Thai basil | Italian basil + fresh mint | `compromise` | 🟡 yellow | No | Different aromatic profile; still good; upgrade from 'compromise' — it's not a failure state |
+| Thai basil | Holy basil | `great_swap` | 🟡 yellow | No | More medicinal-clove character than Thai basil; authentic alternative |
+| Neutral oil | Coconut oil | `great_swap` | 🟡 yellow | No | Faint coconut note at the paste-frying stage; not detectable in the finished dish |
+| Neutral oil | Vegetable oil or sunflower oil | `perfect_swap` | 🟢 green | No | Same neutral-flavour function; identical result |
+
+**Colour summary:** 2 🟢 · 18 🟡 · 2 🔴
+
+### step_overrides authored
+
+**Prawns → cook step:**
+*step_override → cook step:* "Add prawns in the last 3–4 minutes only — they turn rubbery past 5 minutes in a simmering sauce. They're done when they've turned fully pink and curled. Pull the pan off heat the moment they're cooked."
+
+**Firm tofu → cook step:**
+*step_override → cook step:* "Add tofu in the last 5 minutes. It doesn't need cooking — only heating through. Tofu added earlier breaks apart and disperses into the sauce."
+
+**Butternut pumpkin → cook step:**
+*step_override → cook step:* "Add pumpkin at the start of simmering, with the coconut milk. It needs 15–20 minutes to soften — other vegetables go in per the main steps."
+
+---
+
+
 ## Chef's expansion notes (DECISION-009 full template additions)
 
 ### Audit flags

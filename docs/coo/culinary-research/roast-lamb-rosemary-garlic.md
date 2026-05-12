@@ -1,5 +1,33 @@
 # Roast Lamb with Rosemary & Garlic
 
+## DECISION-015: Substitution Colour Mapping
+
+`seed-recipes.ts const: ROAST_LAMB`
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Bone-in leg of lamb | Bone-in lamb leg (different cut) | `good_swap` | 🟡 yellow | No | Leaner than shoulder; less collagen; still excellent roasted |
+| Bone-in leg of lamb | Boneless lamb shoulder | `good_swap` | 🟡 yellow | **Yes — prep** | Needs trussing before roasting; easier to carve; slightly less flavour without the bone |
+| Whole garlic cloves | Pre-peeled garlic (supermarket fridge) | `good_swap` | 🟢 green | No | Same flavour; just convenient |
+| Fresh rosemary | Fresh thyme | `great_swap` | 🟡 yellow | No | Lighter, more delicate herbal note; works very well with lamb |
+| Fresh rosemary | Dried rosemary | `compromise` | 🔴 red | No | Dried rosemary turns bitter over a 2h+ roast as the volatile compounds cook off; the result can be harsh rather than fragrant |
+| Dry white wine (deglazing) | Dry red wine | `good_swap` | 🟡 yellow | No | Heavier, more savoury pan juices; a common variation — works well |
+| Dry white wine (deglazing) | Chicken stock (extra) | `compromise` | 🔴 red | No | Loses the wine's acidity and the fond-lifting lift; the pan juices are flatter |
+| Chicken stock | Lamb stock | `great_swap` | 🟡 yellow | No | Deeper lamb flavour in the pan juices; an improvement in richness but noticeably different |
+| Chicken stock | Vegetable stock | `good_swap` | 🟡 yellow | No | Lighter and less savoury; works |
+| Sebago or Désirée potatoes (roasting) | Maris Piper or King Edward | `perfect_swap` | 🟢 green | No | Similar starch profile; identical roast result |
+| Sebago or Désirée potatoes (roasting) | Kipfler or chat (small waxy) | `compromise` | 🔴 red | No | Waxy potatoes don't produce the crispy-outside-fluffy-inside result; the roast potato is genuinely different |
+
+**Colour summary:** 2 🟢 · 6 🟡 · 3 🔴
+
+### step_overrides authored
+
+**Boneless lamb shoulder → prep:**
+*step_override → prep:* "Boneless shoulder needs to be tied before roasting — without the bone to hold its shape, it spreads and cooks unevenly. Tie the rolled shoulder at 3cm intervals with kitchen twine. The roast time increases by 10–15 minutes for a tied boneless shoulder compared to a bone-in leg."
+
+---
+
+
 ## 1 · Hero
 
 **Title:** Roast Lamb with Rosemary & Garlic

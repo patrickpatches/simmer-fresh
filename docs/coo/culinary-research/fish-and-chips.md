@@ -1,5 +1,31 @@
 # Fish & Chips
 
+## DECISION-015: Substitution Colour Mapping
+
+`seed-recipes.ts const: FISH_AND_CHIPS`
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Sebago potatoes (chips) | Maris Piper | `perfect_swap` | 🟢 green | No | Identical starch profile; same chip result |
+| Sebago potatoes (chips) | Russet (Idaho) potatoes | `great_swap` | 🟡 yellow | No | Slightly drier interior; very similar fluff; excellent chip |
+| Sebago potatoes (chips) | Desiree or Pontiac (waxy) | `compromise` | 🔴 red | No | Waxy potatoes parboil and fry without fluffing; the chip is dense throughout and won't crisp the same way |
+| Neutral oil | Beef tallow | `great_swap` | 🟡 yellow | No | Richer, more savoury chips with a distinct old-school chip-shop flavour; different but traditionally excellent |
+| Neutral oil | Peanut oil | `perfect_swap` | 🟢 green | No | Same high smoke point; no flavour difference in the finished chip |
+| Flathead (or Blue Grenadier) | Hoki | `great_swap` | 🟡 yellow | No | Lighter, slightly flakier; common chip-shop fish in NZ; very good |
+| Flathead (or Blue Grenadier) | Snapper | `great_swap` | 🟡 yellow | No | Sweeter, firmer flesh; more expensive; excellent |
+| Flathead (or Blue Grenadier) | Barramundi | `good_swap` | 🟡 yellow | No | Mild and firm; reliably available across Australia; works well in batter |
+| Flathead (or Blue Grenadier) | Ling | `perfect_swap` | 🟢 green | No | Same flaky white fish category; cooks and batters identically |
+| Baking powder (batter) | Bicarb soda + cream of tartar (1:2) | `perfect_swap` | 🟢 green | No | Baking powder is just these two combined — identical result |
+| Cold beer (batter) | Soda water | `great_swap` | 🟡 yellow | No | Carbonation works the same; loses the malt-yeast flavour from beer; lighter, cleaner batter |
+| Cold beer (batter) | Pilsner or other light lager | `perfect_swap` | 🟢 green | No | Any cold light beer serves the same function; no meaningful difference |
+
+**Colour summary:** 5 🟢 · 6 🟡 · 1 🔴
+
+*(No step_overrides required — fish variety does not change the technique. Waxy potatoes are 🔴 with no override because the issue is structural, not a timing adjustment.)*
+
+---
+
+
 ## 1 · Hero
 
 **Title:** Fish & Chips

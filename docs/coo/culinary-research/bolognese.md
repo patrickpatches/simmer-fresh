@@ -6,6 +6,43 @@
 
 ---
 
+## DECISION-015: Substitution Colour Mapping
+
+`seed-recipes.ts const: WEEKDAY_BOLOGNESE`
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Brown onion | Shallots, finely diced | `great_swap` | 🟡 yellow | No | Sweeter, more delicate base; excellent but noticeably different character |
+| Brown onion | Leek (white/pale green part) | `good_swap` | 🟡 yellow | No | Softer when cooked; mild allium note; works well in a weeknight ragù |
+| Celery | Parsnip, finely diced | `great_swap` | 🟡 yellow | No | Sweeter, less vegetal than celery; excellent in a slow ragù |
+| Carrot | Fennel bulb, finely diced | `great_swap` | 🟡 yellow | No | Anise note changes the soffritto character; excellent with the pork component |
+| Carrot | Celeriac, finely diced | `good_swap` | 🟡 yellow | No | Earthy, less sweet; works well |
+| Garlic cloves | Garlic paste (1 tsp per clove) | `good_swap` | 🟢 green | No | Same result; convenient; no perceptible difference in finished dish |
+| Beef+pork mince | Veal mince | `great_swap` | 🟡 yellow | No | Closer to canonical ragù alla Bolognese; slightly more delicate texture |
+| Beef+pork mince | All beef mince (80/20), no pork | `compromise` | 🟡 yellow | No | Heavier and gamier than the mixed version; still makes good bolognese; upgrade from 'compromise' |
+| Pancetta | Italian sausage mince (casings removed) | `great_swap` | 🟡 yellow | No | Adds fennel and seasoning to the base; different but excellent |
+| Whole milk | Full-fat oat milk or coconut milk | `good_swap` | 🟡 yellow | No | Dairy-free; oat milk is closest in fat content; minor texture difference in the ragù |
+| Dry red wine | Dry white wine | `good_swap` | 🟡 yellow | No | Lighter, less tannic result; the sauce is brighter; works well |
+| Dry red wine | Extra beef stock + red wine vinegar | `compromise` | 🔴 red | No | Vinegar approximates acidity but not the complexity of wine; the ragù is noticeably flatter and thinner |
+| Tinned whole peeled tomatoes | Tinned chopped tomatoes | `perfect_swap` | 🟢 green | No | Functionally identical; same tomato, just pre-cut |
+| Tinned whole peeled tomatoes | Tomato passata | `great_swap` | 🟡 yellow | No | Smoother texture; slightly less depth; works well |
+| Tinned whole peeled tomatoes | Fresh ripe tomatoes (4 large) | `great_swap` | 🟡 yellow | **Yes — sauce step** | Must cook down 25–30 min before adding liquid; more variable result depending on ripeness |
+| Beef stock | Chicken stock | `good_swap` | 🟡 yellow | No | Lighter and less savoury; the ragù loses some depth but is still good |
+| Pappardelle | Rigatoni | `great_swap` | 🟡 yellow | No | Tubes catch the ragù differently than wide ribbons; excellent alternative |
+| Pappardelle | Spaghetti or linguine | `good_swap` | 🟡 yellow | No | Thin pasta doesn't hold a heavy ragù as well as wide or ridged pasta |
+| Parmigiano Reggiano | Grana Padano, grated | `great_swap` | 🟡 yellow | No | Milder and younger than Parmigiano; very close; most households use it interchangeably |
+| Parmigiano Reggiano | Pecorino Romano, grated | `good_swap` | 🟡 yellow | No | Sharper and saltier; noticeably different — reduce finishing salt |
+
+**Colour summary:** 2 🟢 · 17 🟡 · 1 🔴
+
+### step_overrides authored
+
+**Fresh ripe tomatoes → sauce step:**
+*step_override → sauce step:* "Add the tomatoes at the start of the sauce, before the wine. Cook over medium heat for 25–30 minutes, stirring regularly, until they have fully broken down and the liquid has evaporated — the mixture should look jammy and concentrated. Only then add the wine and stock. If you skip this step, the ragù will be watery and won't develop the same depth."
+
+---
+
+
 ## Chef's expansion notes (DECISION-009 full template additions)
 
 ### Audit flags
