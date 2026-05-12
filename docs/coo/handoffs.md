@@ -46,94 +46,235 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → COO (Culinary Research) · 2026-05-12 · OPEN URGENT (DECISION-015 — substitution colour system + step_overrides, 16 launch recipes)
-**From:** Patrick
-**Subject:** Redesign substitution quality ratings from freetext tags to a 3-colour traffic-light system; add `step_overrides` where a substitution changes the technique; apply to all 16 launch recipes. Smash Burger is the test case.
-**Why:** The current `perfect_swap / great_swap / good_swap / compromise` tags are inconsistent across files and require users to read prose to understand them. A traffic-light system (green / yellow / red) is instantly legible at a glance — no reading required. `step_overrides` closes the gap where a substitution genuinely changes what the cook does, but the steps still show the original method.
+### HANDOFF → Culinary Verifier · 2026-05-10 · OPEN URGENT (DECISION-015 — substitution quality colours + step_overrides authoring)
+**From:** Patrick (via COO)
+**Subject:** Walk every launch recipe; collapse the 4-tier substitution quality to 3 colours (green/yellow/red); author `step_overrides` only where the swap genuinely changes technique.
+**Why:** Per DECISION-015, substitutions get a simpler visual model (3 colours) and a new optional `step_overrides` field. Cook owns the chef judgment on both — colour and override authorship. Engineer wires the rendering after you ship. The step_overrides field is the closing of the "substitution honesty" gap: a user picking a swap should not then read step text that contradicts their choice.
+
+**What's needed:**
+
+1. **Re-map every substitution's quality tier on the 16 launch recipes** from the legacy 4-tier (`perfect_swap` / `great_swap` / `good_swap` / `compromise`) to the new 3-colour system:
+   - **Green** — works as well or near-as-well as the original. No real compromise. (e.g. bacon for pancetta in carbonara — different cure, renders the same way)
+   - **Yellow** — noticeable difference, honest tradeoff. (e.g. Greek yogurt for cream in butter chicken — tangier, lighter)
+   - **Red** — works in a pinch, dish genuinely changes. (e.g. vegan butter for ghee in butter chicken — depth gone)
+   Default migration: `perfect_swap` / `great_swap` → green; `good_swap` → yellow; `compromise` → red. **Override the default per-swap where your chef judgment differs.** Trust your palate over the mapping.
+
+2. **Author `step_overrides` only where the swap actually changes technique.** Most swaps won't need this. Add only where the user would be misled by default step text. Examples likely to need overrides:
+   - Butter chicken: yogurt swap for cream — "temper the yogurt first, off-heat" alternate
+   - Carbonara: whole eggs for yolks-only — emulsion ratio differs
+   - Tortillas: butter for lard — melt point affects fat-into-flour stage
+   - Smash burger: any non-beef-mince swap — fat/texture differ
+   - Where steps already reference ingredients by role/name without specifics, no override needed.
+
+3. **Discrepancy table at the top of each research file you update** — same pattern as your tortilla file. List exactly what the engineer needs to change in `seed-recipes.ts`. Format:
+   | Recipe const | Substitution | Old quality | New colour | step_overrides needed | Notes |
+   This is the engineer-action-required document. The 8 May tortilla regression happened because the migration list wasn't surfaced — don't let it happen again.
+
+4. **Pre-flight checklist before declaring per-recipe work ready:**
+   - All substitutions re-coloured. Default mapping followed unless overridden, with justification.
+   - `step_overrides` only present where technique genuinely changes — not for flavour-only or cosmetic differences.
+   - Alternate text follows cookbook voice: doneness cues, second-person present-tense, no "simply" / "just," Australian English.
+   - Retired-fields grep clean (`grep -i "whole_food"` returns zero hits per standing rule).
+   - Discrepancy table for engineer is complete and unambiguous.
+
+5. **R-014 mitigation (mandatory):** if you're updating large research files, after each save run `tail -c 200 <file>` to confirm clean EOF. The truncation pattern bit us 5 times in one engineer session — don't trust write-success silently.
+
+**Files touched:** `docs/coo/culinary-research/<recipe>.md` for each of the 16 launch recipes you actually update.
+
+**Sequence:** Smash Burger first as the test case. After Patrick reviews, walk the remaining 15.
+
+**Cost:** ~2 sessions for full library walk. Don't do all 16 in one — sustained across sittings.
+
+**Blocks:** Engineer's schema migration. Cook ships per-recipe; engineer migrates per-recipe in batches.
 
 ---
 
-### DECISION-015 — Substitution colour system spec
+### HANDOFF → Product Designer · 2026-05-10 · DONE ✅ (DECISION-015 — green/yellow/red pill spec + "adapted for your swap" treatment)
+**Closed by Product Designer 2026-05-12 — `docs/prototypes/substitution-sheet-v2.html` delivered. Engineer handoff issued above.**
 
-**The three colours:**
+### HANDOFF → Senior Engineer · 2026-05-12 · OPEN (DECISION-015 — implement substitution sheet v2 pill system + adapted step cue)
+**From:** Product Designer
+**Subject:** Wire in the new 3-colour substitution pill system and "adapted for your swap" step cue per the v2 spec
+**Why:** DECISION-015 collapses the 4-tier quality model to green/yellow/red. The Culinary Verifier is authoring the new colour values and step_overrides; this handoff covers the rendering side.
 
-| Colour | Meaning | Replaces |
-|---|---|---|
-| 🟢 `green` | Same result — cook notices no difference in outcome | `perfect_swap` |
-| 🟡 `yellow` | Good alternative — different character, still excellent | `great_swap` + `good_swap` |
-| 🔴 `red` | Significant compromise — different dish or inferior result | `compromise` |
+**What's needed:**
+1. **Pill component** — replace existing quality badge with `SubstitutionPill` using `PILL_CONFIG` (green/yellow/red). Every pill renders icon + label + colour. Never colour alone. Full spec in prototype.
+2. **Ingredient row swapped state** — when a swap is active: border + bg tint in swap colour, "↩ swapped" text + icon. Spec in prototype.
+3. **Adapted step cue** — when `step_overrides` contains an entry for the active swap + current step: render override content, show sage `≈ adapted for your [name] swap` cue below, sage border on card.
+4. **Accessibility labels** — `accessibilityLabel` on each pill = `"{quality prefix} — {substitution.change_description}"`.
 
-**Colour decision rules:**
-- `green`: The cook cannot tell the difference in the finished dish. Swap it silently. Example: Kosher salt for fine sea salt (same weight, same result).
-- `yellow`: The cook gets a different but still high-quality result. The difference is worth noting — flavour, texture, or appearance changes — but the dish is still worth making. This covers both what was `great_swap` (e.g., lard for butter in tortillas — flakier, more traditional) and `good_swap` (e.g., plain flour for bread flour — lower protein, less extensible but still works).
-- `red`: The result is noticeably inferior, or the dish becomes something different. The app should warn the cook before they commit to this swap. Example: chicken breast for thigh in shawarma at 220°C — it will dry out before it chars.
+**Files touched:** `mobile/src/components/SubstitutionSheet.tsx` (or equivalent), `mobile/app/recipe/[id].tsx` (step rendering)
 
-**`step_overrides` spec:**
+**Prototype + token values:** `docs/prototypes/substitution-sheet-v2.html`
 
-Some substitutions change what the cook actually does — not just the ingredient. These need a `step_overrides` array on the substitution object. Each override targets a specific step by `step_id` and provides replacement or supplementary content.
+**Blocks:** Culinary Verifier authoring (parallel — implement rendering first, data lands after).
 
-Required when:
-- Temperature changes (e.g., breast at 200°C not 220°C)
-- Time changes significantly (e.g., veal schnitzel cooks 2 min per side, not 3)
-- A step can be skipped entirely (e.g., no brining needed with a pre-salted substitute)
-- A technique step differs fundamentally (e.g., gluten-free flour requires less kneading)
+---
+**From:** Patrick (via COO)
+**Subject:** Spec the visual treatment for the new 3-colour substitution pills + the "adapted for your swap" cue on step text when a swap with step_overrides is active.
+**Why:** Per DECISION-015, substitution quality moves from 4 tiers to 3 colours. The substitution sheet exists; pill styling needs updating. When a swap with `step_overrides` is active, the user needs to know a step has been adapted for their swap — a small but important honesty cue.
 
-Not required when:
-- The cook simply uses less or more of something (handled by `scales` annotation)
-- The only difference is flavour or appearance (covered by the substitution description)
+**What's needed:**
 
-Format in the research file:
-```
-*Substitution:* [Ingredient] — 🟡 yellow. [One sentence on what changes.]
-*Step override (step N — [step title]):* [What the cook does differently.]
-```
+1. **Update or extend the substitution sheet prototype** (build on `docs/prototypes/substitution-sheet.html` or create `substitution-sheet-v2.html`) showing:
+   - **Green pill:** solid, on-brand sage accent (pick a green that reads cleanly on v0.7 dark surface). Optional ✓ icon for accessibility.
+   - **Yellow pill:** `tokens.gold` #F2CC2A or muted version. Optional ~ icon.
+   - **Red pill:** desaturated rust/red — "warning" not "stop", not Christmas-red. Optional ⚠ icon.
+   - **Accessibility: never colour-alone.** Every pill has icon AND short text inline so colour-blind users get it too.
+
+2. **"Adapted for your swap" cue on step text** — when a step's content is rendered from `step_overrides`, the step needs a small visual indicator. Suggest a 1-line caption like *"adapted for your [swap name] choice"* in muted text. Not loud — honest.
+
+3. **Constraint:** v0.7 dark sage tokens locked. No visual direction change. Pill colours integrate with existing palette; "adapted" treatment doesn't introduce a new layout pattern.
+
+4. **Output:** updated/new HTML prototype with three colour pills, adapted-step cue shown in context, written rationale, engineer-handoff block.
+
+**Files touched:** `docs/prototypes/substitution-sheet-v2.html` (new or update existing).
+
+**Cost:** ~half a session.
+
+**Coordination:** Cook is walking 16 recipes assigning colours in parallel. You don't need to wait — your work is visual treatment, independent of specific recipe assignments.
+
+**Blocks:** Engineer's UI updates for substitution pill rendering (needs your spec to match v0.7 palette).
 
 ---
 
-### Smash Burger — test case (do this first)
+### HANDOFF → Senior Engineer · 2026-05-10 · OPEN (DECISION-015 — schema + conditional step rendering)
+**From:** Patrick (via COO)
+**Subject:** Add `quality` enum (green/yellow/red) and optional `step_overrides` to substitution schema. Wire the new pill colours per Designer's v2 prototype. Render alternate step content when an active swap has overrides for that step.
 
-Apply DECISION-015 to `docs/coo/culinary-research/smash-burger.md` before touching any other recipe. Use it to pressure-test the colour decisions and step_override format. If anything in the spec feels wrong when applied to a real recipe, flag it before rolling out to the other 15.
+**Per R-014 / R-015 / build-log discipline (READ BEFORE STARTING):**
+- All file writes over 200 lines use the GitHub API path (`curl --data-binary @file`), not the Edit tool. R-014 is red — five truncations in one engineer session was the trigger.
+- After every modified file: `npx tsc --noEmit`, `tail -c 200`, last-bytes visual verification. No exceptions.
+- Don't claim "done" — declare "shipped, awaiting Patrick on-device validation." R-015.
+- Build log entry written the moment you push. No skips.
+- Silent-failure guardrail: console.warn if `step_overrides` references a step id that doesn't exist on the recipe. Don't let a bad mapping silently fall back to default — surface it.
 
-**Known substitutions in Smash Burger that need colour + possible step_overrides:**
-- Turkey or chicken mince for beef 80/20 — 🔴 red (lower fat, won't smash the same way, crust won't form correctly at high heat; different dish). Step override: reduce heat to medium-high, expect no crust formation.
-- American cheese for cheddar — 🟢 green (melts identically, same flavour register for this application)
-- Brioche vs standard burger bun — 🟡 yellow (brioche adds richness and sweetness; standard bun is neutral but structurally fine)
-- Any other swaps in the existing file — assess and colour-code on the day
+**What's needed:**
 
-**Mandatory deliverable for Smash Burger:**
-1. Discrepancy table at the top of the file (the tortilla pattern) — what's in seed-recipes.ts vs what the research file says. Mandatory on every recipe from this point forward.
-2. All substitutions coloured 🟢 / 🟡 / 🔴
-3. `step_overrides` authored where applicable
-4. Pre-flight checklist passed and signed off at the bottom of the file
+1. **Schema additions to substitution object** in `mobile/src/data/types.ts`:
+   ```ts
+   quality: z.enum(["green", "yellow", "red"])
+   step_overrides: z.record(z.string(), z.string()).optional()
+   ```
+   Migrate existing four-tier fields. Default mapping: perfect/great → green, good → yellow, compromise → red. **Cook may override per-swap — read her discrepancy tables in `docs/coo/culinary-research/<recipe>.md` rather than assuming.**
+
+2. **Migrate the 16 launch recipes' substitutions** in `seed-recipes.ts`. Pull from cook's per-recipe discrepancy tables. **Apply only changes the cook explicitly lists** — don't invent quality assignments she hasn't made.
+
+3. **Update `SubstitutionSheet.tsx`** to render new pill colours per Designer's v2 prototype. Colour + icon, accessibility-compliant.
+
+4. **Conditional step rendering** in `mobile/app/recipe/[id].tsx`:
+   - For each step, check if any active swap has `step_overrides[step.id]`.
+   - If yes, render that alternate text instead of `step.content`.
+   - Show the "adapted for your swap" cue per Designer's spec.
+   - Multiple active swaps with overlapping overrides → most recent swap wins. Document the rule in code comments.
+
+5. **Migration sanity log on app launch:** count substitutions with `quality = green/yellow/red` vs legacy values. If any legacy values remain after migration, console.log loudly so the regression is visible.
+
+6. **Validation gate before declaring shipped:**
+   - `npx tsc --noEmit` clean
+   - `tail -c 200` of every modified large file confirms clean EOF
+   - On-device: open Smash Burger (cook's first recipe) → tap an ingredient with substitutions → pills render green/yellow/red with icons → tap a swap with `step_overrides` → step text changes to alternate, "adapted" cue appears → tap revert → step text returns to default
+   - Build log entry written the moment you push
+
+**Files touched:** `mobile/src/data/types.ts`, `mobile/src/data/seed-recipes.ts`, `mobile/src/components/SubstitutionSheet.tsx`, `mobile/app/recipe/[id].tsx`.
+
+**Sequence:** Wait for cook's first recipe (Smash Burger) discrepancy table. Implement schema + pill rendering on that recipe, validate on-device, then batch remaining 15.
+
+**Cost:** ~1 session schema + pill + initial conditional render. Plus ~half-session to migrate the remaining 15 as cook ships them.
+
+**Blocks:** v0.6.x polish milestone. Closes the substitution-honesty arc Cook's been driving since Rule 5.
 
 ---
 
-### Rollout order for remaining 15 recipes
-
-After Smash Burger is validated:
-
-**Batch A (5 recipes — do in one session):**
-PASTA_CARBONARA, BUTTER_CHICKEN, CHICKEN_SHAWARMA, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS
-
-**Batch B (5 recipes — second session):**
-WEEKDAY_BOLOGNESE, THAI_GREEN_CURRY, BEEF_LASAGNE, ROAST_CHICKEN, ROAST_LAMB
-
-**Batch C (5 recipes — third session if needed, otherwise fold into B):**
-FISH_AND_CHIPS, PAVLOVA, HUMMUS, PAD_THAI, FALAFEL
-
-Target: ~2 sessions total (Smash Burger + Batch A in session 1; B + C in session 2). Pace to the content, not the clock.
+### HANDOFF → Culinary & Cultural Verifier · 2026-05-11 · OPEN (Roast Chicken image accuracy validation — brief ready, images pending)
+**From:** Photography Director
+**Subject:** Roast Chicken image brief complete (4 prompts). Key validation: skin must be deep golden-brown (not pale, not shiny), untrussed bird, no sauce poured over. Also flag: attribution discrepancy between cook's research ("Hone Kitchen") and seed data ("Thomas Keller") — COO needs to resolve.
+**Why:** The most common roast chicken photography failure is a pale or shiny bird that looks underdone. The doneness cue is the skin colour — it must read as "deep golden-brown, clearly done" or the image undermines the recipe.
+**What's done:** `docs/coo/photography/image-briefs/roast-chicken.md` — 4 prompts (hero, dry-brined raw, butter-under-skin technique, golden-out-of-oven). Cook validation checklist included. Existing hero URL `photo-1598103442097-8b74394b95c8` marked as CANDIDATE — Patrick inspects visually first.
+**What's needed:** Same pipeline as Smash Burger. Patrick generates → cook validates per checklist → Photography Director updates ledger.
+**Files touched:** `docs/coo/photography/image-briefs/roast-chicken.md`, `docs/coo/visual-assets-ledger.md`
+**Blocks:** Engineer integration of Roast Chicken images.
+**Bonus flag for COO:** Roast Chicken attribution discrepancy — seed-recipes.ts says Thomas Keller (*Bouchon*). Culinary research file says "Hone Kitchen." These must be aligned before ship.
 
 ---
 
-### Standing rules for this work (R-014 applies)
+### HANDOFF → Culinary & Cultural Verifier · 2026-05-11 · OPEN (Carbonara image accuracy validation — brief ready, images pending)
+**From:** Photography Director
+**Subject:** Carbonara image brief is complete (4 prompts written). Once Patrick generates images, send to cook for accuracy validation — specifically: sauce colour (golden, NOT white), guanciale appearance (cubes, not strips), combine step (off heat, sauce forming not scrambled).
+**Why:** The most common carbonara photography error is showing cream sauce. The cook's "no cream, ever" tagline is meaningless if the image shows a white sauce. This is a Golden Rule 5 violation if it slips through.
+**What's done:** `docs/coo/photography/image-briefs/carbonara.md` — 4 prompts with detailed accuracy requirements, rejection criteria, and per-image cook validation checklist.
+**What's needed:**
+1. Patrick generates images from the 4 prompts.
+2. **Existing hero URL check first:** `photo-1612874742237-6526221588e3` — Patrick views this URL and checks against the hero checklist. If it passes: approved. If not: use the AI-generated hero.
+3. Cook runs the validation checklist in the brief for each candidate.
+4. Photography Director updates the ledger on approval or iterates on rejection.
+**Files touched:** `docs/coo/photography/image-briefs/carbonara.md`, `docs/coo/visual-assets-ledger.md`
+**Blocks:** Engineer integration of Carbonara images.
 
-- **R-014:** Run `tail -c 200` on the file immediately after every write/save to confirm the file ends correctly. The flour-tortillas.md truncation (`aff3bc4`) happened because a write silently cut the file at 80 lines. `tail -c 200` catches this before commit.
-- **Discrepancy table is mandatory** on every research file — what seed-recipes.ts currently has vs what the research file says. Engineer reads this table to know exactly what to change.
-- **Pre-flight checklist is mandatory** before declaring any recipe ready. All boxes must be checked and explained, not just ticked.
-- **Colour decisions must be justified** in the research file — not just "🟡 yellow" but "🟡 yellow — flakier, more traditional, cook notices the difference in texture."
+---
 
-**Files touched:** `docs/coo/culinary-research/smash-burger.md` (test case), then all 15 remaining launch recipe research files  
-**Blocks:** Engineer schema update for substitution colour field + step_overrides array (separate engineer handoff will follow once COO spec is validated on Smash Burger)
+### HANDOFF → Culinary & Cultural Verifier · 2026-05-11 · OPEN (Smash Burger image accuracy validation)
+**From:** Photography Director
+**Subject:** 6 DALL-E 3 prompts written for Smash Burger. Patrick generates the images. Send candidates to cook for accuracy signoff before engineer integrates.
+**Why:** DECISION-014 — cook accuracy validation is the gate that did not move. Every image must reflect the actual recipe, not a generic version of the dish.
+**What's done:**
+- `docs/coo/photography/image-briefs/smash-burger.md` — full working brief including deep research, Hone vs Andy Cooks diff table, 6 ready-to-paste DALL-E 3 prompts, cook validation checklist per image, generation workflow for Patrick.
+- `docs/coo/visual-assets-ledger.md` — 6 Smash Burger rows added (all PENDING). All 16 recipe sections scaffolded.
+**What's needed:**
+1. Patrick takes the 6 prompts from `image-briefs/smash-burger.md` to DALL-E 3 (ChatGPT Plus) and generates candidates.
+2. File naming: `smash-burger_[stage]_v1.jpg` per the brief.
+3. Cook reviews each image against the validation checklist (bottom of the brief). She signs off APPROVED or REJECTED with specific reason.
+4. Photography Director updates ledger status: PENDING → CANDIDATE (images exist) → APPROVED or REJECTED.
+5. If REJECTED: Photography Director iterates the prompt and Patrick generates again.
+**Files touched:** `docs/coo/photography/image-briefs/smash-burger.md`, `docs/coo/visual-assets-ledger.md`
+**Blocks:** Engineer integration of Smash Burger images into seed-recipes.ts.
+
+---
+
+### HANDOFF → Photography Director · 2026-05-10 · IN PROGRESS (DECISION-014 — source AI / stock images for 16 launch recipes)
+**From:** Patrick (via COO)
+**Subject:** Per DECISION-014, AI and CC-licensed stock images are now permitted as temporary placeholders. Source hero + stage images for all 16 launch recipes. Accuracy is the gate.
+**Why:** Patrick can't shoot real photography for an indeterminate stretch. The launch can't wait. He has formally rescinded the AI/stock ban (DECISION-014). Your role expands to include AI generation and CC stock curation alongside the long-term goal of real photography. Real photos eventually replace these recipe by recipe post-launch.
+
+**Scope — 16 launch recipes:** Roast Chicken, Spaghetti Bolognese, Spaghetti Carbonara, Butter Chicken, Smash Burger, Thai Green Curry, Chicken Schnitzel, Beef Lasagne, Roast Lamb with Rosemary & Garlic, Fish & Chips, Pan-Fried Fish (Barramundi or Falafel — confirm with cook which stuck), Pavlova, Chicken Shawarma, Hummus, Pad Thai, Flour Tortillas (Patrick's recipe).
+
+**Per recipe deliver:**
+- **1 hero image** — finished dish, plated, character matches the recipe (rustic vs polished, dark vs light surface, cuisine-appropriate garnish).
+- **Stage images for visual-worthy steps** — typically 3–6 per recipe. NOT every step — only ones where the user benefits from seeing what's happening (e.g., "onion translucent and stopped squeaking," "sauce coats the back of a spoon," "smash burger crust formed before flip"). Use the cook's doneness cues in `docs/coo/culinary-research/<recipe>.md` to decide which stages get an image.
+
+**~7–8 images per recipe × 16 = ~120 images.**
+
+**Deep-research requirement (Patrick's non-negotiable):**
+
+Before generating or curating any image:
+1. **Read the cook's research file end-to-end.** Her doneness cues, technique notes, and failure modes tell you what the right visual state actually looks like.
+2. **Pull authoritative chef references** from credible sources (Andy Cooks, ATK, Yotam Ottolenghi, J. Kenji López-Alt, the named chefs in the cook's brief — Marco Pierre White, Adam Liaw, Reem Kassis, etc.). These inform your understanding — **do NOT generate copies of any chef's photographed work**, that's copyright theft. Reference, then generate from your own understanding informed by the references.
+3. **Write prompts with technical detail.** Vague prompts get generic results. Example: *"Spaghetti carbonara, silky pale-yellow sauce coating the pasta, crisped guanciale pieces visible, freshly grated pecorino dust on top, fork twirling a small portion, dark slate surface, soft side light, shot from 30° angle."*
+4. **Generate multiple variants.** Iterate until accuracy is right.
+5. **Run accuracy validation past the cook.** Send candidates per recipe; she signs off on which are technically correct or rejects with specific notes ("the sauce is too cream-heavy — that's the American version, not the Roman one, re-prompt"). Cook's eye is the bar.
+6. **Maintain library coherence.** Every image should feel like part of the same cookbook — same lighting language, same surface family (dark slate / dark wood for most; light cream for breads if it suits), same camera-angle vocabulary. A Pinterest-scrap-heap library reads as cheap.
+
+**Tools (use the right one for each dish):**
+- **AI:** Imagen 3, DALL-E 3, Flux, or Midjourney V6. Commercial-use rights: DALL-E 3 allows commercial use, Midjourney requires paid sub, Imagen 3 via paid tier, Flux is open-source. Pick best output per dish.
+- **CC stock:** Unsplash, Pexels, Wikimedia Commons. Attribution required per license — captured in ledger.
+- **Avoid:** free/cheap services, DALL-E 2 — output quality is what separates "premium app" from "content farm."
+
+**Asset ledger:** Create `docs/coo/visual-assets-ledger.md`. One row per image:
+- Recipe slug · Stage (hero / step N) · Source (AI tool OR stock site + photographer) · Prompt summary or URL · License · Commercial use OK · Cook accuracy signoff date · Patrick replacement date (blank until he shoots own)
+
+**Engineer integration:** Once cook signs off, engineer reads the ledger and migrates images into `seed-recipes.ts` via existing `photo_url` field on Recipe and step objects. May need new optional `image_source` field for on-device credit display.
+
+**Sequencing:**
+1. Start with **Smash Burger** — well-documented, fast feedback loop. Patrick reviews.
+2. If Smash Burger lands cleanly, do **Spaghetti Carbonara** + **Roast Chicken** — high-frequency recipes, users see them first.
+3. Then the remaining 13 at your pace.
+4. **Don't try all 16 in one session** — sustained workstream over a week or so.
+
+**Cost:** ~1 session per 2–3 recipes for the deep-research + generate + cook-validation loop. So roughly 6–8 sessions across a week to complete all 16.
+
+**Blocks:** v1.0 launch visual story. Without this work, launch ships on gradient placeholders.
+
+**Files touched:** `docs/coo/visual-assets-ledger.md` (new), `docs/coo/photography/` (working notes), eventual handoff to Engineer with image files/URLs for `seed-recipes.ts` integration.
 
 ---
 
@@ -876,232 +1017,4 @@ Patrick is finding recipes on-device with empty Prep and Equipment sections. The
 **From:** Culinary Verifier (Claude)
 **Subject:** Step-flow audit — 28 issues across 19 recipes in seed-recipes.ts
 **Why:** Full chef's audit of every cook step in all 39 recipes in `mobile/src/data/seed-recipes.ts`. Cross-referenced steps against ingredients and prep fields. 28 issues found across 19 recipes: missing steps, hidden advance prep time, unreferenced ingredient prep, and one Golden Rule 1 violation.
-**Full audit:** `docs/coo/culinary-research/step-flow-audit.md` — read before touching seed data.
-
-**HIGH priority — fix before ship (10 issues):**
-
-1. **sourdough-loaf** — Add s6 `{ id: 's6', title: 'Rest — do not cut yet', content: '...1 hour on wire rack...', timer_seconds: 3600 }`. The current why_note in s5 is the only place this appears. User who cuts early gets a gummy crumb.
-
-2. **ramen** — Chashu pork (i7) is a 2-hour preparation with no step. Options in priority order: (a) add a make-ahead s0 with the chashu method; (b) add a prep note in i7 linking to an external method; (c) replace with `'Roasted pork shoulder, sliced (or store-bought char siu)'`. Minimum: option (b).
-
-3. **chicken-adobo** — s4 says "Serve over steamed white rice" but rice is not an ingredient and no step cooks it. Add rice as an ingredient with a parallel cook note (start rice at s2 — the 35-min braise window is plenty of time).
-
-4. **beef-rendang** — Kerisik (i3) requires toasting desiccated coconut and pounding it in a mortar (~10–15 min active). This exists only as ingredient prep. Add a kerisik-making step between s4 and s5 with a note that it can be done during the 2-hour braise window.
-
-5. **curry-laksa** — Tofu (i2) is listed with prep "pan-fried until golden" but no step fries it. s5 just adds it to the broth. Add a tofu pan-frying step between s3 and s4.
-
-6. **barramundi** — `time_min: 20` hides a mandatory 30-min skin-drying step (s1 timer_seconds: 1800). Update time_min to 50. Also: asparagus (i9) has prep "Blanched 2 minutes" but no step blanches it — add a note in s3 (5–6 min window while fish sears skin-side).
-
-7. **pavlova** — `time_min: 150` understates actual time (minimum ~3h 10min). Update to 210. Also: add room-temp egg white instruction as the first line of s1.
-
-8. **saag-paneer** — `video_url: 'https://www.youtube.com/@JoshuaWeissman'` is the channel homepage — Golden Rule 1 violation. Find the specific Joshua Weissman saag paneer video URL, or change `source.chef` to `'Hone Kitchen'` and remove the video_url.
-
-9. **butter-chicken** — `time_min: 90` hides 4-hour minimum marinade. Update to 330. *(Already flagged Batch 2 — confirming still open.)*
-
-10. **roast-chicken** — `time_min: 90` hides overnight dry brine. *(Already flagged Batch 2 — confirming still open.)*
-
-**MEDIUM priority — fix before ship (9 issues):**
-
-11. **kafta** — s5 references "sumac onions" (thinly sliced onion tossed with sumac) but: (a) no sliced onion exists in the ingredients, (b) no step makes this. Add `{ id: 'i11', name: 'White onion, thinly sliced, for serving', ... }` and add a prep instruction to s5.
-
-12. **musakhan** — i9 `'Pine nuts, toasted'` — no step toasts them. Add to s4: "Toast pine nuts in a dry pan 2–3 min over medium heat, stirring constantly, until golden."
-
-13. **pad-thai** — s3 says "Add protein to the wok edge" without differentiating tofu-first timing. Tofu takes 2–3 min longer than prawns. Update s3: fry tofu first until lightly golden, push aside, then add prawns. (Linked to the substitution data fix already documented in `pad-thai.md`.)
-
-14. **nasi-lemak** — Dried chillies need a 20-min pre-soak before s1 can start; no step or timing note tells the user. Also: belacan is listed as "toasted" in ingredient prep but no step toasts it. Add both to an opening instruction or the start of s1.
-
-15. **beef-rendang** — Same dried chilli soak issue as nasi-lemak. Add opening instruction: soak chillies in boiling water 20 min before starting s1.
-
-16. **curry-laksa** — s4 says "Add chicken stock and prawn stock" but the volume of prawn stock to use is only in the s1 why_note. Move to s4 step content: "Add 400ml chicken stock and all the prawn stock."
-
-17. **saag-paneer** — s5 "Serve with basmati rice or naan" — neither in ingredients, no cook step. Add rice as a side ingredient with a concurrent cooking note (start rice at the beginning of s3's 15–18 min masala build).
-
-18. **chicken-katsu** — Rice (i19) has no cook step. Add a rice-cooking note within s1 (curry simmers 20 min — enough time to cook rice concurrently).
-
-19. **pavlova** — Add room-temp egg white instruction as first line of s1 (already listed under HIGH item 7 above — same fix).
-
-**LOW priority — improve before ship (9 issues):**
-
-20. **thai-green-curry** — s4 uses generic "vegetables". Name "Thai eggplant" specifically.
-21. **braised-short-ribs** — s2 (sear all sides, ~15–20 min) missing `timer_seconds`. Add `timer_seconds: 1200`.
-22. **nasi-lemak** — Belacan toasting instruction missing from steps (see item 14).
-23. **curry-laksa** — Rice vermicelli soak (i3) and bean sprout blanch (i19) are in ingredient prep only. Add timing to s6 or a mise en place note.
-24. **char-kway-teow** — Noodle room-temp requirement (i1 prep) not flagged in steps. Add to s1: "If noodles were refrigerated, take them out 30 min before starting — cold noodles kill wok hei." Also: pre-mix soy sauce, kecap manis, fish sauce, and white pepper in a small bowl before starting the 4-min cook.
-25. **chicken-katsu** — Cabbage dressing (i20 prep: "dressed with a little rice wine vinegar") not in any step. Add to s5.
-26. **flour-tortillas** — s7 (rolling) and s8 (heating pan) should be flagged as concurrent. Add note to s7: start the pan during rolling.
-
-**Files touched:** `mobile/src/data/seed-recipes.ts`  
-**Reference:** `docs/coo/culinary-research/step-flow-audit.md` (full per-recipe detail with exact wording for each fix)  
-**Blocks:** Launch quality — users will hit missing steps mid-cook.
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-05 · OPEN
-**From:** Product Designer
-**Subject:** Two design additions to `recipe/[id].tsx` — "A note" truncation + recipe card v2 redesign
-**Why:** Patrick confirmed both items in the 05 May design session. Neither requires schema changes. Both can ship independently of each other and independently of the v2 section handoff already in this file.
-
----
-
-**ITEM 1 — "A note" collapsible text block**
-
-The field is `recipe.description`. Currently it renders in full, no truncation, inside a `bgDeep` rounded box with a bold "A note: " label prefix (line 454 of `recipe/[id].tsx`).
-
-**What to change:**
-- Clamp the text to **3 lines** by default (`numberOfLines={3}` on the inner `<Text>`).
-- Below the clamped text, render a `<Pressable>` with label **"Read more"** in `tokens.primary` (rust), 12px, `fonts.sansBold`.
-- When expanded, show full text and change the label to **"Show less"**.
-- State: `const [noteExpanded, setNoteExpanded] = useState(false)` — local, no persistence.
-- Only render the toggle if the text actually overflows 3 lines. Use `onTextLayout` to measure — if `nativeEvent.lines.length <= 3`, hide the Pressable entirely.
-- The outer container and styling stay the same — no visual change to the box itself.
-
-**Microcopy:** "Read more" / "Show less" — lowercase, no ellipsis on the label itself. The clamped text naturally trails off with the OS ellipsis (`ellipsizeMode="tail"`).
-
-**Accessibility:** The Pressable needs `accessibilityLabel="Read full note"` when collapsed and `accessibilityLabel="Show less of note"` when expanded. `accessibilityRole="button"`.
-
-**Files to touch:** `mobile/app/recipe/[id].tsx` only.
-
----
-
-**ITEM 2 — Recipe card redesign for Kitchen list**
-
-The v2 design language established in `docs/prototypes/recipe-detail-v2.html` needs to carry through to the browse cards on the Kitchen screen. Currently the cards use a simpler layout. The redesign should bring the card visual language into alignment without a full component rewrite — it's a style pass, not a structural change.
-
-**Spec (see `docs/prototypes/recipe-card-v2.html` for the visual reference):**
-
-Card surface: `tokens.surface` (`#FFFFFF`), `borderRadius: 14`, `border: 1px solid tokens.line` (`#D8E4D6`), subtle shadow `0 2px 8px rgba(0,0,0,0.06)`.
-
-Layout (top to bottom):
-1. **Hero image** — square crop, full card width, `borderTopLeftRadius: 14`, `borderTopRightRadius: 14`. "Photos soon" badge bottom-right if `hasStagePhotos === false` (existing logic — keep as-is).
-2. **Source chip** — overlaid bottom-left of the image (on top of hero scrim). `👨‍🍳 [Chef name]` in `tokens.primary` on a rust-tint pill (`rgba(184,64,48,0.10)` bg, `rgba(184,64,48,0.18)` border). Only render if `recipe.source?.chef` is present.
-3. **Card body** — padding `12px 14px 14px`.
-   - Recipe title: `fonts.display` (Playfair Display), 17px, `tokens.ink`, `letterSpacing: -0.3`. Single line, truncate with ellipsis.
-   - Tagline: `fonts.sans`, 12px, italic, `tokens.muted`. 2-line max, ellipsis.
-   - **At-a-glance strip** — horizontal row, `marginTop: 8`, separated by a thin `tokens.line` divider above. Three data points only: total time (⏱ `total_time_minutes` min), difficulty (📊 beginner/intermediate/advanced), and cuisine (first cuisine category tag). Font: `fonts.sans`, 11px, `tokens.muted`. If `total_time_minutes` is absent (old seed recipes), omit the strip entirely — don't show dashes.
-
-**What does NOT change:** card tap behaviour, favourite icon, match badge (pantry context), planned-recipe indicator. Those stay exactly as-is.
-
-**Conditional rendering rule:** the at-a-glance strip is conditional — cards without that data look like slightly simplified current cards, not broken.
-
-**Files to touch:** `mobile/src/components/RecipeCard.tsx` (or equivalent card component), `mobile/app/(tabs)/index.tsx` if card layout is inlined there.
-
-**Prototype reference:** `docs/prototypes/recipe-card-v2.html`
-
----
-
-**Blocks:** Kitchen browse experience polish. At-a-glance strip also reinforces DECISION-009 data (gives Patrick a visible reason that the template expansion matters — the data shows up on the card).
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-05 · OPEN (after Patrick flips repo private)
-**From:** Patrick (via COO)
-**Subject:** Rotate the GitHub PAT and update the embedded remote URL
-**Why:** Per DECISION-010, the repo just went private. The GitHub PAT embedded in `.git/config` remote URL was visible during the public period. Standard hygiene: rotate the token, update the remote, verify push/pull still works.
-**Pre-condition:** Patrick has flipped the repo to private on GitHub. Verify by visiting `github.com/patrickpatches/hone` in an incognito window — should show 404 or login prompt.
-**What's needed:**
-1. Patrick generates a new fine-grained PAT in GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens. Scopes: `repo` (read + write) + `workflow`. Expiry: ~365 days, enough to comfortably reach launch.
-2. Engineer (or Patrick) updates the `.git/config` remote URL with the new token, replacing the old one. The format is `https://<username>:<token>@github.com/patrickpatches/hone.git`.
-3. Engineer runs a test push (e.g., a tiny commit to `docs/` or a no-op trailing newline) to verify the new token works end-to-end.
-4. Patrick revokes the old PAT in GitHub Settings (so even if it was scraped during the public window, it's now dead).
-5. Update `CLAUDE.md` Part 3 with the new PAT expiry date if the previous date was hardcoded.
-**Files touched:** `.git/config` (local only — never committed), `CLAUDE.md` if expiry date is hardcoded
-**Cost:** ~10 minutes.
-**Blocks:** Nothing — current PAT keeps working until revoked. But should be done within the next session for hygiene.
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-04 · DONE ✅ (2026-05-05 — all 6 sections implemented in recipe/[id].tsx)
-**From:** Product Designer
-**Subject:** Implement the 6 new recipe-detail sections from `docs/prototypes/recipe-detail-v2.html`
-**Why:** Schema pass (8 new fields) lands first. This UI pass lands after. Don't start until schema is committed and Carbonara's seed data has been expanded by the Culinary Verifier — you need real data to QA the new sections.
-
-**What's done (Designer):**
-- `docs/prototypes/recipe-detail-v2.html` — full Carbonara prototype with all 8 sections, rationale, and this engineer handoff.
-
-**What to implement (in `mobile/app/recipe/[id].tsx`):**
-
-1. **At-a-glance row** — below recipe header, above servings selector. Fields: `total_time_minutes`, `active_time_minutes`, `difficulty`, first cuisine category, `leftover_mode !== 'none'`. Horizontal row of 5 icon+label pairs, separated by thin lines.
-
-2. **What to know block** — from `before_you_start: string[]`. Left border `#5B8FD4` (not a new token — inline only). Conditionally rendered; omit entirely if array is empty.
-
-3. **Equipment row** — from `equipment: string[]`. Horizontal `ScrollView` of pills. Conditionally rendered.
-
-4. **Mise en place** — from `mise_en_place: string[]`. Tappable rows with circular checkboxes, progress counter. State: `useState<Set<number>>(new Set())`, **session-only** (no SQLite write). Left accent `#F2D896` (ochre, existing token). Conditionally rendered. **Expand pattern — threshold 4 (Designer decision, 2026-05-04):** show first 4 items; if array length > 4, render an ochre "Show N more prep tasks" chip below item 4 (N = total − 4). Tap reveals remaining items (150ms opacity fade). Chip disappears once expanded — no re-collapse. Progress counter counts all items including hidden ones. Threshold is 4 not 5: keeps "Start cooking" CTA above the fold on standard phones after scrolling ingredients and equipment.
-
-5. **Finishing & tasting block** — from `finishing_note?: string`. Left border `#C4A882` (inline only). Conditionally rendered.
-
-6. **Leftovers block** — from `leftovers_note?: string`. Dark low surface. Conditionally rendered.
-
-**Critical rule — conditional rendering:** Every new section must render nothing (no blank card, no section gap) when its data field is absent or empty. The page must be backwards-compatible with unexpanded recipes.
-
-**Do NOT change:** Ingredients, SubstitutionSheet, ServingsSelector, cook steps, hero, back/favourite/plan/share controls.
-
-**Files to touch:** `mobile/app/recipe/[id].tsx` only. No new component files needed.
-
-**Blocks:** Launch quality — every recipe page currently shows none of these sections.
-
----
-
-### INCIDENT NOTE → COO · 2026-05-03 · RESOLVED (build #53 in progress)
-**From:** Senior Engineer
-**Subject:** Build failures #51 and #52 — root causes diagnosed and fixed
-**Why this exists:** Patrick reported APK build failures after the session-2 push. Two separate bugs were responsible; both are now resolved.
-
-**Root cause 1 — stale import (build #51)**
-`IngredientSearchOverlay.tsx` was correctly deleted from GitHub in the prior session, but `pantry.tsx` was never updated on GitHub to match (the local v0.6.0 write was not pushed). GitHub was holding the old v0.5.x `pantry.tsx` which still imported the now-deleted file. Metro bundler failed: `Unable to resolve module IngredientSearchOverlay`. Fix: pushed the correct local v0.6.0 `pantry.tsx` to GitHub (commit `5a9a1db`).
-
-**Root cause 2 — truncated file (build #52)**
-The v0.6.0 `pantry.tsx` file was itself truncated at line 1218 mid-expression (`{undo`). The file write during the original Pantry v3 session was cut off before the undo toast was completed, and before any of the five subcomponent function definitions (`Pill`, `EmptyPantry`, `NoMatchesState`, `RecipeMatchCard`, `ChipAdd`). Metro bundler reported `SyntaxError: Unexpected token, expected "}" (1219:17)`. This is a variant of the REGN-002 class of issue (file write truncation, not null-byte corruption this time). Fix: completed the toast expression, restored both toast blocks, closed `KeyboardAvoidingView`, and restored all five subcomponents. Brace/paren balance verified at 0. Pushed as commit `7292f07`.
-
-**Build #53 triggered at 2026-05-03T12:31:47Z — currently in progress.**
-
-**Action needed from COO:**
-- None right now. Wait for build #53 to complete, then hand off the APK to Patrick for smoke test.
-- Once Patrick validates on-device, update the open Photography Director handoff (still waiting on his review).
-- Consider adding a "verify file not truncated" step to the release checklist (last N lines of every large file should be inspected before push — `tail -5 pantry.tsx` takes 2 seconds).
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-05 · DONE ✅ (2026-05-05 — types.ts expanded, difficulty normalised, ADR-002 written)
-**From:** Patrick (via COO)
-**Subject:** Add 8 new fields to the Recipe Zod schema for the full recipe template
-**Why:** DECISION-009 adopts a full 8-section recipe template across every recipe in the database. The cook authors content; you provide the schema fields; Designer designs the page; you implement the UI in a second pass after Designer ships. This is the additive schema work that unblocks both cook (long-running) and Designer (page redesign).
-**What's needed:**
-1. In `mobile/src/data/types.ts`, add to the `Recipe` Zod schema:
-   - `total_time_minutes: z.number().int().positive()`
-   - `active_time_minutes: z.number().int().positive()`
-   - `difficulty: z.enum(["beginner", "intermediate", "advanced"])`
-   - `equipment: z.array(z.string()).default([])`
-   - `before_you_start: z.array(z.string()).max(3).default([])`
-   - `mise_en_place: z.array(z.string()).default([])`
-   - `finishing_note: z.string().optional()`
-   - `leftovers_note: z.string().optional()`
-2. All new fields are additive and optional or have sensible defaults — no breaking change to existing recipes that don't have them populated.
-3. Update the TypeScript `Recipe` type accordingly.
-4. **Do NOT update the recipe-detail UI yet** — wait for Designer's page redesign (separate Designer handoff). UI implementation lands in your second pass after the design ships.
-5. Write an ADR (next number) covering the schema expansion.
-**Files touched:** `mobile/src/data/types.ts`, `docs/adr/NNN-recipe-template-expansion.md`
-**Cost:** ~1-2 hours.
-**Sequencing:** Can be done in any order relative to Pantry v3 work — additive schema doesn't conflict with Pantry refactor.
-**Blocks:** Cook's seed-recipes.ts repopulation (she can author into source `.md` files in `docs/coo/culinary-research/` in parallel; only the typed seed file blocks on this).
-
----
-
-### HANDOFF → Product Designer · 2026-05-05 · DONE ✅ (delivered 2026-05-04 — verified by COO 5 May, no delta against DECISION-009)
-**Delivered:** `docs/prototypes/recipe-detail-v2.html` — full 10-section Carbonara prototype. Hero, title/tagline/attribution, at-a-glance row (5 facts horizontal, <2s read), before-you-start framing block (blue), servings selector, ingredients with swap chips, equipment (gold-tint pills), mise en place (ochre, lighter type, no photos, tappable checkboxes, expand chip at 4), start cooking CTA, cook steps (unchanged), finishing & tasting (warm-brown framing, italic chef voice), leftovers (low surface, muted), attribution footer. Engineer handoff + conditional-rendering rules + risks section included. Cognitive-mode distinction (mise = fridge-open, cook steps = hands-wet) is the core of the design.
-**Note:** COO's later "8-section template" wording was a counting error — referring to *new* sections being added, not total. Designer's prototype correctly shipped with all 10. Decision log corrected.
-**From:** Patrick (via COO)
-**Subject:** Redesign the recipe-detail page to display the new 10-section template
-**Why:** DECISION-009 adopts a full recipe template. Each recipe now has additional sections — at-a-glance, before-you-start, equipment, mise en place, finishing & tasting, leftovers — that the current recipe page doesn't surface. The page needs to be redesigned with the right typographic and visual hierarchy. This is the page that defines whether Hone reads as a cookbook or as a recipe app.
-**What's needed:**
-1. Mockup the new recipe-detail page in `docs/prototypes/recipe-detail-v2.html`. Show one recipe end to end (use Pasta Carbonara since it's the canonical reference).
-2. Display all sections in a clear vertical flow that reads top-to-bottom like a cookbook entry, not a long unstructured list.
-3. Visual distinctions to spec:
-   - **At-a-glance** is a compact horizontal row of facts (time, difficulty, leftover-friendly, cuisine) — read in <2 seconds
-   - **What to know before you start** is a visually distinct framing block — short, prominent, before any heat-related content
-   - **Equipment** sits separate from ingredients — possibly a collapsible row or pill row
-   - **Mise en place** is visually distinct from cook steps — the cook reads prep with the fridge open, and reads cook steps with hands wet, so the section needs different treatment (lighter typography, no photos)
-   - **Cook steps** stay as currently designed — photos, why-notes, doneness cues
-   - **Finishing & tasting** is a final framing block, similar treatment to "What to know before you start" but at the end
-   - **Leftovers & storage** is the last block — light, conclusive
-4. Preserve all current design tok
+**Full audit:** `docs/coo/culinary-research/step-flow-audit.
