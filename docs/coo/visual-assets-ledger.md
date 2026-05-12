@@ -50,8 +50,8 @@
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
 | `hero` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
-| `step-s1-mise` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
-| `step-s3-smash` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
+| `step-s1-mise` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
+| `step-s3-smash` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s4-crust` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
 | `step-s4-cheese` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
 | `step-s5-bun` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
@@ -204,4 +204,4 @@
 |---|---|---|---|---|---|---|---|---|
 | `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-char-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
-| `step-sliced` | AI | TBD | — | TBD | TBD | PEND
+| `step-sliced` | AI | TBD | — | 
