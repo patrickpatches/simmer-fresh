@@ -13,7 +13,7 @@
 |---|---|---|---|
 | All substitution `quality` values | String literals: `'compromise'`, `'good'` | DECISION-015 colour system: `'green'` / `'yellow'` / `'red'` | **Migrate all 9 substitution quality fields** — mapping in section 6 below |
 | Regular sesame bun `quality` | `'compromise'` | 🟡 `'yellow'` — still makes a valid burger; original tag was too harsh | Change to `'yellow'` |
-| `step_overrides` | Not present on any substitution | Three substitutions need step_overrides (Wagyu, Cheddar, Bread & butter pickles) | **Add `step_overrides` array** to those three substitution objects |
+| `step_overrides` | Not present on any substitution | Three substitutions need step_overrides (Wagyu, American cheese, Bread & butter pickles) | **Add `step_overrides` array** to those three substitution objects |
 | Step s1 `content` | "Divide the beef into one ball per patty — don't pack them tightly..." | Adopt this file's wording (more specific; consistent with scaling-disparity fix) | Update s1 content to match section 8 below |
 | `scaling_note` on i1 (beef) | Not present | "100g per patty. For a double patty (smash-stack), use 2x100g balls per bun — don't increase to 200g per ball or you lose the smash technique." | Add `scaling_note` to i1 |
 | `scaling_note` on i4 (onion) | Not present | "Dice as fine as you can — raw onion on a burger needs to be small enough to eat without biting through a large chunk." | Add `scaling_note` to i4 |
@@ -36,9 +36,9 @@ Full colour reference for engineer migration:
 | Beef mince 80/20 | Lamb mince (20% fat) | `compromise` | 🔴 `red` | No |
 | Burger bun (brioche) | Potato bun | `good` | 🟡 `yellow` | No |
 | Burger bun (brioche) | Regular sesame-seed bun | `compromise` | 🟡 `yellow` | No |
-| American cheese | Mild cheddar | `compromise` | 🟡 `yellow` | **Yes — step s4** |
-| American cheese | Provolone | `good` | 🟡 `yellow` | No |
-| American cheese | Gruyère | `good` | 🟡 `yellow` | No |
+| Cheddar (PRIMARY) | American cheese slices | `great_swap` | 🟡 `yellow` | **Yes — step s4** |
+| Cheddar (PRIMARY) | Provolone | `great_swap` | 🟡 `yellow` | No |
+| Cheddar (PRIMARY) | Gruyère | `great_swap` | 🟡 `yellow` | No |
 | White onion | Brown onion | `good` | 🟡 `yellow` | No |
 | White onion | Shallots | `good` | 🟡 `yellow` | No |
 | Dill pickles | Bread and butter pickles | `compromise` | 🔴 `red` | **Yes — step s6** |
@@ -111,10 +111,10 @@ A smash burger is not a recipe, it's a technique — one that produces a crispie
   - *Substitution:* Potato bun — 🟡 yellow. Denser, less sweet, holds sauces equally well. A legitimate American diner choice.
   - *Substitution:* Regular sesame-seed burger bun — 🟡 yellow. Less richness without the egg and butter of brioche; toasting is more critical to prevent sogginess. Noticeably different but still makes a good burger.
 
-- **American cheese slices, 2** — `scales: linear`. 1 slice per patty.
-  - *Substitution:* Mild cheddar, thinly sliced — 🟡 yellow. Better flavour but inferior melt — needs technique assist to melt properly.
-    *Step override (step 4 — Cook and cheese):* After flipping, add the cheddar and cover the pan with a lid for 10–15 seconds. The trapped steam finishes the melt. American cheese melts from residual heat alone; cheddar does not.
-  - *Substitution:* Provolone — 🟡 yellow. Melts cleanly, mild and slightly nutty. Italian-American diner standard — different flavour register, no technique change.
+- **Cheddar, thinly sliced, 2 slices** — `scales: linear`. 1 slice per patty. PRIMARY CHEESE (changed from American cheese — cheddar is more widely available in Australia and has better flavour).
+  - *Substitution:* American cheese slices — 🟡 yellow. Engineered for the most even, glossy melt. No lid needed — melts from residual heat alone. Classic American smash burger cheese. Harder to source in Australia.
+    *Step override (step 4 — Cook and cheese):* American cheese melts from residual heat without a lid — skip the lid step used for cheddar. Add immediately after the flip and it will be ready in 45 seconds.
+  - *Substitution:* Provolone — 🟡 yellow. Melts cleanly, mild and slightly nutty. Italian-American diner standard — no technique change.
   - *Substitution:* Gruyère — 🟡 yellow. Rich, nutty, excellent melt. Shifts the burger toward bistro character; exceptional with caramelised onion.
 
 - **White onion, finely diced, 30g** — `scales: linear`. `scaling_note: "Dice as fine as you can — raw onion on a burger needs to be small enough to eat without biting through a large chunk."`
@@ -187,7 +187,7 @@ Cook 90 seconds without touching — you want a deep brown crust forming. Flip o
 
 *Doneness cue before flipping:* Edges should be brown and lacy; the top matte and grey with no raw pink showing. The crust releases from the pan on its own when ready — if it sticks, wait 15 more seconds.
 
-*Recovery:* If the cheese is not melted after 45 seconds, cover the pan with a lid for 10 seconds — the trapped steam finishes it instantly. (This is the default technique when using cheddar — see step_override above.)
+*Recovery:* If the cheddar is not melted after 45 seconds, cover the pan with a lid for 10 seconds — the trapped steam finishes it instantly. If using American cheese: no lid needed, it melts from residual heat alone.
 
 *Why note:* Single flip only. Moving the patty cools the surface and breaks crust formation. Cheese goes on right after the flip so it has the full second-side cook time to melt.
 
@@ -226,7 +226,7 @@ No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes 
 1. **The smash** — spatula pressed down on ball with baking paper, showing the action and the paper.
 2. **The crust forming** — close-up of the edge with the lacey brown crust visible against the grey top.
 3. **The flip** — crust side revealed: deep mahogany-brown patty face. This is the money shot.
-4. **The cheese melt** — American cheese melting into glossy translucence over the patty.
+4. **The cheese melt** — cheddar melting over the patty, edges beginning to drape. Cover the pan and capture the steam-melt moment.
 5. **The assembled burger** — cross-section showing layers: bun, sauce, pickle, onion, patty with cheese, top bun.
 
 ---
@@ -235,7 +235,8 @@ No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes 
 
 - [x] **Discrepancy table complete** — all seed-recipes.ts vs research file gaps identified; engineer action items explicit.
 - [x] **DECISION-015 colour mapping complete** — all 16 substitutions assigned 🟢/🟡/🔴 with one-sentence justification each. No uncoloured substitutions.
-- [x] **step_overrides authored** — Wagyu (s4: shorter cook time), Cheddar (s4: lid for steam melt), Bread & butter pickles (s6: reduce ketchup). No other substitutions require technique changes.
+- [x] **step_overrides authored** — Wagyu (s4: shorter cook time), American cheese (s4: no lid needed, melts from residual heat), Bread & butter pickles (s6: reduce ketchup). No other substitutions require technique changes.
+- [x] **Cheese updated to cheddar primary** — American cheese now a substitution. Engineer: change `i3` name to `'Cheddar, thinly sliced'` in seed-recipes.ts (already done in seed-recipes.ts — confirm research file and seed-recipes.ts are in sync).
 - [x] **No 🟢 greens present** — verified: every substitution in this recipe changes something the cook notices. Absence of green is correct, not an oversight.
 - [x] **Ingredient ↔ step parity** — all 8 ingredient lines appear in steps or mise en place; no ghost ingredients.
 - [x] **Scaling notes** — beef mince and white onion have scaling_note; sauce components and cheese are self-evident at 1 per patty.
@@ -258,7 +259,7 @@ No. A smash burger is not a leftover. The crust becomes chewy within 10 minutes 
 **Cultural origin:** PASS — American diner. No contested labelling.
 **Substitutions (DECISION-015):** PASS — all 16 substitutions coloured. No greens (correct
   for this recipe — every swap changes something). 3 reds (lean beef, lamb, bread &
-  butter pickles). 13 yellows. 3 step_overrides authored (Wagyu, Cheddar, B&B pickles).
+  butter pickles). 13 yellows. 3 step_overrides authored (Wagyu, American cheese, B&B pickles). Cheddar now primary; American cheese is substitution.
 **Scaling:** PASS — linear on all ingredients. Scaling notes added for beef and onion.
 **Voice:** PASS — second-person present tense throughout. Doneness cues in every step.
 **Retirement check:** PASS — whole-food concept retired (resolved 2026-05-07). No

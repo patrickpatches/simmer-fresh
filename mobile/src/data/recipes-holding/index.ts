@@ -85,7 +85,6 @@ const CHICKEN_ADOBO: Recipe = {
     { id: 's4', title: 'Serve over rice', content: 'Serve immediately over steamed white rice. The sauce is the point — make sure every plate gets a generous spoonful.' },
   ],
   categories: { cuisines: ['filipino'], types: ['chicken'] },
-  whole_food_verified: true,
 };
 
 
@@ -175,7 +174,6 @@ const BEEF_STEW: Recipe = {
     { id: 's5', title: 'Add veg and finish', content: 'Add carrots and potatoes. Continue simmering, uncovered, 30–40 minutes until vegetables are tender and sauce has thickened.', timer_seconds: 1800, why_note: 'Vegetables added early turn to mush. Added in the last 30–40 minutes they cook through without disintegrating. Removing the lid lets steam escape and the sauce reduce and concentrate.' },
   ],
   categories: { cuisines: ['french'], types: ['beef', 'soups'] },
-  whole_food_verified: true,
 };
 
 
@@ -282,7 +280,6 @@ const MUSAKHAN: Recipe = {
     { id: 's4', title: 'Final oven blast and finish', content: 'Put the assembled dish back in the oven at 200°C for 8–10 minutes until the edges of the bread crisp and the chicken skin re-crisps. Scatter toasted pine nuts and serve immediately.', timer_seconds: 480, why_note: 'The second oven blast revives the chicken skin that softened on top of the moist onions. Pine nuts add texture contrast — toast them until golden-brown, not pale, or they taste of nothing.' },
   ],
   categories: { cuisines: ['levantine'], types: ['chicken'] },
-  whole_food_verified: true,
 };
 
 
@@ -356,7 +353,6 @@ const KAFTA: Recipe = {
     { id: 's5', title: 'Serve in flatbread with sumac onions', content: 'Slide the kafta off the skewer into a warm pitta. Add thinly sliced raw onion tossed with sumac and a squeeze of lemon. Serve immediately.' },
   ],
   categories: { cuisines: ['levantine'], types: ['lamb', 'beef'] },
-  whole_food_verified: true,
 };
 
 
@@ -447,7 +443,6 @@ const FATTOUSH: Recipe = {
     { id: 's3', title: 'Toss and serve immediately', content: 'Combine all vegetables and herbs in a large bowl. Add the fried bread. Pour over the dressing and toss. Serve within 5 minutes — the bread should still have some crunch.', why_note: 'Fattoush is a race against the bread going soft. The acid in the dressing starts breaking down the crisp surfaces the moment it touches them. Dress and serve; do not let it sit.' },
   ],
   categories: { cuisines: ['levantine'], types: ['salads', 'vegetarian'] },
-  whole_food_verified: true,
 };
 
 
@@ -534,7 +529,6 @@ const PRAWN_TACOS_PINEAPPLE: Recipe = {
     { id: 's5', title: 'Char the tortillas and build', content: 'Char tortillas directly on a gas flame or dry hot pan, 20–30 seconds per side. Build: chipotle crema, 3–4 prawns, pineapple salsa, squeeze of lime.', why_note: 'Cold tortillas crack. Charring adds flavour from the corn and makes them pliable. Build in this order so the crema acts as a moisture barrier between the warm tortilla and the juicy salsa.' },
   ],
   categories: { cuisines: ['mexican'], types: ['seafood'] },
-  whole_food_verified: true,
 };
 
 
@@ -570,7 +564,6 @@ const SOURDOUGH_MAINTENANCE: Recipe = {
     { id: 's5', title: 'Signs something is wrong', content: 'Mould is the only true emergency — pink, orange, or fuzzy growth means discard the whole thing and start fresh. Black streaks or liquid are usually just over-fermentation. A consistently flat, non-rising starter after 5 days of daily feeding in a warm kitchen likely means the flour or water is inhibiting microbial activity — try bottled water and wholemeal flour.', why_note: 'Mould is a contaminant from the air and wins when acidity drops too low to protect the culture. Once mould is visible on the surface, it has almost certainly penetrated deeper — stirring it away does not fix it. Every other problem short of mould is recoverable with patience and consistent feeding.' },
   ],
   categories: { cuisines: ['australian'], types: ['baking'] },
-  whole_food_verified: true,
 };
 
 
@@ -619,7 +612,6 @@ const SOURDOUGH_LOAF: Recipe = {
     { id: 's5', title: 'Bake in a covered pot at maximum heat', content: 'Preheat oven to 250°C (as hot as it goes) with a Dutch oven inside for 1 hour. Score the cold loaf with a sharp razor or lame. Put it straight from the fridge into the scorching Dutch oven. Cover and bake 20 minutes. Remove lid, bake 20–25 more minutes until deep mahogany.', timer_seconds: 2400, why_note: 'The covered Dutch oven traps steam released by the cold dough in the first 20 minutes. This steam keeps the crust supple enough to expand fully (oven spring). At 20 minutes, the crust has set — removing the lid now allows the Maillard reaction on the crust surface and the deep caramelisation that makes sourdough crust flavour. Internal temperature should hit 96°C. Rest 1 hour before cutting — the crumb continues cooking via carry-over heat.' },
   ],
   categories: { cuisines: ['australian'], types: ['baking'] },
-  whole_food_verified: true,
 };
 
 
@@ -698,7 +690,6 @@ const RISOTTO: Recipe = {
     { id: 's5', title: 'Mantecatura — the final butter', content: 'When rice is al dente (it should have a firm but not chalky centre — taste it), remove from heat. Add cold butter in pieces and stir vigorously for 1 minute. Add mushrooms back in.', why_note: 'Mantecatura means "creaming". Cold butter emulsifies into the hot starch, creating a glossy, rich finish. Hot butter separates. Off heat prevents further starch release, which would make it gluey.' },
   ],
   categories: { cuisines: ['italian'], types: ['vegetarian'] },
-  whole_food_verified: true,
 };
 
 
@@ -775,7 +766,6 @@ const FISH_TACOS: Recipe = {
     { id: 's4', title: 'Warm tortillas and assemble', content: 'Char tortillas directly on a gas flame or dry pan — 30 seconds per side. Stack fish, cabbage, crema, coriander, squeeze lime over the top.', why_note: 'Cold, raw tortillas taste of nothing and tear. Charring activates the corn flavour and makes them pliable enough to fold without cracking.' },
   ],
   categories: { cuisines: ['mexican'], types: ['seafood'] },
-  whole_food_verified: true,
 };
 
 
@@ -854,7 +844,6 @@ const FRENCH_ONION_SOUP: Recipe = {
     { id: 's4', title: 'Grill and serve', content: 'Ladle soup into oven-safe bowls. Float a bread slice. Cover generously with gruyère — it should overhang the bowl slightly. Grill under a hot broiler 3–5 minutes until bubbling and spotted black in places.', timer_seconds: 300, why_note: 'The slight charring on the cheese is flavour, not failure. Maillard on the cheese creates nutty, bitter notes that balance the sweet onion and rich stock. Pale melted gruyère is aesthetically wrong and flavourwise missed.' },
   ],
   categories: { cuisines: ['french'], types: ['soups'] },
-  whole_food_verified: true,
 };
 
 
@@ -940,7 +929,6 @@ const BRAISED_SHORT_RIBS: Recipe = {
     { id: 's5', title: 'Rest and reduce sauce', content: 'Remove ribs, rest 15 minutes. Strain the braising liquid, skim fat, reduce in a pan over high heat to a glossy sauce.', timer_seconds: 900, why_note: 'Straining removes the now-exhausted vegetables. Skimming removes fat that would make the sauce greasy. Reducing concentrates into a glaze — pour it over the ribs and it should coat a spoon.' },
   ],
   categories: { cuisines: ['american'], types: ['beef'] },
-  whole_food_verified: true,
 };
 
 
@@ -1026,7 +1014,6 @@ const RAMEN: Recipe = {
     { id: 's5', title: 'Assemble properly', content: 'Tare in the bowl first. Noodles. Hot broth ladled over. Then toppings in distinct sections: halved egg, pork, nori, spring onion, bamboo. Each topping should be visually distinct.', why_note: "Adding tare first ensures it distributes through the broth as it's poured. Keeping toppings visually separate isn't just aesthetic — it lets you eat each element alone or in combination at your own pace." },
   ],
   categories: { cuisines: ['japanese'], types: ['soups', 'pasta'] },
-  whole_food_verified: true,
 };
 
 
@@ -1088,7 +1075,6 @@ const BEEF_WELLINGTON: Recipe = {
     { id: 's5', title: 'Bake to internal temp', content: 'Bake at 220°C for 25–30 minutes until pastry is deep golden. Internal temperature: 52°C for rare, 55°C for medium-rare. Rest 10 minutes before cutting.', timer_seconds: 1500, why_note: 'Pastry colour is a guide; internal temperature is the truth. Use a probe thermometer. The beef carries over by about 3°C during the rest, so pull it slightly under target. Without resting, the juices run everywhere when cut.' },
   ],
   categories: { cuisines: ['french'], types: ['beef'] },
-  whole_food_verified: true,
 };
 
 
@@ -1177,7 +1163,6 @@ const DAL: Recipe = {
     { id: 's4', title: 'Combine and finish', content: 'Pour cooked lentils into the tarka pan (or vice versa). Add garam masala. Simmer together 5 minutes, season. The dal should coat a spoon but not be thick like cement.', timer_seconds: 300 },
   ],
   categories: { cuisines: ['indian'], types: ['vegetarian', 'soups'] },
-  whole_food_verified: true,
 };
 
 
@@ -1227,7 +1212,6 @@ const SCRAMBLED_EGGS: Recipe = {
     { id: 's3', title: 'Salt and finish at the last second', content: 'When eggs are 90% set — still slightly glossy and wet — remove from heat. Add crème fraîche, stir once. Season with salt. Serve immediately.', why_note: 'Salt draws water from proteins by osmosis. Added early, it makes the eggs watery. Added at the end, it seasons without affecting texture. The crème fraîche adds richness and stops the cooking instantly by cooling the mass. Residual heat finishes them perfectly.' },
   ],
   categories: { cuisines: ['australian'], types: ['eggs'] },
-  whole_food_verified: true,
 };
 
 
@@ -1279,7 +1263,6 @@ const AGLIO_E_OLIO: Recipe = {
     { id: 's6', title: 'Parsley off heat, serve immediately', content: 'Kill the heat. Toss through parsley and a final glug of olive oil. Plate at once — this dish seizes as it cools.', why_note: 'Parsley off heat keeps it green and fresh-tasting. The final raw olive oil adds fragrance that a cooked oil loses. Eat while the sauce is still glossy; a minute later it will be sticky.' },
   ],
   categories: { cuisines: ['italian'], types: ['pasta', 'vegetarian'] },
-  whole_food_verified: true,
 };
 
 
@@ -1357,7 +1340,6 @@ const MUJADARA: Recipe = {
     note: 'Keeps three days in the fridge and actually improves. Reheat with a splash of water, lid on.',
   },
   categories: { cuisines: ['levantine'], types: ['vegetarian'] },
-  whole_food_verified: true,
 };
 
 
@@ -1448,7 +1430,6 @@ const SHEET_PAN_HARISSA_CHICKEN: Recipe = {
     note: 'Pack in a container with the chickpeas — the chicken reheats in the oven (not microwave, the skin goes sad). Works cold too.',
   },
   categories: { cuisines: ['levantine'], types: ['chicken'] },
-  whole_food_verified: true,
 };
 
 
@@ -1516,7 +1497,6 @@ const EGG_FRIED_RICE: Recipe = {
     { id: 's6', title: 'Sesame oil, greens, serve', content: 'Off the heat. Drizzle the sesame oil, scatter the spring onion greens, toss once. Plate immediately while the rice is loose and steaming.', why_note: 'Toasted sesame oil is fragile — real heat destroys the volatile compounds that make it taste of sesame. Always off heat, always at the end. The dish goes claggy as it cools so serve within two minutes.', ingredient_refs: ['i6', 'i3'] },
   ],
   categories: { cuisines: ['chinese'], types: ['eggs'] },
-  whole_food_verified: true,
 };
 
 
@@ -1539,7 +1519,6 @@ const NASI_LEMAK: Recipe = {
   emoji: '🍚',
   hero_fallback: fallback('#4A7C59'),
   categories: { cuisines: ['malaysian'], types: ['chicken'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Jasmine rice', amount: 400, unit: 'g', scales: 'linear', prep: 'Rinsed until water runs clear — removes excess starch that would make it gluey',
       substitutions: [
@@ -1641,7 +1620,6 @@ const BEEF_RENDANG: Recipe = {
   emoji: '🍖',
   hero_fallback: fallback('#5C2D0E'),
   categories: { cuisines: ['malaysian'], types: ['beef'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Beef chuck', amount: 1.2, unit: 'kg', scales: 'linear', prep: 'Cut into 5cm chunks — larger than you think, they shrink',
       substitutions: [
@@ -1748,7 +1726,6 @@ const CURRY_LAKSA: Recipe = {
   emoji: '🍜',
   hero_fallback: fallback('#D4820A'),
   categories: { cuisines: ['malaysian'], types: ['seafood'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Raw prawns, shell-on', amount: 500, unit: 'g', scales: 'linear', prep: 'Shell and devein, reserve shells for stock',
       substitutions: [
@@ -1881,7 +1858,6 @@ const CHAR_KWAY_TEOW: Recipe = {
   emoji: '🥢',
   hero_fallback: fallback('#2C1A0E'),
   categories: { cuisines: ['malaysian'], types: ['seafood'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Fresh flat rice noodles (kway teow)', amount: 300, unit: 'g', scales: 'linear', prep: 'If refrigerated, bring to room temp — cold noodles kill wok heat',
       substitutions: [
@@ -1967,7 +1943,6 @@ const SAAG_PANEER: Recipe = {
   emoji: '🌿',
   hero_fallback: fallback('#2A5C3A'),
   categories: { cuisines: ['indian'], types: ['vegetarian'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Paneer', amount: 400, unit: 'g', scales: 'linear', prep: 'Cut into 2cm cubes',
       substitutions: [
@@ -2068,7 +2043,6 @@ const CHICKEN_KATSU: Recipe = {
   emoji: '🍱',
   hero_fallback: fallback('#C4960A'),
   categories: { cuisines: ['japanese'], types: ['chicken'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Chicken breast fillets', amount: 4, unit: 'large', scales: 'linear', prep: 'Pounded to 1.5cm even thickness — this is critical for even cooking',
       substitutions: [
@@ -2171,7 +2145,6 @@ const TOM_YUM: Recipe = {
   emoji: '🍲',
   hero_fallback: fallback('#C44A2A'),
   categories: { cuisines: ['thai'], types: ['seafood'] },
-  whole_food_verified: true,
   ingredients: [
     { id: 'i1', name: 'Raw prawns, shell-on', amount: 500, unit: 'g', scales: 'linear', prep: 'Peel and devein, reserve shells for stock',
       substitutions: [
@@ -2406,7 +2379,6 @@ const FLOUR_TORTILLAS: Recipe = {
     },
   ],
   categories: { cuisines: ['mexican'], types: ['baking'] },
-  whole_food_verified: true,
 };
 
 

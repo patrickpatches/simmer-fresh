@@ -99,22 +99,22 @@ const SMASH_BURGER: Recipe = {
       ],
     },
     {
-      id: 'i3', name: 'American cheese slices', amount: 2, unit: '', scales: 'linear',
+      id: 'i3', name: 'Cheddar, thinly sliced', amount: 2, unit: '', scales: 'linear',
       substitutions: [
         {
-          ingredient: 'Mild cheddar, thinly sliced',
-          changes: 'Better flavour but inferior melt. American cheese is engineered for even, glossy melt — cheddar can turn oily or uneven. Place it on the patty earlier and cover the pan with a lid to steam-melt it.',
-          quality: 'compromise',
+          ingredient: 'American cheese slices',
+          changes: 'Engineered for the most even, glossy melt — no lid needed. Classic American smash burger. Less complex in flavour but technically superior melt. Easier to find in the US than in Australia.',
+          quality: 'great_swap',
         },
         {
           ingredient: 'Provolone',
-          changes: 'Melts cleanly and has a mild, slightly nutty flavour. Italian-American diner standard — a genuine upgrade in flavour with no compromise on melt.',
-          quality: 'good',
+          changes: 'Melts cleanly with a mild, slightly nutty flavour. Italian-American diner standard — no compromise on melt.',
+          quality: 'great_swap',
         },
         {
           ingredient: 'Gruyère',
-          changes: 'Rich, nutty, excellent melt. Changes the character toward a more bistro-style burger. Pairs exceptionally with caramelised onion.',
-          quality: 'good',
+          changes: 'Rich, nutty, excellent melt. Shifts the character toward a bistro-style burger. Pairs exceptionally well with caramelised onion.',
+          quality: 'great_swap',
         },
       ],
     },
