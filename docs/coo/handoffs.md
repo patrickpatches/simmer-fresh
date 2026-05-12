@@ -46,6 +46,27 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-12 · OPEN URGENT (Roast Chicken — attribution fix + full recipe rewrite)
+**From:** COO (via Culinary Verifier)
+**Subject:** Roast Chicken has been declared a Hone Kitchen original. Attribution must change from Thomas Keller before ship. Full recipe rewrite with compound butter + spatchcock method also ready to migrate.
+**Why:** Patrick officially declared this a Hone Kitchen original this session. The current `source.chef: 'Thomas Keller'` with Bouchon notes cannot ship — incorrect attribution is a Golden Rule violation. Separately, the culinary research file has been fully rewritten with a stronger technique (dry brine + compound butter under skin + spatchcock primary method + pan sauce) that beats the Keller approach for home cooks.
+**What's done:** `docs/coo/culinary-research/roast-chicken.md` fully rewritten — Hone Kitchen original, 10-section DECISION-009 template, DECISION-015 substitution colours, discrepancy table at top, pre-flight checklist complete.
+**What's needed:**
+1. Apply all items in the discrepancy table (top of `roast-chicken.md`) to `seed-recipes.ts`. Priority order:
+   - `source.chef` → `'Hone Kitchen'` ← **do this first, hard blocker**
+   - `source.notes` → `"Hone Kitchen original — dry-brine, compound butter under skin, spatchcock method."`
+   - `categories.cuisines` → `['australian']`
+   - `title` → `'Roast Chicken'`
+   - `difficulty` → `'intermediate'`
+   - Add new ingredients: fresh tarragon (i4a), eschallot, dry white wine, chicken stock (low-sodium), cold butter (mounting) — pan sauce optional ingredients
+   - Add step s6 (pan sauce) using step content from research file
+   - Update step s3 content (compound butter technique)
+2. All substitutions need DECISION-015 colour field (`quality_colour: 'green' | 'yellow' | 'red'`) per the colour mapping in the research file
+3. No build required for docs changes — but attribution fix should land in next build
+**Files touched:**
+- `docs/coo/culinary-research/roast-chicken.md` (source of truth for this migration)
+**Blocks:** Launch. Thomas Keller attribution cannot ship.
+
 ### HANDOFF → Culinary Verifier · 2026-05-10 · OPEN URGENT (DECISION-015 — substitution quality colours + step_overrides authoring)
 **From:** Patrick (via COO)
 **Subject:** Walk every launch recipe; collapse the 4-tier substitution quality to 3 colours (green/yellow/red); author `step_overrides` only where the swap genuinely changes technique.
