@@ -41,6 +41,15 @@
 | `docs/sessions/` | Per-session reports. Filename: `Hone_Session_Report_DD_Month_YYYY.md`. |
 | `docs/coo/` | COO operating system — cadence, handoffs, command centre, launch plan, specialist briefs. |
 | `docs/coo/specialists/` | Role briefs for each specialist chat. One file per role. |
+| `docs/coo/photography/` | Photography Director outputs — shot lists, preset, pre-flight checklist, shoot retrospectives. |
+| `docs/coo/photography/preflight-checklist.md` | Pre-flight checklist Patrick runs every shoot weekend. Print-ready, one page. |
+| `docs/coo/photography/post-processing-preset.md` | Lightroom Mobile settings for the Hone visual preset. Apply consistently to every photo. |
+| `docs/coo/photography/shot-list-showcase.md` | Per-recipe stage shot lists for the 10 showcase recipes. Includes doneness cues, alt text, and schedule. |
+| `docs/coo/photography/shot-list-hero-only.md` | Hero-only shot list for ~24 remaining recipes. Includes hero batch weekend plan. |
+| `docs/coo/photography/image-briefs/` | Per-recipe working briefs for AI image generation. One file per recipe. Contains deep research, DALL-E 3 prompts, cook validation checklists. |
+| `docs/coo/photography/image-briefs/smash-burger.md` | Smash Burger generation brief — 6 prompts (hero + 5 stage shots). Status: prompts written, images not yet generated. |
+| `docs/coo/photography/image-briefs/carbonara.md` | Spaghetti Carbonara generation brief — 4 prompts (hero + 3 stage shots). Status: prompts written, images not yet generated. |
+| `docs/coo/photography/image-briefs/roast-chicken.md` | Roast Chicken generation brief — 4 prompts (hero + 3 stage shots). Status: prompts written, images not yet generated. |
 | `docs/accounting/` | ATO records: tax advice doc and receipts folder. |
 | `docs/accounting/tax-advice-FY2025-26.md` | Running tax strategy and deduction guidance for FY 2025–26. |
 | `docs/accounting/receipts/` | Supplier invoices as PDFs. Naming: `Supplier-InvoiceNumber-YYYY-MM-DD.pdf`. Keep 5 years (ATO rule). |
@@ -99,14 +108,9 @@
 
 ## Naming conventions
 
-- **Session reports:** `Hone_Session_Report_DD_Month_YYYY.md` → `docs/sessions/`
+- **Session reports:** `Hone_Session_Report_DD_Month_YYYY.md` → `docs/sessions/`. For a second (or third) session on the same day, append a sequential number: `_2.md`, `_3.md`. **Never** append a role tag (`_COO`, `_engineer`, etc.) — discoverable content lives in the H1 title and summary inside the file, not the filename.
 - **ADRs:** `NNN-kebab-title.md` → `docs/adr/`
-- **Backups created during a risky refactor:** `backup-YYYY-MM-DD[-descriptor]/` → `docs/archive/`
-- **Worktree branch files:** never leave `-Desktop-P` or similar suffixed duplicates in the working tree — delete them when the worktree is pruned
-- **No files in repo root** except: CLAUDE.md, BUGS.md, CHANGELOG.md, README.md, and the four standard hidden dirs (.git, .github, .claude, .gitignore)
-
----
-
-## What does NOT belong in this repo
-
-- `node_modu
+- **Specialist briefs:** `<role-name>.md` → `docs/coo/specialists/`
+- **Decision log entries:** `DECISION-NNN` numbered, all in `docs/coo/decision-log.md` (one file, newest at top)
+- **Risk register entries:** `R-NNN` numbered, all in `docs/coo/risk-register.md` (one file)
+- **Backups created during a risky refactor:** `backup-YYYY-MM-DD[-descriptor]/` → `d
