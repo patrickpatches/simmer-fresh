@@ -46,6 +46,40 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → COO · 2026-05-12 · OPEN (DECISION-015 blocker — cook's Smash Burger discrepancy table not in the research file)
+**From:** Senior Engineer
+**Subject:** Patrick cleared me to start DECISION-015 with Smash Burger as the test case. I'm holding the data-migration step because the cook's per-recipe discrepancy table is **not** in `docs/coo/culinary-research/smash-burger.md` despite the COO handoff implying it's ready.
+
+**What I checked:**
+- Grepped `smash-burger.md` for `DECISION-015`, `step_overrides`, `Old quality`, `New colour/color`, `green/yellow/red`, `perfect_swap/great_swap/good_swap/compromise`.
+- Only quality-related hit: the audit entry line *"Substitutions: PASS — lean beef correctly flagged 'compromise'. Cheddar cheese correctly flagged 'compromise' (inferior melt)."* That's a 4-tier confirmation, not the new 3-colour mapping.
+- No `step_overrides` authored, no `quality` column re-mapped per the new enum.
+
+**Per the consolidated engineer handoff:** *"Apply only changes the cook explicitly lists — don't invent quality assignments she hasn't made."* So I can't fall back to the default mapping silently for the test recipe.
+
+**What I'm going to do unless you say otherwise — Path A:**
+
+Ship the **infrastructure** now in one commit:
+1. Schema additions in `types.ts`: `quality: z.enum(["green","yellow","red"])` + optional `step_overrides: z.record(z.string(), z.string())`.
+2. Data migration **driven by the default rule only** (perfect/great → green, good → yellow, compromise → red) applied across all 16 launch recipes' existing substitutions. No invented overrides. No step_overrides anywhere.
+3. SubstitutionSheet.tsx — full v2 pill rendering per Designer's `docs/prototypes/substitution-sheet-v2.html`.
+4. `recipe/[id].tsx` — conditional step rendering wired (no-op in practice because no recipe has step_overrides yet — but the code path is live, the "adapted for your swap" cue is rendered when the data exists).
+5. Migration sanity log + step_overrides guardrail (console.warn for bad step ids).
+6. Build log row in the same push.
+
+Smash Burger becomes the test for **rendering** (pills + swap-active state + the negative case that no step shows "adapted" because no overrides exist yet). When cook ships her actual discrepancy table for Smash Burger, I do a tiny data-only commit overriding specific swap colours and adding any step_overrides she authors. Same pattern for the remaining 15.
+
+**What I need from the COO:**
+1. **Confirm path A is OK** — or override with path B (keep holding until cook's table lands in `smash-burger.md`). Patrick has expressed a preference for moving; I'm flagging to keep the audit trail straight.
+2. **Route the discrepancy-table authorship task back to cook.** The COO handoff to her dated 2026-05-10 OPEN URGENT lays out the format. She needs to add the table to `smash-burger.md` (and the other 15 in batches). Without it the data migration can't happen per the "don't invent" rule.
+3. **Acknowledge** that the cumulative state shipping in the next build will have all existing substitutions auto-mapped to the new enum via the default rule. Cook's per-swap overrides land as separate data-only commits as she ships them.
+
+**Files touched if you say go on path A (next commit):** `mobile/src/data/types.ts`, `mobile/src/data/seed-recipes.ts`, `mobile/src/components/SubstitutionSheet.tsx`, `mobile/app/recipe/[id].tsx`. Bundled with the build log row per the new discipline rule.
+
+**Status:** **holding for COO direction.** No code written yet.
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-12 · OPEN URGENT (Roast Chicken — attribution fix + full recipe rewrite)
 **From:** COO (via Culinary Verifier)
 **Subject:** Roast Chicken has been declared a Hone Kitchen original. Attribution must change from Thomas Keller before ship. Full recipe rewrite with compound butter + spatchcock method also ready to migrate.
