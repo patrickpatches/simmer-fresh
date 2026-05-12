@@ -1,5 +1,33 @@
 # Chicken Schnitzel
 
+## DECISION-015: Substitution Colour Mapping
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Chicken breast | Chicken thigh fillets (boneless) | `great_swap` | 🟡 yellow | No | Juicier, more forgiving; irregular shape makes even pounding harder — some thickness variation is unavoidable |
+| Chicken breast | Veal escalope | `perfect_swap` | 🟢 green | **Yes — s2** | The original Wiener Schnitzel; same technique; cooks faster |
+| Chicken breast | Pork loin steak (pounded thin) | `great_swap` | 🟡 yellow | No | Different protein; same technique; slightly different flavour and texture |
+| Brine (fine sea salt) | Sea salt flakes | `perfect_swap` | 🟢 green | No | Same by weight; do not substitute by volume |
+| Brine step | Skip entirely | `compromise` | 🔴 red | No | Chicken will be surface-seasoned only; more prone to dryness; different quality result |
+| Plain flour | Gluten-free plain flour blend | `good_swap` | 🟡 yellow | No | Slightly different crust texture; crumbs bond slightly less firmly; still works |
+| Panko | Fresh white breadcrumbs (day-old sourdough, blitzed) | `great_swap` | 🟡 yellow | No | Coarser, more rustic; excellent result with a different crust character |
+| Panko | Dry supermarket breadcrumbs | `good_swap` | 🟡 yellow | No | Tighter, denser crust; the schnitzel works but loses the airiness panko provides |
+| Parmigiano Reggiano (in crust) | Pecorino | `great_swap` | 🟡 yellow | No | Sharper, saltier; watch for faster browning in the pan |
+| Parmigiano Reggiano (in crust) | Omit | `good_swap` | 🟡 yellow | No | Less flavour complexity in the crust; technique unchanged |
+| Lemon (to serve) | Omit | `good_swap` | 🟡 yellow | No | The acid transforms the richness — worth keeping, but the schnitzel is cooked without it |
+| Neutral oil | Ghee or clarified butter | `great_swap` | 🟡 yellow | No | Higher smoke point, buttery flavour; reaches target colour slightly faster — watch closely |
+| Neutral oil | Light olive oil | `good_swap` | 🟡 yellow | No | Lower smoke point; do not exceed 170°C or it starts to smoke acridly |
+
+**Colour summary:** 2 🟢 · 10 🟡 · 1 🔴
+
+### step_overrides authored
+
+**Veal escalope → step s2 (fry):**
+*step_override → s2:* "Veal is thinner and more tender than chicken — it cooks in 2 minutes per side at 175°C, not 3. The crust will reach deep golden colour before a chicken schnitzel would. Use that colour as your cue — remove as soon as both sides are even, deep gold. Do not wait for the same timing as chicken."
+
+---
+
+
 ## 1 · Hero
 
 **Title:** Chicken Schnitzel

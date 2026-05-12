@@ -7,6 +7,28 @@
 
 ---
 
+## DECISION-015: Substitution Colour Mapping
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Spaghetti | Rigatoni | `good` | 🟡 yellow | No | Different shape; sauce pools inside the rigatoni differently; excellent result, just not Roman-traditional |
+| Spaghetti | Bucatini | `good` | 🟡 yellow | No | Thick hollow pasta; coats differently; satisfying but not quite as silky |
+| Guanciale | Pancetta, diced | `good` | 🟡 yellow | No | Leaner, no smokiness — different but still excellent |
+| Guanciale | Smoked bacon | `compromise` | 🟡 yellow | No | Smoked character changes the dish; upgrade from 'compromise' — still produces excellent carbonara, just different |
+| Egg yolks + whole egg | Whole eggs only (2) | `compromise` | 🔴 red | **Yes — s4** | Less rich; sauce is more prone to scrambling; genuinely different emulsion |
+| Pecorino Romano | Parmigiano Reggiano | `good` | 🟡 yellow | No | Milder, less sharp — different flavour profile, still works |
+| Pecorino Romano | Pecorino + Parmigiano 50/50 | `good` | 🟡 yellow | No | Balanced, softer — still excellent |
+
+**Colour summary:** 0 🟢 · 6 🟡 · 1 🔴
+
+### step_overrides authored
+
+**Whole eggs only (2) → step s4:**
+*step_override → s4:* "With whole eggs only, the sauce is more prone to scrambling. Hold the pan off heat for a full 20 seconds — not 10–15 — before adding. Add the egg mixture very slowly while tossing continuously. If the sauce starts tightening into grains rather than silk, splash in cold pasta water immediately and toss hard. You have a narrower window than with the yolk-heavy version."
+
+---
+
+
 ## Chef's expansion notes (DECISION-009 full template additions)
 
 ### Audit flags for Engineer

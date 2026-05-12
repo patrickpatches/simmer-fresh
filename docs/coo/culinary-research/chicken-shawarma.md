@@ -7,6 +7,27 @@
 
 ---
 
+## DECISION-015: Substitution Colour Mapping
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Chicken thighs | Chicken breast | `compromise` | 🔴 red | **Yes — s2** | Dries out before the surface colours at 220°C; genuinely different result — leaner and less flavourful |
+| Greek yoghurt (marinade) | Coconut yoghurt | `good` | 🟡 yellow | No | Dairy-free; slightly sweeter; not perceptible once the spices are in |
+| Flatbread | Lavash | `perfect_swap` | 🟢 green | No | Traditional wrap for shawarma; wraps more tightly; no flavour difference |
+| Toum (garlic sauce) | Garlic aioli | `good` | 🟡 yellow | No | Richer, mayo-based; different character — works well but not traditional |
+| Toum (garlic sauce) | Plain yoghurt + crushed garlic + lemon | `compromise` | 🟡 yellow | No | Upgrade from 'compromise' — it's simpler and lighter, not a failure state; different character but perfectly acceptable |
+| Pickled turnips | Any pickled vegetable | `good` | 🟡 yellow | No | The acidity is the function — different flavour from the original but serves the same role |
+
+**Colour summary:** 1 🟢 · 4 🟡 · 1 🔴
+
+### step_overrides authored
+
+**Chicken breast → step s2 (roast):**
+*step_override → s2:* "Breast dries out before it can develop colour at 220°C. Reduce to 200°C fan-forced, roast 18–20 minutes, and pull as soon as the thickest part reads 70°C internal — do not wait for timing. Under the grill: maximum 1 minute, watching constantly. The char will be less pronounced than thigh — this is expected, not a mistake."
+
+---
+
+
 ## Chef's expansion notes (DECISION-009 full template additions)
 
 ### Audit flags

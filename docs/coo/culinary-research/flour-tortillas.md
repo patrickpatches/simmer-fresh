@@ -46,6 +46,25 @@ Fat range: 40–60g. The lower end produces a slightly lighter tortilla; the hig
 
 ---
 
+## DECISION-015: Substitution Colour Mapping
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Bread flour | Plain flour | `good_swap` | 🟡 yellow | No | Lower protein (8–10g/100g vs 12.5g); dough less extensible; won't roll as thin without tearing |
+| Unsalted butter | Lard | `great_swap` | 🟡 yellow | **Yes — s3** | Traditional; lower melt point than butter; slightly different rubbing technique in warm kitchens |
+| Unsalted butter | Vegetable shortening | `great_swap` | 🟡 yellow | No | Vegan; neutral flavour; similar fat composition to lard; slightly less flavour than butter |
+| Unsalted butter | Coconut oil (solid) | `good_swap` | 🟡 yellow | No | Vegan; faint coconut sweetness detectable when eating plain; use solid, not melted |
+| Fine sea salt | Kosher salt | `perfect_swap` | 🟢 green | No | Same result by weight; do not substitute by volume |
+
+**Colour summary:** 1 🟢 · 3 🟡 · 0 🔴
+
+### step_overrides authored
+
+**Lard → step s3 (rub in fat):**
+*step_override → s3:* "Lard softens faster than butter at room temperature — if your kitchen is above 22°C, refrigerate the lard for 15 minutes before rubbing. Semi-solid fat coats the flour proteins evenly; lard that's beginning to liquefy will pool rather than coat. The rubbing motion is otherwise identical to butter."
+
+---
+
 ## 1. Hero
 
 **Title:** Flour Tortillas  

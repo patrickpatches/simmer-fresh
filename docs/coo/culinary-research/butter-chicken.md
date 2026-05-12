@@ -7,6 +7,49 @@
 
 ---
 
+## DECISION-015: Substitution Colour Mapping
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Chicken thighs | Chicken breast | `compromise` | 🔴 red | **Yes — s2** | Dries out at char temperature; different texture and char character; genuinely different result |
+| Full-fat yoghurt (marinade) | Buttermilk | `good_swap` | 🟡 yellow | No | Thinner consistency; similar lactic acid tenderising; slight difference in marinade adherence |
+| Full-fat yoghurt (marinade) | Coconut yoghurt | `good_swap` | 🟡 yellow | No | Dairy-free; faint coconut note undetectable once the spices are in |
+| Lemon juice | Lime juice | `great_swap` | 🟡 yellow | No | More aromatic acidity; minor character shift in the marinade |
+| Lemon juice | White wine vinegar | `good_swap` | 🟡 yellow | No | Sharper, less fruity; perceptible in the marinade, not in the finished dish |
+| Garlic (marinade and sauce) | Garlic paste (1 tsp/clove) | `good_swap` | 🟢 green | No | Same flavour; same function; no perceptible difference in finished dish |
+| Fresh ginger | Ginger paste (from tube) | `good_swap` | 🟡 yellow | No | Slightly more muted than fresh; acceptable in both marinade and sauce |
+| Fresh ginger | Ground ginger | `compromise` | 🔴 red | No | Completely different character — woody and warm, not bright and fresh; the ginger note in the dish changes fundamentally |
+| Kashmiri chilli powder | Mild paprika + pinch of cayenne | `good_swap` | 🟡 yellow | No | Won't produce the same deep brick-red colour (Kashmiri is primarily a colour spice); heat character differs |
+| Tinned crushed tomatoes | Fresh ripe tomatoes (4 large) | `great_swap` | 🟡 yellow | **Yes — s3** | Must cook down 30 min before adding spices; brighter colour; more variable depending on ripeness |
+| Tinned crushed tomatoes | Tomato passata | `great_swap` | 🟡 yellow | No | Smoother; slightly less concentrated; simmer 5 extra minutes to match depth |
+| Unsalted butter (sauce) | Ghee | `great_swap` | 🟢 green | No | Higher smoke point; same dairy richness; arguably an upgrade |
+| Double cream | Coconut cream | `good_swap` | 🟡 yellow | No | Dairy-free; noticeable coconut note; changes the character of the sauce |
+| Double cream | Full-fat natural yoghurt | `good_swap` | 🟡 yellow | **Yes — s5** | Must add off heat; will split if simmered |
+| Double cream | Thickened cream | `perfect_swap` | 🟢 green | No | Same fat content as double cream; identical result |
+| Yellow onion | Brown onion | `perfect_swap` | 🟢 green | No | Same flavour and function; no difference |
+| Yellow onion | Shallots (4 large) | `great_swap` | 🟡 yellow | No | Sweeter, more delicate; slightly different character in the sauce base |
+| Yellow onion | Red onion | `great_swap` | 🟡 yellow | No | Slightly sweeter; minor character difference |
+| Butter + oil (for frying onion) | Ghee | `great_swap` | 🟢 green | No | Cleaner fat; excellent swap |
+| Honey | Maple syrup | `great_swap` | 🟡 yellow | No | More complex sweetness; very close to honey in the finished sauce |
+| Honey | Date syrup | `great_swap` | 🟡 yellow | No | Richer, slight caramel note; works well |
+| Honey | Jaggery (grated) | `great_swap` | 🟡 yellow | No | Traditional; slight molasses note; dissolves cleanly in the hot sauce |
+
+**Colour summary:** 5 🟢 · 15 🟡 · 2 🔴
+
+### step_overrides authored
+
+**Chicken breast → step s2 (grill/roast):**
+*step_override → s2:* "Breast cooks faster and dries out before it can develop the char thigh gets. Reduce oven temperature to 200°C, check at 12 minutes, and pull the moment the thickest part reads 70°C internal — residual heat carries it to 75°C. Do not char the edges as aggressively as you would thigh — breast has no protective fat and goes from charred to dry in 2 minutes."
+
+**Fresh ripe tomatoes → step s3 (makhani sauce):**
+*step_override → s3:* "Add the tomatoes before the spices. Cook over medium heat for 25–30 minutes, stirring occasionally, until the tomatoes have fully broken down and the mixture looks jammy with no visible liquid. Only then add the whole and ground spices. Skipping this step leaves a watery sauce where the spices can't toast properly into the base."
+
+**Full-fat natural yoghurt (for cream) → step s5 (finish):**
+*step_override → s5:* "Take the pan fully off the heat before adding the yoghurt. Stir it in one tablespoon at a time, slowly — do not pour it into hot sauce. If the sauce is still steaming, wait 30 seconds. Yoghurt in a simmering sauce splits immediately. Once incorporated, you can return to gentle heat (not simmering) to serve, but do not let it boil."
+
+---
+
+
 ## Chef's expansion notes (DECISION-009 full template additions)
 
 ### Audit flags
