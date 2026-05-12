@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hone — Substitution Sheet v2 · DECISION-015</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── v0.7 dark sage tokens ── */
+  :root {
+    --bg:          #0F1A14;
+    --surface:     #1A2B20;
+    --surface2:    #223328;
+    --surface3:    #2a3e30;
+    --sheet-bg:    #1E2F24;
+    --ink:         #FAFAF7;
+    --ink2:        rgba(250,250,247,0.60);
+    --ink3:        rgba(250,250,247,0.32);
+    --rust:        #B84030;
+    --rust-dim:    rgba(184,64,48,0.18);
+    --sage:        #4A7C59;
+    --sage-dim:    rgba(74,124,89,0.20);
+    --gold:        #F2CC2A;
+    --gold-dim:    rgba(242,204,42,0.16);
+    --line:        rgba(250,250,247,0.08);
+    --line2:       rgba(250,250,247,0.13);
+
+    /* ── DECISION-015 pill colours ── */
+    --swap-green:       #5DB870;
+    --swap-green-bg:    rgba(93,184,112,0.14);
+    --swap-green-bd:    rgba(93,184,112,0.42);
+    --swap-yellow:      #F2CC2A;
+    --swap-yellow-bg:   rgba(242,204,42,0.14);
+    --swap-yellow-bd:   rgba(242,204,42,0.42);
+    --swap-red:         #D4663A;
+    --swap-red-bg:      rgba(212,102,58,0.14);
+    --swap-red-bd:      rgba(212,102,58,0.40);
+
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-sans:    'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #080e0a;
+    font-family: var(--font-sans);
+    padding: 48px 24px 80px;
+    color: var(--ink);
+  }
+
+  /* ── page ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 24px; color: var(--ink);
+    margin-bottom: 5px;
+  }
+  .page-header p {
+    font-size: 12px; color: var(--ink2);
+    max-width: 520px; margin: 0 auto; line-height: 1.6;
+  }
+  .decision-tag {
+    display: inline-block;
+    margin-bottom: 16px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(242,204,42,0.35);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 10px; font-weight: 600;
+    color: var(--gold); letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* ── pill legend ── */
+  .legend {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--line2);
+  }
+  .legend-pill {
+    display: flex; align-items: center; gap: 5px;
+    border-radius: 20px; padding: 4px 10px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .pill-green { background: var(--swap-green-bg); border-color: var(--swap-green-bd); color: var(--swap-green); }
+  .pill-yellow { background: var(--swap-yellow-bg); border-color: var(--swap-yellow-bd); color: var(--swap-yellow); }
+  .pill-red { background: var(--swap-red-bg); border-color: var(--swap-red-bd); color: var(--swap-red); }
+  .legend-desc { font-size: 11px; color: var(--ink2); max-width: 160px; line-height: 1.4; }
+
+  /* ── frames ── */
+  .frames {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .frame-col {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+  }
+  .frame-col h3 {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--ink3);
+  }
+
+  /* ── phone ── */
+  .phone {
+    width: 280px;
+    height: 590px;
+    background: var(--bg);
+    border-radius: 42px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.07);
+    box-shadow: 0 28px 72px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.4);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 18px 0; flex-shrink: 0;
+    font-size: 11px; font-weight: 600; color: var(--ink);
+  }
+  .status-r { font-size: 10px; opacity: 0.6; }
+
+  /* ── recipe screen under the sheet ── */
+  .recipe-screen {
+    flex: 1; overflow: hidden;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+
+  .recipe-top {
+    padding: 10px 16px 0;
+    flex-shrink: 0;
+  }
+  .recipe-step-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.6px;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 3px;
+  }
+  .recipe-step-title {
+    font-family: var(--font-display);
+    font-size: 17px; font-weight: 700; color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  /* ingredient row in recipe */
+  .ing-list { padding: 0 16px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .ing-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border-radius: 11px;
+    padding: 9px 11px; border: 1px solid var(--line);
+  }
+  .ing-row.tapped { border-color: var(--gold); }
+  .ing-amount { font-size: 11px; font-weight: 600; color: var(--ink); min-width: 36px; }
+  .ing-name { font-size: 13px; color: var(--ink); flex: 1; }
+  .ing-swap-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold); opacity: 0.8;
+  }
+  .ing-caret { font-size: 14px; color: var(--ink3); }
+
+  /* step cards */
+  .step-cards { padding: 12px 16px 0; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  .step-card {
+    background: var(--surface); border-radius: 12px;
+    padding: 10px 12px; border: 1px solid var(--line);
+  }
+  .step-card.adapted { border-color: rgba(74,124,89,0.4); }
+  .step-num {
+    font-size: 9px; font-weight: 600; color: var(--ink3);
+    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .step-text { font-size: 12px; color: var(--ink2); line-height: 1.5; }
+  .adapted-cue {
+    display: flex; align-items: center; gap: 5px;
+    margin-top: 7px; padding-top: 7px;
+    border-top: 1px solid rgba(74,124,89,0.25);
+  }
+  .adapted-icon { font-size: 11px; color: var(--sage); }
+  .adapted-text { font-size: 10px; color: var(--sage); font-style: italic; }
+
+  /* dim overlay behind sheet */
+  .dim-overlay {
+    position: absolute; inset: 0;
+    background: rgba(8,14,10,0.65);
+    backdrop-filter: blur(1px);
+    z-index: 10;
+  }
+
+  /* ── bottom sheet ── */
+  .bottom-sheet {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: var(--sheet-bg);
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--line2);
+    z-index: 20;
+    padding-bottom: 20px;
+  }
+
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--line2); border-radius: 2px;
+    margin: 10px auto 14px;
+  }
+
+  .sheet-header {
+    padding: 0 18px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet-ingredient-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.6px;
+    text-transform: uppercase; color: var(--ink3); margin-bottom: 4px;
+  }
+  .sheet-ingredient-name {
+    font-family: var(--font-display);
+    font-size: 19px; font-weight: 700; color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .sheet-ingredient-qty {
+    font-size: 11px; color: var(--ink2);
+  }
+
+  .sheet-sub-label {
+    padding: 12px 18px 8px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--ink3);
+  }
+
+  .sheet-options { padding: 0 18px; display: flex; flex-direction: column; gap: 8px; }
+
+  .sub-option {
+    background: var(--surface2);
+    border-radius: 13px;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .sub-option.selected {
+    border-color: var(--sage);
+    background: rgba(74,124,89,0.10);
+  }
+
+  .sub-option-top {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+    margin-bottom: 5px;
+  }
+  .sub-option-name {
+    font-size: 14px; font-weight: 600; color: var(--ink);
+  }
+  .sub-option-desc {
+    font-size: 11px; color: var(--ink2); line-height: 1.45;
+  }
+  .sub-option-check {
+    font-size: 14px; color: var(--sage); margin-left: 4px; flex-shrink: 0;
+  }
+
+  /* ── spec section ── */
+  .spec-section {
+    max-width: 900px;
+    margin: 64px auto 0;
+    padding: 0 16px;
+  }
+  .spec-section h2 {
+    font-family: var(--font-display);
+    font-size: 20px; color: var(--ink);
+    text-align: center; margin-bottom: 28px;
+  }
+
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .spec-card {
+    background: var(--surface); border-radius: 14px;
+    padding: 16px; border: 1px solid var(--line);
+  }
+  .spec-card h4 {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.7px;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .spec-card h4.green { color: var(--swap-green); }
+  .spec-card h4.yellow { color: var(--swap-yellow); }
+  .spec-card h4.red { color: var(--swap-red); }
+  .spec-card h4.sage { color: var(--sage); }
+  .spec-card p { font-size: 12px; color: var(--ink2); line-height: 1.6; }
+  .spec-card .token-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 8px;
+  }
+  .spec-card .token-key { font-size: 10px; color: var(--ink3); font-family: monospace; }
+  .spec-card .token-val { font-size: 10px; color: var(--ink2); font-family: monospace; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+  .a11y-block {
+    background: var(--surface); border-radius: 14px;
+    padding: 20px; border: 1px solid var(--line);
+    margin-bottom: 16px;
+  }
+  .a11y-block h4 {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .a11y-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .a11y-col { flex: 1; min-width: 200px; }
+  .a11y-col h5 { font-size: 11px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .a11y-col p { font-size: 11px; color: var(--ink2); line-height: 1.6; }
+  .a11y-col code { font-size: 10px; color: var(--sage); background: rgba(74,124,89,0.12); padding: 1px 5px; border-radius: 4px; }
+
+  .eng-block {
+    background: var(--surface); border-radius: 14px;
+    padding: 20px; border: 1px solid var(--line);
+  }
+  .eng-block h4 {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .eng-block pre {
+    background: rgba(0,0,0,0.3); border-radius: 8px;
+    padding: 14px; font-size: 11px; color: var(--ink2);
+    line-height: 1.6; overflow-x: auto;
+    border: 1px solid var(--line);
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="decision-tag">DECISION-015</div>
+  <h1>Substitution Sheet v2</h1>
+  <p>Green / yellow / red pill system + "adapted for your swap" step cue. v0.7 dark sage tokens. Accessibility: icon + colour + text on every pill — never colour alone.</p>
+</div>
+
+<!-- ── Pill legend ── -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-pill pill-green">
+      <span>✓</span> Great swap
+    </div>
+    <div class="legend-desc">Works as well or near-as-well. No real compromise.</div>
+  </div>
+  <div class="legend-item">
+    <div class="legend-pill pill-yellow">
+      <span>≈</span> Some difference
+    </div>
+    <div class="legend-desc">Noticeable tradeoff. Dish still good — honest about the change.</div>
+  </div>
+  <div class="legend-item">
+    <div class="legend-pill pill-red">
+      <span>⚠</span> Noticeable change
+    </div>
+    <div class="legend-desc">Works in a pinch. Dish genuinely different. Don't hide it.</div>
+  </div>
+</div>
+
+<!-- ── Phone frames ── -->
+<div class="frames">
+
+  <!-- STATE 1: Sheet open, no selection -->
+  <div class="frame-col">
+    <h3>Sheet open — choose a swap</h3>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="status-r">●●● WiFi 88%</span></div>
+
+      <!-- recipe context behind sheet -->
+      <div class="recipe-screen">
+        <div class="recipe-top">
+          <div class="recipe-step-label">Ingredients · Carbonara</div>
+          <div class="recipe-step-title">What you need</div>
+        </div>
+        <div class="ing-list">
+          <div class="ing-row tapped">
+            <span class="ing-amount">150g</span>
+            <span class="ing-name">Guanciale</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">4</span>
+            <span class="ing-name">Egg yolks</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">60g</span>
+            <span class="ing-name">Pecorino Romano</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">320g</span>
+            <span class="ing-name">Spaghetti</span>
+            <span class="ing-caret">›</span>
+          </div>
+        </div>
+
+        <!-- dim overlay -->
+        <div class="dim-overlay"></div>
+
+        <!-- bottom sheet -->
+        <div class="bottom-sheet">
+          <div class="sheet-handle"></div>
+
+          <div class="sheet-header">
+            <div class="sheet-ingredient-label">Swapping out</div>
+            <div class="sheet-ingredient-name">Guanciale</div>
+            <div class="sheet-ingredient-qty">150g · cured pork cheek</div>
+          </div>
+
+          <div class="sheet-sub-label">Your options</div>
+
+          <div class="sheet-options">
+
+            <div class="sub-option">
+              <div class="sub-option-top">
+                <span class="sub-option-name">Pancetta</span>
+                <div class="legend-pill pill-green" style="font-size:10px;padding:3px 8px"><span>✓</span> Great swap</div>
+              </div>
+              <div class="sub-option-desc">Cured belly, same fat content. Less peppery than cheek but renders identically. No step changes needed.</div>
+            </div>
+
+            <div class="sub-option">
+              <div class="sub-option-top">
+                <span class="sub-option-name">Bacon (streaky)</span>
+                <div class="legend-pill pill-yellow" style="font-size:10px;padding:3px 8px"><span>≈</span> Some difference</div>
+              </div>
+              <div class="sub-option-desc">Smokier flavour from the cure. Renders a little faster — watch it at 4 min. Dish still excellent.</div>
+            </div>
+
+            <div class="sub-option">
+              <div class="sub-option-top">
+                <span class="sub-option-name">Smoked tofu</span>
+                <div class="legend-pill pill-red" style="font-size:10px;padding:3px 8px"><span>⚠</span> Noticeable change</div>
+              </div>
+              <div class="sub-option-desc">No rendered fat — the crust and emulsion behave differently. Add a tablespoon of olive oil to compensate. Dish is plant-based but won't be the same.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE 2: Swap selected (pancetta — no step override) -->
+  <div class="frame-col">
+    <h3>Swap selected — great swap, no step change</h3>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="status-r">●●● WiFi 88%</span></div>
+
+      <div class="recipe-screen">
+        <div class="recipe-top">
+          <div class="recipe-step-label">Ingredients · Carbonara</div>
+          <div class="recipe-step-title">What you need</div>
+        </div>
+        <div class="ing-list">
+          <div class="ing-row" style="border-color:var(--swap-green-bd);background:var(--swap-green-bg)">
+            <span class="ing-amount">150g</span>
+            <span class="ing-name">Pancetta <span style="font-size:10px;color:var(--swap-green);font-weight:500">↩ swapped</span></span>
+            <span class="ing-caret" style="color:var(--swap-green)">✓</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">4</span>
+            <span class="ing-name">Egg yolks</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">60g</span>
+            <span class="ing-name">Pecorino Romano</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">320g</span>
+            <span class="ing-name">Spaghetti</span>
+            <span class="ing-caret">›</span>
+          </div>
+        </div>
+
+        <!-- steps — no adaptation needed -->
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">Step 2 of 4</div>
+            <div class="step-text">Get the pan screaming hot over medium-high. Add the pancetta and let it render slowly — you want the fat pooling in the pan, not evaporating. About 6 minutes until the edges go golden.</div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">Step 3 of 4</div>
+            <div class="step-text">Pull the pan off the heat. Wait 30 seconds. Pour in the egg paste and toss immediately — the residual heat is what you want, not a screaming pan that scrambles everything.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE 3: Swap selected (bacon — has step_override) -->
+  <div class="frame-col">
+    <h3>Swap selected — step adapted for bacon</h3>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="status-r">●●● WiFi 88%</span></div>
+
+      <div class="recipe-screen">
+        <div class="recipe-top">
+          <div class="recipe-step-label">Ingredients · Carbonara</div>
+          <div class="recipe-step-title">What you need</div>
+        </div>
+        <div class="ing-list">
+          <div class="ing-row" style="border-color:var(--swap-yellow-bd);background:var(--swap-yellow-bg)">
+            <span class="ing-amount">150g</span>
+            <span class="ing-name">Streaky bacon <span style="font-size:10px;color:var(--swap-yellow);font-weight:500">↩ swapped</span></span>
+            <span class="ing-caret" style="color:var(--swap-yellow)">≈</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">4</span>
+            <span class="ing-name">Egg yolks</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+          <div class="ing-row">
+            <span class="ing-amount">60g</span>
+            <span class="ing-name">Pecorino Romano</span>
+            <span class="ing-swap-dot"></span>
+            <span class="ing-caret">›</span>
+          </div>
+        </div>
+
+        <!-- step 2 — adapted -->
+        <div class="step-cards">
+          <div class="step-card adapted">
+            <div class="step-num">Step 2 of 4</div>
+            <div class="step-text">Get the pan over medium heat — not screaming hot. Add the bacon and let it render slowly. Bacon has a higher water content than guanciale, so it spits more at high heat. About 4 minutes until the edges crisp.</div>
+            <div class="adapted-cue">
+              <span class="adapted-icon">≈</span>
+              <span class="adapted-text">adapted for your streaky bacon swap</span>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">Step 3 of 4</div>
+            <div class="step-text">Pull the pan off the heat. Wait 30 seconds. Pour in the egg paste and toss immediately — the residual heat is what you want, not a screaming pan that scrambles everything.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Design spec ── -->
+<div class="spec-section">
+  <h2>Spec</h2>
+
+  <!-- pill colours -->
+  <div class="spec-grid">
+    <div class="spec-card">
+      <h4 class="green">✓ &nbsp;Green — Great swap</h4>
+      <p>Works as well or near-as-well. User can proceed with zero hesitation. Represents legacy <code>perfect_swap</code> + <code>great_swap</code> tiers.</p>
+      <div class="token-row"><span class="token-key">colour</span><span class="token-val">#5DB870 <span class="swatch" style="background:#5DB870;vertical-align:middle"></span></span></div>
+      <div class="token-row"><span class="token-key">bg</span><span class="token-val">rgba(93,184,112,0.14)</span></div>
+      <div class="token-row"><span class="token-key">border</span><span class="token-val">rgba(93,184,112,0.42)</span></div>
+      <div class="token-row"><span class="token-key">icon</span><span class="token-val">✓ checkmark</span></div>
+      <div class="token-row"><span class="token-key">label</span><span class="token-val">"Great swap"</span></div>
+    </div>
+    <div class="spec-card">
+      <h4 class="yellow">≈ &nbsp;Yellow — Some difference</h4>
+      <p>Honest tradeoff. Dish is still good. User should know what changes. Represents legacy <code>good_swap</code> tier.</p>
+      <div class="token-row"><span class="token-key">colour</span><span class="token-val">#F2CC2A <span class="swatch" style="background:#F2CC2A;vertical-align:middle"></span></span></div>
+      <div class="token-row"><span class="token-key">bg</span><span class="token-val">rgba(242,204,42,0.14)</span></div>
+      <div class="token-row"><span class="token-key">border</span><span class="token-val">rgba(242,204,42,0.42)</span></div>
+      <div class="token-row"><span class="token-key">icon</span><span class="token-val">≈ tilde</span></div>
+      <div class="token-row"><span class="token-key">label</span><span class="token-val">"Some difference"</span></div>
+    </div>
+    <div class="spec-card">
+      <h4 class="red">⚠ &nbsp;Red — Noticeable change</h4>
+      <p>Works in a pinch. Dish genuinely different. Warm desaturated orange-red — warning tone, not stop-sign red. Represents legacy <code>compromise</code> tier.</p>
+      <div class="token-row"><span class="token-key">colour</span><span class="token-val">#D4663A <span class="swatch" style="background:#D4663A;vertical-align:middle"></span></span></div>
+      <div class="token-row"><span class="token-key">bg</span><span class="token-val">rgba(212,102,58,0.14)</span></div>
+      <div class="token-row"><span class="token-key">border</span><span class="token-val">rgba(212,102,58,0.40)</span></div>
+      <div class="token-row"><span class="token-key">icon</span><span class="token-val">⚠ warning</span></div>
+      <div class="token-row"><span class="token-key">label</span><span class="token-val">"Noticeable change"</span></div>
+    </div>
+  </div>
+
+  <!-- adapted cue -->
+  <div class="spec-card" style="margin-bottom:16px">
+    <h4 class="sage">≈ &nbsp;"Adapted for your swap" — step cue</h4>
+    <p>Appears only on steps that have <code>step_overrides</code> for the active swap. Rendered below the adapted step text, separated by a sage-tinted divider line. Small, muted, honest — not a banner. The step card gets a sage left border-colour to signal modification at a glance without the user having to read the cue first.</p>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+      <div class="token-row"><span class="token-key">cue text</span><span class="token-val">italic, 10sp, var(--sage)</span></div>
+      <div class="token-row"><span class="token-key">divider</span><span class="token-val">1px solid rgba(74,124,89,0.25)</span></div>
+      <div class="token-row"><span class="token-key">card border</span><span class="token-val">rgba(74,124,89,0.4) when adapted</span></div>
+      <div class="token-row"><span class="token-key">copy pattern</span><span class="token-val">"adapted for your [swap name] swap"</span></div>
+      <div class="token-row"><span class="token-key">when to show</span><span class="token-val">only when step_overrides present for active swap — never on unaffected steps</span></div>
+    </div>
+  </div>
+
+  <!-- accessibility -->
+  <div class="a11y-block">
+    <h4>Accessibility requirements — never colour alone</h4>
+    <div class="a11y-row">
+      <div class="a11y-col">
+        <h5>Every pill carries three signals</h5>
+        <p>1. <strong>Colour</strong> — green / yellow / red<br>2. <strong>Icon</strong> — ✓ / ≈ / ⚠<br>3. <strong>Text label</strong> — "Great swap" / "Some difference" / "Noticeable change"<br><br>All three must be present on every rendered pill. Removing any one of them for space reasons is not acceptable.</p>
+      </div>
+      <div class="a11y-col">
+        <h5>Accessibility labels (React Native)</h5>
+        <p>Each pill gets <code>accessibilityLabel</code> set to the full quality description:<br><br>
+        <code>"Great swap — pancetta works as well as guanciale"</code><br><br>
+        Engineer derives this by combining the pill label + the substitution's <code>change_description</code> field. TalkBack reads the full string; sighted users read the pill.</p>
+      </div>
+      <div class="a11y-col">
+        <h5>Ingredient row swapped state</h5>
+        <p>When a swap is active, the ingredient row uses border + bg tint in the swap colour <em>plus</em> a text label ("↩ swapped") and a matching icon (✓ / ≈ / ⚠). The colour alone on the row border is not enough — the text cue is mandatory.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- engineer notes -->
+  <div class="eng-block">
+    <h4>Engineer implementation notes</h4>
+    <pre>// Substitution quality → pill props mapping
+const PILL_CONFIG = {
+  green: {
+    icon: '✓',
+    label: 'Great swap',
+    color: '#5DB870',
+    bgColor: 'rgba(93,184,112,0.14)',
+    borderColor: 'rgba(93,184,112,0.42)',
+    a11yPrefix: 'Great swap',
+  },
+  yellow: {
+    icon: '≈',
+    label: 'Some difference',
+    color: '#F2CC2A',
+    bgColor: 'rgba(242,204,42,0.14)',
+    borderColor: 'rgba(242,204,42,0.42)',
+    a11yPrefix: 'Some difference',
+  },
+  red: {
+    icon: '⚠',
+    label: 'Noticeable change',
+    color: '#D4663A',
+    bgColor: 'rgba(212,102,58,0.14)',
+    borderColor: 'rgba(212,102,58,0.40)',
+    a11yPrefix: 'Noticeable change',
+  },
+};
+
+// Step rendering — when swap is active:
+// 1. Check if activeSwap.step_overrides contains an entry for this step.id
+// 2. If yes — render step_overrides[step.id].content instead of step.content
+// 3. Render adapted-cue below the step text:
+//    "adapted for your {activeSwap.name} swap"
+// 4. Apply adapted border colour to the step card
+// If no step_override for this step — render normally, no cue shown
+
+// Ingredient row — swapped state:
+// border: PILL_CONFIG[quality].borderColor
+// background: PILL_CONFIG[quality].bgColor
+// trailing text: "↩ swapped" in PILL_CONFIG[quality].color
+// trailing icon: PILL_CONFIG[quality].icon</pre>
+  </div>
+
+</div>
+
+</body>
+</html>
