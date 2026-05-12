@@ -148,6 +148,81 @@ Taste the whipped cream before it goes on — it should be lightly sweet from th
 
 ---
 
+
+---
+
+## DECISION-015 — Substitution colour mapping
+
+### Discrepancy table
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Egg whites (aquafaba) | Aquafaba | `compromise` | 🔴 | s2 | Marshmallow interior is the defining quality of pavlova — reduced marshmallow is a significant compromise |
+| Caster sugar | Blitzed white sugar | `good_swap` | 🟡 | — | Same result, minor extra step |
+| White wine vinegar | Cream of tartar | `great_swap` | 🟡 | — | Quantity note required; same outcome |
+| White wine vinegar | Fresh lemon juice | `perfect_swap` | 🟢 | — | Works identically |
+| Cornflour | Arrowroot powder | `perfect_swap` | 🟢 | — | Same structural and marshmallow result |
+| Vanilla extract | Vanilla bean paste | `great_swap` | 🟡 | — | Described as "an upgrade" — no technique change |
+| Double cream | Thickened cream | `perfect_swap` | 🟢 | — | Behaves identically for Australian cooks |
+| Passionfruit | Mango, diced | `great_swap` | 🟡 | — | Excellent; add lime juice to compensate for lack of tartness |
+| Passionfruit | Lemon curd | `great_swap` | 🟡 | — | Spectacular contrast — no technique change |
+| Strawberries | Raspberries | `great_swap` | 🟡 | — | More tart, visually stunning |
+| Strawberries | Mixed summer berries | `great_swap` | 🟡 | — | Classic variant |
+| Kiwi fruit | Banana, sliced | `good_swap` | 🟡 | — | Softer and sweeter — still excellent on pavlova |
+| Kiwi fruit | Green grapes, halved | `good_swap` | 🟡 | — | Works well |
+
+**Totals: 3🟢 / 10🟡 / 1🔴**
+
+---
+
+### Per-ingredient detail
+
+**Egg whites → Aquafaba** 🔴  
+The marshmallow interior is not incidental to pavlova — it IS pavlova. Aquafaba produces a stable meringue shell and holds its shape, but the gooey, yielding marshmallow centre is significantly reduced. The dish technically works but is a noticeably different eating experience.  
+*step_override → s2:* "Aquafaba takes longer to reach soft peaks than egg white — expect 5–7 minutes on high speed instead of 3. Don't rush it. The foam is also less stable once formed: keep the bowl away from heat and grease, and move quickly through the sugar-addition step. The lemon-wipe is even more important here — any fat residue collapses aquafaba faster than egg white."
+
+**Caster sugar → Blitzed white sugar** 🟡  
+Blitzing regular sugar for 30 seconds in a blender creates superfine sugar that dissolves at the same rate as caster sugar. No perceptible difference in the final meringue. Minor extra step before you start.
+
+**White wine vinegar → Cream of tartar** 🟡  
+A more concentrated acid stabiliser — works the same way but needs a quantity adjustment. Use ¼ tsp cream of tartar per 1 tsp white wine vinegar. No technique change.
+
+**White wine vinegar → Fresh lemon juice** 🟢  
+Works identically. Same amount. Same stabilising function, same faint acidity, no perceptible flavour difference in the baked meringue.
+
+**Cornflour → Arrowroot powder** 🟢  
+Same result — same amount. Gluten-free. The starch structure and marshmallow effect are identical.
+
+**Vanilla extract → Vanilla bean paste** 🟡  
+More intense vanilla flavour with visible seeds — an upgrade in most contexts. Slightly thicker, which doesn't affect the meringue. Use the same amount.
+
+**Double cream → Thickened cream** 🟢  
+Thickened cream is the Australian standard for whipping — it behaves identically to double cream in this recipe. Direct swap. Not a compromise for Australian cooks.
+
+**Passionfruit → Mango, diced** 🟡  
+Sweet and tropical — excellent in an Australian summer. The sourness of passionfruit is absent, so add a squeeze of lime juice to the mango before plating. No technique change.
+
+**Passionfruit → Lemon curd** 🟡  
+Intensely tart and sharp — a spectacular contrast with the very sweet meringue. Spoon into the cream hollow in place of passionfruit pulp. A different but excellent pavlova.
+
+**Strawberries → Raspberries** 🟡  
+More tart and intensely flavoured. Don't need slicing. Visually striking against white meringue. No technique change.
+
+**Strawberries → Mixed summer berries** 🟡  
+The full summer berry pavlova — a classic Australian variation. Different flavour profile but excellent.
+
+**Kiwi fruit → Banana, sliced** 🟡  
+Softer, sweeter, less visual contrast. Slice and add just before serving — banana browns within 15 minutes. Still a very good pavlova.
+
+**Kiwi fruit → Green grapes, halved** 🟡  
+Similar visual lightness to kiwi. Sweet rather than tart — pairs well with the passionfruit tang. No technique change.
+
+---
+
+**Pre-flight: READY FOR ENGINEER**  
+Attribution URL (Donna Hay YouTube) must be verified live before ship — flagged in audit entry. All substitution colours mapped.
+
+
 ## Culinary Audit Entry
 
 ```

@@ -155,6 +155,93 @@ Pad thai does not keep well. The noodles absorb remaining sauce and stick togeth
 
 ---
 
+
+---
+
+## DECISION-015 — Substitution colour mapping
+
+### Discrepancy table
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Flat rice noodles | Rice vermicelli | `good_swap` | 🟡 | s1 | Technique change: soak 3 minutes only, not 20 |
+| Flat rice noodles | Egg noodles (thin, fresh) | `good_swap` | 🟡 | s1 | Technique change: no soak, cook from fresh |
+| Prawns | Pork belly, thinly sliced | `great_swap` | 🟡 | — | Richer, fattier — different but excellent |
+| Prawns | Firm tofu only (vegan) | `good_swap` | 🟡 | s3 | Fry tofu first; technique note applies |
+| Prawns | Squid, cleaned and sliced | `great_swap` | 🟡 | s3 | 60–90 seconds only — overcooking is the failure mode |
+| Tamarind paste | Tamarind concentrate | `great_swap` | 🟡 | — | Quantity adjustment only; same outcome |
+| Tamarind paste | Lime juice + rice vinegar | `compromise` | 🔴 | — | Approximates sourness but lacks tamarind's body and complexity |
+| Fish sauce | Light soy sauce | `good_swap` | 🟡 | — | Vegan alternative; slightly less salty — quantity note applies |
+| Palm sugar | Brown sugar / dark muscovado | `great_swap` | 🟡 | — | Nearly identical caramel result |
+| Palm sugar | Coconut sugar | `great_swap` | 🟡 | — | Less sweet, more mineral — works well |
+| Bean sprouts | Shredded cabbage | `good_swap` | 🟡 | — | Crunchier and holds better; serviceable swap |
+| Spring onions | Chives, thinly sliced | `good_swap` | 🟡 | s4 | Add off heat only — wilt immediately in wok |
+| Spring onions | Leek green tops, thinly sliced | `good_swap` | 🟡 | — | More robust; add 30 seconds before plating |
+| Crushed peanuts | Cashews, toasted + chopped | `good_swap` | 🟡 | — | Creamier, milder — different but excellent |
+| Crushed peanuts | Toasted sunflower seeds | `compromise` | 🔴 | — | Nut-free; similar crunch but less rich — noticeable change |
+
+**Totals: 0🟢 / 13🟡 / 2🔴**
+
+---
+
+### Per-ingredient detail
+
+**Flat rice noodles → Rice vermicelli** 🟡  
+Thinner and more delicate. The dish is lighter, more delicate in texture — different but excellent. The critical change is soak time: vermicelli needs 3 minutes, not 20. Over-soaked vermicelli disintegrates in the wok.  
+*step_override → s1:* "Rice vermicelli needs 3 minutes in cold water, not 20. Check at 2 minutes — they should be pliable but not fully softened. They'll finish cooking in the wok."
+
+**Flat rice noodles → Egg noodles (thin, fresh)** 🟡  
+Wheaten noodles with an eggy richness. No soaking needed — cook from fresh. The dish becomes richer and less distinctly Thai, but still excellent.  
+*step_override → s1:* "Skip the soak entirely — egg noodles cook from fresh in the wok. Loosen them with your fingers before they go into the pan to prevent clumping. They'll need 60–90 seconds in the hot wok."
+
+**Prawns → Pork belly, thinly sliced** 🟡  
+Richer and fattier — a common Thai market variant. Cook in the wok the same way as prawns. Less sweet than prawn; the dish is more savoury and robust. Excellent.
+
+**Prawns → Firm tofu only (vegan)** 🟡  
+Removes all prawns and increases tofu to 200g. Works as a fully vegan version — not a compromise dish, just a different one. Tofu must be pressed dry and fried to golden edges before anything else goes into the wok.  
+*step_override → s3:* "Fry the tofu in the hot wok first — before egg, before sauce. Press it dry first, cube it, and fry 2–3 minutes until golden on at least two sides. Push to the side, then proceed with the egg zone as normal."
+
+**Prawns → Squid, cleaned and sliced** 🟡  
+A traditional Thai market substitution — excellent quality. The timing is critical: squid turns rubbery at 90 seconds if the heat is even slightly insufficient. Maximum wok heat is non-negotiable here.  
+*step_override → s3:* "Squid cooks in 60–90 seconds at maximum heat. Score the flesh before slicing — it curls attractively and cooks evenly. The moment it turns opaque, push it aside immediately. Overcooked squid is tough and chewy and cannot be recovered."
+
+**Tamarind paste → Tamarind concentrate** 🟡  
+More concentrated — use 2 tbsp concentrate + 1 tbsp water in place of 3 tbsp paste. Same outcome, same technique. Mix into the sauce at the same stage.
+
+**Tamarind paste → Lime juice + rice vinegar** 🔴  
+Approximates the sourness without tamarind's depth and body. The sauce is thinner and lacks the dark, complex undertone that makes pad thai distinctive. The dish is edible and still recognisable as pad thai — but it's a compromise, not a neutral swap.
+
+**Fish sauce → Light soy sauce** 🟡  
+Vegan alternative. Less funky and differently salty — use 1.5 tbsp, not 2. The dish loses the marine fermented depth of fish sauce but remains well-seasoned and good.
+
+**Palm sugar → Brown sugar / dark muscovado** 🟡  
+Nearly identical caramel-molasses result. Brown sugar dissolves faster. Dark muscovado is slightly more intense — both work without any technique change.
+
+**Palm sugar → Coconut sugar** 🟡  
+Less sweet, more mineral in character. Works at the same quantity. A slightly different flavour dimension — still excellent.
+
+**Bean sprouts → Shredded cabbage** 🟡  
+Crunchier and holds better over time than bean sprouts. A serviceable swap when sprouts aren't available. Doesn't wilt as dramatically — slightly more robust texture against the noodles.
+
+**Spring onions → Chives, thinly sliced** 🟡  
+Milder and more delicate. They cannot go into the hot wok — add off heat only. Works well as a fresh garnish element.  
+*step_override → s4:* "Chives are too delicate for the wok — add them off heat, just before plating. Do not toss them in with the noodles or they'll disappear."
+
+**Spring onions → Leek green tops, thinly sliced** 🟡  
+More robust than spring onion. Add to the wok 30 seconds before plating to warm through — they can handle brief heat.
+
+**Crushed peanuts → Cashews, toasted and roughly chopped** 🟡  
+Creamier and milder than peanuts. A good substitute for those with peanut allergies (within the cashew category — check). Different richness but still excellent.
+
+**Crushed peanuts → Toasted sunflower seeds** 🔴  
+Nut-free. Similar crunch, but the richness of peanuts is noticeably absent. Toasted sunflower seeds work structurally — they add the textural element — but the flavour contribution is significantly thinner. A real compromise for nut-allergy requirements.
+
+---
+
+**Pre-flight: READY FOR ENGINEER**  
+Attribution URL (Andy Cooks YouTube) must be verified live before ship. Engineer also to implement tofu substitution correction (separate tofu as co-ingredient; remove from prawns subs; add chicken/squid subs — see audit flags above). All substitution colours mapped.
+
+
 ## Culinary Audit Entry
 
 ```

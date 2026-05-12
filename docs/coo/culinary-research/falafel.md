@@ -183,3 +183,68 @@ Falafel is a staple street food across the Levant — Palestinian, Lebanese, Syr
 
 **Attribution framing in the app:** "A Levantine street-food tradition — Palestinian, Lebanese, Syrian, Jordanian. Made the way the street vendors make it: dried chickpeas, fresh herbs, fried to order."
 
+---
+
+## DECISION-015 — Substitution colour mapping
+
+### Discrepancy table
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Dried chickpeas | 50/50 chickpeas + fava beans | `great_swap` | 🟡 | s1 | Whole fava beans need skin-peeling post-soak — technique note |
+| Dried chickpeas | Dried fava beans only (ta'amia) | `great_swap` | 🟡 | s1 | Different dish in spirit but legitimate; same method + skin-peel note |
+| Brown onion | Red onion | `perfect_swap` | 🟢 | — | Very common in Palestinian/Lebanese versions; identical result |
+| Brown onion | Spring onion (white parts, 6 stalks) | `good_swap` | 🟡 | — | Lighter and more delicate |
+| Fresh coriander | Double parsley, omit coriander | `good_swap` | 🟡 | — | Some Lebanese versions use parsley-only; more straightforwardly herbal |
+| Fresh coriander | Add 10g fresh mint to coriander | `great_swap` | 🟡 | — | Syrian/Palestinian variation; brightens the whole mix |
+| Cayenne pepper | Aleppo pepper | `perfect_swap` | 🟢 | — | Closer to authentic Levantine profile; milder so double quantity |
+| Cayenne pepper | Omit entirely | `perfect_swap` | 🟢 | — | Many traditional versions have no heat — this is authentic, not a compromise |
+| Bicarbonate of soda | Increase baking powder to 2 tsp | `compromise` | 🔴 | — | Loses the jade-green interior colour and savoury minerality — bicarb is what creates that |
+| Lebanese flatbread | Greek-style pita (pocket bread) | `good_swap` | 🟡 | — | Thicker bread; bread-to-filling ratio shifts |
+| Hummus (to serve) | Tahini thinned with lemon juice | `good_swap` | 🟡 | — | Lebanese street style — lighter, less starchy |
+
+**Totals: 3🟢 / 7🟡 / 1🔴**
+
+---
+
+### Per-ingredient detail
+
+**Dried chickpeas → 50/50 chickpeas + fava beans** 🟡  
+Closer to some Syrian and Palestinian recipes. Fava beans add sweetness and a softer interior. Hard to find at Coles/Woolworths — dried fava beans (also called ful or broad beans) are stocked at Middle Eastern grocers. Excellent result.  
+*step_override → s1:* "If using whole dried fava beans (not split), peel the skins after the 24-hour soak — pinch each bean and the skin slips off. Split/peeled fava beans (available at Middle Eastern grocers) skip this step. Both soak the same 24 hours."
+
+**Dried chickpeas → Dried fava beans only (ta'amia)** 🟡  
+The Egyptian ta'ameya tradition — historically older than the Levantine chickpea version. Slightly sweeter, paler green, softer texture inside. Same method, same fry temperature, same test-fry rule. Hard to find outside specialty grocers.  
+*step_override → s1:* "Whole dried fava beans need skin-peeling after the 24-hour soak — pinch each bean to release the skin. Split/peeled dried favas skip this. The blitz time is slightly shorter — fava beans soften to the right grainy paste in fewer pulses than chickpeas."
+
+**Brown onion → Red onion** 🟢  
+Very common in Palestinian and Lebanese falafel. Slightly sweeter — the difference is imperceptible in the fried falafel. Direct swap.
+
+**Brown onion → Spring onion (white parts, 6 stalks)** 🟡  
+Lighter and more delicate flavour. Works fine — some recipe traditions use spring onion. The white parts only; the green tops are too soft and add moisture.
+
+**Fresh coriander → Double parsley, omit coriander** 🟡  
+More herbal and straightforwardly green — less citrus-edged. Some Lebanese versions use parsley-only falafel. Still makes excellent falafel.
+
+**Fresh coriander → Add 10g fresh mint alongside** 🟡  
+A Syrian and Palestinian variation. Mint brightens the whole herb mix and adds a cooling note on the palate. No technique change — add with the other herbs at the blitz stage.
+
+**Cayenne pepper → Aleppo pepper** 🟢  
+Closer to authentic Levantine flavour — fruity, mild, oily heat rather than cayenne's dry sharpness. Use ½ tsp Aleppo (much milder than cayenne). Hard to find at supermarkets but available at Middle Eastern grocers and specialty spice retailers in Sydney and Melbourne.
+
+**Cayenne pepper → Omit entirely** 🟢  
+Many traditional Levantine falafel recipes include no heat. This is not a compromise — it's an authentic preparation. The herb and spice flavour still comes through clearly.
+
+**Bicarbonate of soda → Increase baking powder to 2 tsp** 🔴  
+Bicarb does two things: it lightens the texture AND it reacts with the plant pigments to intensify the jade-green colour inside the falafel. Baking powder provides the lift but not the colour. The result is paler inside — a yellowish-green rather than jade — and lacks the faint savoury minerality bicarb contributes. Functional but a real compromise.
+
+**Lebanese flatbread → Greek-style pita** 🟡  
+Thicker and smaller — holds the falafel well. The bread-to-filling ratio shifts toward more bread. Still excellent.
+
+**Hummus (to serve) → Tahini thinned with lemon juice** 🟡  
+Classic Lebanese street-falafel style. Lighter and less starchy than hummus — the tahini sauce lets the falafel flavour lead. A different but equally legitimate choice.
+
+---
+
+**Pre-flight: READY FOR ENGINEER**  
+No attribution — Traditional Levantine. No URL to verify. All substitution colours mapped.

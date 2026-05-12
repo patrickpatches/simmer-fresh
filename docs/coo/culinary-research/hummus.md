@@ -147,6 +147,53 @@ Hummus keeps 5 days refrigerated in an airtight container. It improves for the f
 
 ---
 
+
+---
+
+## DECISION-015 — Substitution colour mapping
+
+### Discrepancy table
+
+| Ingredient | Substitution | Old quality | New colour | step_override | Notes |
+|---|---|---|---|---|---|
+| Dried chickpeas | Tinned chickpeas | `compromise` | 🔴 | s2 | Grainier, less silky — the entire technique rationale is built on dried; tinned requires a different cooking approach |
+| Good tahini | Unhulled tahini | `good_swap` | 🟡 | — | More bitter, earthier — different but still makes excellent hummus |
+| Lemon juice | White wine vinegar | `compromise` | 🔴 | — | Lacks the floral note of fresh lemon; different character — a genuine compromise |
+| Garlic cloves | Roasted garlic cloves | `great_swap` | 🟡 | — | Sweeter and milder — different but deeply flavoured; no technique change |
+| Paprika + chickpeas (garnish) | Sumac + toasted pine nuts | `great_swap` | 🟡 | — | Described as "a genuine upgrade" |
+| Paprika + chickpeas (garnish) | Smoked paprika + toasted sesame | `great_swap` | 🟡 | — | Beautiful, adds depth |
+
+**Totals: 0🟢 / 4🟡 / 2🔴**
+
+---
+
+### Per-ingredient detail
+
+**Dried chickpeas → Tinned chickpeas** 🔴  
+The recipe's central argument is that dried chickpeas, cooked long and slow until crushably soft, produce a fundamentally different and superior hummus. Tinned chickpeas are already cooked — they can never be as soft or produce as silky a result. The research file notes honestly: "they do not make good hummus." A compromise, not a failure — but a real one.  
+*step_override → s2:* "Drain the tinned chickpeas and boil with ½ tsp bicarbonate of soda for 20 minutes. They must be very soft — crush one between your fingers to check. Without this extra cooking, tinned chickpeas are too firm and the result will be noticeably grainy. Skip the overnight soak. Go straight to blending."
+
+**Good tahini → Unhulled tahini** 🟡  
+Darker, more bitter, earthier. The hulls add bitterness that some love, others find overpowering. The hummus will have a stronger sesame note. Use a touch less lemon to balance. Still makes excellent hummus — just different.
+
+**Lemon juice → White wine vinegar** 🔴  
+Sharper and less fruity. Hummus depends on the floral, fresh note of lemon to balance the richness of tahini and chickpea. White wine vinegar provides acidity but not that brightness. Use half the amount and taste. The result works as a dip but lacks the characteristic freshness of properly made hummus.
+
+**Garlic cloves → Roasted garlic** 🟡  
+Sweeter, nuttier, and significantly milder. The pungent bite of raw garlic disappears — replaced by a deep, caramelised sweetness. Use 4 roasted cloves to match the flavour impact of 2 raw. No technique change to the blending process.
+
+**Garnish → Sumac + toasted pine nuts** 🟡  
+Sumac adds tartness; pine nuts add richness and texture. A more complex Middle Eastern garnish — the notes call it "a genuine upgrade." Both garnish alternatives are presented as improvements to the default.
+
+**Garnish → Smoked paprika + toasted sesame** 🟡  
+Deeper colour and a smoky note alongside the sesame crunch. Different from the traditional garnish — beautiful and excellent.
+
+---
+
+**Pre-flight: READY FOR ENGINEER**  
+Attribution URL (Reem Kassis homepage) must be converted to book citation or specific recipe page before ship — flagged in audit entry. All substitution colours mapped.
+
+
 ## Culinary Audit Entry
 
 ```
