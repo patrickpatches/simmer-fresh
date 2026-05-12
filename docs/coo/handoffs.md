@@ -46,6 +46,97 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → COO (Culinary Research) · 2026-05-12 · OPEN URGENT (DECISION-015 — substitution colour system + step_overrides, 16 launch recipes)
+**From:** Patrick
+**Subject:** Redesign substitution quality ratings from freetext tags to a 3-colour traffic-light system; add `step_overrides` where a substitution changes the technique; apply to all 16 launch recipes. Smash Burger is the test case.
+**Why:** The current `perfect_swap / great_swap / good_swap / compromise` tags are inconsistent across files and require users to read prose to understand them. A traffic-light system (green / yellow / red) is instantly legible at a glance — no reading required. `step_overrides` closes the gap where a substitution genuinely changes what the cook does, but the steps still show the original method.
+
+---
+
+### DECISION-015 — Substitution colour system spec
+
+**The three colours:**
+
+| Colour | Meaning | Replaces |
+|---|---|---|
+| 🟢 `green` | Same result — cook notices no difference in outcome | `perfect_swap` |
+| 🟡 `yellow` | Good alternative — different character, still excellent | `great_swap` + `good_swap` |
+| 🔴 `red` | Significant compromise — different dish or inferior result | `compromise` |
+
+**Colour decision rules:**
+- `green`: The cook cannot tell the difference in the finished dish. Swap it silently. Example: Kosher salt for fine sea salt (same weight, same result).
+- `yellow`: The cook gets a different but still high-quality result. The difference is worth noting — flavour, texture, or appearance changes — but the dish is still worth making. This covers both what was `great_swap` (e.g., lard for butter in tortillas — flakier, more traditional) and `good_swap` (e.g., plain flour for bread flour — lower protein, less extensible but still works).
+- `red`: The result is noticeably inferior, or the dish becomes something different. The app should warn the cook before they commit to this swap. Example: chicken breast for thigh in shawarma at 220°C — it will dry out before it chars.
+
+**`step_overrides` spec:**
+
+Some substitutions change what the cook actually does — not just the ingredient. These need a `step_overrides` array on the substitution object. Each override targets a specific step by `step_id` and provides replacement or supplementary content.
+
+Required when:
+- Temperature changes (e.g., breast at 200°C not 220°C)
+- Time changes significantly (e.g., veal schnitzel cooks 2 min per side, not 3)
+- A step can be skipped entirely (e.g., no brining needed with a pre-salted substitute)
+- A technique step differs fundamentally (e.g., gluten-free flour requires less kneading)
+
+Not required when:
+- The cook simply uses less or more of something (handled by `scales` annotation)
+- The only difference is flavour or appearance (covered by the substitution description)
+
+Format in the research file:
+```
+*Substitution:* [Ingredient] — 🟡 yellow. [One sentence on what changes.]
+*Step override (step N — [step title]):* [What the cook does differently.]
+```
+
+---
+
+### Smash Burger — test case (do this first)
+
+Apply DECISION-015 to `docs/coo/culinary-research/smash-burger.md` before touching any other recipe. Use it to pressure-test the colour decisions and step_override format. If anything in the spec feels wrong when applied to a real recipe, flag it before rolling out to the other 15.
+
+**Known substitutions in Smash Burger that need colour + possible step_overrides:**
+- Turkey or chicken mince for beef 80/20 — 🔴 red (lower fat, won't smash the same way, crust won't form correctly at high heat; different dish). Step override: reduce heat to medium-high, expect no crust formation.
+- American cheese for cheddar — 🟢 green (melts identically, same flavour register for this application)
+- Brioche vs standard burger bun — 🟡 yellow (brioche adds richness and sweetness; standard bun is neutral but structurally fine)
+- Any other swaps in the existing file — assess and colour-code on the day
+
+**Mandatory deliverable for Smash Burger:**
+1. Discrepancy table at the top of the file (the tortilla pattern) — what's in seed-recipes.ts vs what the research file says. Mandatory on every recipe from this point forward.
+2. All substitutions coloured 🟢 / 🟡 / 🔴
+3. `step_overrides` authored where applicable
+4. Pre-flight checklist passed and signed off at the bottom of the file
+
+---
+
+### Rollout order for remaining 15 recipes
+
+After Smash Burger is validated:
+
+**Batch A (5 recipes — do in one session):**
+PASTA_CARBONARA, BUTTER_CHICKEN, CHICKEN_SHAWARMA, CHICKEN_SCHNITZEL, FLOUR_TORTILLAS
+
+**Batch B (5 recipes — second session):**
+WEEKDAY_BOLOGNESE, THAI_GREEN_CURRY, BEEF_LASAGNE, ROAST_CHICKEN, ROAST_LAMB
+
+**Batch C (5 recipes — third session if needed, otherwise fold into B):**
+FISH_AND_CHIPS, PAVLOVA, HUMMUS, PAD_THAI, FALAFEL
+
+Target: ~2 sessions total (Smash Burger + Batch A in session 1; B + C in session 2). Pace to the content, not the clock.
+
+---
+
+### Standing rules for this work (R-014 applies)
+
+- **R-014:** Run `tail -c 200` on the file immediately after every write/save to confirm the file ends correctly. The flour-tortillas.md truncation (`aff3bc4`) happened because a write silently cut the file at 80 lines. `tail -c 200` catches this before commit.
+- **Discrepancy table is mandatory** on every research file — what seed-recipes.ts currently has vs what the research file says. Engineer reads this table to know exactly what to change.
+- **Pre-flight checklist is mandatory** before declaring any recipe ready. All boxes must be checked and explained, not just ticked.
+- **Colour decisions must be justified** in the research file — not just "🟡 yellow" but "🟡 yellow — flakier, more traditional, cook notices the difference in texture."
+
+**Files touched:** `docs/coo/culinary-research/smash-burger.md` (test case), then all 15 remaining launch recipe research files  
+**Blocks:** Engineer schema update for substitution colour field + step_overrides array (separate engineer handoff will follow once COO spec is validated on Smash Burger)
+
+---
+
 ### HANDOFF → COO · 2026-05-10 · IN PROGRESS (build #105 — Kitchen Editorial redesign + gold accent introduced)
 **From:** Senior Engineer
 **Subject:** Build #105 dispatched on commit `b6d0c70`. Per R-015 — shipped, awaiting Patrick on-device validation. Not self-closing.
