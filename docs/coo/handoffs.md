@@ -50,49 +50,144 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → Senior Engineer · 2026-05-14 · OPEN URGENT
-**From:** COO / Culinary Research
-**Subject:** Multi-category taxonomy — all 16 launch recipes audited, schema extended, seed-recipes.ts updated
-**Why:** The cuisine-browse filter and type-browse filter in the Kitchen tab need accurate dual-axis categories on every launch recipe. 8 of 16 had no categories at all; 3 of the remaining 8 needed corrections or additions.
+### HANDOFF → Photography Director · 2026-05-14 · OPEN URGENT (DECISION-014 — source CC-licensed hero images for all 16 launch recipes from Unsplash/Pexels)
+**From:** Patrick (via COO)
+**Subject:** Source one CC-licensed real-photo hero per launch recipe. Real photos only for heroes — faster, free, looks authentic. Not AI.
+**Why:** AI heroes carry commercial licensing ambiguity and look noticeably synthetic at launch scale. Real CC photography from Unsplash/Pexels is Unsplash License / Pexels License — both commercially OK, no attribution required (though we credit anyway per our standard). One solid session to fill all 16 hero slots.
+**What's needed:**
+1. Search Unsplash then Pexels (in that order) for each recipe slug. Accuracy over aesthetics — the photo must match *our* recipe, not a generic version.
+2. Key accuracy constraints from Patrick:
+   - **Carbonara** — golden egg-coated sauce, NOT white/cream. Any cream sauce photo is a reject.
+   - **Smash Burger** — thin patty, lacy crust, smashed flat. NOT a thick pub-style burger.
+   - **Pavlova** — meringue base with fresh fruit + cream, Australian/NZ style. NOT genoise or layer cake.
+   - **Shawarma** — Levantine (Lebanese/Syrian) presentation. NOT donair, NOT gyro.
+   - **Flour Tortillas** — small taco-size 12–13cm. NOT burrito size.
+3. For each recipe: record full Unsplash/Pexels URL, photo ID, photographer name, and licence in `docs/coo/visual-assets-ledger.md`.
+4. Mark status `CANDIDATE` — cook validates accuracy per recipe before `APPROVED`.
+5. If no suitable Unsplash/Pexels photo exists for a recipe, flag it explicitly — Photography Director will then generate via AI.
+**Output:** All 16 hero rows in `docs/coo/visual-assets-ledger.md` filled with CANDIDATE URLs. Engineer reads the ledger to pull `photo_url` into `seed-recipes.ts` hero fields.
+**Files touched:** `docs/coo/visual-assets-ledger.md`
+**Blocks:** Launch. Hero images are the most visible recipe asset — every recipe card shows the hero.
 
-**What's done:**
-- `mobile/src/data/types.ts` — CuisineId enum extended with 3 new values:
-  - `'palestinian'` — explicit Palestinian cultural attribution (Hummus, Falafel)
-  - `'german'` — Germanic origin for Chicken Schnitzel (Austrian/German lineage)
-  - `'british'` — British origin for Fish & Chips
-- `mobile/src/data/seed-recipes.ts` — all 16 launch recipes now have `categories.cuisines[]` and `categories.types[]`
-- All 16 culinary-research files — `## Category taxonomy` discrepancy section added with rationale for each decision (including contested cases)
+---
 
-**The 6 recipes that changed:**
-| Recipe | Change |
-|---|---|
-| PASTA_CARBONARA | Added `['italian']` / `['pasta', 'eggs']` |
-| HUMMUS | Added `['levantine', 'palestinian']` / `['vegetarian']` |
-| WEEKDAY_BOLOGNESE | Added `['italian']` / `['pasta', 'beef']` |
-| CHICKEN_SCHNITZEL | Was `['australian']` → `['australian', 'german']` |
-| FISH_AND_CHIPS | Was `['australian']` → `['australian', 'british']` |
-| FALAFEL | Was `['levantine']` → `['levantine', 'palestinian']` |
+### HANDOFF → Photography Director · 2026-05-13 · OPEN URGENT (16 launch recipe hero images — Unsplash/Pexels batch sourcing)
+**From:** Patrick (via COO)
+**Subject:** Source one CC-licensed hero image for each of the 16 launch recipes from Unsplash or Pexels. Real photos, not AI. Cook validates accuracy. Engineer migrates URLs into seed-recipes.ts. Goal: every recipe card on the Kitchen page shows a real food image, not the gradient placeholder.
 
-**SMASH_BURGER, ROAST_CHICKEN, THAI_GREEN_CURRY, PAD_THAI, CHICKEN_SHAWARMA, FLOUR_TORTILLAS** — were already correctly set; confirmed in audit.
+**Why now:** Patrick is on build #109. Kitchen page recipe cards still render placeholders/gradients on most recipes — placeholders shouldn't ship to launch. AI-generated stage shots remain a longer pipeline (image briefs, prompt iteration, cook validation per stage). For hero shots specifically, well-curated real photos from Unsplash / Pexels are faster, free, and look authentic.
 
-**Contested decisions (read the discrepancy tables in each research file for full rationale):**
-- **Pavlova** — kept `['australian']` only. NZ debate is acknowledged in the recipe description. Adding `new_zealand` would falsely imply the app has resolved the dispute.
-- **Chicken Schnitzel** — using `german` not `austrian`. Austrian origin is historically accurate (Wiener Schnitzel) but `german` is more recognisable to Australian users. The description is honest about Austrian lineage.
-- **Fish & Chips** — dual `['australian', 'british']`. Both are genuinely true.
-- **Hummus + Falafel** — `['levantine', 'palestinian']`. `levantine` for geographic browse; `palestinian` for specific cultural attribution that both recipes explicitly carry.
+**What's needed:**
 
-**What the engineer needs to do:**
-1. Verify TypeScript compiles cleanly with the 3 new CuisineId values (they are already added — run `npx tsc --noEmit` in `mobile/`).
-2. Verify the cuisine browse filter in the Kitchen tab now populates correctly for the new values (Palestinian, German, British tiles may need to be added to the category tile row in `index.tsx` if the filter is hardcoded to specific cuisines).
-3. Run the full seed migration (if `CuisineId` validation is strict, any existing device DB row with an old category will fail validation — confirm `z.preprocess` defensive migration handles this gracefully).
-4. Trigger a build once TypeScript is confirmed clean.
+1. **Source one hero image per recipe** from Unsplash (`unsplash.com`) or Pexels (`pexels.com`). Both are commercial-use OK with attribution. The 16 recipes:
+   1. Roast Chicken (Hone Kitchen original — dry-brine + compound butter + spatchcock visual cue if findable, else any well-shot roast chicken)
+   2. Spaghetti Bolognese
+   3. Spaghetti Carbonara — **must be golden egg-coated sauce, NOT cream-based**. Pancetta/guanciale crisped, pecorino dust. Reject any white-sauce variant.
+   4. Butter Chicken
+   5. Smash Burger — thin patty with lacy crust, NOT a thick pub burger
+   6. Thai Green Curry
+   7. Chicken Schnitzel
+   8. Beef Lasagne
+   9. Roast Lamb with Rosemary & Garlic
+   10. Fish & Chips (Australian / British style, beer batter)
+   11. Pan-Fried Fish (Barramundi if it's still in the launch 16, else Falafel — confirm with cook which stuck)
+   12. Pavlova (Australian / NZ style — meringue base, fresh fruit + cream)
+   13. Chicken Shawarma (Levantine — NOT donair, NOT gyro)
+   14. Hummus
+   15. Pad Thai
+   16. Flour Tortillas — Patrick's recipe, small taco-size (12–13cm), buttery soft, NOT burrito-size
 
-**Files touched:**
-- `mobile/src/data/types.ts`
-- `mobile/src/data/seed-recipes.ts`
-- `docs/coo/culinary-research/` — all 16 launch recipe files
+2. **For each image, capture:** Unsplash/Pexels URL, photographer name and profile, license type. Goal is ~16 rows added to `docs/coo/visual-assets-ledger.md`.
 
-**Blocks:** Category browse filter accuracy in Kitchen tab.
+3. **Send candidates to the cook for accuracy validation** — she signs off or rejects per recipe with specific notes. Common rejection criteria: wrong cuisine variant (cream carbonara, thick smash burger, gyro shawarma); over-stylised "Pinterest food" shots that don't match an Australian home cook's reality; uncanny-valley-looking food photography (rare on Unsplash but check).
+
+4. **After cook signoff, handoff URLs to engineer** for migration into `seed-recipes.ts` via the existing `photo_url` field on each Recipe. Attribution credit needs a small display element on the recipe card or detail screen — engineer's call where best to surface, but the photographer credit must be visible somewhere per Unsplash/Pexels licensing requirements.
+
+**Sequence:** All 16 in one batch. This is one-session work for you given Unsplash search tooling. Cook validates in one session. Engineer migrates in 30 min. Could be on Patrick's phone within 24 hours.
+
+**Cost:** ~1 session Photography Director + ~1 session Cook validation + ~30 min Engineer migration. Cheap, real-photo win.
+
+**R-014 mitigation:** when updating ledger / seed file, `tail -c 200` after each save.
+
+**Files touched:** `docs/coo/visual-assets-ledger.md`, eventual handoff to engineer with URLs for `mobile/src/data/seed-recipes.ts` migration.
+
+**Blocks:** Kitchen page visual story for launch. Placeholders are not a launch-acceptable state.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-13 · OPEN URGENT (Kitchen category tiles not displaying — investigate + fix)
+**From:** Patrick (via COO)
+**Subject:** On build #109, the cuisine category tiles on the Kitchen page aren't displaying for filtering. Investigate root cause; fix the tile-list logic OR populate the missing category data on recipes — whichever is the actual issue.
+
+**Why:** The Kitchen Editorial redesign (build #105) added category tiles per Designer's spec — "Browse by cuisine" row showing All + Levantine, Indian, Japanese, Italian, Malaysian, Thai, French, Australian. Patrick reports they aren't appearing on-device. Two possible causes:
+
+1. **Tile-hide logic is too aggressive.** The redesign had "Tiles hide if no recipe in the active roster carries that cuisine." If the launch 16 recipes don't have `categories.cuisines` populated correctly in seed data, most tiles hide. Possibly ALL tiles hide if the cuisine field is missing entirely on most recipes.
+
+2. **Designer's category list doesn't match the actual launch 16 cuisines.** The list has Japanese / Malaysian / French — but those cuisines have zero launch recipes (the Japanese, Malaysian, French recipes are all in `SEED_RECIPES_HOLDING`, not visible). Meanwhile American (Smash Burger) and Mexican (Flour Tortillas) ARE in the launch 16 but those cuisines aren't in the Designer's list — so those tiles would never show.
+
+**What's needed:**
+
+1. **Diagnose first.** Check on-device console logs for any category-related warnings. Then check `seed-recipes.ts` — for each of the 16 launch recipes, is `categories.cuisines` populated? With what values? Report back before touching code.
+
+2. **Fix the tile list.** Update the Kitchen Editorial component (`(tabs)/index.tsx`) to derive the tile list from cuisines that actually exist in the launch library, OR update the Designer's static list to match. Either approach works — decide which is cleaner. The intent: every cuisine that has at least one launch recipe shows as a tile. Cuisines with zero launch recipes don't show.
+
+3. **Coordinate with cook.** Cook is doing parallel work to walk every launch recipe's `categories.cuisines` and `categories.types` per the separate cook handoff below. As her per-recipe discrepancy tables ship, you migrate the new category data into `seed-recipes.ts`. Each migration may unlock more tile visibility.
+
+**Validation gate per R-015:**
+- `npx tsc --noEmit` clean
+- `tail -c 200` of every modified file confirms clean EOF
+- On-device: open Kitchen page → cuisine tiles render for every cuisine that has at least 1 launch recipe → tapping a tile filters correctly → tapping again deselects to "All"
+- Build log entry for the build that ships this
+
+**Files touched:** `mobile/app/(tabs)/index.tsx` (tile list logic), `mobile/src/data/seed-recipes.ts` (category data migration as cook ships per-recipe).
+
+**Cost:** ~30 min diagnosis + ~1 hour fix.
+
+**Blocks:** Kitchen page filtering. Currently users can't browse by cuisine.
+
+---
+
+### HANDOFF → Culinary Verifier · 2026-05-13 · OPEN URGENT (multi-category authorship for 16 launch recipes — cuisines + types)
+**From:** Patrick (via COO)
+**Subject:** Walk every launch recipe and assign honest categories — multiple cuisines and multiple types where appropriate. Chef knowledge owns this, not engineer guesses.
+
+**Why:** Patrick noticed on build #109 that cuisine filtering tiles aren't showing on the Kitchen page. Part of the cause is that the launch recipes' `categories.cuisines` data is either missing or thin. His instinct (correct): cook decides which cuisines AND types each recipe belongs in, with multi-category support honestly used where it applies. A smash burger is American AND a burger AND weeknight. Pavlova is Australian (or Australian/NZ contested) AND a dessert AND weekend. Lasagne is Italian AND pasta AND a baking project. Honest taxonomy beats forced single-category.
+
+**What's needed:**
+
+1. **Walk every recipe in the 16-launch list** (you have research files for all of them). For each, decide:
+   - **`categories.cuisines: string[]`** — one or more cuisines. Examples:
+     - Roast Chicken: `['australian']` (Hone Kitchen original — per the new attribution)
+     - Carbonara: `['italian']`
+     - Butter Chicken: `['indian']`
+     - Smash Burger: `['american']` (and maybe `['australian']` if it's framed as a modern Aussie pub thing — your call)
+     - Hummus: `['levantine', 'palestinian']` or whichever sub-region you stand behind — multi-region honest credit per Golden Rule 1
+     - Pavlova: `['australian']` (or `['australian', 'new_zealand']` if you want to acknowledge the contested origin; your judgment)
+     - Tortillas: `['mexican']` (Patrick's recipe but the dish is Mexican)
+   - **`categories.types: string[]`** — one or more meal/dish types. Examples: `['burger']`, `['pasta', 'weeknight']`, `['curry']`, `['roast', 'weekend']`, `['baking', 'dessert']`, `['salad', 'vegetarian']`, `['street_food']`.
+
+2. **Document in a discrepancy table at the top of each research file** — same pattern as the tortilla and roast-chicken fixes. List exactly what the engineer needs to change in `seed-recipes.ts` per recipe. Format:
+
+   | Recipe const | Field | Current value | New value | Notes |
+
+3. **Pre-flight checklist before declaring per-recipe ready:**
+   - Cuisines are honestly attributed per cultural rules (Levantine = region not nation-state; no Israeli labels)
+   - Types are useful for filtering (don't add types nobody would filter on, but do add the genuinely useful ones — "weeknight" / "weekend" / "vegetarian" / "dessert" are obvious)
+   - Multi-category only where genuinely true — don't pad
+   - Australian English throughout
+   - Discrepancy table is complete and unambiguous for the engineer
+
+4. **R-014 mitigation:** `tail -c 200 <file>` after each save.
+
+**Sequence:** Start with whichever recipe is least clear in your view (probably Smash Burger or Pavlova — contested or multi-category cases) so the engineer has a clear test case for the multi-category rendering. Then walk the rest at your pace.
+
+**Cost:** ~1.5 sessions for all 16. Categories are usually a quick judgment per recipe.
+
+**Coordination:** Engineer is in parallel debugging why the existing tiles don't show. As you ship per-recipe discrepancy tables, engineer migrates the category data and the tiles populate progressively.
+
+**Files touched:** `docs/coo/culinary-research/<recipe>.md` for each of the 16 launch recipes — adding/extending the discrepancy table at the top with category assignments.
+
+**Blocks:** Kitchen page filtering quality. Without honest multi-category, users can't browse by anything useful.
 
 ---
 

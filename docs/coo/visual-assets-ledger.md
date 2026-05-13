@@ -46,10 +46,11 @@
 > Research brief: `docs/coo/photography/image-briefs/smash-burger.md`
 > Recipe data source: `mobile/src/data/seed-recipes.ts` (SMASH_BURGER constant)
 > Chef reference: Andy Cooks (source chef, video: youtube.com/watch?v=oa2g6gB_1BU)
+> **Cook accuracy checklist for hero CANDIDATE:** (1) SMASHED thin patty — no pub-style thick burger. (2) No lettuce or tomato — neither appears in the Hone recipe. (3) Brioche bun, American cheese, pickles, caramelised onion are correct inclusions.
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1639020715088-e7afebe6cb25` (Manu Ros, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-s1-mise` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s3-smash` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s4-crust` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
@@ -67,7 +68,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1622973536968-3ead9e780960` (Homescreenify, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-soffritto` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
 | `step-mince-browned` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
 | `step-sauce-reduced` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
@@ -81,6 +82,7 @@
 > Recipe data source: `mobile/src/data/seed-recipes.ts` (PASTA_CARBONARA constant)
 > Chef reference: Gordon Ramsay (source chef, video: youtube.com/watch?v=5t7JLjr1FxQ — verify live before ship)
 > **Note:** Existing hero URL `photo-1612874742237-6526221588e3` is a CANDIDATE — Patrick must visually inspect against cook checklist before confirming or replacing. 4 images total (hero + 3 stage shots).
+> **Cook accuracy checklist for hero CANDIDATE:** (1) Sauce must be GOLDEN-yellow from egg yolks — NOT white or cream-coloured. (2) Spaghetti (not rigatoni or penne). (3) Guanciale or pancetta — no bacon rashers. (4) No cream visible. Reject immediately if sauce looks white/cream.
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
@@ -111,7 +113,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1603894584373-5ac82b2ae398` (Raman, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-sauce-pre-cream` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-sauce-post-cream` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -121,7 +123,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1668665772043-bdd32e348998` (Andrew Relf, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-paste-cracking` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-curry-finished` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -131,7 +133,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1599921841143-819065a55cc6` (Mark König, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-crumb-station` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-crust-golden` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-cross-section` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
@@ -142,16 +144,18 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1633436374784-7f9502eb348a` (Parnis Azimi, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-layers-visible` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
 
 ## Roast Lamb with Rosemary & Garlic (`roast-lamb-rosemary-garlic`)
 
+> **Hero sourcing note:** Unsplash collection page fetch returned empty during this session. Manual search required — see unsplash.com/s/photos/roast-lamb. Look for: bone-in leg or shoulder, deep mahogany crust with visible rosemary sprigs and garlic, uncovered (no foil). Reject any chops or rack-of-lamb shots.
+
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | TBD — see unsplash.com/s/photos/roast-lamb (fetch failed; manual lookup required) | — | Unsplash License | TBD | PENDING | — | PENDING |
 | `step-crust-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -160,7 +164,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-kmQw0_2A9xQ` (Leo Li, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-batter-golden` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -180,19 +184,22 @@
 ## Falafel (`falafel`)
 
 > Note: build #101 flipped FALAFEL to `not_yet_shipping: false`. Confirm it is in the launch 16 with COO.
+> **Cook accuracy checklist for hero CANDIDATE:** (1) Whole falafel balls, not a wrap or pita. (2) Green herb interior visible (parsley/coriander) — the signature of freshly fried falafel. (3) Golden-brown crust. Reject if it's a plated falafel wrap shot.
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-pQnsKWk5ljQ` (Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-herb-interior` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
 
 ## Pavlova (`pavlova`)
 
+> **Cook accuracy checklist for hero CANDIDATE:** (1) Australian/NZ style — large meringue disc, not individual meringue kisses. (2) Whipped cream topping with fresh fruit (strawberries, kiwi, passionfruit, blueberries). (3) Crisp white exterior. Reject French-style meringue or île flottante.
+
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-5nCTfEru3Do` (Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-stiff-peaks` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-baked-shell` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -200,8 +207,76 @@
 
 ## Chicken Shawarma (`chicken-shawarma`)
 
+> **Cook accuracy checklist for hero CANDIDATE:** (1) Levantine vertical spit (al-sham style). This candidate shows chicken on a vertical rotisserie — correct. (2) NOT a Greek gyro or Turkish doner. (3) Reject if it shows pita wrap plated as the hero — spit or sliced meat preferred.
+
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-kYi1eN--guM` (Markus Winkler, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-char-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
-| `step-sliced` | AI | TBD | — | 
+| `step-sliced` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+
+---
+
+## Hummus (`hummus`)
+
+| Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
+|---|---|---|---|---|---|---|---|---|
+| `hero` | CC-stock | `photo-14X4iiiF3t4` (Maryam Sicard, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+
+---
+
+## Pad Thai (`pad-thai`)
+
+| Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
+|---|---|---|---|---|---|---|---|---|
+| `hero` | CC-stock | `photo-_wBJ0cvKhIE` (Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `step-egg-ribbons` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+
+---
+
+## Flour Tortillas (`flour-tortillas`)
+
+> **Cook accuracy checklist for hero CANDIDATE:** (1) TACO-SIZE tortillas — 12–13 cm diameter. Reject burrito-size (25+ cm). (2) Char marks from comal/cast iron visible. (3) Stack or tacos presentation — not a wrap or quesadilla.
+
+| Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
+|---|---|---|---|---|---|---|---|---|
+| `hero` | CC-stock | `photo-N__68TkGeOY` (Thomas Park, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `step-comal-char` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
+
+---
+
+## Ledger statistics
+
+| Metric | Count |
+|---|---|
+| Total images required (est.) | ~120 |
+| Images with APPROVED status | 0 |
+| Images with CANDIDATE status | 17 (15 hero CC-stock + 2 smash burger step AI) |
+| Images with PENDING status | ~103 |
+| Images with INTEGRATED status | 2 (smash-burger step-s1-mise, step-s3-smash — in seed-recipes.ts) |
+
+*Last updated: 2026-05-14 by Photography Director*
+*Next update: after cook validates 15 hero CANDIDATEs and Patrick manually sources roast-lamb hero (see unsplash.com/s/photos/roast-lamb)*
+
+## Hero sourcing summary — all 16 launch recipes
+
+| Recipe | Photo ID | Photographer | Status |
+|---|---|---|---|
+| smash-burger | `photo-1639020715088-e7afebe6cb25` | Manu Ros (Unsplash) | CANDIDATE ⚠️ accuracy review needed |
+| weekday-bolognese | `photo-1622973536968-3ead9e780960` | Homescreenify (Unsplash) | CANDIDATE |
+| pasta-carbonara | `photo-1612874742237-6526221588e3` | Unknown (Unsplash) | CANDIDATE ⚠️ must be golden not cream |
+| roast-chicken | `photo-1598103442097-8b74394b95c8` | Unknown (Unsplash) | CANDIDATE ⚠️ inspect for golden skin, untrussed |
+| butter-chicken | `photo-1603894584373-5ac82b2ae398` | Raman (Unsplash) | CANDIDATE |
+| thai-green-curry | `photo-1668665772043-bdd32e348998` | Andrew Relf (Unsplash) | CANDIDATE |
+| chicken-schnitzel | `photo-1599921841143-819065a55cc6` | Mark König (Unsplash) | CANDIDATE |
+| beef-lasagne | `photo-1633436374784-7f9502eb348a` | Parnis Azimi (Unsplash) | CANDIDATE |
+| roast-lamb-rosemary-garlic | — | — | PENDING ⚠️ manual source required |
+| fish-and-chips | `photo-kmQw0_2A9xQ` | Leo Li (Unsplash) | CANDIDATE |
+| falafel | `photo-pQnsKWk5ljQ` | Unknown (Unsplash) | CANDIDATE ⚠️ verify green interior |
+| pavlova | `photo-5nCTfEru3Do` | Unknown (Unsplash) | CANDIDATE ⚠️ must be Aus/NZ meringue disc |
+| chicken-shawarma | `photo-kYi1eN--guM` | Markus Winkler (Unsplash) | CANDIDATE ✓ vertical spit confirmed |
+| hummus | `photo-14X4iiiF3t4` | Maryam Sicard (Unsplash) | CANDIDATE |
+| pad-thai | `photo-_wBJ0cvKhIE` | Unknown (Unsplash) | CANDIDATE |
+| flour-tortillas | `photo-N__68TkGeOY` | Thomas Park (Unsplash) | CANDIDATE ⚠️ must be taco-size not burrito |
+
+All Unsplash images: free commercial use, no attribution required (credited anyway per Hone standard). Engineer uses format: `https://images.unsplash.com/{photo-id}?w=600&q=80`
