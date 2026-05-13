@@ -7,6 +7,24 @@
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['indian']` | `['indian'] — no change` | No change |
+| `categories.types` | `['chicken']` | `['chicken'] — no change` | No change |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Butter Chicken (Murgh Makhani) is North Indian (Delhi) in origin.
+
+**Rationale:** Existing categories correct. Note for engineer: a `curry` TypeId would also apply here — same note as Thai Green Curry.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 | Ingredient | Substitution | Old quality | New colour | step_override | Notes |

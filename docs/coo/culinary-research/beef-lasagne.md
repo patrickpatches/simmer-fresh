@@ -1,5 +1,23 @@
 # Beef Lasagne
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['italian']` | `['italian'] — no change` | No change |
+| `categories.types` | `['beef', 'pasta']` | `['beef', 'pasta'] — no change` | No change |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Lasagne al Forno is from Emilia-Romagna, Italy.
+
+**Rationale:** Existing categories correct. Dual type is right — someone filtering by either beef or pasta should find it.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 `seed-recipes.ts const: BEEF_LASAGNE`

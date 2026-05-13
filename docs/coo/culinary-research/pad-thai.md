@@ -158,6 +158,24 @@ Pad thai does not keep well. The noodles absorb remaining sauce and stick togeth
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['thai']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['pasta', 'seafood']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Thai dish, no contest.
+
+**Rationale:** Dual type: `pasta` for the rice noodle base (the `pasta` TypeId covers noodles per types.ts); `seafood` for the prawn primary protein. Someone filtering by seafood should find Pad Thai.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015 — Substitution colour mapping
 
 ### Discrepancy table

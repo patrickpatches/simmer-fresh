@@ -284,6 +284,24 @@ Keep refrigerated 3 days. Cold roast chicken sliced thin is excellent in a crust
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['australian']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['chicken']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Hone Kitchen original recipe, Australian context.
+
+**Rationale:** Single cuisine correct. Roast chicken is a technique, not a cultural dish — `australian` reflects the Hone Kitchen authorship and the Australian ingredient context (1.8–2kg birds, Aussie produce).
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## Culinary Audit Entry
 
 ```

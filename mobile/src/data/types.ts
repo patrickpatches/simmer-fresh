@@ -42,18 +42,21 @@ import { z } from 'zod';
  * (Chicken Adobo, Egg Fried Rice). Expand as the library grows.
  */
 export const CuisineId = z.enum([
-  'levantine',  // Lebanese, Syrian, Jordanian, Palestinian
-  'indian',     // North + South Indian
+  'levantine',    // Lebanese, Syrian, Jordanian, Palestinian — broad Levantine tag
+  'palestinian',  // Explicit Palestinian cultural attribution (Hummus, Falafel)
+  'indian',       // North + South Indian
   'malaysian',
   'japanese',
   'thai',
   'italian',
   'french',
-  'american',   // Burgers, BBQ, Southern
-  'australian', // Modern Australian, indigenous-inspired
+  'american',     // Burgers, BBQ, Southern
+  'australian',   // Modern Australian, indigenous-inspired
   'mexican',
   'filipino',
   'chinese',
+  'german',       // German + Austrian (Schnitzel lineage) — recognisable broad label
+  'british',      // British (Fish & Chips origin)
 ]);
 export type CuisineId = z.infer<typeof CuisineId>;
 

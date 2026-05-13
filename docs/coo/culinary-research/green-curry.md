@@ -7,6 +7,24 @@
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['thai']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['chicken']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Thai dish, no contest.
+
+**Rationale:** Types: `chicken` for the base recipe. Note for engineer: a `curry` TypeId would be a useful future addition — both Thai Green Curry and Butter Chicken are curries and would benefit from a curry filter. Flagged but out of scope here.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 `seed-recipes.ts const: THAI_GREEN_CURRY`

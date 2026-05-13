@@ -150,6 +150,24 @@ Hummus keeps 5 days refrigerated in an airtight container. It improves for the f
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['levantine', 'palestinian']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['vegetarian']` | Update in seed-recipes.ts |
+| Schema | — | Add `palestinian` to CuisineId enum — DONE in types.ts | Schema updated — engineer to redeploy |
+
+**Contested origin?** No contest on Palestinian attribution — this recipe is explicitly attributed to Reem Kassis / The Palestinian Table.
+
+**Rationale:** `levantine` gives geographic breadth for the browse filter; `palestinian` gives the specific cultural attribution that this recipe carries. Both are genuinely true simultaneously. Hummus exists across the Levant but this recipe's lineage is Palestinian.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015 — Substitution colour mapping
 
 ### Discrepancy table

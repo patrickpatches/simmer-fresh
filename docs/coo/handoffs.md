@@ -50,6 +50,52 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-14 · OPEN URGENT
+**From:** COO / Culinary Research
+**Subject:** Multi-category taxonomy — all 16 launch recipes audited, schema extended, seed-recipes.ts updated
+**Why:** The cuisine-browse filter and type-browse filter in the Kitchen tab need accurate dual-axis categories on every launch recipe. 8 of 16 had no categories at all; 3 of the remaining 8 needed corrections or additions.
+
+**What's done:**
+- `mobile/src/data/types.ts` — CuisineId enum extended with 3 new values:
+  - `'palestinian'` — explicit Palestinian cultural attribution (Hummus, Falafel)
+  - `'german'` — Germanic origin for Chicken Schnitzel (Austrian/German lineage)
+  - `'british'` — British origin for Fish & Chips
+- `mobile/src/data/seed-recipes.ts` — all 16 launch recipes now have `categories.cuisines[]` and `categories.types[]`
+- All 16 culinary-research files — `## Category taxonomy` discrepancy section added with rationale for each decision (including contested cases)
+
+**The 6 recipes that changed:**
+| Recipe | Change |
+|---|---|
+| PASTA_CARBONARA | Added `['italian']` / `['pasta', 'eggs']` |
+| HUMMUS | Added `['levantine', 'palestinian']` / `['vegetarian']` |
+| WEEKDAY_BOLOGNESE | Added `['italian']` / `['pasta', 'beef']` |
+| CHICKEN_SCHNITZEL | Was `['australian']` → `['australian', 'german']` |
+| FISH_AND_CHIPS | Was `['australian']` → `['australian', 'british']` |
+| FALAFEL | Was `['levantine']` → `['levantine', 'palestinian']` |
+
+**SMASH_BURGER, ROAST_CHICKEN, THAI_GREEN_CURRY, PAD_THAI, CHICKEN_SHAWARMA, FLOUR_TORTILLAS** — were already correctly set; confirmed in audit.
+
+**Contested decisions (read the discrepancy tables in each research file for full rationale):**
+- **Pavlova** — kept `['australian']` only. NZ debate is acknowledged in the recipe description. Adding `new_zealand` would falsely imply the app has resolved the dispute.
+- **Chicken Schnitzel** — using `german` not `austrian`. Austrian origin is historically accurate (Wiener Schnitzel) but `german` is more recognisable to Australian users. The description is honest about Austrian lineage.
+- **Fish & Chips** — dual `['australian', 'british']`. Both are genuinely true.
+- **Hummus + Falafel** — `['levantine', 'palestinian']`. `levantine` for geographic browse; `palestinian` for specific cultural attribution that both recipes explicitly carry.
+
+**What the engineer needs to do:**
+1. Verify TypeScript compiles cleanly with the 3 new CuisineId values (they are already added — run `npx tsc --noEmit` in `mobile/`).
+2. Verify the cuisine browse filter in the Kitchen tab now populates correctly for the new values (Palestinian, German, British tiles may need to be added to the category tile row in `index.tsx` if the filter is hardcoded to specific cuisines).
+3. Run the full seed migration (if `CuisineId` validation is strict, any existing device DB row with an old category will fail validation — confirm `z.preprocess` defensive migration handles this gracefully).
+4. Trigger a build once TypeScript is confirmed clean.
+
+**Files touched:**
+- `mobile/src/data/types.ts`
+- `mobile/src/data/seed-recipes.ts`
+- `docs/coo/culinary-research/` — all 16 launch recipe files
+
+**Blocks:** Category browse filter accuracy in Kitchen tab.
+
+---
+
 ### HANDOFF → Patrick + COO · 2026-05-13 · OPEN URGENT (R-014 hit by your 6813ddc commit — pattern to flag in future)
 **From:** Senior Engineer
 **Subject:** Builds #108 (and the 3 commits before it) all failed Metro bundling. Root cause was your own commit `6813ddc` ("feat(smash-burger): add Gemini stage photos to app") which silently truncated 14 lines off the end of `SEED_RECIPES_HOLDING` while adding two `photo_url` fields. Build #109 recovers.

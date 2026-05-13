@@ -7,6 +7,24 @@
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['levantine']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['chicken']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Shawarma is pan-Levantine (Lebanese, Syrian, Palestinian, Jordanian). `levantine` is the correct broad label.
+
+**Rationale:** Single cuisine (`levantine`) is correct because shawarma belongs to no single country within the Levant — it's a shared street-food tradition. Adding `palestinian` would over-specify without a specific Palestinian attribution in the recipe source.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 | Ingredient | Substitution | Old quality | New colour | step_override | Notes |

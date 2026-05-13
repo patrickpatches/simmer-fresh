@@ -1,5 +1,23 @@
 # Roast Lamb with Rosemary & Garlic
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['australian']` | `['australian'] — no change` | No change |
+| `categories.types` | `['lamb']` | `['lamb'] — no change` | No change |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — roast lamb is genuinely Australian (the lamb roast is one of the defining dishes of Australian home cooking). The rosemary-and-garlic treatment has Mediterranean roots but the dish as presented is Australian.
+
+**Rationale:** Existing categories correct. Could argue for adding a Mediterranean tag but that would be over-specification — the dish is Australian in the way it's cooked and contextualised.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 `seed-recipes.ts const: ROAST_LAMB`

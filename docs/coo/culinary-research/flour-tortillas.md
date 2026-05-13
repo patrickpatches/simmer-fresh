@@ -46,6 +46,24 @@ Fat range: 40–60g. The lower end produces a slightly lighter tortilla; the hig
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['mexican']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['baking']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — flour tortillas are Mexican. The recipe is attributed to Patrick N. (Hone Kitchen) but the dish is Mexican.
+
+**Rationale:** `source.chef` and `categories.cuisines` are independent fields. Patrick authored this specific recipe but the dish belongs to Mexican cuisine. Same logic as a cook who develops their own bolognese recipe — it's still Italian.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 | Ingredient | Substitution | Old quality | New colour | step_override | Notes |

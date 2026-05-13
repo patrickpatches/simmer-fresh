@@ -151,6 +151,24 @@ Taste the whipped cream before it goes on — it should be lightly sweet from th
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['australian']` | `['australian'] — no change. New Zealand claim acknowledged in description but not resolved by adding 'new_zealand' to cuisines.` | No change |
+| `categories.types` | `['baking']` | `['baking'] — no change` | No change |
+| Schema | — | — | No schema change |
+
+**Contested origin?** YES — the trans-Tasman origin debate is real and unresolved. Decision: keep `australian` only. Rationale: the recipe is titled "Australian Pavlova" and is explicitly presented as Australian. Adding `new_zealand` would imply the app has resolved the debate in NZ's favour — it has not. The recipe description already acknowledges the NZ claim honestly. If NZ users ask, the description answers.
+
+**Rationale:** The Hone position is not that Australia invented it — it's that this is the Australian version of it. That's `australian`. We're not adjudicating food history; we're filing a recipe under a cuisine.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015 — Substitution colour mapping
 
 ### Discrepancy table

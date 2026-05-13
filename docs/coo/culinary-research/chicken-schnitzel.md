@@ -1,5 +1,23 @@
 # Chicken Schnitzel
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['australian']` | `['australian', 'german']` | Update in seed-recipes.ts |
+| `categories.types` | `['chicken']` | `['chicken'] — no change` | No change |
+| Schema | — | Add `german` to CuisineId enum — DONE in types.ts | Schema updated — engineer to redeploy |
+
+**Contested origin?** Mild — schnitzel is properly Austrian in origin (Wiener Schnitzel) but has spread across the German-speaking world and become deeply embedded in Australian pub culture. Using `german` as the broader Germanic label is more recognisable to Australian users than `austrian`.
+
+**Rationale:** Both cuisines are genuinely true: the technique and name come from Germanic-speaking Europe; the pub schnitzel culture is distinctively Australian. Multi-category is correct here. Using `german` over `austrian` because it is more commonly understood in the Australian market — the cultural lineage is accurately described in the recipe description.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 | Ingredient | Substitution | Old quality | New colour | step_override | Notes |

@@ -6,6 +6,24 @@
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['italian']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['pasta', 'beef']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Bolognese ragù is from Bologna, Italy. The "weekday" framing is Hone Kitchen's, the dish is Italian.
+
+**Rationale:** Dual type: `pasta` and `beef`. Both are independently true — Bolognese is a beef-based pasta dish. Someone filtering by beef should find it.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 `seed-recipes.ts const: WEEKDAY_BOLOGNESE`

@@ -185,6 +185,24 @@ Falafel is a staple street food across the Levant — Palestinian, Lebanese, Syr
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['levantine']` | `['levantine', 'palestinian']` | Update in seed-recipes.ts |
+| `categories.types` | `['vegetarian']` | `['vegetarian'] — no change` | No change |
+| Schema | — | Add `palestinian` to CuisineId enum — DONE in types.ts | Schema updated — engineer to redeploy |
+
+**Contested origin?** No contest on the dual tag. Falafel is pan-Levantine AND has deep Palestinian street-food roots. The attribution framing in the recipe explicitly names Palestinian tradition alongside Lebanese, Syrian, Jordanian.
+
+**Rationale:** Same logic as Hummus: `levantine` for geographic breadth; `palestinian` for specific cultural attribution that the recipe explicitly carries. The recipe description and attribution framing both name Palestinian culture — the cuisine tag should reflect that.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015 — Substitution colour mapping
 
 ### Discrepancy table

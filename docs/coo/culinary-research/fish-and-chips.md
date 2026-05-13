@@ -1,5 +1,23 @@
 # Fish & Chips
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `['australian']` | `['australian', 'british']` | Update in seed-recipes.ts |
+| `categories.types` | `['seafood']` | `['seafood'] — no change` | No change |
+| Schema | — | Add `british` to CuisineId enum — DONE in types.ts | Schema updated — engineer to redeploy |
+
+**Contested origin?** No — dual origin is honestly true. Fish & Chips is British in invention (London, 1860s) and has become an Australian institution. Both identities are genuine.
+
+**Rationale:** This is a clear case where multi-category is accurate. Fish & chips in Australia is not merely "British food that Australians eat" — it is woven into Australian coastal culture. But denying the British origin would be dishonest. Both tags.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 `seed-recipes.ts const: FISH_AND_CHIPS`

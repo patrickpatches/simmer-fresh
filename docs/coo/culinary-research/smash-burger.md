@@ -25,6 +25,24 @@
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['american']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['burgers', 'beef']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — purely American diner origin.
+
+**Rationale:** Types dual-axis: `burgers` for browse-by-format; `beef` for protein filter. Smash burger is a beef dish and should appear in beef search results.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015 substitution colour mapping
 
 Full colour reference for engineer migration:

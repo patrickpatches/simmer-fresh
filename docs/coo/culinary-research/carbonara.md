@@ -7,6 +7,24 @@
 
 ---
 
+---
+
+## Category taxonomy — multi-axis audit
+
+### Discrepancy table
+
+| Field | Current value | Proposed value | Action |
+|---|---|---|---|
+| `categories.cuisines` | `MISSING` | `['italian']` | Update in seed-recipes.ts |
+| `categories.types` | `MISSING` | `['pasta', 'eggs']` | Update in seed-recipes.ts |
+| Schema | — | — | No schema change |
+
+**Contested origin?** No — Roman dish, no contest.
+
+**Rationale:** Eggs are the structural centrepiece of carbonara, not just an ingredient. Adding `eggs` makes it discoverable when someone filters "what can I make with eggs." Dual-type is genuinely true.
+
+**Pre-flight: READY FOR ENGINEER** — categories set in seed-recipes.ts. Schema additions applied to types.ts.
+
 ## DECISION-015: Substitution Colour Mapping
 
 | Ingredient | Substitution | Old quality | New colour | step_override | Notes |
