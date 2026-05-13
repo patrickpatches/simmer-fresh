@@ -74,8 +74,9 @@ export const TypeId = z.enum([
   'pasta',    // pasta + noodles
   'soups',    // soups + stews
   'salads',
-  'baking',   // bread, pastry, baked goods
+  'baking',   // bread, pastry, baked goods — tortillas, sourdough etc.
   'eggs',
+  'dessert',  // sweet dishes served after the main — Pavlova etc.
 ]);
 export type TypeId = z.infer<typeof TypeId>;
 
@@ -505,8 +506,4 @@ export function parseRecipe(raw: unknown): Recipe {
 }
 
 /**
- * Same as parseRecipe but returns a SafeParseReturnType — never throws.
- */
-export function safeParseRecipe(raw: unknown) {
-  return Recipe.safeParse(raw);
-}
+ * Same as parseRecipe but returns a SafeParseReturnType — n

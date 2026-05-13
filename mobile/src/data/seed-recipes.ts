@@ -429,7 +429,7 @@ const PASTA_CARBONARA: Recipe = {
     { id: 's4', title: 'Combine off heat — this is the critical step', content: 'Add drained pasta to the guanciale pan. Take the pan completely off heat. Add egg mixture, toss constantly, adding pasta water a splash at a time until you have a creamy sauce that coats every strand. If it seizes, add more water.', why_note: "Eggs scramble above 70°C. Off heat, the pasta's residual heat (around 65°C) is exactly right to cook the eggs without curdling. Adding water regulates the temperature and creates the emulsion. This is why carbonara has a reputation — the temperature window is narrow." },
     { id: 's5', title: 'Serve immediately', content: 'Plate immediately, top with extra pecorino and more black pepper. Carbonara does not wait — it thickens rapidly as it cools.' },
   ],
-  categories: { cuisines: ['italian'], types: ['pasta', 'eggs'] },
+  categories: { cuisines: ['italian'], types: ['pasta'] },
   total_time_minutes: 25,
   active_time_minutes: 25,
   equipment: [
@@ -954,7 +954,7 @@ const HUMMUS: Recipe = {
     { id: 's4', title: 'Add chickpeas and blend until completely smooth', content: 'Drain chickpeas but save the cooking water. Add hot chickpeas to the tahini mixture. Blend 4–5 minutes straight. Add ice-cold water gradually to achieve a silky, dropping consistency. Season with salt.', timer_seconds: 300, why_note: "Hot chickpeas blend smoother than cold ones — temperature helps break down the starch. The ice-cold water creates a thermal contrast that makes the emulsion fluffier (the same principle as cold butter in mantecatura). Blending 4–5 minutes isn't optional — 1–2 minutes produces gritty hummus." },
     { id: 's5', title: 'Rest and serve warm', content: 'Let the hummus rest 30 minutes before serving — flavours integrate. To serve, spread in a shallow bowl making a well in the centre, fill with olive oil, scatter chickpeas, sprinkle paprika.', timer_seconds: 1800, why_note: 'Freshly blended hummus tastes flat and slightly metallic. The rest allows the lemon, garlic, and tahini flavours to fully integrate. Hummus is at its best at room temperature or slightly warm — cold hummus is firm and mutes the flavour.' },
   ],
-  categories: { cuisines: ['levantine', 'palestinian'], types: ['vegetarian'] },
+  categories: { cuisines: ['levantine'], types: ['vegetarian'] },
   total_time_minutes: 960,
   active_time_minutes: 30,
   equipment: [
@@ -2440,7 +2440,7 @@ const WEEKDAY_BOLOGNESE: Recipe = {
     extra_servings: 2,
     note: 'Packs for two lunches the next day. Ragù actually improves overnight — make more, not less.',
   },
-  categories: { cuisines: ['italian'], types: ['pasta', 'beef'] },
+  categories: { cuisines: ['italian'], types: ['beef', 'pasta'] },
   total_time_minutes: 75,
   active_time_minutes: 25,
   equipment: [
@@ -4298,7 +4298,7 @@ const PAVLOVA: Recipe = {
   },
   emoji: '🍓',
   hero_fallback: fallback('#F5F0E8'),
-  categories: { cuisines: ['australian'], types: ['baking'] },
+  categories: { cuisines: ['australian'], types: ['dessert'] },
   ingredients: [
     { id: 'i1', name: 'Egg whites, at room temperature', amount: 6, unit: 'large', scales: 'linear', prep: 'Separated at least 30 minutes before — warm egg whites whip to greater volume than cold ones',
       substitutions: [
@@ -4576,7 +4576,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
   time_min: 45,
   difficulty: 'beginner',
   tags: ['schnitzel', 'pub classic', 'crumbed', 'pan-fried', 'weeknight'],
-  categories: { cuisines: ['australian', 'german'], types: ['chicken'] },
+  categories: { cuisines: ['australian'], types: ['chicken'] },
   user_added: false,
   generated_by_claude: false,
   source: {
@@ -5376,7 +5376,7 @@ const FISH_AND_CHIPS: Recipe = {
   time_min: 50,
   difficulty: 'intermediate',
   tags: ['fish and chips', 'beer batter', 'deep-fry', 'Friday night', 'pub classic', 'seaside'],
-  categories: { cuisines: ['australian', 'british'], types: ['seafood'] },
+  categories: { cuisines: ['australian'], types: ['seafood'] },
   user_added: false,
   generated_by_claude: false,
   source: {
@@ -5567,7 +5567,7 @@ const FALAFEL: Recipe = {
   time_min: 60,
   difficulty: 'intermediate',
   tags: ['falafel', 'middle eastern', 'levantine', 'palestinian', 'lebanese', 'syrian', 'chickpea', 'deep-fry', 'vegan', 'street food'],
-  categories: { cuisines: ['levantine', 'palestinian'], types: ['vegetarian'] },
+  categories: { cuisines: ['levantine'], types: ['vegetarian'] },
   user_added: false,
   generated_by_claude: false,
   source: {
