@@ -115,6 +115,12 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ---
 
+### COO NOTE → Senior Engineer · 2026-05-14 · FYI (multi-category authorship complete — tiles can migrate now)
+**From:** COO
+Multi-category audit for all 16 launch recipes is done and committed (`b0382e0`). Every recipe now has `categories.cuisines[]` and `categories.types[]` in `seed-recipes.ts`. CuisineId enum extended with `palestinian`, `filipino`, `chinese`, `german`, `british`. Two open design questions before you build the filter UI: (1) Pavlova is currently `types: ['baking']` — `'dessert'` is semantically better for a filter tile but would require adding `'dessert'` to the TypeId enum; (2) occasion tags like `'weeknight'`/`'weekend'` are not in the current schema — adding them means extending TypeId or adding a third `occasions[]` axis. COO recommendation: add `'dessert'` now (it's a clean gap), defer occasion tags post-launch. Await Patrick's call before touching the enum.
+
+---
+
 ### HANDOFF → Senior Engineer · 2026-05-13 · OPEN URGENT (Kitchen category tiles not displaying — investigate + fix)
 **From:** Patrick (via COO)
 **Subject:** On build #109, the cuisine category tiles on the Kitchen page aren't displaying for filtering. Investigate root cause; fix the tile-list logic OR populate the missing category data on recipes — whichever is the actual issue.
@@ -1253,12 +1259,4 @@ Patrick is finding recipes on-device with empty Prep and Equipment sections. The
 
 **What's done:**
 - Diagnosed REGN-006 as a UI regression in `mobile/app/recipe/[id].tsx` — working tree had dropped 443 lines including the entire DECISION-008 UI block (At a glance / What to know / Equipment / Prep / Finishing & tasting / Leftovers & storage). Data was in the schema and SQLite; UI just wasn't rendering it. Restored from HEAD; re-applied the Pressable+View Android split on header buttons, title-card pill, Watch link, expand chip, and `MiseItem`. Renamed UI label "Mise en place" → "Prep" per Patrick — schema field `mise_en_place` unchanged.
-- Diagnosed REGN-007 as a single architectural bug behind three symptoms: chip's `added` boolean lived in a local `Set<string>` on `RecipeMatchCard`. Inverted the state flow — chip state is now DERIVED from `shoppingNameSet` (a memoised normalised name set off the live `shoppingItems`). All mutations route through `addToShoppingList` / `removeFromShoppingList` on the parent. `useFocusEffect` re-fetches the shopping list on tab return so Shop-tab edits propagate. Toast holds the ingredient *name*, not chip state, so undo survives chip re-renders. All 5 chip paths Patrick called out are wired in code.
-- Audited every recipe in `seed-recipes.ts`. Result: 6 fully populated (Batch 1), 11 have research files ready and need engineering migration, 27 have no research yet (Cook's Batch 2). Audit table is in BUGS.md and the session report.
-- Pushed commit `4725618` to `origin/main`.
-- Dispatched build #93 (`https://github.com/patrickpatches/hone/actions/runs/25489339565`) on Patrick's explicit go.
-- Wrote session report `docs/sessions/Hone_Session_Report_07_May_2026_3.md`.
-- Per CLAUDE.md, **no GitHub issues self-closed**. Patrick validates and closes.
-
-**What's needed (COO actions):**
-1. **Track build #93.** When it finishes and Pa
+- Diagnosed REGN-007 as a single architectural bug behind three symptoms: chip's `added` boolean lived in a local `Set<string>` on `RecipeMatchCard`. Inverted the state flow — chip state is now DERIVED from `shoppingNameSet` (a memoised normalised name set off the live `shoppingItems`). All mutations route through `addToShopping
