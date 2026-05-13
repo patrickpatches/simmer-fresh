@@ -297,4 +297,42 @@ export function validateDecision015(): void {
       badOverrides,
     );
   }
+
+  // ── Cuisine + Type enum guardrail (build #110) ──────────────────────────
+  // Per Patrick's brief: console.warn on app launch if any CuisineId or
+  // TypeId in seed data doesn't match the enum. The Zod schema would
+  // already throw at parseRecipe() time — this is a belt-and-braces tripwire
+  // for cases where data slips past parse (e.g. raw seed access). Listed
+  // values must match the enums in types.ts exactly.
+  const VALID_CUISINES = new Set<string>([
+    'levantine', 'palestinian', 'indian', 'malaysian', 'japanese', 'thai',
+    'italian', 'french', 'american', 'australian', 'mexican',
+    'filipino', 'chinese', 'german', 'british',
+  ]);
+  const VALID_TYPES = new Set<string>([
+    'burgers', 'chicken', 'seafood', 'beef', 'lamb', 'vegetarian',
+    'pasta', 'soups', 'salads', 'baking', 'eggs', 'dessert',
+  ]);
+  const badTaxonomy: Array<{ recipe: string; field: string; value: string }> = [];
+  for (const recipe of SEED_RECIPES) {
+    const cats = recipe.categories;
+    if (!cats) continue;
+    for (const c of cats.cuisines ?? []) {
+      if (!VALID_CUISINES.has(c)) {
+        badTaxonomy.push({ recipe: recipe.id, field: 'cuisines', value: c });
+      }
+    }
+    for (const t of cats.types ?? []) {
+      if (!VALID_TYPES.has(t)) {
+        badTaxonomy.push({ recipe: recipe.id, field: 'types', value: t });
+      }
+    }
+  }
+  if (badTaxonomy.length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[taxonomy] ${badTaxonomy.length} seed value(s) outside the CuisineId/TypeId enums:`,
+      badTaxonomy,
+    );
+  }
 }

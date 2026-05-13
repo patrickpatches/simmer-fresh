@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #110 | `pending` | **5-item bundle.** (1) **R-014 recovery:** cook's `ff86010` truncated `types.ts` (lost final 4 lines of `safeParseRecipe`); restored from `b0382e0` clean state and re-applied the `'dessert'` TypeId addition. (2) **Hero attribution:** added `hero_attribution: z.string().optional()` to Recipe schema; rendered as a small dark-scrim pill bottom-right of the hero image (CC licensing convention — present without competing with the title card). (3) **Cuisine tiles:** `CUISINE_LABELS` Record extended with `palestinian`, `german`, `british` (tsc demanded them); `CATEGORIES` tile list now covers every CuisineId in the enum — the existing `availableCategoryIds` filter still trims to ≥1 launch recipe so the user only sees tiles with content (today: Australian, Levantine, Italian, Indian, Thai, American, Mexican). (4) **APPROVED hero images:** wired 3 Unsplash heroes into seed-recipes.ts — PASTA_CARBONARA (`photo-1612874742237`), FALAFEL (`photo-pQnsKWk5ljQ` Anton), PAVLOVA (`photo-5nCTfEru3Do` Eugene Krasnaok). Each carries the photographer credit. Shawarma CONDITIONAL left as-is per default (wait for replacement). Smash-burger + flour-tortillas REJECTED — not touched. (5) **Taxonomy guardrail:** extended `validateDecision015` in `db/seed.ts` to also scan every launch recipe's `categories.cuisines` + `categories.types` against the enum — console.warn for any value outside the schema. **Item 3 NOT shipped (DECISION-015 per-recipe substitution overrides):** I searched every research file for `DECISION-015` / `step_overrides` / `Great swap` / `Some difference` / `Noticeable change` — **zero hits**. Cook hasn't actually authored the per-recipe discrepancy tables yet despite the brief saying she had. Default 4-to-3 mapping from #107 still in force; flagging cook + COO for the actual delivery. |
 | #109 | `b128624` | **Build recovery — seed-recipes.ts truncation fix.** Builds #108 and the 3 prior commits (`6813ddc` smash photos by Patrick, `82f39b5` COO docs, `922f295` my #108) all failed Metro bundling with `SyntaxError: Unexpected token, expected ',' (5842:4)`. Root cause: Patrick's `6813ddc` ("feat(smash-burger): add Gemini stage photos to app") successfully added two `photo_url` fields to SMASH_BURGER steps s1/s3 BUT also accidentally chopped 14 lines off the end of `SEED_RECIPES_HOLDING` — the array ended with `  AG` (truncated `AGLIO_E_OLIO`) and no closing `];`. Recovery: started from #107 clean state (`b91836d`, 5857 lines), re-applied the two `photo_url` additions verbatim, full holding array restored (30 recipes ending `CHICKEN_VEG_STIR_FRY,\n];\n`). One file: `mobile/src/data/seed-recipes.ts`. tsc clean, byte-tail verified. No other changes — my #108 cook-mode work in `recipe/[id].tsx` is preserved on origin. |
 | #108 | `922f295` | **Housekeeping bundle.** Item 1 (cook DECISION-015 discrepancy tables): empty queue — nothing delivered since #107, default mapping from path A still in force. Item 2 (PAT rotation): cannot self-action — needs Patrick's GitHub UI. Current PAT expires 2026-07-21 (~10 weeks out), scopes `repo, workflow`, rate limit healthy 5000/5000. Item 3 (cook mode sweep): verified wake lock + OLED `#000000` true-black surface + haptics on `tickStep`/`toggleCooking` all working. **Fixed: knuckle-tap-to-advance** — wrapped the step card in a Pressable when cooking so the whole 16pt-padded card is a forgiving tap target; precise 34×34 step-number badge still works for accuracy. Outside cook mode the outer Pressable is disabled so non-cook taps don't accidentally tick. accessibilityLabel composed dynamically. Item 4 (approved images): empty queue — every row in `visual-assets-ledger.md` is PENDING or CANDIDATE. One file: recipe/[id].tsx. |
 | (no build) | `6813ddc` | Smash Burger stage photos: 2 Gemini-generated `.jpg`s (`smash-burger-mise.jpg`, `smash-burger-smash.jpg`) committed to `mobile/assets/recipes/` and wired into seed-recipes.ts as `photo_url` on steps s1 and s3. **No Android build dispatched** — Patrick's commit silently truncated `SEED_RECIPES_HOLDING` (R-014) so the next Android build (#108) failed Metro bundling. Recovered in #109 (`b128624`) — both photo_urls preserved, holding array restored, .jpg assets intact. |
@@ -49,6 +50,30 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → COO + Cook · 2026-05-14 · OPEN URGENT (item 3 of build #110 — DECISION-015 per-recipe tables not yet authored)
+**From:** Senior Engineer
+**Subject:** Build #110 brief claimed cook had "completed DECISION-015 substitution colour mapping for all 16 launch recipes" with discrepancy tables in every `docs/coo/culinary-research/<recipe>.md`. **Empirically false.** I searched origin/main for `DECISION-015`, `step_overrides`, `Great swap`, `Some difference`, and `Noticeable change` across every research file — every search returns zero hits. The cook has not yet committed the per-recipe discrepancy tables.
+
+**Item 3 not shipped in #110.** Default 4-to-3 quality mapping from build #107 is still in force across all 16 launch recipes — that's functionally correct, just generic. When cook actually delivers, the per-recipe colour overrides + `step_overrides` will come in as small data-only commits.
+
+**What I need:**
+- Cook to author the discrepancy tables in each `<recipe>.md`. Format from the open handoff dated 2026-05-10: `| Recipe const | Substitution | Old quality | New colour | step_overrides needed | Notes |`.
+- COO to verify the tables are actually present in origin before claiming "ready" in the next build brief. The phrase "verified by COO against the repo" appeared in the #110 brief; that verification didn't match the repo state.
+
+**Items 1, 2, 4, 5 all shipped in #110 (commit `pending`).** Cumulative state after this build: see the build log row above for full detail.
+
+**Status:** **shipped to main, awaiting Patrick on-device validation** per R-015. Not self-closing.
+
+---
+
+### HANDOFF → COO + Cook · 2026-05-14 · OPEN (R-014 truncation hit cook's `ff86010` types.ts commit)
+**From:** Senior Engineer
+**Subject:** Cook's `ff86010` ("feat(taxonomy): add 'dessert' TypeId; Pavlova types baking→dessert") added `'dessert'` to TypeId successfully but silently truncated the last 4 lines of `types.ts` — net `-4 +1` even though the intent was `+1` only. Recovered in #110 by splicing `b0382e0`'s clean tail back in and re-applying the `'dessert'` insertion verbatim.
+
+This is the same R-014 pattern that hit Patrick's `6813ddc` smash-burger commit. Two truncation incidents from non-engineer commits in two days. The repo-side guardrail (CI step that asserts every `.ts` file ends with a balanced final brace + newline) would close this gap permanently. Flagging for the next housekeeping cycle.
+
+---
 
 ### HANDOFF → Photography Director · 2026-05-14 · OPEN URGENT (DECISION-014 — source CC-licensed hero images for all 16 launch recipes from Unsplash/Pexels)
 **From:** Patrick (via COO)

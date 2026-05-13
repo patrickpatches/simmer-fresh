@@ -448,6 +448,35 @@ export default function RecipeDetailScreen() {
                 ) : null}
               </View>
             )}
+            {/* CC licensing convention — when hero_url is a CC-licensed
+                photo (Unsplash/Pexels), surface photographer credit.
+                Bottom-right of the hero so it's present without competing
+                with the title card below. Small, muted, on a translucent
+                scrim so it reads against any image colour. */}
+            {recipe.hero_url && recipe.hero_attribution ? (
+              <View
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  bottom: 10,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  backgroundColor: 'rgba(0,0,0,0.45)',
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 9,
+                    color: 'rgba(255,255,255,0.85)',
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  {recipe.hero_attribution}
+                </Text>
+              </View>
+            ) : null}
           </View>
         )}
 

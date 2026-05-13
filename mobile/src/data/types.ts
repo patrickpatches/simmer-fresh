@@ -74,7 +74,7 @@ export const TypeId = z.enum([
   'pasta',    // pasta + noodles
   'soups',    // soups + stews
   'salads',
-  'baking',   // bread, pastry, baked goods — tortillas, sourdough etc.
+  'baking',   // bread, pastry, baked goods
   'eggs',
   'dessert',  // sweet dishes served after the main — Pavlova etc.
 ]);
@@ -351,6 +351,10 @@ export const Recipe = z.object({
   source: Source.optional(),
 
   hero_url: z.string().optional(),
+  /** Photographer credit + source for CC-licensed hero images.
+   *  Rendered as a small muted line on the recipe screen. Required when
+   *  hero_url points at Unsplash/Pexels/etc — CC licensing convention. */
+  hero_attribution: z.string().optional(),
   hero_fallback: z.array(z.string()).length(3).optional(),
   emoji: z.string().optional(),
 
@@ -506,4 +510,8 @@ export function parseRecipe(raw: unknown): Recipe {
 }
 
 /**
- * Same as parseRecipe but returns a SafeParseReturnType — n
+ * Same as parseRecipe but returns a SafeParseReturnType — never throws.
+ */
+export function safeParseRecipe(raw: unknown) {
+  return Recipe.safeParse(raw);
+}

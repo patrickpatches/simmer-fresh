@@ -59,32 +59,46 @@ interface Category {
   emoji: string;
 }
 
+// Every CuisineId gets a tile. The visibleCategories filter below trims to
+// the ones that actually have ≥1 launch recipe so empty tiles never render.
+// To add a new tile, extend CuisineId in types.ts; the entry here keeps the
+// label + emoji synced.
 const CATEGORIES: Category[] = [
-  { id: 'all',        label: 'All',        emoji: '🍽️' },
-  { id: 'levantine',  label: 'Levantine',  emoji: '🇱🇧' },
-  { id: 'indian',     label: 'Indian',     emoji: '🇮🇳' },
-  { id: 'japanese',   label: 'Japanese',   emoji: '🇯🇵' },
-  { id: 'italian',    label: 'Italian',    emoji: '🇮🇹' },
-  { id: 'malaysian',  label: 'Malaysian',  emoji: '🇲🇾' },
-  { id: 'thai',       label: 'Thai',       emoji: '🇹🇭' },
-  { id: 'french',     label: 'French',     emoji: '🇫🇷' },
-  { id: 'australian', label: 'Australian', emoji: '🇦🇺' },
+  { id: 'all',         label: 'All',         emoji: '🍽️' },
+  { id: 'australian',  label: 'Australian',  emoji: '🇦🇺' },
+  { id: 'levantine',   label: 'Levantine',   emoji: '🇱🇧' },
+  { id: 'palestinian', label: 'Palestinian', emoji: '🇵🇸' },
+  { id: 'italian',     label: 'Italian',     emoji: '🇮🇹' },
+  { id: 'indian',      label: 'Indian',      emoji: '🇮🇳' },
+  { id: 'thai',        label: 'Thai',        emoji: '🇹🇭' },
+  { id: 'american',    label: 'American',    emoji: '🇺🇸' },
+  { id: 'mexican',     label: 'Mexican',     emoji: '🇲🇽' },
+  { id: 'french',      label: 'French',      emoji: '🇫🇷' },
+  { id: 'japanese',    label: 'Japanese',    emoji: '🇯🇵' },
+  { id: 'malaysian',   label: 'Malaysian',   emoji: '🇲🇾' },
+  { id: 'filipino',    label: 'Filipino',    emoji: '🇵🇭' },
+  { id: 'chinese',     label: 'Chinese',     emoji: '🇨🇳' },
+  { id: 'german',      label: 'German',      emoji: '🇩🇪' },
+  { id: 'british',     label: 'British',     emoji: '🇬🇧' },
 ];
 
 // Display labels for cuisines used outside CATEGORIES (e.g. cuisine tags)
 const CUISINE_LABELS: Record<CuisineId, string> = {
-  levantine:  'Levantine',
-  indian:     'Indian',
-  malaysian:  'Malaysian',
-  japanese:   'Japanese',
-  thai:       'Thai',
-  italian:    'Italian',
-  french:     'French',
-  american:   'American',
-  australian: 'Australian',
-  mexican:    'Mexican',
-  filipino:   'Filipino',
-  chinese:    'Chinese',
+  levantine:    'Levantine',
+  palestinian:  'Palestinian',
+  indian:       'Indian',
+  malaysian:    'Malaysian',
+  japanese:     'Japanese',
+  thai:         'Thai',
+  italian:      'Italian',
+  french:       'French',
+  american:     'American',
+  australian:   'Australian',
+  mexican:      'Mexican',
+  filipino:     'Filipino',
+  chinese:      'Chinese',
+  german:       'German',
+  british:      'British',
 };
 
 // ────────────────────────────────────────────────────────────────────────────
