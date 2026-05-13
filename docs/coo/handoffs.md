@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #109 | `pending` | **Build recovery — seed-recipes.ts truncation fix.** Builds #108 and the 3 prior commits (`6813ddc` smash photos by Patrick, `82f39b5` COO docs, `922f295` my #108) all failed Metro bundling with `SyntaxError: Unexpected token, expected ',' (5842:4)`. Root cause: Patrick's `6813ddc` ("feat(smash-burger): add Gemini stage photos to app") successfully added two `photo_url` fields to SMASH_BURGER steps s1/s3 BUT also accidentally chopped 14 lines off the end of `SEED_RECIPES_HOLDING` — the array ended with `  AG` (truncated `AGLIO_E_OLIO`) and no closing `];`. Recovery: started from #107 clean state (`b91836d`, 5857 lines), re-applied the two `photo_url` additions verbatim, full holding array restored (30 recipes ending `CHICKEN_VEG_STIR_FRY,\n];\n`). One file: `mobile/src/data/seed-recipes.ts`. tsc clean, byte-tail verified. No other changes — my #108 cook-mode work in `recipe/[id].tsx` is preserved on origin. |
 | #108 | `922f295` | **Housekeeping bundle.** Item 1 (cook DECISION-015 discrepancy tables): empty queue — nothing delivered since #107, default mapping from path A still in force. Item 2 (PAT rotation): cannot self-action — needs Patrick's GitHub UI. Current PAT expires 2026-07-21 (~10 weeks out), scopes `repo, workflow`, rate limit healthy 5000/5000. Item 3 (cook mode sweep): verified wake lock + OLED `#000000` true-black surface + haptics on `tickStep`/`toggleCooking` all working. **Fixed: knuckle-tap-to-advance** — wrapped the step card in a Pressable when cooking so the whole 16pt-padded card is a forgiving tap target; precise 34×34 step-number badge still works for accuracy. Outside cook mode the outer Pressable is disabled so non-cook taps don't accidentally tick. accessibilityLabel composed dynamically. Item 4 (approved images): empty queue — every row in `visual-assets-ledger.md` is PENDING or CANDIDATE. One file: recipe/[id].tsx. |
 | #108 | `6813ddc` | **Smash Burger stage photos live in app.** Two Gemini-generated images committed to `mobile/assets/recipes/` and wired into seed-recipes.ts `photo_url` fields: `smash-burger-mise.jpg` (step s1 — mise en place overhead, 155KB) and `smash-burger-smash.jpg` (step s3 — cast iron smash action, 111KB). Referenced via raw.githubusercontent.com. Ledger updated: step-s1-mise and step-s3-smash → CANDIDATE status. Cook signoff still required before INTEGRATED. Also pushed docs-only commit `77f8630`: photography image briefs (smash-burger 6 prompts, carbonara 4 prompts, roast-chicken 4 prompts), shot lists, preflight checklist, post-processing preset, and visual-assets-ledger.md (master provenance ledger, ~120 images tracked). FILE_MAP.md updated. No app code change in the docs commit. |
 | #107 | `b91836d` | **DECISION-015 infrastructure (path A) + Roast Chicken Hone Kitchen rebuild.** Schema: `SwapQuality` collapsed to 3-colour enum (green/yellow/red) with `z.preprocess` defensive migration that coerces any legacy 4-tier value and console.warns. Added optional `step_overrides: Record<string,string>` to Substitution. SEED_RECIPES bulk-migrated 640 substitution `quality` fields: 261 green / 280 yellow / 99 red, zero legacy left (default rule applied — cook's per-recipe overrides come as data-only follow-ups). SubstitutionSheet.tsx — new `PILL_CONFIG` (green ✓ Great swap / yellow ≈ Some difference / red ⚠ Noticeable change) per Designer v2 prototype; pill renders icon + label + colour + border; `accessibilityLabel` composed as `"{pill label} — {sub.changes}"`. recipe/[id].tsx — conditional step-override rendering: walks active swaps in insertion order, most-recent-active wins; sage step-card border + 'adapted for your X swap' cue when overridden. Migration sanity log + step_overrides validator (`validateDecision015` in db/seed.ts) gated on `__DEV__`, wired into setupDatabase. **Roast Chicken HARD BLOCKER fix**: `source.chef: 'Hone Kitchen'` (was 'Thomas Keller'), source.notes rewritten as Hone Kitchen original; `categories.cuisines: ['australian']` (was 'french'); `difficulty: 'Easy'` (was 'beginner'); s3 compound-butter step gets cook's slide-fingers-from-neck-end technique note; new s6 'Pan sauce from the fond' step with white wine + cold butter; two new ingredients (i8 dry white wine 100ml, i9 cold butter 15g for mounting). R-014 truncation hit during seed-recipes.ts edits — caught via export-block sanity grep, recovered by splicing origin's tail back. |
@@ -48,6 +49,39 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → Patrick + COO · 2026-05-13 · OPEN URGENT (R-014 hit by your 6813ddc commit — pattern to flag in future)
+**From:** Senior Engineer
+**Subject:** Builds #108 (and the 3 commits before it) all failed Metro bundling. Root cause was your own commit `6813ddc` ("feat(smash-burger): add Gemini stage photos to app") which silently truncated 14 lines off the end of `SEED_RECIPES_HOLDING` while adding two `photo_url` fields. Build #109 recovers.
+
+**The exact diff Patrick's commit produced:**
+- ✅ Added `photo_url` on SMASH_BURGER s1 → `smash-burger-mise.jpg`
+- ✅ Added `photo_url` on SMASH_BURGER s3 → `smash-burger-smash.jpg`
+- ❌ Deleted `AGLIO_E_OLIO, MUJADARA, SHEET_PAN_HARISSA_CHICKEN, EGG_FRIED_RICE, LAMB_SHAWARMA, NASI_LEMAK, BEEF_RENDANG, CURRY_LAKSA, CHAR_KWAY_TEOW, SAAG_PANEER, CHICKEN_KATSU, TOM_YUM, BARRAMUNDI, CHICKEN_VEG_STIR_FRY` from `SEED_RECIPES_HOLDING` — array ended with `AG` (prefix of `AGLIO_E_OLIO`) and no closing `];` or final newline.
+
+That's exactly the R-014 truncation pattern — write tool returns success, file looks fine in the editor, but the byte stream is cut off mid-identifier. Patrick's commit message even hinted at it (`+3 -17` net loss with intent to only +3).
+
+**The fix shipped in #109 (`a1c1...` — this commit):**
+1. Took the clean state from `b91836d` (last successful build, 5857 lines, 539591 bytes).
+2. Re-applied both photo_url additions verbatim from your 6813ddc diff.
+3. Pushed as single commit with build-log row in same tree.
+4. tsc clean. Tail byte-verified: `…CHICKEN_VEG_STIR_FRY,\n];\n`. 30 holding recipes intact. 16 launch recipes intact.
+
+**My #108 cook-mode work is NOT lost** — the knuckle-tap-to-advance change in `recipe/[id].tsx` is in commit `922f295` on main and survives because it was a different file from the truncated one. Once #109 builds successfully, you'll get the cumulative state: #107 DECISION-015 + #108 knuckle-tap + #109's two photo_urls.
+
+**Process gap to close (suggest COO action):**
+1. Any tool that edits `seed-recipes.ts` should run `tail -c 200` and confirm the file ends with `];\n` before commit. Patrick's commit was made via the file tools and the truncation wasn't caught.
+2. Cowork-side: if Patrick is editing seed-recipes.ts directly through the desktop Cowork mode, the file-write path should have the same `tail -c 200` guardrail before any push.
+3. Engineer-side: I now run `tail -c 200` after every seed-recipes.ts edit; this commit verifies. The pattern persists despite per-edit verification because OTHER actors (Patrick's own commits, COO commits) can introduce it. The repo-side guardrail (CI step that grep-asserts `];\n` tail) would close this gap permanently — flag for the next housekeeping cycle.
+
+**On-device validation walk after #109 finishes:**
+1. Open Kitchen → still exactly 16 cards (DECISION-013 prune + smoke alarm still works).
+2. Open SMASH_BURGER. Step s1 ("Ball and season") and Step s3 ("Smash hard and hold") should show their Gemini stage photos rendered inline.
+3. Cook mode knuckle-tap-to-advance still works from #108.
+
+**Status:** **shipped #109, awaiting Patrick on-device validation** per R-015. Not self-closing.
+
+---
 
 ### HANDOFF → Patrick · 2026-05-12 · OPEN URGENT (Item 2 of build #108 — PAT rotation needs your GitHub UI action)
 **From:** Senior Engineer
