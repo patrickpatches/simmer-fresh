@@ -55,7 +55,6 @@ const SMASH_BURGER: Recipe = {
   },
   emoji: '🍔',
   hero_fallback: fallback('#8B4513'),
-  hero_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80',
   ingredients: [
     {
       id: 'i1', name: 'Beef mince (80/20 fat)', amount: 200, unit: 'g', scales: 'linear',
