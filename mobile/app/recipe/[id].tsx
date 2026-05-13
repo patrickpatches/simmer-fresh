@@ -1127,9 +1127,21 @@ export default function RecipeDetailScreen() {
                 void ingId;
               }
               const isAdapted = !!adaptedContent;
+              // Cook mode: knuckle-tap-to-advance. The whole card is a
+              // forgiving tap target that toggles step-done. The inner
+              // badge Pressable still works for precise taps. Outside
+              // cook mode the outer Pressable is disabled so non-cook
+              // taps don't accidentally tick.
               return (
-                <View
+                <Pressable
                   key={step.id}
+                  onPress={() => cooking && tickStep(step.id)}
+                  disabled={!cooking}
+                  android_ripple={
+                    cooking ? { color: 'rgba(255,255,255,0.06)', borderless: false } : undefined
+                  }
+                  accessibilityRole={cooking ? 'button' : undefined}
+                  accessibilityLabel={cooking ? `${done ? 'Unmark' : 'Mark'} step ${idx + 1} ${done ? 'undone' : 'done'}: ${step.title}` : undefined}
                   style={{
                     backgroundColor: c.cardBg,
                     borderRadius: 18,
@@ -1270,7 +1282,7 @@ export default function RecipeDetailScreen() {
                       )}
                     </View>
                   </View>
-                </View>
+                </Pressable>
               );
             })}
           </View>

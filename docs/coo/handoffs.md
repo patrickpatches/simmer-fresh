@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #108 | `pending` | **Housekeeping bundle.** Item 1 (cook DECISION-015 discrepancy tables): empty queue — nothing delivered since #107, default mapping from path A still in force. Item 2 (PAT rotation): cannot self-action — needs Patrick's GitHub UI. Current PAT expires 2026-07-21 (~10 weeks out), scopes `repo, workflow`, rate limit healthy 5000/5000. Item 3 (cook mode sweep): verified wake lock + OLED `#000000` true-black surface + haptics on `tickStep`/`toggleCooking` all working. **Fixed: knuckle-tap-to-advance** — wrapped the step card in a Pressable when cooking so the whole 16pt-padded card is a forgiving tap target; precise 34×34 step-number badge still works for accuracy. Outside cook mode the outer Pressable is disabled so non-cook taps don't accidentally tick. accessibilityLabel composed dynamically. Item 4 (approved images): empty queue — every row in `visual-assets-ledger.md` is PENDING or CANDIDATE. One file: recipe/[id].tsx. |
 | #108 | `6813ddc` | **Smash Burger stage photos live in app.** Two Gemini-generated images committed to `mobile/assets/recipes/` and wired into seed-recipes.ts `photo_url` fields: `smash-burger-mise.jpg` (step s1 — mise en place overhead, 155KB) and `smash-burger-smash.jpg` (step s3 — cast iron smash action, 111KB). Referenced via raw.githubusercontent.com. Ledger updated: step-s1-mise and step-s3-smash → CANDIDATE status. Cook signoff still required before INTEGRATED. Also pushed docs-only commit `77f8630`: photography image briefs (smash-burger 6 prompts, carbonara 4 prompts, roast-chicken 4 prompts), shot lists, preflight checklist, post-processing preset, and visual-assets-ledger.md (master provenance ledger, ~120 images tracked). FILE_MAP.md updated. No app code change in the docs commit. |
 | #107 | `b91836d` | **DECISION-015 infrastructure (path A) + Roast Chicken Hone Kitchen rebuild.** Schema: `SwapQuality` collapsed to 3-colour enum (green/yellow/red) with `z.preprocess` defensive migration that coerces any legacy 4-tier value and console.warns. Added optional `step_overrides: Record<string,string>` to Substitution. SEED_RECIPES bulk-migrated 640 substitution `quality` fields: 261 green / 280 yellow / 99 red, zero legacy left (default rule applied — cook's per-recipe overrides come as data-only follow-ups). SubstitutionSheet.tsx — new `PILL_CONFIG` (green ✓ Great swap / yellow ≈ Some difference / red ⚠ Noticeable change) per Designer v2 prototype; pill renders icon + label + colour + border; `accessibilityLabel` composed as `"{pill label} — {sub.changes}"`. recipe/[id].tsx — conditional step-override rendering: walks active swaps in insertion order, most-recent-active wins; sage step-card border + 'adapted for your X swap' cue when overridden. Migration sanity log + step_overrides validator (`validateDecision015` in db/seed.ts) gated on `__DEV__`, wired into setupDatabase. **Roast Chicken HARD BLOCKER fix**: `source.chef: 'Hone Kitchen'` (was 'Thomas Keller'), source.notes rewritten as Hone Kitchen original; `categories.cuisines: ['australian']` (was 'french'); `difficulty: 'Easy'` (was 'beginner'); s3 compound-butter step gets cook's slide-fingers-from-neck-end technique note; new s6 'Pan sauce from the fond' step with white wine + cold butter; two new ingredients (i8 dry white wine 100ml, i9 cold butter 15g for mounting). R-014 truncation hit during seed-recipes.ts edits — caught via export-block sanity grep, recovered by splicing origin's tail back. |
 | #106 | `a1e15bb` | **FLOUR_TORTILLAS migration** — applies cook's `flour-tortillas.md` discrepancy table verbatim PLUS Patrick's 10×~30g yield override. Changes: `source.chef` → `Patrick N.`, `base_servings` 5 → 10, `output_default` 13 → 10. Primary fat flipped from Lard to Unsalted butter (lard moves to substitution, 'delicious' stripped from swap note per cook). Ingredient amounts scaled from cook's 13-tortilla spec to Patrick's 10-tortilla yield: bread flour 200g → 160g, butter 40g → 30g, water 130ml → 100ml, salt 6g → 5g (cook had 6g for 13; we scale to 5g for 10). All step content, mise, and before_you_start updated to the new amounts and butter-primary framing. Tortilla size note changed from 'side plate' to 'small saucer 12–13cm (taco size, not burrito size)'. (Hash filled in follow-up commit immediately after — required because the commit hash can only be known after the commit is created. New discipline rule going forward: log row lands in the SAME tree as the code.) |
@@ -47,6 +48,34 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → Patrick · 2026-05-12 · OPEN URGENT (Item 2 of build #108 — PAT rotation needs your GitHub UI action)
+**From:** Senior Engineer
+**Subject:** Build #108 went out with items 1, 3, 4 actioned. Item 2 (PAT rotation per DECISION-010 follow-up) requires your hands on the GitHub UI — I literally cannot generate a token under your account.
+
+**Current PAT state (probed from sandbox just now):**
+- User: `patrickpatches`
+- Scopes: `repo, workflow`
+- Expires: **2026-07-21 10:35:11 UTC** (~10 weeks from today)
+- Rate limit: 5000/5000 healthy
+
+**What I need you to do:**
+1. Go to <https://github.com/settings/tokens?type=beta> and generate a new **fine-grained** PAT.
+2. Repo access: only this repo (`patrickpatches/hone`).
+3. Permissions: `Contents: read & write`, `Workflows: read & write`, `Actions: read & write` (the workflow_dispatch we use for EAS builds needs this), `Metadata: read` (required). Nothing else.
+4. Expiry: pick whatever you're comfortable with (30/60/90 days is the right scale). Set a calendar reminder for ~5 days before expiry.
+5. Copy the token value once — GitHub only shows it once.
+6. Paste it into chat here OR set it directly in `.git/config` on your Windows box: edit the URL in `[remote "origin"]` from `https://OLD_TOKEN@github.com/patrickpatches/hone.git` to `https://NEW_TOKEN@github.com/patrickpatches/hone.git`.
+7. Once I have the new token in `.git/config`, I'll test-push a no-op commit (e.g. a docs touch) to verify it works.
+8. After verified, you revoke the old token at <https://github.com/settings/tokens> (find the entry expiring 2026-07-21).
+
+**Why now if it doesn't expire for 10 weeks:** DECISION-010 follow-up explicitly schedules rotation at this milestone (not at expiry). Catches any breakage on a quiet day instead of mid-incident.
+
+**Engineer-side prep:** the current PAT lives only in `.git/config` and is used by the Contents API push flow in this session. No CI secrets to rotate. Once the new PAT is in place, all my push tooling uses it transparently.
+
+**Status:** **shipped #108 without item 2**, awaiting your PAT-rotation action.
+
+---
 
 ### HANDOFF → COO · 2026-05-12 · DONE ✅ (DECISION-015 blocker — cook's Smash Burger discrepancy table not in the research file)
 **Closed by Engineer 2026-05-12 — Path A approved and shipped in build #107. Default migration applied across all 16 recipes. Cook's per-recipe overrides land as data-only commits as she ships them.**
