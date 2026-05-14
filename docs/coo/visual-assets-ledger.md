@@ -51,6 +51,7 @@
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
 | `hero` | CC-stock | `photo-1639020715088-e7afebe6cb25` (Manu Ros, Unsplash) | — | Unsplash License | YES | REJECTED: red onion rings (recipe uses white onion, finely diced); yellow processed cheese no longer matches cheddar primary. 2026-05-14 COO | — | REJECTED |
+| `hero` (replacement) | CC-stock | `photo-1678110707493-8d05425137ac` (Arvid Skywalker, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-s1-mise` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s3-smash` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s4-crust` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
@@ -59,7 +60,8 @@
 
 **Current hero placeholder (in seed-recipes.ts):** `https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80`
 **Accuracy status of current placeholder:** ❌ INACCURATE — shows lettuce and tomato; neither appears in the Hone smash burger recipe. Must be replaced before launch.
-**CANDIDATE `photo-1639020715088-e7afebe6cb25` also REJECTED (2026-05-14):** red onion rings (recipe uses white onion, finely diced) + cheese is yellow processed American (no longer primary since cheddar swap). Need new candidate: smashed thin patties, brioche bun, cheddar melt, caramelised white onion, pickles. No lettuce, no tomato, no visible red onion.
+**CANDIDATE `photo-1639020715088-e7afebe6cb25` REJECTED (2026-05-14):** red onion rings (recipe uses white onion, finely diced) + cheese is yellow processed American (no longer primary since cheddar swap).
+**REPLACEMENT CANDIDATE `photo-1678110707493-8d05425137ac` (Arvid Skywalker):** cheeseburger on black plate on cooling rack — awaiting cook accuracy check: (1) thin smashed patty visible, (2) cheddar melt (not yellow American), (3) no red onion rings, (4) no lettuce/tomato. Cook must confirm before APPROVED.
 
 ---
 
@@ -152,11 +154,11 @@
 
 ## Roast Lamb with Rosemary & Garlic (`roast-lamb-rosemary-garlic`)
 
-> **Hero sourcing note:** Unsplash collection page fetch returned empty during this session. Manual search required — see unsplash.com/s/photos/roast-lamb. Look for: bone-in leg or shoulder, deep mahogany crust with visible rosemary sprigs and garlic, uncovered (no foil). Reject any chops or rack-of-lamb shots.
+> **Cook accuracy checklist for hero CANDIDATE:** (1) Bone-in leg or shoulder — reject any chops or rack-of-lamb. (2) Deep mahogany crust — not pale or pink. (3) Visible rosemary sprigs and garlic. (4) Uncovered — no foil tent. Cook must confirm this is clearly a lamb leg/shoulder and not a generic roast.
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | TBD — see unsplash.com/s/photos/roast-lamb (fetch failed; manual lookup required) | — | Unsplash License | TBD | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1625604087024-7fb428fc4626` (James Kern, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-crust-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -208,11 +210,12 @@
 
 ## Chicken Shawarma (`chicken-shawarma`)
 
-> **Cook accuracy checklist for hero CANDIDATE:** (1) Levantine vertical spit (al-sham style). This candidate shows chicken on a vertical rotisserie — correct. (2) NOT a Greek gyro or Turkish doner. (3) Reject if it shows pita wrap plated as the hero — spit or sliced meat preferred.
+> **Cook accuracy checklist for hero CANDIDATE:** (1) Cooked/charred chicken — not raw or marinated. (2) Levantine presentation — plated sliced shawarma with pita and/or accompaniments, OR charred spit. (3) NOT a Greek gyro or Turkish doner. Replacement candidate `photo-1561620141-343a829938de` (Leslie del Moral) shows cooked plated shawarma with pita and lime — cook to confirm Levantine accuracy.
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-kYi1eN--guM` (Markus Winkler, Unsplash) | — | Unsplash License | YES | ⚠️ CONDITIONAL 2026-05-14 COO — vertical Levantine spit format is correct; chicken is uncooked/marinated, not charred finished product. Accept if no better candidate found; seek replacement showing finished charred meat on spit or sliced | — | CANDIDATE |
+| `hero` (superseded) | CC-stock | `photo-kYi1eN--guM` (Markus Winkler, Unsplash) | — | Unsplash License | YES | ⚠️ CONDITIONAL 2026-05-14 COO — chicken is uncooked/marinated, not charred. Superseded by replacement candidate 2026-05-15 | — | REPLACED |
+| `hero` (replacement) | CC-stock | `photo-1561620141-343a829938de` (Leslie del Moral, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-char-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-sliced` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -242,6 +245,7 @@
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
 | `hero` | CC-stock | `photo-N__68TkGeOY` (Thomas Park, Unsplash) | — | Unsplash License | YES | REJECTED: primary subject is a Lone Star Beer can (branded product); tortillas are props. Alcohol branding cannot appear in hero images. Need replacement: taco-size flour tortillas with char marks, stacked or as tacos, no branding. 2026-05-14 COO | — | REJECTED |
+| `hero` (replacement) | CC-stock | `photo-1693193433392-da83457dff20` (Michael Kahn, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-comal-char` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -252,14 +256,4 @@
 |---|---|
 | Total images required (est.) | ~120 |
 | Images with APPROVED status | 3 (carbonara hero, falafel hero, pavlova hero) |
-| Images with CANDIDATE status | 13 (12 hero CC-stock + 2 smash burger step AI — 1 shawarma hero is CONDITIONAL within CANDIDATE) |
-| Images with REJECTED status | 2 (smash-burger hero `photo-1639020715088`, flour-tortillas hero `photo-N__68TkGeOY`) |
-| Images with PENDING status | ~102 |
-| Images with INTEGRATED status | 2 (smash-burger step-s1-mise, step-s3-smash — in seed-recipes.ts) |
-
-*Last updated: 2026-05-14 by COO — cook accuracy review of 6 accuracy-sensitive heroes complete*
-*Next update: source replacement heroes for smash-burger and flour-tortillas; validate remaining 10 non-sensitive CANDIDATE heroes; manually source roast-lamb hero (unsplash.com/s/photos/roast-lamb)*
-
-## Hero sourcing summary — all 16 launch recipes
-
-| Recipe | Photo ID | Photographer | Stat
+| Images with CANDIDATE status | 16 (13 hero CC-stock from 15 May batch + 2 smash burger step AI + replacement candidates for smash-burger, flour-tortillas, shawarma)
