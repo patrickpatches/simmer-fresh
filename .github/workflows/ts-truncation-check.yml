@@ -1,0 +1,25 @@
+# R-014 truncation guardrail.
+#
+# Fails the PR / push if any .ts or .tsx file under mobile/src or mobile/app
+# ends mid-token. Three commits in May 2026 silently truncated source files
+# via the Edit tool (Patrick's 6813ddc, cook's ff86010, engineer's
+# mid-DECISION-015 pass). Each cost a build cycle to diagnose.
+#
+# This one-liner check runs in <2s and catches the class permanently.
+
+name: R-014 truncation check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Assert balanced final tokens in every .ts/.tsx
+        run: bash scripts/check-ts-truncation.sh

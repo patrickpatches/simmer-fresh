@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #112 | `pending` | **Two-item bundle.** (1) **R-016 fix — pantry persistence after uninstall.** Added `"allowBackup": false` under `expo.android` in `mobile/app.json`; bumped `versionCode` 47→48. Google Android Auto Backup is on by default for Expo apps and was silently restoring the SQLite database from the user's Google Drive on reinstall — contradicting the offline-first / privacy-first product stance and producing the bug Patrick reported (pantry items + shopping list survive a clean uninstall). The next prebuild will emit `android:allowBackup="false"` on the `<application>` tag in `AndroidManifest.xml`. (2) **R-014 truncation CI guardrail.** New `scripts/check-ts-truncation.sh` (one-liner that asserts every `.ts`/`.tsx` under `mobile/src/` and `mobile/app/` ends on a balanced closing token — `}` `)` `;` `,` or `]`) plus a new GitHub Actions workflow `.github/workflows/ts-truncation-check.yml` that runs the script on every push to main and on every PR. Three commits in May 2026 (Patrick's `6813ddc`, cook's `ff86010`, engineer's mid-DECISION-015 pass) silently truncated `.ts` files via the Edit tool — each cost a build cycle. Script self-tested against a deliberately-truncated `.ts` (caught it, exit 1) and against a clean `.ts` (passed, exit 0). 25 launch files all end on a balanced token. |
 | #111 | `c8430f6` | **DECISION-015 per-recipe migration.** Pre-flight gate verified: all 16 launch research files carry the cook's `DECISION-015` discrepancy table on origin/main (GitHub code-search lag — direct file fetch confirmed). Applied 64 per-swap colour overrides where cook's judgment diverged from the default 4-to-3 mapping (mostly `great → yellow` downgrades; some `compromise → yellow` and `good → green` upgrades). Applied 12 `step_overrides` arrays where cook fully authored the alternate step text (Pasta Carbonara s4 whole-eggs, Green Curry s3 prawns/tofu/pumpkin, Bolognese s4 fresh tomatoes, Chicken Shawarma s2 chicken breast, Butter Chicken s2/s3/s5, Flour Tortillas s3 lard, Chicken Schnitzel step_5_fry_first veal, Beef Lasagne step_7_assemble dried sheets). Final pill counts: 211 green / 338 yellow / 94 red / 0 legacy. **Flagged back to cook (no override text authored):** SMASH_BURGER 3 entries, HUMMUS tinned chickpeas, PAD_THAI 4 flags, FALAFEL 2 flags, BEEF_LASAGNE 'ragù step' anchor ambiguous, ROAST_LAMB 'prep' anchor ambiguous, FLOUR_TORTILLAS 'Vegetable shortening' substitution doesn't exist in seed. R-014 mitigation: caught a missing-comma syntax error during step_overrides insertion (single-line substitution objects); fixed with targeted regex pass; tsc clean. |
 | #110 | `070483a` | **5-item bundle.** (1) **R-014 recovery:** cook's `ff86010` truncated `types.ts` (lost final 4 lines of `safeParseRecipe`); restored from `b0382e0` clean state and re-applied the `'dessert'` TypeId addition. (2) **Hero attribution:** added `hero_attribution: z.string().optional()` to Recipe schema; rendered as a small dark-scrim pill bottom-right of the hero image (CC licensing convention — present without competing with the title card). (3) **Cuisine tiles:** `CUISINE_LABELS` Record extended with `palestinian`, `german`, `british` (tsc demanded them); `CATEGORIES` tile list now covers every CuisineId in the enum — the existing `availableCategoryIds` filter still trims to ≥1 launch recipe so the user only sees tiles with content (today: Australian, Levantine, Italian, Indian, Thai, American, Mexican). (4) **APPROVED hero images:** wired 3 Unsplash heroes into seed-recipes.ts — PASTA_CARBONARA (`photo-1612874742237`), FALAFEL (`photo-pQnsKWk5ljQ` Anton), PAVLOVA (`photo-5nCTfEru3Do` Eugene Krasnaok). Each carries the photographer credit. Shawarma CONDITIONAL left as-is per default (wait for replacement). Smash-burger + flour-tortillas REJECTED — not touched. (5) **Taxonomy guardrail:** extended `validateDecision015` in `db/seed.ts` to also scan every launch recipe's `categories.cuisines` + `categories.types` against the enum — console.warn for any value outside the schema. **Item 3 NOT shipped (DECISION-015 per-recipe substitution overrides):** I searched every research file for `DECISION-015` / `step_overrides` / `Great swap` / `Some difference` / `Noticeable change` — **zero hits**. Cook hasn't actually authored the per-recipe discrepancy tables yet despite the brief saying she had. Default 4-to-3 mapping from #107 still in force; flagging cook + COO for the actual delivery. |
 | (hotfix) | `9fd9dd5` | **Bug-check hotfix on #110:** stripped a stale `hero_url` from SMASH_BURGER. Patrick's #110 brief said "DO NOT MIGRATE smash-burger" (REJECTED per cook — wrong cheese + red onion rings), but the recipe still carried a leftover Unsplash URL `photo-1568901346375-23c9450c58cd?w=600&q=80` from an older seed pass. Removed. Now the only hero_urls in the launch roster are the 3 cook-approved photos (CARBONARA, FALAFEL, PAVLOVA). Will roll into the next build. |
@@ -52,6 +53,30 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → Patrick · 2026-05-14 · OPEN (build #112 — uninstall-reinstall validation required to close R-016)
+**From:** Senior Engineer
+**Subject:** Build #112 contains the `allowBackup: false` fix. Patrick must run the uninstall + clean reinstall test before R-016 can close.
+
+**Validation procedure on Patrick's device:**
+1. Open the current build (#111). Add a few pantry items, tick some shopping list items.
+2. Uninstall the app (long-press → uninstall, or Settings → Apps → Hone → Uninstall).
+3. **Clear cache and data first** (Settings → Apps → Hone → Storage → Clear all data) — belt and braces; uninstall should do it but Android sometimes lies.
+4. Reboot the phone if you're feeling thorough.
+5. Install build #112 fresh from the GitHub Actions artifact.
+6. Open Pantry tab — expect **empty** (no pre-restored items).
+7. Open Shop tab — expect **empty** (no pre-restored items).
+
+**If pantry/shop come back populated:** R-016 is NOT closed. Likely root causes:
+- Google Drive backup restore happened despite `allowBackup: false` (would need a `dataExtractionRules` XML file too).
+- `versionCode` 47 → 48 wasn't picked up by Play Console's "restore from backup" path.
+- Some other persistence layer (e.g. cloud-sync MCP, OAuth token cache) that survives uninstall.
+
+**If pantry/shop are empty as expected:** R-016 closed. The CI truncation guardrail from this same build will catch the next R-014 incident before it lands on main.
+
+**Status:** shipped to main, awaiting Patrick on-device validation. Not self-closing per R-015.
+
+---
 
 ### HANDOFF → Cook + COO · 2026-05-14 · OPEN (DECISION-015 migration gaps — 8 entries cook needs to clarify)
 **From:** Senior Engineer
