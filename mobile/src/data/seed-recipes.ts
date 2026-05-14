@@ -389,7 +389,7 @@ const PASTA_CARBONARA: Recipe = {
         {
           ingredient: 'Smoked bacon (short-cut, rind off)',
           changes: 'Smokiness dominates and changes the character of the dish significantly. The result is delicious but is technically not carbonara — more of a bacon-and-egg pasta. Render it slowly the same way.',
-          quality: 'red',
+          quality: 'yellow',
         },
       ],
     },
@@ -400,6 +400,10 @@ const PASTA_CARBONARA: Recipe = {
           ingredient: 'Whole eggs (use 2 whole eggs instead of 3 yolks + 1 whole)',
           changes: 'More egg white protein makes the sauce set firmer and slightly rubbery if overworked. You lose the deep golden richness of a yolk-heavy sauce. Harder to keep in the emulsified window.',
           quality: 'red',
+        
+          step_overrides: {
+            's4': "With whole eggs only, the sauce is more prone to scrambling. Hold the pan off heat for a full 20 seconds — not 10–15 — before adding. Add the egg mixture very slowly while tossing continuously. If the sauce starts tightening into grains rather than silk, splash in cold pasta water immediately and toss hard. You have a narrower window than with the yolk-heavy version.",
+          },
         },
       ],
     },
@@ -933,7 +937,7 @@ const HUMMUS: Recipe = {
     },
     { id: 'i4', name: 'Garlic cloves', amount: 2, unit: '', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Roasted garlic cloves', changes: 'Sweeter, nuttier, and milder than raw garlic. The hummus will be more mellow — less pungent but deeply flavoured. Roast a whole head at 180°C for 45 minutes.', quality: 'green', quantity_note: 'use 4 roasted cloves to match the flavour impact of 2 raw' },
+        { ingredient: 'Roasted garlic cloves', changes: 'Sweeter, nuttier, and milder than raw garlic. The hummus will be more mellow — less pungent but deeply flavoured. Roast a whole head at 180°C for 45 minutes.', quality: 'yellow', quantity_note: 'use 4 roasted cloves to match the flavour impact of 2 raw' },
       ],
     },
     { id: 'i5', name: 'Ice-cold water', amount: 60, unit: 'ml', scales: 'linear' },
@@ -942,8 +946,8 @@ const HUMMUS: Recipe = {
     { id: 'i8', name: 'Extra virgin olive oil, to serve', amount: 2, unit: 'tbsp', scales: 'fixed' },
     { id: 'i9', name: 'Paprika and whole chickpeas, to garnish', amount: 1, unit: 'pinch', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Sumac and toasted pine nuts', changes: 'A more complex, Middle Eastern garnish. Sumac adds tartness; pine nuts add richness and texture. A genuine upgrade.', quality: 'green' },
-        { ingredient: 'Smoked paprika and toasted sesame seeds', changes: 'Deeper colour and a smoky note. Looks beautiful and adds another layer of flavour.', quality: 'green' },
+        { ingredient: 'Sumac and toasted pine nuts', changes: 'A more complex, Middle Eastern garnish. Sumac adds tartness; pine nuts add richness and texture. A genuine upgrade.', quality: 'yellow' },
+        { ingredient: 'Smoked paprika and toasted sesame seeds', changes: 'Deeper colour and a smoky note. Looks beautiful and adds another layer of flavour.', quality: 'yellow' },
       ],
     },
   ],
@@ -1538,15 +1542,23 @@ const THAI_GREEN_CURRY: Recipe = {
     {
       id: 'i1', name: 'Chicken thighs, sliced', amount: 600, unit: 'g', scales: 'linear',
       substitutions: [
-        { ingredient: 'Prawns, peeled and deveined', changes: 'A great seafood version. Add in the last 3 minutes only — prawns cook very fast and turn rubbery if overdone.', quality: 'green' },
-        { ingredient: 'Firm tofu, pressed and cubed', changes: 'Absorbs the curry paste beautifully when pressed dry. Vegan option. Fry the tofu first for extra texture.', quality: 'green' },
+        { ingredient: 'Prawns, peeled and deveined', changes: 'A great seafood version. Add in the last 3 minutes only — prawns cook very fast and turn rubbery if overdone.', quality: 'yellow',
+          step_overrides: {
+            's3': "Add prawns in the last 3–4 minutes only — they turn rubbery past 5 minutes in a simmering sauce. They're done when they've turned fully pink and curled. Pull the pan off heat the moment they're cooked.",
+          },
+        },
+        { ingredient: 'Firm tofu, pressed and cubed', changes: 'Absorbs the curry paste beautifully when pressed dry. Vegan option. Fry the tofu first for extra texture.', quality: 'yellow',
+          step_overrides: {
+            's3': "Add tofu in the last 5 minutes. It doesn't need cooking — only heating through. Tofu added earlier breaks apart and disperses into the sauce.",
+          },
+        },
         { ingredient: 'Chicken breast, thinly sliced', changes: 'Leaner and quicker-cooking. Reduce the chicken step to 2 minutes or it dries out.', quality: 'yellow' },
       ],
     },
     {
       id: 'i2', name: 'Coconut milk (full-fat)', amount: 400, unit: 'ml', scales: 'linear', prep: 'Use full fat — light coconut milk breaks and looks watery',
       substitutions: [
-        { ingredient: 'Coconut cream', changes: 'Richer and thicker — a genuine upgrade. Dilute slightly before use.', quality: 'green', quantity_note: 'use 350ml coconut cream + 100ml water' },
+        { ingredient: 'Coconut cream', changes: 'Richer and thicker — a genuine upgrade. Dilute slightly before use.', quality: 'yellow', quantity_note: 'use 350ml coconut cream + 100ml water' },
         { ingredient: 'Light coconut milk', changes: 'Will separate and look watery. The fat is what cracks the paste and carries the flavour — this is the one swap to avoid if you can.', quality: 'red' },
       ],
     },
@@ -1563,20 +1575,24 @@ const THAI_GREEN_CURRY: Recipe = {
         { ingredient: 'Broccolini, cut into florets', changes: 'More assertive, slightly bitter. Add in the last 5 minutes — broccolini overcooks fast. Holds its colour well.', quality: 'yellow', quantity_note: 'add in the last 5 minutes of simmering' },
         { ingredient: 'Snow peas or sugar snap peas', changes: 'Sweet and crunchy — adds texture contrast. Add in the last 2 minutes only or they go limp.', quality: 'yellow', quantity_note: 'add in the last 2 minutes' },
         { ingredient: 'Capsicum (red or green), sliced', changes: 'Adds sweetness and bulk. Holds up well in the simmer. Standard Thai curry vegetable addition.', quality: 'yellow' },
-        { ingredient: 'Butternut pumpkin, cut in 3cm cubes', changes: 'Sweet and starchy — absorbs the curry beautifully. Add at the same time as the coconut milk, not later, as it needs the full 12 minutes.', quality: 'yellow' },
+        { ingredient: 'Butternut pumpkin, cut in 3cm cubes', changes: 'Sweet and starchy — absorbs the curry beautifully. Add at the same time as the coconut milk, not later, as it needs the full 12 minutes.', quality: 'yellow',
+          step_overrides: {
+            's3': "Add pumpkin at the start of simmering, with the coconut milk. It needs 15–20 minutes to soften — other vegetables go in per the main steps.",
+          },
+        },
       ],
     },
     {
       id: 'i5', name: 'Fish sauce', amount: 2, unit: 'tbsp', scales: 'fixed',
       substitutions: [
         { ingredient: 'Light soy sauce', changes: 'Less funky, different saltiness profile. Vegan alternative. Use slightly less.', quality: 'yellow', quantity_note: 'use 1.5 tbsp — soy is saltier than fish sauce' },
-        { ingredient: 'Coconut aminos', changes: 'Sweeter and milder. Add a pinch of salt to compensate for the lower sodium.', quality: 'red' },
+        { ingredient: 'Coconut aminos', changes: 'Sweeter and milder. Add a pinch of salt to compensate for the lower sodium.', quality: 'yellow' },
       ],
     },
     { id: 'i6', name: 'Palm sugar', amount: 1, unit: 'tsp', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Brown sugar', changes: 'Less complex caramel note than palm sugar, but perfectly serviceable. Dissolves faster. Direct swap.', quality: 'green' },
-        { ingredient: 'Coconut sugar', changes: 'Less sweet, more mineral, and slightly earthier than palm sugar. Works well in Thai cooking — a natural pairing.', quality: 'green' },
+        { ingredient: 'Brown sugar', changes: 'Less complex caramel note than palm sugar, but perfectly serviceable. Dissolves faster. Direct swap.', quality: 'yellow' },
+        { ingredient: 'Coconut sugar', changes: 'Less sweet, more mineral, and slightly earthier than palm sugar. Works well in Thai cooking — a natural pairing.', quality: 'yellow' },
         { ingredient: 'Honey', changes: 'Sweeter and more floral. Use half the quantity and stir in off-heat to avoid bitterness. Subtle flavour difference.', quality: 'yellow', quantity_note: 'use ½ tsp honey per 1 tsp palm sugar' },
       ],
     },
@@ -1587,13 +1603,13 @@ const THAI_GREEN_CURRY: Recipe = {
     },
     { id: 'i8', name: 'Thai basil', amount: 1, unit: 'handful', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Fresh Italian basil + a few fresh mint leaves', changes: 'Italian basil is sweeter and less anise-like than Thai basil. Adding a little mint approximates the aromatic complexity. Still works — just not identical.', quality: 'red', quantity_note: 'use a small handful of Italian basil + 4–5 fresh mint leaves' },
-        { ingredient: 'Holy basil', changes: 'Slightly more peppery and clove-like than Thai basil. Traditional in some Thai dishes. The most authentic substitute — closer than Italian basil.', quality: 'green', hard_to_find: true, local_alternative: 'Asian grocery stores. Less common than Thai basil but the same shops usually stock both.' },
+        { ingredient: 'Fresh Italian basil + a few fresh mint leaves', changes: 'Italian basil is sweeter and less anise-like than Thai basil. Adding a little mint approximates the aromatic complexity. Still works — just not identical.', quality: 'yellow', quantity_note: 'use a small handful of Italian basil + 4–5 fresh mint leaves' },
+        { ingredient: 'Holy basil', changes: 'Slightly more peppery and clove-like than Thai basil. Traditional in some Thai dishes. The most authentic substitute — closer than Italian basil.', quality: 'yellow', hard_to_find: true, local_alternative: 'Asian grocery stores. Less common than Thai basil but the same shops usually stock both.' },
       ],
     },
     { id: 'i9', name: 'Neutral oil', amount: 2, unit: 'tbsp', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Coconut oil', changes: 'Adds a subtle coconut note that integrates naturally into the curry. Works well and is commonly used in Thai cooking.', quality: 'green' },
+        { ingredient: 'Coconut oil', changes: 'Adds a subtle coconut note that integrates naturally into the curry. Works well and is commonly used in Thai cooking.', quality: 'yellow' },
         { ingredient: 'Vegetable oil or sunflower oil', changes: 'Same neutral-flavour function. Either works identically. Standard swap.', quality: 'green' },
       ],
     },
@@ -1763,16 +1779,16 @@ const PAD_THAI: Recipe = {
     {
       id: 'i2', name: 'Prawns, sliced', amount: 200, unit: 'g', scales: 'linear',
       substitutions: [
-        { ingredient: 'Pork belly, thinly sliced', changes: 'Richer and fattier — less traditional but deeply satisfying. Cook in the wok the same way.', quality: 'green' },
+        { ingredient: 'Pork belly, thinly sliced', changes: 'Richer and fattier — less traditional but deeply satisfying. Cook in the wok the same way.', quality: 'yellow' },
         { ingredient: 'Firm tofu only (no meat)', changes: 'Fully vegan version. Fry the tofu first until golden before adding to the wok.', quality: 'yellow' },
-        { ingredient: 'Squid, cleaned and sliced', changes: 'Classic Thai market Pad Thai. Cook very fast — 60–90 seconds only or it turns rubbery.', quality: 'green' },
+        { ingredient: 'Squid, cleaned and sliced', changes: 'Classic Thai market Pad Thai. Cook very fast — 60–90 seconds only or it turns rubbery.', quality: 'yellow' },
       ],
     },
     { id: 'i3', name: 'Eggs', amount: 2, unit: '', scales: 'linear' },
     {
       id: 'i4', name: 'Tamarind paste', amount: 3, unit: 'tbsp', scales: 'fixed', prep: 'Ketchup is not a substitute — it changes the dish entirely',
       substitutions: [
-        { ingredient: 'Tamarind concentrate', changes: 'More concentrated than paste — stronger and thicker. Use less and dilute with a splash of water.', quality: 'green', quantity_note: 'use 2 tbsp concentrate + 1 tbsp water' },
+        { ingredient: 'Tamarind concentrate', changes: 'More concentrated than paste — stronger and thicker. Use less and dilute with a splash of water.', quality: 'yellow', quantity_note: 'use 2 tbsp concentrate + 1 tbsp water' },
         { ingredient: 'Lime juice + splash of rice vinegar', changes: 'Approximates the sourness without the deep complexity of tamarind. The result is thinner in body but the acidity works.', quality: 'red', quantity_note: '2 tbsp lime juice + 1 tbsp rice vinegar' },
       ],
     },
@@ -1785,8 +1801,8 @@ const PAD_THAI: Recipe = {
     {
       id: 'i6', name: 'Palm sugar', amount: 1, unit: 'tbsp', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Brown sugar or dark muscovado', changes: 'Similar caramel notes. Brown sugar dissolves faster and is widely available. Nearly identical result.', quality: 'green' },
-        { ingredient: 'Coconut sugar', changes: 'Less sweet and more mineral. Works well — same amount.', quality: 'green' },
+        { ingredient: 'Brown sugar or dark muscovado', changes: 'Similar caramel notes. Brown sugar dissolves faster and is widely available. Nearly identical result.', quality: 'yellow' },
+        { ingredient: 'Coconut sugar', changes: 'Less sweet and more mineral. Works well — same amount.', quality: 'yellow' },
       ],
     },
     { id: 'i7', name: 'Bean sprouts', amount: 80, unit: 'g', scales: 'linear',
@@ -2355,37 +2371,37 @@ const WEEKDAY_BOLOGNESE: Recipe = {
     { id: 'oil', name: 'Olive oil', amount: 2, unit: 'tbsp', scales: 'linear' },
     { id: 'onion', name: 'Onion, fine dice', amount: 1, unit: 'medium', scales: 'linear',
       substitutions: [
-        { ingredient: 'Shallots, finely diced', changes: 'Milder and sweeter than brown onion. Use 3–4 shallots per 1 medium onion. A more refined soffritto base.', quality: 'green', quantity_note: 'use 3–4 shallots per 1 medium onion' },
+        { ingredient: 'Shallots, finely diced', changes: 'Milder and sweeter than brown onion. Use 3–4 shallots per 1 medium onion. A more refined soffritto base.', quality: 'yellow', quantity_note: 'use 3–4 shallots per 1 medium onion' },
         { ingredient: 'Leek (white and pale green part), finely sliced', changes: 'Milder and sweeter than onion. Sweats down beautifully in the soffritto. Wash well — leeks trap grit.', quality: 'yellow' },
       ],
     },
     { id: 'carrot', name: 'Carrot, fine dice', amount: 1, unit: 'medium', scales: 'linear',
       substitutions: [
-        { ingredient: 'Parsnip, finely diced', changes: 'Sweeter and earthier than carrot. Works beautifully in a Northern Italian ragù — slightly different sweetness that blends well.', quality: 'green' },
+        { ingredient: 'Parsnip, finely diced', changes: 'Sweeter and earthier than carrot. Works beautifully in a Northern Italian ragù — slightly different sweetness that blends well.', quality: 'yellow' },
       ],
     },
     { id: 'celery', name: 'Celery stalk, fine dice', amount: 1, unit: 'stalk', scales: 'linear',
       substitutions: [
-        { ingredient: 'Fennel bulb, finely diced', changes: 'Anise-like and slightly sweet. Works very well in Italian ragù — fennel and pork mince are a natural pairing.', quality: 'green' },
+        { ingredient: 'Fennel bulb, finely diced', changes: 'Anise-like and slightly sweet. Works very well in Italian ragù — fennel and pork mince are a natural pairing.', quality: 'yellow' },
         { ingredient: 'Celeriac (celery root), finely diced', changes: 'Concentrated celery flavour. Use a slightly smaller amount — celeriac is more assertive than celery stalk.', quality: 'yellow', quantity_note: 'use slightly less — celeriac is more assertive than celery stalk' },
       ],
     },
     { id: 'garlic', name: 'Garlic cloves, minced', amount: 3, unit: 'cloves', scales: 'fixed', cap: 6,
       substitutions: [
-        { ingredient: 'Garlic paste (1 tsp per clove)', changes: 'Consistent and convenient. Works very well in a long-cooked ragù where the raw edge will be cooked out regardless.', quality: 'yellow', quantity_note: 'use 1 tsp garlic paste per clove' },
+        { ingredient: 'Garlic paste (1 tsp per clove)', changes: 'Consistent and convenient. Works very well in a long-cooked ragù where the raw edge will be cooked out regardless.', quality: 'green', quantity_note: 'use 1 tsp garlic paste per clove' },
       ],
     },
     {
       id: 'beef', name: 'Beef mince (80/20)', amount: 400, unit: 'g', scales: 'linear',
       substitutions: [
-        { ingredient: 'Veal mince', changes: 'Lighter, more delicate flavour — very traditional in Northern Italian ragù. The ragù will be paler and more refined.', quality: 'green' },
-        { ingredient: 'All beef mince (80/20), no pork', changes: 'Slightly less complex without the pork fat. Increase the total amount to compensate for the missing pork.', quality: 'red', quantity_note: 'use 600g beef total to replace both minces' },
+        { ingredient: 'Veal mince', changes: 'Lighter, more delicate flavour — very traditional in Northern Italian ragù. The ragù will be paler and more refined.', quality: 'yellow' },
+        { ingredient: 'All beef mince (80/20), no pork', changes: 'Slightly less complex without the pork fat. Increase the total amount to compensate for the missing pork.', quality: 'yellow', quantity_note: 'use 600g beef total to replace both minces' },
       ],
     },
     {
       id: 'pork', name: 'Pork mince', amount: 200, unit: 'g', scales: 'linear',
       substitutions: [
-        { ingredient: 'Italian sausage mince (casings removed)', changes: 'Already seasoned with fennel and garlic — adds complexity and richness. Reduce added salt elsewhere.', quality: 'green' },
+        { ingredient: 'Italian sausage mince (casings removed)', changes: 'Already seasoned with fennel and garlic — adds complexity and richness. Reduce added salt elsewhere.', quality: 'yellow' },
       ],
     },
     { id: 'milk', name: 'Whole milk', amount: 200, unit: 'ml', scales: 'linear',
@@ -2403,8 +2419,12 @@ const WEEKDAY_BOLOGNESE: Recipe = {
     { id: 'tomatoes', name: 'Tinned whole tomatoes', amount: 400, unit: 'g', scales: 'linear',
       substitutions: [
         { ingredient: 'Tinned chopped tomatoes', changes: 'Already chopped — identical result after 45 minutes of simmering. Slightly more watery initially.', quality: 'green' },
-        { ingredient: 'Tomato passata', changes: 'Already smooth — skip the breaking-down step. Use 350ml per 400g tin. Slightly sweeter and thicker.', quality: 'green', quantity_note: 'use 350ml passata per 400g tin' },
-        { ingredient: 'Fresh ripe tomatoes, roughly chopped (4 large)', changes: 'Better in peak tomato season. Blanch and peel for a smoother result. Extend simmering by 10–15 minutes — fresh tomatoes have more water.', quality: 'green', quantity_note: 'extend simmering by 10–15 minutes — fresh tomatoes have more liquid' },
+        { ingredient: 'Tomato passata', changes: 'Already smooth — skip the breaking-down step. Use 350ml per 400g tin. Slightly sweeter and thicker.', quality: 'yellow', quantity_note: 'use 350ml passata per 400g tin' },
+        { ingredient: 'Fresh ripe tomatoes, roughly chopped (4 large)', changes: 'Better in peak tomato season. Blanch and peel for a smoother result. Extend simmering by 10–15 minutes — fresh tomatoes have more water.', quality: 'yellow', quantity_note: 'extend simmering by 10–15 minutes — fresh tomatoes have more liquid',
+          step_overrides: {
+            's4': "Add the tomatoes at the start of the sauce, before the wine. Cook over medium heat for 25–30 minutes, stirring regularly, until they have fully broken down and the liquid has evaporated — the mixture should look jammy and concentrated. Only then add the wine and stock. If you skip this step, the ragù will be watery and won't develop the same depth.",
+          },
+        },
       ],
     },
     { id: 'stock', name: 'Beef stock', amount: 300, unit: 'ml', scales: 'linear',
@@ -2416,13 +2436,13 @@ const WEEKDAY_BOLOGNESE: Recipe = {
     {
       id: 'pasta', name: 'Pappardelle', amount: 400, unit: 'g', scales: 'linear',
       substitutions: [
-        { ingredient: 'Rigatoni', changes: 'The sauce gets inside the tubes — many prefer this over flat pasta. Cook to package time exactly, then marry in the pan.', quality: 'green' },
+        { ingredient: 'Rigatoni', changes: 'The sauce gets inside the tubes — many prefer this over flat pasta. Cook to package time exactly, then marry in the pan.', quality: 'yellow' },
         { ingredient: 'Spaghetti or linguine', changes: 'Thinner strands hold less sauce per bite but work fine. Classic trattoria substitute.', quality: 'yellow' },
       ],
     },
     { id: 'parm', name: 'Parmigiano, grated', amount: 60, unit: 'g', scales: 'linear',
       substitutions: [
-        { ingredient: 'Grana Padano, grated', changes: 'Less complex and slightly milder than Parmigiano Reggiano. Melts and emulsifies identically. Far cheaper — a professional kitchen cost-saving standard.', quality: 'green' },
+        { ingredient: 'Grana Padano, grated', changes: 'Less complex and slightly milder than Parmigiano Reggiano. Melts and emulsifies identically. Far cheaper — a professional kitchen cost-saving standard.', quality: 'yellow' },
         { ingredient: 'Pecorino Romano, grated', changes: 'Sharper, saltier, and more tangy. Use less — 40g per 60g Parmigiano. Changes the character slightly but classically Italian.', quality: 'yellow', quantity_note: 'use 40g Pecorino per 60g Parmigiano — it\'s much saltier' },
       ],
     },
@@ -3003,6 +3023,10 @@ const CHICKEN_SHAWARMA: Recipe = {
           ingredient: 'Boneless chicken breast',
           changes: 'Breast dries out at 220 °C before the surface colours properly. Lower to 200 °C and pull at 70 °C internal — the result is leaner but less flavourful and won\'t char the same way.',
           quality: 'red',
+        
+          step_overrides: {
+            's2': "Breast dries out before it can develop colour at 220°C. Reduce to 200°C fan-forced, roast 18–20 minutes, and pull as soon as the thickest part reads 70°C internal — do not wait for timing. Under the grill: maximum 1 minute, watching constantly. The char will be less pronounced than thigh — this is expected, not a mistake.",
+          },
         },
       ],
     },
@@ -3053,7 +3077,7 @@ const CHICKEN_SHAWARMA: Recipe = {
       prep: 'Available at Lebanese grocers in most major Australian cities; major supermarkets stock it in the international aisle',
       substitutions: [
         { ingredient: 'Garlic aioli', changes: 'Less pungent than toum but a clean substitute.', quality: 'yellow' },
-        { ingredient: 'Plain yoghurt + 1 crushed garlic clove + a squeeze of lemon', changes: 'Lighter, less garlicky. Acceptable in a pinch.', quality: 'red' },
+        { ingredient: 'Plain yoghurt + 1 crushed garlic clove + a squeeze of lemon', changes: 'Lighter, less garlicky. Acceptable in a pinch.', quality: 'yellow' },
       ],
     },
     { id: 'i18', name: 'Tomato', amount: 1, unit: 'large', scales: 'linear', prep: 'Sliced thinly' },
@@ -3684,7 +3708,11 @@ const BUTTER_CHICKEN: Recipe = {
   ingredients: [
     { id: 'i1', name: 'Chicken thighs, boneless skinless', amount: 800, unit: 'g', scales: 'linear', prep: 'Cut into large chunks — smaller pieces dry out in the oven',
       substitutions: [
-        { ingredient: 'Chicken breast', changes: 'Dries out more easily. Reduce oven time by 5 minutes and watch closely.', quality: 'red' },
+        { ingredient: 'Chicken breast', changes: 'Dries out more easily. Reduce oven time by 5 minutes and watch closely.', quality: 'red',
+          step_overrides: {
+            's2': "Breast cooks faster and dries out before it can develop the char thigh gets. Reduce oven temperature to 200°C, check at 12 minutes, and pull the moment the thickest part reads 70°C internal — residual heat carries it to 75°C. Do not char the edges as aggressively as you would thigh — breast has no protective fat and goes from charred to dry in 2 minutes.",
+          },
+        },
       ],
     },
     { id: 'i2', name: 'Full-fat natural yoghurt', amount: 150, unit: 'g', scales: 'linear', prep: 'For the marinade',
@@ -3695,13 +3723,13 @@ const BUTTER_CHICKEN: Recipe = {
     },
     { id: 'i3', name: 'Lemon juice', amount: 2, unit: 'tbsp', scales: 'fixed', prep: 'For the marinade',
       substitutions: [
-        { ingredient: 'Lime juice', changes: 'More floral and slightly more acidic than lemon. Works identically in the marinade — a common variation in Indian cooking.', quality: 'green' },
+        { ingredient: 'Lime juice', changes: 'More floral and slightly more acidic than lemon. Works identically in the marinade — a common variation in Indian cooking.', quality: 'yellow' },
         { ingredient: 'White wine vinegar', changes: 'Sharper acid note. Use slightly less — it\'s more assertive than lemon juice.', quality: 'yellow', quantity_note: 'use 1.5 tbsp white wine vinegar per 2 tbsp lemon juice' },
       ],
     },
     { id: 'i4', name: 'Garlic cloves', amount: 8, unit: '', scales: 'linear', prep: '4 for marinade, 4 for sauce',
       substitutions: [
-        { ingredient: 'Garlic paste (1 tsp per clove)', changes: 'Convenient — blends smoothly into both the marinade and the sauce. Use 4 tsp in each. A reliable shortcut.', quality: 'yellow', quantity_note: 'use 4 tsp garlic paste in the marinade and 4 tsp in the sauce' },
+        { ingredient: 'Garlic paste (1 tsp per clove)', changes: 'Convenient — blends smoothly into both the marinade and the sauce. Use 4 tsp in each. A reliable shortcut.', quality: 'green', quantity_note: 'use 4 tsp garlic paste in the marinade and 4 tsp in the sauce' },
       ],
     },
     { id: 'i5', name: 'Fresh ginger', amount: 6, unit: 'cm', scales: 'fixed', prep: 'Half for marinade, half for sauce — grated',
@@ -3722,8 +3750,12 @@ const BUTTER_CHICKEN: Recipe = {
     { id: 'i11', name: 'Salt', amount: 2, unit: 'tsp', scales: 'fixed' },
     { id: 'i12', name: 'Canned crushed tomatoes', amount: 400, unit: 'g', scales: 'linear', prep: 'For the makhani sauce',
       substitutions: [
-        { ingredient: 'Fresh ripe tomatoes, roughly chopped (4 large)', changes: 'More vibrant and less cooked-tin flavour. Blanch and peel if you want a smoother sauce. Blending is essential.', quality: 'green' },
-        { ingredient: 'Tomato passata', changes: 'Already smooth — skip the blending step. Slightly sweeter and more concentrated. Use 350ml per 400g tin.', quality: 'green', quantity_note: 'use 350ml passata per 400g tin' },
+        { ingredient: 'Fresh ripe tomatoes, roughly chopped (4 large)', changes: 'More vibrant and less cooked-tin flavour. Blanch and peel if you want a smoother sauce. Blending is essential.', quality: 'yellow',
+          step_overrides: {
+            's3': "Add the tomatoes before the spices. Cook over medium heat for 25–30 minutes, stirring occasionally, until the tomatoes have fully broken down and the mixture looks jammy with no visible liquid. Only then add the whole and ground spices. Skipping this step leaves a watery sauce where the spices can't toast properly into the base.",
+          },
+        },
+        { ingredient: 'Tomato passata', changes: 'Already smooth — skip the blending step. Slightly sweeter and more concentrated. Use 350ml per 400g tin.', quality: 'yellow', quantity_note: 'use 350ml passata per 400g tin' },
       ],
     },
     { id: 'i13', name: 'Unsalted butter', amount: 60, unit: 'g', scales: 'fixed', prep: 'Real butter — this is the makhani (butter) in the name',
@@ -3734,7 +3766,11 @@ const BUTTER_CHICKEN: Recipe = {
     { id: 'i14', name: 'Double cream', amount: 150, unit: 'ml', scales: 'linear',
       substitutions: [
         { ingredient: 'Coconut cream', changes: 'Dairy-free and vegan. Subtly sweet with a faint coconut note that integrates well into the spiced tomato base. A popular variation.', quality: 'yellow' },
-        { ingredient: 'Full-fat natural yoghurt', changes: 'Less rich and tangier than cream. Stir in off heat only — it will curdle if it boils. Produces a lighter, healthier result.', quality: 'yellow' },
+        { ingredient: 'Full-fat natural yoghurt', changes: 'Less rich and tangier than cream. Stir in off heat only — it will curdle if it boils. Produces a lighter, healthier result.', quality: 'yellow',
+          step_overrides: {
+            's5': "Take the pan fully off the heat before adding the yoghurt. Stir it in one tablespoon at a time, slowly — do not pour it into hot sauce. If the sauce is still steaming, wait 30 seconds. Yoghurt in a simmering sauce splits immediately. Once incorporated, you can return to gentle heat (not simmering) to serve, but do not let it boil.",
+          },
+        },
         { ingredient: 'Thickened cream', changes: 'Australian cream with a slightly lower fat content than double cream. Same technique — identical result in practice.', quality: 'green' },
       ],
     },
@@ -3744,8 +3780,8 @@ const BUTTER_CHICKEN: Recipe = {
     { id: 'i18', name: 'Yellow onion', amount: 1, unit: 'large', scales: 'linear', prep: 'Finely diced — for the sauce',
       substitutions: [
         { ingredient: 'Brown onion', changes: 'The same as yellow onion in Australian supermarkets — direct swap. Finely dice and cook 10–12 minutes until deeply golden as the recipe states.', quality: 'green' },
-        { ingredient: 'Shallots (4 large), finely diced', changes: 'Sweeter and milder than brown onion. Caramelise faster — check at 8 minutes. The sauce will be slightly more delicate.', quality: 'green', quantity_note: 'check at 8 minutes — shallots caramelise faster' },
-        { ingredient: 'Red onion, finely diced', changes: 'Slightly sweeter than yellow. Works fine — the colour difference disappears after 10+ minutes of cooking and blending.', quality: 'green' },
+        { ingredient: 'Shallots (4 large), finely diced', changes: 'Sweeter and milder than brown onion. Caramelise faster — check at 8 minutes. The sauce will be slightly more delicate.', quality: 'yellow', quantity_note: 'check at 8 minutes — shallots caramelise faster' },
+        { ingredient: 'Red onion, finely diced', changes: 'Slightly sweeter than yellow. Works fine — the colour difference disappears after 10+ minutes of cooking and blending.', quality: 'yellow' },
       ],
     },
     { id: 'i19', name: 'Neutral oil', amount: 2, unit: 'tbsp', scales: 'fixed',
@@ -3755,9 +3791,9 @@ const BUTTER_CHICKEN: Recipe = {
     },
     { id: 'i20', name: 'Honey', amount: 1, unit: 'tsp', scales: 'fixed', prep: 'Small amount to balance the tomato acid',
       substitutions: [
-        { ingredient: 'Maple syrup', changes: 'Slightly more complex than honey. Same amount. Works identically.', quality: 'green' },
-        { ingredient: 'Date syrup', changes: 'Rich and complex. Adds a deeper sweetness than honey. Pairs exceptionally well with the Indian spice profile.', quality: 'green', hard_to_find: true, local_alternative: 'Middle Eastern grocers and some health food stores.' },
-        { ingredient: 'Jaggery (grated)', changes: 'Unrefined cane sugar used throughout South Asian cooking. Earthy, complex sweetness. Very appropriate in this context.', quality: 'green', hard_to_find: true, local_alternative: 'Indian grocers. Widely used in Indian desserts and curries.' },
+        { ingredient: 'Maple syrup', changes: 'Slightly more complex than honey. Same amount. Works identically.', quality: 'yellow' },
+        { ingredient: 'Date syrup', changes: 'Rich and complex. Adds a deeper sweetness than honey. Pairs exceptionally well with the Indian spice profile.', quality: 'yellow', hard_to_find: true, local_alternative: 'Middle Eastern grocers and some health food stores.' },
+        { ingredient: 'Jaggery (grated)', changes: 'Unrefined cane sugar used throughout South Asian cooking. Earthy, complex sweetness. Very appropriate in this context.', quality: 'yellow', hard_to_find: true, local_alternative: 'Indian grocers. Widely used in Indian desserts and curries.' },
       ],
     },
   ],
@@ -4314,7 +4350,7 @@ const PAVLOVA: Recipe = {
     },
     { id: 'i3', name: 'White wine vinegar', amount: 1, unit: 'tsp', scales: 'fixed', prep: 'Acid stabilises the meringue and contributes to the marshmallow centre',
       substitutions: [
-        { ingredient: 'Cream of tartar', changes: 'A more potent stabiliser — use less. Same marshmallow effect.', quality: 'green', quantity_note: 'use ¼ tsp cream of tartar per 1 tsp white wine vinegar' },
+        { ingredient: 'Cream of tartar', changes: 'A more potent stabiliser — use less. Same marshmallow effect.', quality: 'yellow', quantity_note: 'use ¼ tsp cream of tartar per 1 tsp white wine vinegar' },
         { ingredient: 'Fresh lemon juice', changes: 'Works identically to white wine vinegar. Same amount.', quality: 'green' },
       ],
     },
@@ -4325,7 +4361,7 @@ const PAVLOVA: Recipe = {
     },
     { id: 'i5', name: 'Vanilla extract', amount: 1, unit: 'tsp', scales: 'fixed',
       substitutions: [
-        { ingredient: 'Vanilla bean paste', changes: 'More intense vanilla flavour with visible seeds. Use the same amount. An upgrade.', quality: 'green' },
+        { ingredient: 'Vanilla bean paste', changes: 'More intense vanilla flavour with visible seeds. Use the same amount. An upgrade.', quality: 'yellow' },
       ],
     },
     { id: 'i6', name: 'Double cream', amount: 400, unit: 'ml', scales: 'linear', prep: 'Cold — whip to soft peaks just before serving',
@@ -4335,14 +4371,14 @@ const PAVLOVA: Recipe = {
     },
     { id: 'i7', name: 'Passionfruit', amount: 6, unit: '', scales: 'linear',
       substitutions: [
-        { ingredient: 'Mango, diced', changes: 'Sweet and tropical — excellent in summer. No sourness to contrast the sweetness of the meringue, so add a squeeze of lime juice.', quality: 'green' },
-        { ingredient: 'Lemon curd', changes: 'Intensely sharp and tangy — a spectacular contrast with the sweet meringue. Spoon it into the cream hollow instead of passionfruit.', quality: 'green' },
+        { ingredient: 'Mango, diced', changes: 'Sweet and tropical — excellent in summer. No sourness to contrast the sweetness of the meringue, so add a squeeze of lime juice.', quality: 'yellow' },
+        { ingredient: 'Lemon curd', changes: 'Intensely sharp and tangy — a spectacular contrast with the sweet meringue. Spoon it into the cream hollow instead of passionfruit.', quality: 'yellow' },
       ],
     },
     { id: 'i8', name: 'Strawberries', amount: 250, unit: 'g', scales: 'linear', prep: 'Hulled, halved',
       substitutions: [
-        { ingredient: 'Raspberries', changes: 'More tart and intensely flavoured than strawberries. Don\'t need to be cut. Visually stunning against white meringue.', quality: 'green' },
-        { ingredient: 'Mixed summer berries (blueberries, raspberries, blackberries)', changes: 'Variety of flavours and textures. The full summer berry pavlova — a classic option.', quality: 'green' },
+        { ingredient: 'Raspberries', changes: 'More tart and intensely flavoured than strawberries. Don\'t need to be cut. Visually stunning against white meringue.', quality: 'yellow' },
+        { ingredient: 'Mixed summer berries (blueberries, raspberries, blackberries)', changes: 'Variety of flavours and textures. The full summer berry pavlova — a classic option.', quality: 'yellow' },
       ],
     },
     { id: 'i9', name: 'Kiwi fruit', amount: 2, unit: '', scales: 'linear', prep: 'Peeled, sliced',
@@ -4438,6 +4474,10 @@ const FLOUR_TORTILLAS: Recipe = {
           ingredient: 'Lard',
           changes: "Traditional choice for a slightly flakier, richer tortilla. Same weight. The classic Mexican-tortillería fat — coats the flour proteins in a way butter cannot fully match.",
           quality: 'yellow',
+        
+          step_overrides: {
+            's3': "Lard softens faster than butter at room temperature — if your kitchen is above 22°C, refrigerate the lard for 15 minutes before rubbing. Semi-solid fat coats the flour proteins evenly; lard that's beginning to liquefy will pool rather than coat. The rubbing motion is otherwise identical to butter.",
+          },
         },
         {
           ingredient: 'Coconut oil, solid',
@@ -4618,9 +4658,13 @@ const CHICKEN_SCHNITZEL: Recipe = {
       id: 'chicken_breast', name: 'Chicken breast fillets, butterflied', amount: 800, unit: 'g',
       scales: 'linear', prep: 'Butterflied and lightly pounded to 1 cm thick',
       substitutions: [
-        { ingredient: 'Chicken thigh fillets (boneless, skinless)', changes: 'Richer flavour, more forgiving if cooked a touch long. Cooks 1–2 minutes longer per side.', quality: 'green' },
-        { ingredient: 'Veal escalope', changes: 'This is the original Wiener Schnitzel meat. Lighter colour, faster cook.', quality: 'green', quantity_note: 'Same weight per serve.' },
-        { ingredient: 'Pork loin steak', changes: 'Closer to the central-European original. Slightly drier — extend the brine to 45 minutes.', quality: 'green' },
+        { ingredient: 'Chicken thigh fillets (boneless, skinless)', changes: 'Richer flavour, more forgiving if cooked a touch long. Cooks 1–2 minutes longer per side.', quality: 'yellow' },
+        { ingredient: 'Veal escalope', changes: 'This is the original Wiener Schnitzel meat. Lighter colour, faster cook.', quality: 'green', quantity_note: 'Same weight per serve.',
+          step_overrides: {
+            'step_5_fry_first': "Veal is thinner and more tender than chicken — it cooks in 2 minutes per side at 175°C, not 3. The crust will reach deep golden colour before a chicken schnitzel would. Use that colour as your cue — remove as soon as both sides are even, deep gold. Do not wait for the same timing as chicken.",
+          },
+        },
+        { ingredient: 'Pork loin steak', changes: 'Closer to the central-European original. Slightly drier — extend the brine to 45 minutes.', quality: 'yellow' },
       ],
     },
     {
@@ -4650,7 +4694,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
       scales: 'linear',
       scaling_note: 'Bowl quantity, not consumption. 200 g crumbs up to 8 schnitzels. For 1–2 serves, 100 g is enough.',
       substitutions: [
-        { ingredient: 'Fresh white breadcrumbs (day-old sourdough, blitzed)', changes: 'Less uniform crunch, more rustic crust. Australian pubs use both styles.', quality: 'green' },
+        { ingredient: 'Fresh white breadcrumbs (day-old sourdough, blitzed)', changes: 'Less uniform crunch, more rustic crust. Australian pubs use both styles.', quality: 'yellow' },
         { ingredient: 'Dry breadcrumbs (the supermarket bottle)', changes: 'Smaller crumb, denser coating, slightly less crunch.', quality: 'yellow' },
       ],
     },
@@ -4658,7 +4702,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
       id: 'parmesan_schnitz', name: 'Parmesan, finely grated', amount: 30, unit: 'g',
       scales: 'linear', prep: 'Mixed through the panko',
       substitutions: [
-        { ingredient: 'Pecorino', changes: 'Sharper, saltier — cut the finishing salt by a small pinch.', quality: 'green' },
+        { ingredient: 'Pecorino', changes: 'Sharper, saltier — cut the finishing salt by a small pinch.', quality: 'yellow' },
         { ingredient: 'Omit', changes: 'More neutral crumb; lets the chicken speak. The parmesan is a flavour booster, not a structural ingredient.', quality: 'yellow' },
       ],
     },
@@ -4675,7 +4719,7 @@ const CHICKEN_SCHNITZEL: Recipe = {
       prep: 'For shallow frying — depth-driven, see scaling notes',
       scaling_note: "Depth-driven, not serving-driven. The oil must sit at 1 cm depth in whatever pan you're using. A 24 cm pan needs 150–200 ml; a 30 cm pan needs 250–300 ml.",
       substitutions: [
-        { ingredient: 'Ghee or clarified butter', changes: 'Richer, faster browning, slightly more savoury crust. Higher cost.', quality: 'green' },
+        { ingredient: 'Ghee or clarified butter', changes: 'Richer, faster browning, slightly more savoury crust. Higher cost.', quality: 'yellow' },
         { ingredient: 'Light olive oil (not extra virgin)', changes: 'Faint olive note in the crust. Works fine. Do not use extra virgin — it burns at frying temperature and the dish goes bitter.', quality: 'yellow' },
       ],
     },
@@ -5016,7 +5060,7 @@ const BEEF_LASAGNE: Recipe = {
       scales: 'linear',
       substitutions: [
         { ingredient: '50/50 beef and pork mince', changes: "This is what an Italian household actually uses. Slightly richer, slightly sweeter. Hazan's original recipe calls for it.", quality: 'green', quantity_note: 'Same total weight, 375 g of each.' },
-        { ingredient: 'Veal mince (in place of part of the beef)', changes: 'Even closer to canonical Bolognese. 250 g veal + 500 g beef.', quality: 'green', hard_to_find: true, local_alternative: 'Most Australian butchers will mince veal on request — supermarkets rarely stock it pre-minced.' },
+        { ingredient: 'Veal mince (in place of part of the beef)', changes: 'Even closer to canonical Bolognese. 250 g veal + 500 g beef.', quality: 'yellow', hard_to_find: true, local_alternative: 'Most Australian butchers will mince veal on request — supermarkets rarely stock it pre-minced.' },
       ],
     },
     {
@@ -5081,7 +5125,11 @@ const BEEF_LASAGNE: Recipe = {
       scaling_note: "Tray-driven, not serve-driven. The recipe assumes a 25 × 35 cm dish. For 12 serves you'll want a deeper dish or two trays.",
       substitutions: [
         { ingredient: 'Dried lasagne sheets (no-precook kind)', changes: 'Wider gaps between layers; slightly chewier bite. Many Australian households use these — they work fine.', quality: 'yellow' },
-        { ingredient: 'Dried sheets that need precooking', changes: "Same final result; an extra 10 minutes of work blanching them. Don't skip the precook — they will not soften enough on baking alone.", quality: 'yellow' },
+        { ingredient: 'Dried sheets that need precooking', changes: "Same final result; an extra 10 minutes of work blanching them. Don't skip the precook — they will not soften enough on baking alone.", quality: 'yellow',
+          step_overrides: {
+            'step_7_assemble': "Pre-cook sheets to just al dente — 1 minute less than the packet says. They continue cooking in the oven. Undercooking here is correct; fully cooked sheets will go mushy during the bake.",
+          },
+        },
       ],
     },
     {
@@ -5098,7 +5146,7 @@ const BEEF_LASAGNE: Recipe = {
       substitutions: [
         { ingredient: 'Bocconcini, drained and torn', changes: 'Same cheese in smaller balls. No flavour difference.', quality: 'green' },
         { ingredient: 'Pre-grated pizza mozzarella', changes: "Drier, saltier, less stretch. Functional but the finish is more 'pizza' than 'lasagne'.", quality: 'red' },
-        { ingredient: 'Omit and double the parmesan', changes: "More austere finish. Many Bolognese households don't put mozzarella in lasagne — it's an Italian-American/Australian addition.", quality: 'green' },
+        { ingredient: 'Omit and double the parmesan', changes: "More austere finish. Many Bolognese households don't put mozzarella in lasagne — it's an Italian-American/Australian addition.", quality: 'yellow' },
       ],
     },
   ],
@@ -5234,14 +5282,14 @@ const ROAST_LAMB: Recipe = {
       id: 'garlic_lamb', name: 'Garlic bulb', amount: 1, unit: 'whole bulb',
       scales: 'fixed', cap: 2, prep: 'Cloves separated, peeled, halved',
       substitutions: [
-        { ingredient: 'Pre-peeled garlic from the supermarket fridge', changes: 'Less aromatic. Functional. Use 12 to 15 cloves for the equivalent of one fresh bulb.', quality: 'yellow' },
+        { ingredient: 'Pre-peeled garlic from the supermarket fridge', changes: 'Less aromatic. Functional. Use 12 to 15 cloves for the equivalent of one fresh bulb.', quality: 'green' },
       ],
     },
     {
       id: 'rosemary', name: 'Fresh rosemary', amount: 6, unit: 'sprigs',
       scales: 'fixed', cap: 10, prep: 'Some kept whole, some leaves stripped',
       substitutions: [
-        { ingredient: 'Fresh thyme', changes: 'Lighter, more delicate herbal note. Use the same volume.', quality: 'green' },
+        { ingredient: 'Fresh thyme', changes: 'Lighter, more delicate herbal note. Use the same volume.', quality: 'yellow' },
         { ingredient: 'Dried rosemary', changes: "Strong, slightly dusty flavour. Use a third of the quantity (2 tsp) and don't tuck it into slits — it will burn. Scatter into the roasting tray instead.", quality: 'red' },
       ],
     },
@@ -5281,7 +5329,7 @@ const ROAST_LAMB: Recipe = {
       id: 'chicken_stock_lamb', name: 'Chicken stock (homemade or low-sodium)', amount: 250, unit: 'ml',
       scales: 'linear',
       substitutions: [
-        { ingredient: 'Lamb stock', changes: 'Deeper lamb flavour in the pan juices.', quality: 'green' },
+        { ingredient: 'Lamb stock', changes: 'Deeper lamb flavour in the pan juices.', quality: 'yellow' },
         { ingredient: 'Vegetable stock', changes: "Lighter pan juices. Won't overpower — works fine.", quality: 'yellow' },
       ],
     },
@@ -5417,7 +5465,7 @@ const FISH_AND_CHIPS: Recipe = {
       scales: 'linear', prep: 'Peeled, cut into 1.5 cm-thick chips',
       substitutions: [
         { ingredient: 'Maris Piper', changes: 'Identical chip result. Maris Piper is the British chip-shop default.', quality: 'green', hard_to_find: true, local_alternative: 'Some larger Australian supermarkets, otherwise greengrocers.' },
-        { ingredient: 'Russet (Idaho) potatoes', changes: 'Slightly drier, very similar fluff.', quality: 'green' },
+        { ingredient: 'Russet (Idaho) potatoes', changes: 'Slightly drier, very similar fluff.', quality: 'yellow' },
         { ingredient: 'Desiree or Pontiac (red waxy potatoes)', changes: 'Will not fluff up the same way. The chips stay denser and waxier — a different texture.', quality: 'red' },
       ],
     },
@@ -5431,7 +5479,7 @@ const FISH_AND_CHIPS: Recipe = {
       scales: 'custom', curve: { '2': 1500, '4': 2000, '6': 2500, '8': 3000 },
       scaling_note: 'Depth-driven, not serving-driven. 2 L fills a typical heavy-based household pot to about half. Safety rule: the pot must never be more than half full of oil — hot oil overflowing onto a gas flame is the most common kitchen-fire cause for this dish.',
       substitutions: [
-        { ingredient: 'Beef tallow', changes: 'Traditional British chippy fat — beefier, slightly more flavourful chip. Higher cost.', quality: 'green', hard_to_find: true, local_alternative: 'Butchers will sell rendered tallow, or you can render your own from beef trim.' },
+        { ingredient: 'Beef tallow', changes: 'Traditional British chippy fat — beefier, slightly more flavourful chip. Higher cost.', quality: 'yellow', hard_to_find: true, local_alternative: 'Butchers will sell rendered tallow, or you can render your own from beef trim.' },
         { ingredient: 'Peanut oil', changes: 'No real difference; some people prefer it for the higher smoke point.', quality: 'green' },
       ],
     },
@@ -5439,8 +5487,8 @@ const FISH_AND_CHIPS: Recipe = {
       id: 'flake', name: 'Flake (gummy shark) or other firm white fish', amount: 600, unit: 'g',
       scales: 'linear', prep: 'Skin off, pin-boned, cut into 4 portions',
       substitutions: [
-        { ingredient: 'Hoki', changes: 'Lighter, slightly flakier. Common Australian fish-and-chip-shop substitute.', quality: 'green' },
-        { ingredient: 'Snapper', changes: 'Sweeter, slightly firmer. Excellent fish but more expensive.', quality: 'green' },
+        { ingredient: 'Hoki', changes: 'Lighter, slightly flakier. Common Australian fish-and-chip-shop substitute.', quality: 'yellow' },
+        { ingredient: 'Snapper', changes: 'Sweeter, slightly firmer. Excellent fish but more expensive.', quality: 'yellow' },
         { ingredient: 'Barramundi', changes: 'Mild, firm, and reliably available in Australia. Works well with batter.', quality: 'yellow' },
         { ingredient: 'Ling', changes: 'Many Sydney fish-and-chip shops use ling — firm, white, takes batter beautifully.', quality: 'green' },
       ],
@@ -5473,7 +5521,7 @@ const FISH_AND_CHIPS: Recipe = {
       id: 'beer', name: 'Cold lager or pale ale', amount: 330, unit: 'ml',
       scales: 'linear', prep: 'Straight from the fridge',
       substitutions: [
-        { ingredient: 'Soda water', changes: 'Same effect — the bubbles are what lighten the batter. Slightly less flavour. Works for a non-alcoholic batter.', quality: 'green', quantity_note: 'Same volume.' },
+        { ingredient: 'Soda water', changes: 'Same effect — the bubbles are what lighten the batter. Slightly less flavour. Works for a non-alcoholic batter.', quality: 'yellow', quantity_note: 'Same volume.' },
         { ingredient: 'Pilsner or other light lager', changes: 'Any cold light beer works the same.', quality: 'green' },
       ],
     },
@@ -5611,8 +5659,8 @@ const FALAFEL: Recipe = {
       scales: 'linear', prep: 'Soaked in plenty of cold water for 12–24 hours, then drained and patted dry',
       scaling_note: 'Linear by weight, but watch the food processor capacity. 250 g of soaked chickpeas (~600 g hydrated) fills a 2 L processor bowl. Doubling means processing in two batches.',
       substitutions: [
-        { ingredient: '50/50 dried chickpeas + dried fava beans (both soaked)', changes: "Closer to the original Egyptian ta'amia lineage. Fava beans add sweetness and a softer interior. Common in Egyptian, Syrian, and Palestinian recipes.", quality: 'green', hard_to_find: true, local_alternative: "Dried fava beans at Middle Eastern grocers (called 'ful' or 'broad beans'); rare in Coles/Woolworths." },
-        { ingredient: 'Dried fava beans only (the Egyptian ta\'amia version)', changes: 'A different dish in spirit, but legitimate and historically older. Slightly sweeter, paler green, softer texture. Same method.', quality: 'green', hard_to_find: true },
+        { ingredient: '50/50 dried chickpeas + dried fava beans (both soaked)', changes: "Closer to the original Egyptian ta'amia lineage. Fava beans add sweetness and a softer interior. Common in Egyptian, Syrian, and Palestinian recipes.", quality: 'yellow', hard_to_find: true, local_alternative: "Dried fava beans at Middle Eastern grocers (called 'ful' or 'broad beans'); rare in Coles/Woolworths." },
+        { ingredient: 'Dried fava beans only (the Egyptian ta\'amia version)', changes: 'A different dish in spirit, but legitimate and historically older. Slightly sweeter, paler green, softer texture. Same method.', quality: 'yellow', hard_to_find: true },
       ],
     },
     {
@@ -5632,7 +5680,7 @@ const FALAFEL: Recipe = {
       scales: 'linear', prep: 'Stems and leaves, roughly chopped',
       substitutions: [
         { ingredient: 'Double the parsley, omit coriander', changes: 'More straightforwardly herbal, less citrus-edge. Some Lebanese versions use parsley-only.', quality: 'yellow' },
-        { ingredient: 'Mint added (10 g) plus the coriander', changes: 'A Syrian and Palestinian variation. Brightens the whole mix.', quality: 'green' },
+        { ingredient: 'Mint added (10 g) plus the coriander', changes: 'A Syrian and Palestinian variation. Brightens the whole mix.', quality: 'yellow' },
       ],
     },
     {

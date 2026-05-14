@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #111 | `pending` | **DECISION-015 per-recipe migration.** Pre-flight gate verified: all 16 launch research files carry the cook's `DECISION-015` discrepancy table on origin/main (GitHub code-search lag — direct file fetch confirmed). Applied 64 per-swap colour overrides where cook's judgment diverged from the default 4-to-3 mapping (mostly `great → yellow` downgrades; some `compromise → yellow` and `good → green` upgrades). Applied 12 `step_overrides` arrays where cook fully authored the alternate step text (Pasta Carbonara s4 whole-eggs, Green Curry s3 prawns/tofu/pumpkin, Bolognese s4 fresh tomatoes, Chicken Shawarma s2 chicken breast, Butter Chicken s2/s3/s5, Flour Tortillas s3 lard, Chicken Schnitzel step_5_fry_first veal, Beef Lasagne step_7_assemble dried sheets). Final pill counts: 211 green / 338 yellow / 94 red / 0 legacy. **Flagged back to cook (no override text authored):** SMASH_BURGER 3 entries, HUMMUS tinned chickpeas, PAD_THAI 4 flags, FALAFEL 2 flags, BEEF_LASAGNE 'ragù step' anchor ambiguous, ROAST_LAMB 'prep' anchor ambiguous, FLOUR_TORTILLAS 'Vegetable shortening' substitution doesn't exist in seed. R-014 mitigation: caught a missing-comma syntax error during step_overrides insertion (single-line substitution objects); fixed with targeted regex pass; tsc clean. |
 | #110 | `070483a` | **5-item bundle.** (1) **R-014 recovery:** cook's `ff86010` truncated `types.ts` (lost final 4 lines of `safeParseRecipe`); restored from `b0382e0` clean state and re-applied the `'dessert'` TypeId addition. (2) **Hero attribution:** added `hero_attribution: z.string().optional()` to Recipe schema; rendered as a small dark-scrim pill bottom-right of the hero image (CC licensing convention — present without competing with the title card). (3) **Cuisine tiles:** `CUISINE_LABELS` Record extended with `palestinian`, `german`, `british` (tsc demanded them); `CATEGORIES` tile list now covers every CuisineId in the enum — the existing `availableCategoryIds` filter still trims to ≥1 launch recipe so the user only sees tiles with content (today: Australian, Levantine, Italian, Indian, Thai, American, Mexican). (4) **APPROVED hero images:** wired 3 Unsplash heroes into seed-recipes.ts — PASTA_CARBONARA (`photo-1612874742237`), FALAFEL (`photo-pQnsKWk5ljQ` Anton), PAVLOVA (`photo-5nCTfEru3Do` Eugene Krasnaok). Each carries the photographer credit. Shawarma CONDITIONAL left as-is per default (wait for replacement). Smash-burger + flour-tortillas REJECTED — not touched. (5) **Taxonomy guardrail:** extended `validateDecision015` in `db/seed.ts` to also scan every launch recipe's `categories.cuisines` + `categories.types` against the enum — console.warn for any value outside the schema. **Item 3 NOT shipped (DECISION-015 per-recipe substitution overrides):** I searched every research file for `DECISION-015` / `step_overrides` / `Great swap` / `Some difference` / `Noticeable change` — **zero hits**. Cook hasn't actually authored the per-recipe discrepancy tables yet despite the brief saying she had. Default 4-to-3 mapping from #107 still in force; flagging cook + COO for the actual delivery. |
 | (hotfix) | `9fd9dd5` | **Bug-check hotfix on #110:** stripped a stale `hero_url` from SMASH_BURGER. Patrick's #110 brief said "DO NOT MIGRATE smash-burger" (REJECTED per cook — wrong cheese + red onion rings), but the recipe still carried a leftover Unsplash URL `photo-1568901346375-23c9450c58cd?w=600&q=80` from an older seed pass. Removed. Now the only hero_urls in the launch roster are the 3 cook-approved photos (CARBONARA, FALAFEL, PAVLOVA). Will roll into the next build. |
 | #109 | `b128624` | **Build recovery — seed-recipes.ts truncation fix.** Builds #108 and the 3 prior commits (`6813ddc` smash photos by Patrick, `82f39b5` COO docs, `922f295` my #108) all failed Metro bundling with `SyntaxError: Unexpected token, expected ',' (5842:4)`. Root cause: Patrick's `6813ddc` ("feat(smash-burger): add Gemini stage photos to app") successfully added two `photo_url` fields to SMASH_BURGER steps s1/s3 BUT also accidentally chopped 14 lines off the end of `SEED_RECIPES_HOLDING` — the array ended with `  AG` (truncated `AGLIO_E_OLIO`) and no closing `];`. Recovery: started from #107 clean state (`b91836d`, 5857 lines), re-applied the two `photo_url` additions verbatim, full holding array restored (30 recipes ending `CHICKEN_VEG_STIR_FRY,\n];\n`). One file: `mobile/src/data/seed-recipes.ts`. tsc clean, byte-tail verified. No other changes — my #108 cook-mode work in `recipe/[id].tsx` is preserved on origin. |
@@ -51,6 +52,32 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → Cook + COO · 2026-05-14 · OPEN (DECISION-015 migration gaps — 8 entries cook needs to clarify)
+**From:** Senior Engineer
+**Subject:** Build #111 migrated the per-recipe DECISION-015 work but eight entries need cook clarification before they can ship. Default mapping holds for these until cook provides the missing detail.
+
+**Missing override text (cook flagged in discrepancy table but didn't author the alternate step content):**
+1. **SMASH_BURGER** — 3 entries flagged for step_overrides: Wagyu, American cheese, Bread & butter pickles. No authored override text.
+2. **HUMMUS** — Tinned chickpeas → s2 flagged. No authored text.
+3. **PAD_THAI** — 4 entries with step_override = s1/s3/s4 flags. No authored override text section in the research file.
+4. **FALAFEL** — 2 entries with step_override = s1 flags (50/50 chickpeas+fava, dried fava beans only). No authored text.
+
+**Ambiguous step anchors (need cook to specify which step ID):**
+5. **BEEF_LASAGNE** — "Tomato puree (paste) → ragù step" — step IDs are `step_1_soffritto`, `step_2_brown_mince`, `step_3_milk`, `step_4_wine`, `step_5_simmer`. The override text talks about frying the paste before liquid (so probably step_2_brown_mince or step_4_wine). Cook to pick.
+6. **ROAST_LAMB** — "Boneless lamb shoulder → prep" — step IDs are `step_1_temper`, `step_2_score`, `step_3_season`, `step_4_tray`. Cook to pick which "prep" step applies.
+
+**Substitution doesn't exist in seed:**
+7. **FLOUR_TORTILLAS** — cook's table includes a "Vegetable shortening" substitution which is not in the FLOUR_TORTILLAS const's substitutions array. Either cook adds it (with a `changes` line) or the table entry should be removed.
+
+**What's needed:**
+- Cook adds the missing override text + clarifies step anchors in each research file.
+- COO confirms the additions are on main.
+- Engineer ships a small data-only follow-up (build #112 or later) that covers these.
+
+**Status of build #111:** **shipped to main, awaiting Patrick on-device validation** per R-015. 64 colour overrides + 12 step_overrides applied. 8 gaps flagged here.
+
+---
 
 ### HANDOFF → COO + Cook · 2026-05-14 · OPEN URGENT (item 3 of build #110 — DECISION-015 per-recipe tables not yet authored)
 **From:** Senior Engineer
