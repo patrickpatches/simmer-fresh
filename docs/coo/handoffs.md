@@ -54,7 +54,52 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → Cook · 2026-05-15 · OPEN URGENT (DECISION-014 — hero accuracy validation, all 16 launch recipes)
+### HANDOFF → Engineer · 2026-05-15 · OPEN (hero photo_url integration — all 16 launch recipes)
+**From:** COO (Photography Director)
+**Subject:** All 16 launch recipe heroes are now APPROVED. Engineer to wire the correct photo_url into each recipe constant in seed-recipes.ts and trigger a build.
+**Why:** The cook accuracy pass is complete. 8 recipes had their original images rejected (dead URLs, wrong content) and replacement photos have been sourced from Unsplash and approved by Patrick (verbal, 2026-05-15). The app currently shows stale or missing hero images for those 8 recipes.
+
+**Exact photo_url values to set (format: `https://images.unsplash.com/photo-[ID]?w=600&q=80`):**
+
+| Recipe constant | photo_url to set |
+|---|---|
+| `SMASH_BURGER` | `https://images.unsplash.com/photo-1607013251379-e6eecfffe234?w=600&q=80` |
+| `WEEKDAY_BOLOGNESE` | `https://images.unsplash.com/photo-1622973536968-3ead9e780960?w=600&q=80` |
+| `PASTA_CARBONARA` | already set — `photo-1612874742237` ✅ no change |
+| `ROAST_CHICKEN` | `https://images.unsplash.com/photo-1606728035253-49e8a23146de?w=600&q=80` |
+| `BUTTER_CHICKEN` | `https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&q=80` |
+| `THAI_GREEN_CURRY` | `https://images.unsplash.com/photo-1716959669858-11d415bdead6?w=600&q=80` |
+| `CHICKEN_SCHNITZEL` | `https://images.unsplash.com/photo-1599921841143-819065a55cc6?w=600&q=80` |
+| `BEEF_LASAGNE` | `https://images.unsplash.com/photo-1709429790175-b02bb1b19207?w=600&q=80` |
+| `ROAST_LAMB` | `https://images.unsplash.com/photo-1625604087024-7fb428fc4626?w=600&q=80` |
+| `FISH_AND_CHIPS` | `https://images.unsplash.com/photo-1611599538235-128e54f1250f?w=600&q=80` |
+| `FALAFEL` | already set — `photo-pQnsKWk5ljQ` ✅ no change |
+| `PAVLOVA` | already set — `photo-5nCTfEru3Do` ✅ no change |
+| `CHICKEN_SHAWARMA` | `https://images.unsplash.com/photo-1583060095186-852adde6b819?w=600&q=80` |
+| `HUMMUS` | `https://images.unsplash.com/photo-1637949385162-e416fb15b2ce?w=600&q=80` |
+| `PAD_THAI` | `https://images.unsplash.com/photo-1637806930600-37fa8892069d?w=600&q=80` |
+| `FLOUR_TORTILLAS` | `https://images.unsplash.com/photo-1693193433392-da83457dff20?w=600&q=80` |
+
+**Where to put the photo_url:** Each recipe constant has a top-level `photo_url` field (or `hero_url` — check the existing CARBONARA/FALAFEL/PAVLOVA entries for the exact field name in use). Set it on the recipe object, not on individual steps.
+
+**Attribution:** Each approved image carries an Unsplash License (free for commercial use with attribution). The `hero_attribution` field (added in build #110) should be set where we have a photographer name:
+- `photo-1607013251379` → `"Photo: Eiliv Aceron / Unsplash"`
+- `photo-1625604087024` → `"Photo: James Kern / Unsplash"`
+- `photo-1599921841143` → `"Photo: Mark König / Unsplash"`
+- `photo-1603894584373` → `"Photo: Raman / Unsplash"`
+- `photo-1622973536968` → `"Photo: Homescreenify / Unsplash"`
+- All others: `"Photo: Unsplash"` (photographer not recorded)
+
+**Files to touch:**
+- `mobile/src/data/seed-recipes.ts` — set photo_url on 13 recipe constants (3 already set, as noted above)
+
+**What this unblocks:** A build where every recipe in the Kitchen tab has a hero image. No more grey placeholders.
+
+**Blocks:** Nothing else is waiting on this — it's the last open visual item before launch.
+
+---
+
+### HANDOFF → Cook · 2026-05-15 · DONE (DECISION-014 — hero accuracy validation, all 16 launch recipes)
 **From:** Photography Director (COO)
 **Subject:** 13 hero images are sitting at CANDIDATE status in the ledger. Cook must inspect each one and either sign it off as APPROVED or REJECT it with a specific reason. Until this is done the engineer cannot migrate the photos into the app and build #111's placeholder gap stays open.
 **Why:** Every hero was sourced against the visual description only. Real-image searches return near-misses — wrong cheese colour, wrong tortilla size, raw chicken instead of charred, generic roast instead of lamb specifically. Cook is the only person who can confirm culinary accuracy.
@@ -1309,38 +1354,4 @@ Surfaces to clean (30 files referenced; engineer should grep to confirm):
 - Cook's research files: `docs/coo/culinary-research/*.md` — strip the field from each (the COO has already removed the rule from CLAUDE.md and the cook brief)
 
 Approach:
-1. Grep to find every reference. Keep historical session reports as-is (they're the diary).
-2. Remove the Zod field, the data field on every recipe, the SQLite column with a migration, the UI badges, and any tests.
-3. Run `npx tsc --noEmit` to confirm nothing else references it.
-4. Commit with a clear message and push to `main`.
-
-**TASK 2 — Audit and complete the Prep + Equipment data on every recipe Patrick can browse.**
-
-Patrick is finding recipes on-device with empty Prep and Equipment sections. The 11-recipe DECISION-009 migration handoff (also in this file, queued before this) covers 11 of those. After that lands, this task adds the verification layer:
-
-1. Run a script or manual pass: for every recipe in `seed-recipes.ts`, check `equipment.length > 0` AND `mise_en_place.length > 0`. Output the list of recipes still empty.
-2. For each empty recipe, check whether a research file exists in `docs/coo/culinary-research/<recipe-slug>.md`. If yes, migrate the data. If no, that recipe is on Cook's Batch 2 — list it back to the COO for Cook handoff.
-3. The UI must NOT silently hide the section if the data is empty. Instead, when both fields are empty, the recipe should not yet be browsable — or render a clear "Recipe being upgraded" state. Pick the cleanest option, document the call.
-4. Verify on-device that every recipe Patrick can open has both sections visible with real content.
-
-**Validation gate before declaring done:**
-- `npx tsc --noEmit` passes
-- Brace + JSX balance check passes (per R-014 mitigation)
-- `tail -c 200` of every modified large file shows clean end of file
-- All recipes browsable show Prep + Equipment with content
-- No grep hit for `whole_food_verified` anywhere except historical session reports
-- Patrick validates on-device — and only Patrick closes the issue per CLAUDE.md
-
-**Files touched:** Per grep — `mobile/src/data/types.ts`, `mobile/src/data/seed-recipes.ts`, `mobile/db/schema.ts`, `mobile/db/seed.ts`, multiple UI files in `mobile/app/`, multiple prototype HTML files, multiple culinary-research markdown files, BUGS.md, this handoffs file
-**Cost:** ~1 session for both tasks combined
-**Blocks:** Recipe quality on-device — currently Patrick sees empty sections even on supposedly-completed recipes
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-07 · DONE ✅ (DECISION-009 — 11-recipe migration)
-**Closed by Senior Engineer 2026-05-08 in commit `5ac153b`.** All 11 recipes ported from `docs/coo/culinary-research/*.md` into `seed-recipes.ts` with `total_time_minutes`, `active_time_minutes`, `equipment[]`, `before_you_start[]` (capped at 3 per Zod schema), `mise_en_place[]`, `finishing_note`, `leftovers_note`. Markdown bold (`**text**`) stripped from inserted strings — they would not have rendered in React Native Text. Time strings normalised to integer minutes (e.g. "4 hours 30 min" → 270, overnight → 720 floor). Cook authored research for an additional 27 recipes during the same window; those landed as a follow-on commit `e649f0f`. Patrick validates on-device.
-
-### Original handoff (preserved for audit) → Senior Engineer · 2026-05-07 · OPEN (DECISION-009 — 11-recipe migration)
-**From:** COO
-**Subject:** Migrate 11 recipes that already have research files into seed-recipes.ts with full DECISION-009 fields
-**Why:** Per the engineer's 7 May handover, the recipe audit found 6 recipes fully populated (Batch 1), **11 recipes that have res
+1. Grep to find every reference. Keep historical session reports as-is (t
