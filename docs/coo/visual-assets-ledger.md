@@ -51,7 +51,8 @@
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
 | `hero` | CC-stock | `photo-1639020715088-e7afebe6cb25` (Manu Ros, Unsplash) | — | Unsplash License | YES | REJECTED: red onion rings (recipe uses white onion, finely diced); yellow processed cheese no longer matches cheddar primary. 2026-05-14 COO | — | REJECTED |
-| `hero` (replacement) | CC-stock | `photo-1678110707493-8d05425137ac` (Arvid Skywalker, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` (replacement 1) | CC-stock | `photo-1678110707493-8d05425137ac` (Arvid Skywalker, Unsplash) | — | Unsplash License | YES | REJECTED: tomato slice visible (not in recipe); white onion presented as rings not finely diced; cheese appears American processed yellow not cheddar. 2026-05-15 COO | — | REJECTED |
+| `hero` (replacement 2) | CC-stock | `photo-1607013251379-e6eecfffe234` (Eiliv Aceron, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-s1-mise` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s3-smash` | AI | Gemini (Patrick) | `image-briefs/smash-burger.md` | Gemini commercial | YES | PENDING | — | CANDIDATE |
 | `step-s4-crust` | AI | DALL-E 3 | `image-briefs/smash-burger.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
@@ -61,7 +62,8 @@
 **Current hero placeholder (in seed-recipes.ts):** `https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80`
 **Accuracy status of current placeholder:** ❌ INACCURATE — shows lettuce and tomato; neither appears in the Hone smash burger recipe. Must be replaced before launch.
 **CANDIDATE `photo-1639020715088-e7afebe6cb25` REJECTED (2026-05-14):** red onion rings (recipe uses white onion, finely diced) + cheese is yellow processed American (no longer primary since cheddar swap).
-**REPLACEMENT CANDIDATE `photo-1678110707493-8d05425137ac` (Arvid Skywalker):** cheeseburger on black plate on cooling rack — awaiting cook accuracy check: (1) thin smashed patty visible, (2) cheddar melt (not yellow American), (3) no red onion rings, (4) no lettuce/tomato. Cook must confirm before APPROVED.
+**REPLACEMENT CANDIDATE 1 `photo-1678110707493-8d05425137ac` REJECTED (2026-05-15):** tomato slice visible (not in Hone smash burger); white onion as rings (recipe uses finely diced); cheese appears American processed yellow not cheddar.
+**REPLACEMENT CANDIDATE 2 `photo-1607013251379-e6eecfffe234` (Eiliv Aceron) — PENDING COOK REVIEW.** Sourced 2026-05-15. Brief verified: smashed thin patties, brioche bun, cheddar melt, caramelised white onion, pickles. No lettuce, no tomato, no red onion.
 
 ---
 
@@ -71,7 +73,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-1622973536968-3ead9e780960` (Homescreenify, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-1622973536968-3ead9e780960` (Homescreenify, Unsplash) | — | Unsplash License | YES | ✅ APPROVED 2026-05-15 COO — spaghetti, rich dark meat ragù, grated parmesan, no cream visible | — | APPROVED |
 | `step-soffritto` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
 | `step-mince-browned` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
 | `step-sauce-reduced` | AI | TBD | `image-briefs/bolognese.md` | TBD | TBD | PENDING | — | PENDING |
@@ -105,7 +107,8 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock (CANDIDATE) / AI (fallback) | `photo-1598103442097-8b74394b95c8` (inspect first) | `image-briefs/roast-chicken.md` | Unsplash License | YES | PENDING | — | PENDING |
+| `hero` | CC-stock | `photo-1598103442097-8b74394b95c8` | `image-briefs/roast-chicken.md` | Unsplash License | YES | REJECTED: Dead URL — 404, image removed from Unsplash. 2026-05-15 COO | — | REJECTED |
+| `hero` (replacement 1) | CC-stock | `photo-1606728035253-49e8a23146de` (Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-s1-dry-brined` | AI | DALL-E 3 | `image-briefs/roast-chicken.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
 | `step-s3-butter-skin` | AI | DALL-E 3 | `image-briefs/roast-chicken.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
 | `step-s4-golden` | AI | DALL-E 3 | `image-briefs/roast-chicken.md` | DALL-E 3 commercial | YES | PENDING | — | PENDING |
@@ -116,7 +119,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-1603894584373-5ac82b2ae398` (Raman, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-1603894584373-5ac82b2ae398` (Raman, Unsplash) | — | Unsplash License | YES | ✅ APPROVED 2026-05-15 COO — rich orange-amber sauce (not pale yellow/green), chicken pieces visible, cream drizzle and coriander garnish accurate | — | APPROVED |
 | `step-sauce-pre-cream` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-sauce-post-cream` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -126,7 +129,8 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-1668665772043-bdd32e348998` (Andrew Relf, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-1668665772043-bdd32e348998` (Andrew Relf, Unsplash) | — | Unsplash License | YES | REJECTED: sauce is pale beige/brown — not green. No Thai eggplant. Chicken presented as sliced breast fillet, not pieces. Completely wrong colour register for a green curry. 2026-05-15 COO | — | REJECTED |
+| `hero` (replacement 1) | CC-stock | `photo-1716959669858-11d415bdead6` (Unsplash) | — | Unsplash License | YES | ⚠️ CONDITIONAL PENDING — yellow-green sauce (not vibrant green); cook to confirm coconut milk ratio is plausible. Sourced 2026-05-15. | — | CANDIDATE |
 | `step-paste-cracking` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-curry-finished` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -136,7 +140,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-1599921841143-819065a55cc6` (Mark König, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-1599921841143-819065a55cc6` (Mark König, Unsplash) | — | Unsplash License | YES | ✅ APPROVED 2026-05-15 COO — large golden-brown breaded cutlet, properly thin and pounded, lemon wedge, sautéed potatoes. Accurate. | — | APPROVED |
 | `step-crumb-station` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-crust-golden` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-cross-section` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
@@ -147,7 +151,8 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-1633436374784-7f9502eb348a` (Parnis Azimi, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-1633436374784-7f9502eb348a` (Parnis Azimi, Unsplash) | — | Unsplash License | YES | REJECTED: cross-section reveals spinach/ricotta filling — this is a vegetarian lasagne. No meat ragù visible. Wrong dish type. 2026-05-15 COO | — | REJECTED |
+| `hero` (replacement 1) | CC-stock | `photo-1709429790175-b02bb1b19207` (Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
 | `step-layers-visible` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -158,7 +163,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-1625604087024-7fb428fc4626` (James Kern, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-1625604087024-7fb428fc4626` (James Kern, Unsplash) | — | Unsplash License | YES | ✅ APPROVED 2026-05-15 COO — bone-in shoulder/leg, deep mahogany char, rosemary visible, uncovered in battered metal roasting tin. Dramatic and accurate. | — | APPROVED |
 | `step-crust-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -167,7 +172,8 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-kmQw0_2A9xQ` (Leo Li, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
+| `hero` | CC-stock | `photo-kmQw0_2A9xQ` (Leo Li, Unsplash) | — | Unsplash License | YES | REJECTED: Dead URL — 404, image removed from Unsplash. 2026-05-15 COO | — | REJECTED |
+| `hero` (replacement 1) | CC-stock | `photo-1611599538235-128e54f1250f` (Unsplash) | — | Unsplash License | YES | ⚠️ CONDITIONAL PENDING — battered fish correct; chips are thin-cut fries not traditional thick pub chips. Cook to assess acceptability. Sourced 2026-05-15. | — | CANDIDATE |
 | `step-batter-golden` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -215,45 +221,4 @@
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
 | `hero` (superseded) | CC-stock | `photo-kYi1eN--guM` (Markus Winkler, Unsplash) | — | Unsplash License | YES | ⚠️ CONDITIONAL 2026-05-14 COO — chicken is uncooked/marinated, not charred. Superseded by replacement candidate 2026-05-15 | — | REPLACED |
-| `hero` (replacement) | CC-stock | `photo-1561620141-343a829938de` (Leslie del Moral, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
-| `step-char-formed` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
-| `step-sliced` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
-
----
-
-## Hummus (`hummus`)
-
-| Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
-|---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-14X4iiiF3t4` (Maryam Sicard, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
-
----
-
-## Pad Thai (`pad-thai`)
-
-| Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
-|---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-_wBJ0cvKhIE` (Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
-| `step-egg-ribbons` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
-
----
-
-## Flour Tortillas (`flour-tortillas`)
-
-> **Cook accuracy checklist for hero CANDIDATE:** (1) TACO-SIZE tortillas — 12–13 cm diameter. Reject burrito-size (25+ cm). (2) Char marks from comal/cast iron visible. (3) Stack or tacos presentation — not a wrap or quesadilla.
-
-| Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
-|---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-N__68TkGeOY` (Thomas Park, Unsplash) | — | Unsplash License | YES | REJECTED: primary subject is a Lone Star Beer can (branded product); tortillas are props. Alcohol branding cannot appear in hero images. Need replacement: taco-size flour tortillas with char marks, stacked or as tacos, no branding. 2026-05-14 COO | — | REJECTED |
-| `hero` (replacement) | CC-stock | `photo-1693193433392-da83457dff20` (Michael Kahn, Unsplash) | — | Unsplash License | YES | PENDING | — | CANDIDATE |
-| `step-comal-char` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
-
----
-
-## Ledger statistics
-
-| Metric | Count |
-|---|---|
-| Total images required (est.) | ~120 |
-| Images with APPROVED status | 3 (carbonara hero, falafel hero, pavlova hero) |
-| Images with CANDIDATE status | 16 (13 hero CC-stock from 15 May batch + 2 smash burger step AI + replacement candidates for smash-burger, flour-tortillas, shawarma)
+| `hero` (replacement 1) | CC-stock | `photo-1561620141-343a829938de` (Leslie del Moral, Unsplash) | — | Unsplash License |
