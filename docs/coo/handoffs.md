@@ -54,6 +54,50 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Cook · 2026-05-15 · OPEN URGENT (DECISION-014 — hero accuracy validation, all 16 launch recipes)
+**From:** Photography Director (COO)
+**Subject:** 13 hero images are sitting at CANDIDATE status in the ledger. Cook must inspect each one and either sign it off as APPROVED or REJECT it with a specific reason. Until this is done the engineer cannot migrate the photos into the app and build #111's placeholder gap stays open.
+**Why:** Every hero was sourced against the visual description only. Real-image searches return near-misses — wrong cheese colour, wrong tortilla size, raw chicken instead of charred, generic roast instead of lamb specifically. Cook is the only person who can confirm culinary accuracy.
+
+**How to validate each photo:**
+1. Open the URL in a browser (or paste into the Safari/Chrome address bar).
+2. Compare against the checklist below — one specific question per recipe.
+3. Go to `docs/coo/visual-assets-ledger.md` and fill in the "Cook signoff" column with:
+   - ✅ APPROVED YYYY-MM-DD Cook — [one-line note on what you confirmed]
+   - ❌ REJECTED YYYY-MM-DD Cook — [specific reason: what's wrong]
+4. Change the Status cell from CANDIDATE to APPROVED or REJECTED.
+
+**The 13 photos to validate (open each URL in a browser):**
+
+| Recipe | URL to open | The one question |
+|---|---|---|
+| Smash Burger (replacement) | https://images.unsplash.com/photo-1678110707493-8d05425137ac?w=600&q=80 | Is the patty thin and smashed flat with a lacy crust? No red onion rings, no lettuce/tomato? Cheese looks like cheddar (orange-yellow melt), not yellow processed American? |
+| Weekday Bolognese | https://images.unsplash.com/photo-1622973536968-3ead9e780960?w=600&q=80 | Spaghetti with a glossy rich meat sauce? No cream visible, not lasagne? |
+| Roast Chicken | https://images.unsplash.com/photo-1598103442097-8b74394b95c8?w=600&q=80 | Whole chicken, deep golden-brown skin, not sauced or covered? |
+| Butter Chicken | https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&q=80 | Rich orange-red curry sauce, not pale yellow or green? |
+| Thai Green Curry | https://images.unsplash.com/photo-1668665772043-bdd32e348998?w=600&q=80 | Green curry — visibly green from coconut milk + paste? Not yellow or red curry? |
+| Chicken Schnitzel | https://images.unsplash.com/photo-1599921841143-819065a55cc6?w=600&q=80 | Thin golden crumbed schnitzel? Not a thick parmigiana or a crumbed rissole? |
+| Beef Lasagne | https://images.unsplash.com/photo-1633436374784-7f9502eb348a?w=600&q=80 | Classic layered lasagne with visible pasta layers and meat sauce? Not a wrap or baked pasta dish? |
+| Roast Lamb with Rosemary & Garlic | https://images.unsplash.com/photo-1625604087024-7fb428fc4626?w=600&q=80 | Is this clearly a lamb leg or shoulder (not chops, not a rack, not a whole animal)? Deep mahogany crust? Rosemary visible? |
+| Fish & Chips | https://images.unsplash.com/photo-kmQw0_2A9xQ?w=600&q=80 | Golden battered fish fillet + chunky chips? Beer-batter style (pale gold, not fine breadcrumb coating)? |
+| Chicken Shawarma (replacement) | https://images.unsplash.com/photo-1561620141-343a829938de?w=600&q=80 | Does this look Levantine — not a Greek gyro or Turkish doner? Cooked meat (not raw)? |
+| Hummus | https://images.unsplash.com/photo-14X4iiiF3t4?w=600&q=80 | Smooth pale hummus with olive oil pool + paprika? Not falafel or a dip plate with many items? |
+| Pad Thai | https://images.unsplash.com/photo-_wBJ0cvKhIE?w=600&q=80 | Rice noodles, egg ribbons, peanuts, bean sprouts? Not a stir-fry or noodle soup? |
+| Flour Tortillas (replacement) | https://images.unsplash.com/photo-1693193433392-da83457dff20?w=600&q=80 | Small taco-size flour tortillas (~12 cm)? No branding visible? Flour (white/cream), not corn (yellow)? |
+
+**Already APPROVED — no action needed:**
+- Pasta Carbonara ✅, Falafel ✅, Pavlova ✅
+
+**Files to update:**
+- `docs/coo/visual-assets-ledger.md` — Cook signoff column + Status column for each recipe's hero row
+
+**What this unblocks:**
+- Engineer can run the hero migration into seed-recipes.ts (one line per recipe) and trigger a build that finally fills all placeholder gaps in the Kitchen tab.
+
+**Blocks:** Hero migration into seed-recipes.ts for all 13 recipes. Build that resolves the build #111 placeholder gap.
+
+---
+
 ### HANDOFF → Patrick · 2026-05-14 · OPEN (build #112 — uninstall-reinstall validation required to close R-016)
 **From:** Senior Engineer
 **Subject:** Build #112 contains the `allowBackup: false` fix. Patrick must run the uninstall + clean reinstall test before R-016 can close.
@@ -1299,42 +1343,4 @@ Patrick is finding recipes on-device with empty Prep and Equipment sections. The
 ### Original handoff (preserved for audit) → Senior Engineer · 2026-05-07 · OPEN (DECISION-009 — 11-recipe migration)
 **From:** COO
 **Subject:** Migrate 11 recipes that already have research files into seed-recipes.ts with full DECISION-009 fields
-**Why:** Per the engineer's 7 May handover, the recipe audit found 6 recipes fully populated (Batch 1), **11 recipes that have research `.md` files in `docs/coo/culinary-research/` ready to migrate**, and 27 recipes still waiting on Cook's Batch 2 research. The 11-recipe migration is unblocked — research already exists, no Cook input needed.
-**Recipe ↔ source file ↔ seed line map (verified 2026-05-07):**
-
-| Seed const | Line | Recipe id | Research file |
-|---|---|---|---|
-| `SMASH_BURGER` | 42 | `smash-burger` | `culinary-research/smash-burger.md` |
-| `PASTA_CARBONARA` | 253 | `pasta-carbonara` | `culinary-research/carbonara.md` |
-| `ROAST_CHICKEN` | 432 | `roast-chicken` | `culinary-research/roast-chicken.md` |
-| `HUMMUS` | 676 | `hummus` | `culinary-research/hummus.md` |
-| `THAI_GREEN_CURRY` | 1150 | `thai-green-curry` | `culinary-research/green-curry.md` |
-| `PAD_THAI` | 1320 | `pad-thai` | `culinary-research/pad-thai.md` |
-| `WEEKDAY_BOLOGNESE` | 1775 | `weekday-bolognese` | `culinary-research/bolognese.md` |
-| `LAMB_SHAWARMA` | 2178 | `lamb-shawarma` | `culinary-research/shawarma.md` |
-| `BUTTER_CHICKEN` | 2709 | `butter-chicken` | `culinary-research/butter-chicken.md` |
-| `BARRAMUNDI` | 3130 | `barramundi-lemon-butter` | `culinary-research/barramundi.md` |
-| `PAVLOVA` | 3200 | `pavlova` | `culinary-research/pavlova.md` |
-
-`FALAFEL` (line 4416) is the migration template — copy field shapes verbatim. Note `culinary-research` filenames don't always match recipe ids (e.g. `barramundi.md` → `barramundi-lemon-butter`, `green-curry.md` → `thai-green-curry`, `shawarma.md` → `lamb-shawarma`, `bolognese.md` → `weekday-bolognese`, `carbonara.md` → `pasta-carbonara`).
-
-**Note:** the `whole_food_verified` field was retired 2026-05-07 — the concept caused recurring data drift. Don't add it. Schema, seed data, and DB column have all been removed; the migration is in `db/schema.ts` v7.
-**What's needed:**
-1. For each of the 11 recipes, read the corresponding `.md` source and migrate the new sections into `mobile/src/data/seed-recipes.ts`: `total_time_minutes`, `active_time_minutes`, `difficulty`, `equipment[]`, `before_you_start[]`, `mise_en_place[]`, `finishing_note`, `leftovers_note`. Existing fields (steps, ingredients, etc.) stay untouched.
-2. After each recipe migration, validate the schema parses (`npx tsc --noEmit`) and visually verify last 5 lines (per R-014 mitigation).
-3. After all 11, run a full `tsc --noEmit` on `seed-recipes.ts` and trigger a build.
-4. **Don't combine with the step-flow audit fixes** (separate 6 May handoff, 10 HIGH-priority items). Keep this as its own commit and build for review.
-**Cost:** Engineer estimates ~half a session.
-**Files touched:** `mobile/src/data/seed-recipes.ts`
-**Blocks:** Patrick seeing the full DECISION-008 sections on these 11 launch-priority recipes (currently they render with the same UI but with empty equipment/prep/finishing/leftovers — looks broken even though it's just missing data).
-
----
-
-### HANDOFF → COO · 2026-05-07 · OPEN
-**From:** Senior Engineer (Claude)
-**Subject:** REGN-006 + REGN-007 fixed; build #93 dispatched on `4725618`; Cook Batch 2 + 11-recipe migration still open
-**Why:** Patrick reported Equipment + Prep sections missing on most recipes (REGN-006), and Pantry STILL NEED chip state broken across three symptoms (REGN-007). Both have been root-caused, fixed in code, pushed to `main`, and a fresh APK build is in flight. There are tracked follow-ups the COO should be aware of and route correctly.
-
-**What's done:**
-- Diagnosed REGN-006 as a UI regression in `mobile/app/recipe/[id].tsx` — working tree had dropped 443 lines including the entire DECISION-008 UI block (At a glance / What to know / Equipment / Prep / Finishing & tasting / Leftovers & storage). Data was in the schema and SQLite; UI just wasn't rendering it. Restored from HEAD; re-applied the Pressable+View Android split on header buttons, title-card pill, Watch link, expand chip, and `MiseItem`. Renamed UI label "Mise en place" → "Prep" per Patrick — schema field `mise_en_place` unchanged.
-- Diagnosed REGN-007 as a single architectural bug behind three symptoms: chip's `added` boolean lived in a local `Set<string>` on `RecipeMatchCard`. Inverted the state flow — chip state is now DERIVED from `shoppingNameSet` (a memoised normalised name set off the live `shoppingItems`). All mutations route through `addToShopping
+**Why:** Per the engineer's 7 May handover, the recipe audit found 6 recipes fully populated (Batch 1), **11 recipes that have res
