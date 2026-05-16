@@ -13,7 +13,7 @@
  */
 
 /** Current target schema version. Must match the highest key in SCHEMA_MIGRATIONS. */
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 
 /**
  * Full schema for a fresh install.
@@ -47,6 +47,7 @@ export const SCHEMA_SQL: string[] = [
     mise_en_place          TEXT,
     finishing_note         TEXT,
     leftovers_note         TEXT,
+    hero_attribution       TEXT,
     output_unit            TEXT,
     output_unit_plural     TEXT,
     output_default         INTEGER,
@@ -244,5 +245,14 @@ export const SCHEMA_MIGRATIONS: Record<number, string[]> = {
     `ALTER TABLE recipes ADD COLUMN output_unit_plural TEXT`,
     `ALTER TABLE recipes ADD COLUMN output_default INTEGER`,
     `ALTER TABLE recipes ADD COLUMN extra_for_tomorrow_label TEXT`,
+  ],
+  9: [
+    // 2026-05-16 — build #113. The CC photography pipeline (DECISION-014
+    // 10 May) needs to surface photographer credit on every CC-licensed
+    // hero image. The field was added to the Zod schema in build #110 but
+    // the SQLite layer never persisted it — same class of bug as DECISION-
+    // 014's portion-sizing fields. One nullable column; refreshSeedRecipe-
+    // Fields (seed.ts) backfills it on every launch.
+    `ALTER TABLE recipes ADD COLUMN hero_attribution TEXT`,
   ],
 };

@@ -109,7 +109,10 @@ export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void>
         output_unit = ?,
         output_unit_plural = ?,
         output_default = ?,
-        extra_for_tomorrow_label = ?
+        extra_for_tomorrow_label = ?,
+        categories = ?,
+        hero_attribution = ?,
+        hero_url = ?
        WHERE id = ? AND user_added = 0`,
       [
         r.total_time_minutes ?? null,
@@ -125,6 +128,16 @@ export async function refreshSeedRecipeFields(db: SQLiteDatabase): Promise<void>
         r.output_unit_plural ?? null,
         r.output_default ?? null,
         r.extra_for_tomorrow_label ?? null,
+        // Build #113 — categories + hero_attribution + hero_url. Last
+        // three picked up on every launch so existing installs whose
+        // seed rows pre-date these columns get backfilled without a
+        // reinstall. hero_url is included here so the #110 hotfix
+        // (REJECTED smash-burger photo) and the #113 URL-strip
+        // (broken Unsplash short-id URLs for falafel/pavlova) reach
+        // Patrick's DB on next launch without an uninstall.
+        r.categories ? JSON.stringify(r.categories) : null,
+        r.hero_attribution ?? null,
+        r.hero_url ?? null,
         r.id,
       ],
     );

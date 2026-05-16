@@ -38,6 +38,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
+import { Image } from 'expo-image';
 import type { Recipe, CuisineId } from '../../src/data/types';
 import {
   getActiveRecipes,
@@ -626,10 +627,23 @@ export default function KitchenHome() {
 // ────────────────────────────────────────────────────────────────────────────
 
 function HeroBackground({ recipe }: { recipe: Recipe }) {
-  // Without expo-image we'd risk crashing; the existing RecipeCard uses
-  // expo-image, but for the hero we use a simple gradient + emoji fallback
-  // that always renders. If a hero_url is set the recipe screen handles
-  // photography downstream — the Kitchen hero stays a clean editorial card.
+  // Build #113 — render hero_url as a real Image when set; fall back to the
+  // gradient-bands + emoji combo when it's absent. Previously the Hero card
+  // ALWAYS rendered the gradient even when a CC-approved photo URL was
+  // available, so Patrick saw flat colour cards instead of the Carbonara /
+  // Falafel / Pavlova hero photos that had been wired into seed-recipes.ts.
+  if (recipe.hero_url) {
+    return (
+      <View style={{ position: 'absolute', inset: 0 as unknown as number, width: '100%', height: '100%' }}>
+        <Image
+          source={{ uri: recipe.hero_url }}
+          style={{ width: '100%', height: '100%' }}
+          contentFit="cover"
+          transition={220}
+        />
+      </View>
+    );
+  }
   const bands = recipe.hero_fallback ?? [tokens.bgDeep, tokens.cream, tokens.bgDeep];
   return (
     <View style={{ position: 'absolute', inset: 0 as unknown as number, width: '100%', height: '100%' }}>
@@ -698,20 +712,31 @@ function RecipeRow({
           position: 'relative',
         }}
       >
-        <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[0] }} />
-        <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[1] }} />
-        <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[2] }} />
-        {recipe.emoji ? (
-          <Text
-            style={{
-              position: 'absolute',
-              fontSize: 26,
-              opacity: 0.92,
-            }}
-          >
-            {recipe.emoji}
-          </Text>
-        ) : null}
+        {recipe.hero_url ? (
+          <Image
+            source={{ uri: recipe.hero_url }}
+            style={{ width: '100%', height: '100%' }}
+            contentFit="cover"
+            transition={180}
+          />
+        ) : (
+          <>
+            <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[0] }} />
+            <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[1] }} />
+            <View style={{ flex: 1, alignSelf: 'stretch', backgroundColor: bands[2] }} />
+            {recipe.emoji ? (
+              <Text
+                style={{
+                  position: 'absolute',
+                  fontSize: 26,
+                  opacity: 0.92,
+                }}
+              >
+                {recipe.emoji}
+              </Text>
+            ) : null}
+          </>
+        )}
       </View>
 
       {/* Body */}

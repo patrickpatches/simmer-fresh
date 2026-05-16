@@ -30,6 +30,7 @@ interface RecipeRow {
   source_video_url: string | null;
   source_notes: string | null;
   hero_url: string | null;
+  hero_attribution: string | null;
   hero_fallback: string | null;
   emoji: string | null;
   user_added: number;
@@ -39,6 +40,8 @@ interface RecipeRow {
   // DECISION-009 extended content fields
   total_time_minutes: number | null;
   active_time_minutes: number | null;
+  // Categories — JSON string → { cuisines, types }
+  categories: string | null;
   equipment: string | null;        // JSON string → string[]
   before_you_start: string | null; // JSON string → string[]
   mise_en_place: string | null;    // JSON string → string[]
@@ -62,6 +65,8 @@ interface IngredientRow {
   cap: number | null;
   prep: string | null;
   curve: string | null;
+  // Substitutions — JSON string → Substitution[]
+  substitutions: string | null;
 }
 
 interface StepRow {
@@ -90,6 +95,23 @@ function rowToIngredient(row: IngredientRow): Ingredient {
     cap: row.cap ?? undefined,
     prep: row.prep ?? undefined,
     curve: row.curve ? (JSON.parse(row.curve) as Record<string, number>) : undefined,
+    // Build #113 — substitutions were silently dropped: the column exists in
+    // SQLite and updateSubstitutions populates it on every launch, but this
+    // mapper was never reading them back. Result: ing.substitutions was
+    // always undefined and the recipe screen's swap button rendered for zero
+    // ingredients. Same R-014 class of bug as DECISION-014's portion-sizing
+    // fields. Defensive parse — bad JSON falls back to undefined.
+    substitutions: (() => {
+      if (!row.substitutions) return undefined;
+      try {
+        const parsed = JSON.parse(row.substitutions);
+        return Array.isArray(parsed) ? parsed as Ingredient['substitutions'] : undefined;
+      } catch {
+        // eslint-disable-next-line no-console
+        console.warn('[rowToIngredient] failed to parse substitutions JSON for ingredient', row.id);
+        return undefined;
+      }
+    })(),
   };
 }
 
@@ -132,6 +154,10 @@ function rowToRecipe(
           }
         : undefined,
     hero_url: row.hero_url ?? undefined,
+    // Build #113 — hero_attribution column added in migration 9; persisted
+    // by refreshSeedRecipeFields. Renders as the small dark-scrim pill on
+    // the recipe detail hero image (CC licensing convention).
+    hero_attribution: row.hero_attribution ?? undefined,
     hero_fallback: row.hero_fallback
       ? (JSON.parse(row.hero_fallback) as [string, string, string])
       : undefined,
@@ -157,6 +183,24 @@ function rowToRecipe(
     output_unit_plural: row.output_unit_plural ?? undefined,
     output_default: row.output_default ?? undefined,
     extra_for_tomorrow_label: row.extra_for_tomorrow_label ?? undefined,
+    // Build #113 — categories had been silently dropped at the DB hop,
+    // so recipe.categories was always undefined and the Kitchen cuisine
+    // tile filter trimmed every tile except "All". JSON-parsed from a
+    // `{cuisines, types}` shape with defensive fallback.
+    categories: (() => {
+      if (!row.categories) return undefined;
+      try {
+        const parsed = JSON.parse(row.categories);
+        if (parsed && typeof parsed === 'object' && Array.isArray((parsed as any).cuisines) && Array.isArray((parsed as any).types)) {
+          return parsed as Recipe['categories'];
+        }
+        return undefined;
+      } catch {
+        // eslint-disable-next-line no-console
+        console.warn('[rowToRecipe] failed to parse categories JSON for recipe', row.id);
+        return undefined;
+      }
+    })(),
   };
 }
 
@@ -316,12 +360,12 @@ export async function insertRecipe(
   await db.runAsync(
     `INSERT OR REPLACE INTO recipes (
       id, title, tagline, description, base_servings, time_min, difficulty,
-      tags, source_chef, source_video_url, source_notes, hero_url, hero_fallback,
+      tags, source_chef, source_video_url, source_notes, hero_url, hero_attribution, hero_fallback,
       emoji, user_added, generated_by_claude, leftover_extra_servings, leftover_note,
-      total_time_minutes, active_time_minutes, equipment, before_you_start,
+      total_time_minutes, active_time_minutes, categories, equipment, before_you_start,
       mise_en_place, finishing_note, leftovers_note,
       output_unit, output_unit_plural, output_default, extra_for_tomorrow_label
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       recipe.id,
       recipe.title,
@@ -335,6 +379,7 @@ export async function insertRecipe(
       recipe.source?.video_url ?? null,
       recipe.source?.notes ?? null,
       recipe.hero_url ?? null,
+      recipe.hero_attribution ?? null,
       recipe.hero_fallback ? JSON.stringify(recipe.hero_fallback) : null,
       recipe.emoji ?? null,
       recipe.user_added ? 1 : 0,
@@ -343,6 +388,7 @@ export async function insertRecipe(
       recipe.leftover_mode?.note ?? null,
       recipe.total_time_minutes ?? null,
       recipe.active_time_minutes ?? null,
+      recipe.categories ? JSON.stringify(recipe.categories) : null,
       recipe.equipment ? JSON.stringify(recipe.equipment) : null,
       recipe.before_you_start ? JSON.stringify(recipe.before_you_start) : null,
       recipe.mise_en_place ? JSON.stringify(recipe.mise_en_place) : null,
@@ -360,8 +406,8 @@ export async function insertRecipe(
     const ing = recipe.ingredients[i]!;
     await db.runAsync(
       `INSERT OR REPLACE INTO ingredients
-        (id, recipe_id, sort_order, name, amount, unit, scales, cap, prep, curve)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        (id, recipe_id, sort_order, name, amount, unit, scales, cap, prep, curve, substitutions)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       [
         ing.id,
         recipe.id,
@@ -373,6 +419,7 @@ export async function insertRecipe(
         ing.cap ?? null,
         ing.prep ?? null,
         ing.curve ? JSON.stringify(ing.curve) : null,
+        ing.substitutions && ing.substitutions.length > 0 ? JSON.stringify(ing.substitutions) : null,
       ],
     );
   }

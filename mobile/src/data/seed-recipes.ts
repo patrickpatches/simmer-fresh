@@ -4333,8 +4333,6 @@ const PAVLOVA: Recipe = {
     notes: 'Technique from Donna Hay\'s pavlova masterclass. The cornflour-and-vinegar method is the standard Australian pavlova approach.',
   },
   emoji: '🍓',
-  hero_url: 'https://images.unsplash.com/photo-5nCTfEru3Do?w=1200&q=80',
-  hero_attribution: 'Photo: Eugene Krasnaok / Unsplash',
   hero_fallback: fallback('#F5F0E8'),
   categories: { cuisines: ['australian'], types: ['dessert'] },
   ingredients: [
@@ -5624,8 +5622,6 @@ const FALAFEL: Recipe = {
     chef: 'Levantine tradition',
     notes: "Falafel is a Levantine folk dish without a single author. Every household across Palestine, Lebanon, Syria, and Jordan has its own version. This is the consensus method — dried chickpeas soaked overnight, blitzed raw with herbs and spices, fried until the outside shatters.",
   },
-  hero_url: 'https://images.unsplash.com/photo-pQnsKWk5ljQ?w=1200&q=80',
-  hero_attribution: 'Photo: Anton / Unsplash',
   hero_fallback: fallback('#4A7A2E'),
   leftover_mode: { extra_servings: 2, note: 'Reheat in a hot oven (200 °C, 8 minutes) — never the microwave, which steams the crust soft' },
   total_time_minutes: 1560,

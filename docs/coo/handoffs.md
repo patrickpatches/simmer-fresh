@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #113 | `pending` | **Three on-device bugs from build #112 — DB pipeline fixes.** Same R-014 class as DECISION-014's portion-sizing bug: schema column exists, data gets written via UPDATE, but the row-to-object mappers silently dropped the field on read-back. (1) **Swap button missing:** `rowToIngredient` never read `substitutions` from the DB row — `ing.substitutions` was always `undefined`, so the recipe screen's `hasSwaps` check was always false. Now parses the JSON column. (2) **Only one cuisine tile:** `rowToRecipe` never read `categories` from the DB row — `recipe.categories` was always `undefined`, so the Kitchen tile filter trimmed every tile except 'All'. Now parses the JSON column. Added a `categories` SQLite column write in `insertRecipe` + UPDATE in `refreshSeedRecipeFields` so existing installs backfill without reinstall. (3) **Hero images don't appear:** the Kitchen `HeroBackground` component and the recipe-row thumbnail were rendering gradient bands only — they never touched `recipe.hero_url`. Wired `expo-image` Image into both. Also verified Unsplash URLs via curl — FALAFEL `photo-pQnsKWk5ljQ` and PAVLOVA `photo-5nCTfEru3Do` return 404 (those are page short-codes, not CDN paths). Stripped both from seed-recipes.ts; gradient fallback renders until Photography Director sources proper CDN URLs. CARBONARA `photo-1612874742237-6526221588e3` is a valid CDN URL and stays. Added SQLite migration 9 for the `hero_attribution` column (it was added to the Zod schema in #110 but never persisted to SQLite). `refreshSeedRecipeFields` now also UPDATEs `categories`, `hero_attribution`, and `hero_url` on every launch so existing installs pick up the new mapping + the #110 SMASH_BURGER hero-strip + the #113 falafel/pavlova URL-strip without a reinstall. 5 files. tsc clean. R-014 guardrail green. |
 | #112 | `1f7bb88` | **Two-item bundle.** (1) **R-016 fix — pantry persistence after uninstall.** Added `"allowBackup": false` under `expo.android` in `mobile/app.json`; bumped `versionCode` 47→48. Google Android Auto Backup is on by default for Expo apps and was silently restoring the SQLite database from the user's Google Drive on reinstall — contradicting the offline-first / privacy-first product stance and producing the bug Patrick reported (pantry items + shopping list survive a clean uninstall). The next prebuild will emit `android:allowBackup="false"` on the `<application>` tag in `AndroidManifest.xml`. (2) **R-014 truncation CI guardrail.** New `scripts/check-ts-truncation.sh` (one-liner that asserts every `.ts`/`.tsx` under `mobile/src/` and `mobile/app/` ends on a balanced closing token — `}` `)` `;` `,` or `]`) plus a new GitHub Actions workflow `.github/workflows/ts-truncation-check.yml` that runs the script on every push to main and on every PR. Three commits in May 2026 (Patrick's `6813ddc`, cook's `ff86010`, engineer's mid-DECISION-015 pass) silently truncated `.ts` files via the Edit tool — each cost a build cycle. Script self-tested against a deliberately-truncated `.ts` (caught it, exit 1) and against a clean `.ts` (passed, exit 0). 25 launch files all end on a balanced token. |
 | #111 | `c8430f6` | **DECISION-015 per-recipe migration.** Pre-flight gate verified: all 16 launch research files carry the cook's `DECISION-015` discrepancy table on origin/main (GitHub code-search lag — direct file fetch confirmed). Applied 64 per-swap colour overrides where cook's judgment diverged from the default 4-to-3 mapping (mostly `great → yellow` downgrades; some `compromise → yellow` and `good → green` upgrades). Applied 12 `step_overrides` arrays where cook fully authored the alternate step text (Pasta Carbonara s4 whole-eggs, Green Curry s3 prawns/tofu/pumpkin, Bolognese s4 fresh tomatoes, Chicken Shawarma s2 chicken breast, Butter Chicken s2/s3/s5, Flour Tortillas s3 lard, Chicken Schnitzel step_5_fry_first veal, Beef Lasagne step_7_assemble dried sheets). Final pill counts: 211 green / 338 yellow / 94 red / 0 legacy. **Flagged back to cook (no override text authored):** SMASH_BURGER 3 entries, HUMMUS tinned chickpeas, PAD_THAI 4 flags, FALAFEL 2 flags, BEEF_LASAGNE 'ragù step' anchor ambiguous, ROAST_LAMB 'prep' anchor ambiguous, FLOUR_TORTILLAS 'Vegetable shortening' substitution doesn't exist in seed. R-014 mitigation: caught a missing-comma syntax error during step_overrides insertion (single-line substitution objects); fixed with targeted regex pass; tsc clean. |
 | #110 | `070483a` | **5-item bundle.** (1) **R-014 recovery:** cook's `ff86010` truncated `types.ts` (lost final 4 lines of `safeParseRecipe`); restored from `b0382e0` clean state and re-applied the `'dessert'` TypeId addition. (2) **Hero attribution:** added `hero_attribution: z.string().optional()` to Recipe schema; rendered as a small dark-scrim pill bottom-right of the hero image (CC licensing convention — present without competing with the title card). (3) **Cuisine tiles:** `CUISINE_LABELS` Record extended with `palestinian`, `german`, `british` (tsc demanded them); `CATEGORIES` tile list now covers every CuisineId in the enum — the existing `availableCategoryIds` filter still trims to ≥1 launch recipe so the user only sees tiles with content (today: Australian, Levantine, Italian, Indian, Thai, American, Mexican). (4) **APPROVED hero images:** wired 3 Unsplash heroes into seed-recipes.ts — PASTA_CARBONARA (`photo-1612874742237`), FALAFEL (`photo-pQnsKWk5ljQ` Anton), PAVLOVA (`photo-5nCTfEru3Do` Eugene Krasnaok). Each carries the photographer credit. Shawarma CONDITIONAL left as-is per default (wait for replacement). Smash-burger + flour-tortillas REJECTED — not touched. (5) **Taxonomy guardrail:** extended `validateDecision015` in `db/seed.ts` to also scan every launch recipe's `categories.cuisines` + `categories.types` against the enum — console.warn for any value outside the schema. **Item 3 NOT shipped (DECISION-015 per-recipe substitution overrides):** I searched every research file for `DECISION-015` / `step_overrides` / `Great swap` / `Some difference` / `Noticeable change` — **zero hits**. Cook hasn't actually authored the per-recipe discrepancy tables yet despite the brief saying she had. Default 4-to-3 mapping from #107 still in force; flagging cook + COO for the actual delivery. |
@@ -53,6 +54,39 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### HANDOFF → Photography Director + COO · 2026-05-16 · OPEN (FALAFEL + PAVLOVA hero URLs were 404 — sourcing replacements)
+**From:** Senior Engineer
+**Subject:** The Unsplash URLs cook approved for FALAFEL (`photo-pQnsKWk5ljQ`) and PAVLOVA (`photo-5nCTfEru3Do`) return 404 on the CDN. They look like Unsplash page short-codes, not the `images.unsplash.com/photo-{numeric_id}-{hash}` CDN path that the app's `<Image>` component needs. CARBONARA (`photo-1612874742237-6526221588e3`) is the correct CDN format and resolves 200.
+
+**What I shipped in #113:**
+- Stripped the broken FALAFEL + PAVLOVA `hero_url` fields from seed-recipes.ts.
+- Stripped their `hero_attribution` lines so the credit pill doesn't orphan.
+- Both render the gradient-bands + emoji fallback until proper URLs land.
+- CARBONARA hero stays — it works on Patrick's device after this build.
+
+**What's needed:**
+1. Photography Director re-sources Falafel + Pavlova hero candidates. The URL must be the direct CDN path: `https://images.unsplash.com/photo-{NUMERIC-ID}-{HASH}?...`. The page short code (`unsplash.com/photos/pQnsKWk5ljQ`) is not the CDN URL — open the photo on Unsplash and use the "Download" or right-click image src.
+2. Cook re-signs off on the new candidates.
+3. Engineer migrates as a data-only commit.
+
+**Status:** shipped to main, awaiting Patrick on-device validation per R-015. Not self-closing.
+
+---
+
+### HANDOFF → Patrick · 2026-05-16 · OPEN (build #113 validation walk)
+**From:** Senior Engineer
+**Subject:** Build #113 fixes three bugs Patrick caught on #112. Validation steps below.
+
+**What to check after installing #113:**
+1. **Swap button works.** Open any recipe with substitutions (Pasta Carbonara, Butter Chicken, Smash Burger…). Tap any ingredient name in the list. A bottom sheet should open with green/yellow/red swap options. Tap a swap → step text adapts where cook authored an override.
+2. **Cuisine tiles show real options.** Open Kitchen. The horizontal row under "Browse by cuisine" should show 7 tiles: All, Australian, Levantine, Italian, Indian, Thai, American, Mexican (in some order — derived from the 16 launch recipes). Tapping each filters the recipe list to that cuisine. Tapping again returns to All.
+3. **Carbonara hero image.** Open Pasta Carbonara — the Kitchen hero card (if Carbonara is featured) and the recipe detail screen should show a real photo of carbonara, with "Photo: Unsplash" in tiny text at the bottom-right of the image.
+4. **Falafel + Pavlova render gracefully.** Both should show the gradient-bands fallback + emoji — no broken image icon, no white square. Real photos coming in the next photography pass once URLs are re-sourced.
+
+**Per R-015:** shipped to main, awaiting Patrick on-device validation. Not self-closing.
+
+---
 
 ### HANDOFF → Engineer · 2026-05-15 · OPEN (hero photo_url integration — all 16 launch recipes)
 **From:** COO (Photography Director)
