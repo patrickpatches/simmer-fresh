@@ -37,7 +37,7 @@ import {
 } from '../../db/database';
 import { tokens, fonts } from '../../src/theme/tokens';
 import { Icon } from '../../src/components/Icon';
-import { SubstitutionSheet } from '../../src/components/SubstitutionSheet';
+import { SubstitutionSheet, PILL_CONFIG } from '../../src/components/SubstitutionSheet';
 import { ServingsSelector } from '../../src/components/ServingsSelector';
 import {
   formatAmount,
@@ -824,17 +824,21 @@ export default function RecipeDetailScreen() {
               const isSwapped   = activeSwap !== undefined && activeSwap !== null;
               const displayName = isSwapped ? (activeSwap as Substitution).ingredient : ing.name;
 
+              // Build #114 — swap trigger is now a dedicated pill on the right
+              // of the row, not the whole row. Stops stray taps after
+              // sheet-dismiss from re-opening the sheet, and gives a
+              // clearly visible swap affordance.
+              const activeSwapQuality = activeSwap && (activeSwap as Substitution).quality;
+              const pillCfg = activeSwapQuality ? PILL_CONFIG[activeSwapQuality as 'green' | 'yellow' | 'red'] : null;
+
               return (
                 <Pressable
                   key={ing.id}
-                  onPress={
-                    cooking
-                      ? () => tickIngredient(ing.id)
-                      : hasSwaps
-                        ? () => openSwapSheet(ing)
-                        : undefined
-                  }
-                  disabled={!cooking && !hasSwaps}
+                  // Only the row itself ticks in cook mode. Out of cook mode
+                  // it's inert — the Swap pill on the right is the only
+                  // swap trigger.
+                  onPress={cooking ? () => tickIngredient(ing.id) : undefined}
+                  disabled={!cooking}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'flex-start',
@@ -907,14 +911,53 @@ export default function RecipeDetailScreen() {
                     ) : null}
                   </View>
 
-                  {/* Swap affordance icon — shown in non-cook mode when swaps are available */}
+                  {/* Build #114 — dedicated Swap pill. Replaces the small
+                      ↻ icon and the whole-row Pressable. Has its own
+                      Pressable so taps to other parts of the row don't
+                      open the sheet, and stray taps after sheet-dismiss
+                      go nowhere. Pill colour = the active swap's pill
+                      colour when one is set; gold-bordered when swap is
+                      available but not yet chosen. */}
                   {!cooking && hasSwaps ? (
-                    <Icon
-                      name="swap"
-                      size={14}
-                      color={isSwapped ? c.primary : c.muted}
-                      style={{ marginTop: 3 }}
-                    />
+                    <Pressable
+                      onPress={() => openSwapSheet(ing)}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        isSwapped
+                          ? `Change swap on ${ing.name}, currently ${(activeSwap as Substitution).ingredient}`
+                          : `Swap ${ing.name}`
+                      }
+                      hitSlop={6}
+                      android_ripple={{ color: tokens.primaryLight, borderless: false }}
+                      style={{
+                        marginTop: 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 4,
+                        paddingHorizontal: 9,
+                        paddingVertical: 5,
+                        borderRadius: 999,
+                        backgroundColor: pillCfg ? pillCfg.bg : 'transparent',
+                        borderWidth: 1,
+                        borderColor: pillCfg ? pillCfg.border : tokens.gold,
+                      }}
+                    >
+                      <Icon
+                        name="swap"
+                        size={11}
+                        color={pillCfg ? pillCfg.fg : tokens.gold}
+                      />
+                      <Text
+                        style={{
+                          fontFamily: fonts.sansBold,
+                          fontSize: 10,
+                          letterSpacing: 0.3,
+                          color: pillCfg ? pillCfg.fg : tokens.gold,
+                        }}
+                      >
+                        {isSwapped ? 'Swapped' : 'Swap'}
+                      </Text>
+                    </Pressable>
                   ) : null}
                 </Pressable>
               );
