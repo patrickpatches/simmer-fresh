@@ -121,8 +121,15 @@ export function SubstitutionSheet({
   const handleConfirm = useCallback(() => {
     if (staged === null) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    // Build #115 — single dismiss path. Previously this called
+    // ref.current?.dismiss() directly which triggered @gorhom's onDismiss
+    // callback which set parent visible=false which fired the useEffect
+    // which called dismiss() AGAIN — two competing dismiss paths racing
+    // against each other and producing odd post-dismiss re-open behaviour.
+    // Now: fire onSwap (which the parent uses to ALSO setSheetVisible(false)
+    // via the updated handleSwap). The useEffect on `visible` is the only
+    // thing that calls ref.current?.dismiss(). One path, one direction.
     onSwap(staged === 'original' ? null : staged as Substitution);
-    ref.current?.dismiss();
   }, [staged, onSwap]);
 
   const renderBackdrop = useCallback(
@@ -215,7 +222,7 @@ export function SubstitutionSheet({
         </View>
 
         <Pressable
-          onPress={() => ref.current?.dismiss()}
+          onPress={() => onDismiss()}
           hitSlop={14}
           accessibilityRole="button"
           accessibilityLabel="Close"

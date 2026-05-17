@@ -103,6 +103,12 @@ export default function RecipeDetailScreen() {
   // activeSwaps maps ingredient.id → chosen Substitution (null = restored original).
   const [sheetIngredient, setSheetIngredient] = useState<Ingredient | null>(null);
   const [sheetVisible, setSheetVisible]       = useState(false);
+  // Build #115 — debounce against rapid re-open. After the sheet dismisses
+  // we capture a timestamp; openSwapSheet refuses to fire if called within
+  // 350ms. Defends against any stray tap (residual @gorhom backdrop gesture,
+  // misjudged knuckle landing on the Swap pill during dismiss animation,
+  // etc.) re-opening the sheet immediately after close.
+  const lastSheetCloseMs = useRef<number>(0);
 
   // Mise en place state — session-only, no persistence (DECISION-008)
   const [miseChecked, setMiseChecked] = useState<Set<number>>(new Set());
@@ -248,19 +254,33 @@ export default function RecipeDetailScreen() {
   // Opens the SubstitutionSheet for the given ingredient.
   // Only called in non-cook mode (in cook mode, tapping ticks the ingredient).
   const openSwapSheet = (ing: Ingredient) => {
+    // Build #115 — defensive: refuse to open if the sheet is already
+    // visible (duplicate-trigger no-op) and within 350ms of the last
+    // dismiss (debounce against stray taps that land on the pill while
+    // the dismiss animation is still completing).
+    if (sheetVisible) return;
+    if (Date.now() - lastSheetCloseMs.current < 350) return;
     Haptics.selectionAsync().catch(() => {});
     setSheetIngredient(ing);
     setSheetVisible(true);
   };
 
   // Called by SubstitutionSheet on confirm. null = restore original ingredient.
+  // Build #115 — also closes the sheet from this single source. Previously
+  // SubstitutionSheet.handleConfirm called ref.current.dismiss() directly,
+  // racing with the parent's setSheetVisible(false). Now the parent owns
+  // dismissal: setSheetVisible(false) here flows through the sheet's
+  // useEffect to call ref.current.dismiss(). One source of truth.
   const handleSwap = (sub: Substitution | null) => {
     if (!sheetIngredient) return;
     setActiveSwaps((prev) => ({ ...prev, [sheetIngredient.id]: sub }));
+    setSheetVisible(false);
+    lastSheetCloseMs.current = Date.now();
   };
 
   const handleSheetDismiss = () => {
     setSheetVisible(false);
+    lastSheetCloseMs.current = Date.now();
     // Keep sheetIngredient set until after dismiss — sheet animates out and
     // still renders its content during the exit animation.
   };
