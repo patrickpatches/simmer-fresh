@@ -197,7 +197,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-pQnsKWk5ljQ` (Anton, Unsplash) | — | Unsplash License | YES | ✅ APPROVED 2026-05-14 COO — jade-green interior visible in halved falafel (hero of what good falafel looks like); golden-brown crust; ball shape; no pita wrap | — | APPROVED |
+| `hero` | CC-stock | `photo-1593001872095-7d5b3868fb1d` (Anton, Unsplash) — *slug was `pQnsKWk5ljQ`; numeric CDN ID recovered 2026-05-15* | — | Unsplash License | YES | ✅ APPROVED 2026-05-14 COO — jade-green interior visible in halved falafel (hero of what good falafel looks like); golden-brown crust; ball shape; no pita wrap | — | APPROVED |
 | `step-herb-interior` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
 ---
@@ -208,7 +208,7 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` | CC-stock | `photo-5nCTfEru3Do` (Eugene Krasnaok, Unsplash) | — | Unsplash License | YES | ✅ APPROVED 2026-05-14 COO — white meringue, crisp ruffled exterior, whipped cream, fresh strawberries and blueberries. Individual-size rather than large disc noted; visual language is unmistakably pavlova | — | APPROVED |
+| `hero` | CC-stock | `photo-1634324040880-63dbf9a4e5ac` (Eugene Krasnaok, Unsplash) — *slug was `5nCTfEru3Do`; numeric CDN ID recovered 2026-05-15* | — | Unsplash License | YES | ✅ APPROVED 2026-05-14 COO — white meringue, crisp ruffled exterior, whipped cream, fresh strawberries and blueberries. Individual-size rather than large disc noted; visual language is unmistakably pavlova | — | APPROVED |
 | `step-stiff-peaks` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 | `step-baked-shell` | AI | TBD | — | TBD | TBD | PENDING | — | PENDING |
 
@@ -220,45 +220,4 @@
 
 | Stage | Source type | Tool or URL | Prompt file | License | Commercial OK | Cook signoff | Patrick replacement | Status |
 |---|---|---|---|---|---|---|---|---|
-| `hero` (superseded) | CC-stock | `photo-kYi1eN--guM` (Markus Winkler, Unsplash) | — | Unsplash License | YES | ⚠️ CONDITIONAL 2026-05-14 COO — chicken is uncooked/marinated, not charred. Superseded by replacement candidate 2026-05-15 | — | REPLACED |
-| `hero` (replacement 1) | CC-stock | `photo-1561620141-343a829938de` (Leslie del Moral, Unsplash) | — | Unsplash License |
-
-## Ledger statistics
-
-| Metric | Count |
-|---|---|
-| Total images required (est.) | ~120 |
-| Images with APPROVED status | 16 (all 16 launch recipe heroes now approved — 8 cook-reviewed + 8 Patrick verbal 2026-05-15) |
-| Images with CANDIDATE status | 2 (smash-burger step AI ×2) |
-| Images with REJECTED status | 11 (smash-burger ×2, flour-tortillas original, thai-green-curry, beef-lasagne, roast-chicken dead, fish-and-chips dead, shawarma ×2, hummus dead, pad-thai dead) |
-| Images with REPLACED status | 1 (shawarma hero `photo-kYi1eN--guM`) |
-| Images with PENDING status | ~90 (all step images not yet generated) |
-| Images with INTEGRATED status | 2 (smash-burger step-s1-mise, step-s3-smash — in seed-recipes.ts) |
-
-*Last updated: 2026-05-15 by COO — all 16 launch recipe heroes APPROVED. Patrick verbal sign-off on 8 replacement placeholders.*
-*Next action: engineer to integrate all 16 APPROVED hero photo_url values into seed-recipes.ts (see handoffs.md).*
-
-## Hero sourcing summary — all 16 launch recipes
-
-> Final status after full photography pass — 2026-05-15.
-
-| Recipe | Active photo ID | Status | Notes |
-|---|---|---|---|
-| smash-burger | `photo-1607013251379` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| weekday-bolognese | `photo-1622973536968` | ✅ APPROVED | Cook-reviewed 2026-05-15 |
-| pasta-carbonara | `photo-1612874742237` | ✅ APPROVED | Cook-reviewed 2026-05-14 |
-| roast-chicken | `photo-1606728035253` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| butter-chicken | `photo-1603894584373` | ✅ APPROVED | Cook-reviewed 2026-05-15 |
-| thai-green-curry | `photo-1716959669858` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| chicken-schnitzel | `photo-1599921841143` | ✅ APPROVED | Cook-reviewed 2026-05-15 |
-| beef-lasagne | `photo-1709429790175` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| roast-lamb | `photo-1625604087024` | ✅ APPROVED | Cook-reviewed 2026-05-15 |
-| fish-and-chips | `photo-1611599538235` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| falafel | `photo-pQnsKWk5ljQ` | ✅ APPROVED | Cook-reviewed 2026-05-14 |
-| pavlova | `photo-5nCTfEru3Do` | ✅ APPROVED | Cook-reviewed 2026-05-14 |
-| chicken-shawarma | `photo-1583060095186` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| hummus | `photo-1637949385162` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| pad-thai | `photo-1637806930600` | ✅ APPROVED | Patrick verbal 2026-05-15 — placeholder |
-| flour-tortillas | `photo-1693193433392` | ✅ APPROVED | Cook-reviewed 2026-05-15 |
-
-**All 16 launch recipe heroes APPROVED. Engineer to update photo_url in seed-recipes.ts for the 8 replacements — see handoffs.md.**
+| `hero` (superseded) | CC-stock | `photo-kYi1eN--guM` (Markus Winkler, Unsplash) | — | U
