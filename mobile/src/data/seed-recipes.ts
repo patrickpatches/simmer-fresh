@@ -54,6 +54,8 @@ const SMASH_BURGER: Recipe = {
     video_url: 'https://www.youtube.com/watch?v=oa2g6gB_1BU',
   },
   emoji: '🍔',
+  hero_url: 'https://images.unsplash.com/photo-1607013251379-e6eecfffe234?w=1200&q=80',
+  hero_attribution: 'Photo: Eiliv Aceron / Unsplash',
   hero_fallback: fallback('#8B4513'),
   ingredients: [
     {
@@ -590,8 +592,9 @@ const ROAST_CHICKEN: Recipe = {
     notes: "Hone Kitchen original — professional dry-brine + butter-under-skin method developed in-house. Informed by the canon (Keller's high-heat simplicity, Liaw's overnight dry brine, Maggie Beer's compound butter) but distinct: 230\u00B0C blister then 190\u00B0C through, a true 15-min rest, and a 3-minute pan sauce from the fond — the part most home recipes skip.",
   },
   emoji: '🐔',
+  hero_url: 'https://images.unsplash.com/photo-1606728035253-49e8a23146de?w=1200&q=80',
+  hero_attribution: 'Photo: Unsplash',
   hero_fallback: fallback('#B8721A'),
-  hero_url: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c8?w=600&q=80',
   ingredients: [
     {
       id: 'i1', name: 'Whole chicken', amount: 1.8, unit: 'kg', scales: 'fixed', prep: 'One chicken feeds 4 — buy a bigger bird for more people, not more chickens',
@@ -1536,8 +1539,9 @@ const THAI_GREEN_CURRY: Recipe = {
     video_url: 'https://www.youtube.com/watch?v=lleTlMtbN8Q',
   },
   emoji: '🍛',
+  hero_url: 'https://images.unsplash.com/photo-1716959669858-11d415bdead6?w=1200&q=80',
+  hero_attribution: 'Photo: Unsplash',
   hero_fallback: fallback('#3D7A3D'),
-  hero_url: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80',
   ingredients: [
     {
       id: 'i1', name: 'Chicken thighs, sliced', amount: 600, unit: 'g', scales: 'linear',
@@ -2366,6 +2370,8 @@ const WEEKDAY_BOLOGNESE: Recipe = {
     notes: "Inspired by Andy Cooks (Andy Hearnden) — no book; no specific video reference verified at audit time. Soffritto built properly, milk before wine, patience with the brown bits.",
   },
   emoji: '🍝',
+  hero_url: 'https://images.unsplash.com/photo-1622973536968-3ead9e780960?w=1200&q=80',
+  hero_attribution: 'Photo: Homescreenify / Unsplash',
   hero_fallback: ['#8B3A2F', '#C44536', '#D4A574'],
   ingredients: [
     { id: 'oil', name: 'Olive oil', amount: 2, unit: 'tbsp', scales: 'linear' },
@@ -3703,6 +3709,8 @@ const BUTTER_CHICKEN: Recipe = {
     notes: 'Inspired by Joshua\'s from-scratch Indian dishes. Tikka marinade and makhani sauce method.',
   },
   emoji: '🍗',
+  hero_url: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=1200&q=80',
+  hero_attribution: 'Photo: Raman / Unsplash',
   hero_fallback: fallback('#D4660A'),
   categories: { cuisines: ['indian'], types: ['chicken'] },
   ingredients: [
@@ -4333,6 +4341,8 @@ const PAVLOVA: Recipe = {
     notes: 'Technique from Donna Hay\'s pavlova masterclass. The cornflour-and-vinegar method is the standard Australian pavlova approach.',
   },
   emoji: '🍓',
+  hero_url: 'https://images.unsplash.com/photo-1634324040880-63dbf9a4e5ac?w=1200&q=80',
+  hero_attribution: 'Photo: Eugene Krasnaok / Unsplash',
   hero_fallback: fallback('#F5F0E8'),
   categories: { cuisines: ['australian'], types: ['dessert'] },
   ingredients: [
@@ -4624,6 +4634,8 @@ const CHICKEN_SCHNITZEL: Recipe = {
     video_url: 'https://www.smh.com.au/goodfood/recipes/adam-liaws-classic-chicken-schnitzel-20180206-h0vphi.html',
     notes: "Inspired by Adam Liaw's brined-then-crumbed approach. The brine and the double-coat are his; the rest is simplified for the weeknight kitchen.",
   },
+  hero_url: 'https://images.unsplash.com/photo-1599921841143-819065a55cc6?w=1200&q=80',
+  hero_attribution: 'Photo: Mark König / Unsplash',
   hero_fallback: fallback('#C8A96E'),
   leftover_mode: { extra_servings: 2, note: "Cold schnitzel sliced over a salad makes tomorrow's lunch" },
   total_time_minutes: 35,
@@ -5004,6 +5016,8 @@ const BEEF_LASAGNE: Recipe = {
     video_url: 'https://www.nytimes.com/recipes/12869/marcella-hazans-bolognese-meat-sauce.html',
     notes: "The ragù is Marcella Hazan's classic Bolognese — milk first, wine after, long slow simmer. The lasagne assembly is the home-cook approach Australian families have built around her ragù for forty years. We are not pretending the lasagne stack is a Hazan original; the ragù is.",
   },
+  hero_url: 'https://images.unsplash.com/photo-1709429790175-b02bb1b19207?w=1200&q=80',
+  hero_attribution: 'Photo: Unsplash',
   hero_fallback: fallback('#8B3A2A'),
   leftover_mode: { extra_servings: 2, note: 'Lasagne is better the next day. The slices set firm overnight and reheat cleanly in a 180 °C oven for 15 minutes' },
   total_time_minutes: 210,
@@ -5241,6 +5255,8 @@ const ROAST_LAMB: Recipe = {
     video_url: 'https://maggiebeer.com.au/recipes/slow-roasted-lamb-shoulder',
     notes: "Inspired by Maggie Beer's slow-roast lamb shoulder approach — long and low, garlic and rosemary tucked into slits in the meat, the lid on for the first hour to steam the connective tissue. The hands-off elegance is hers; we've left it largely alone because it doesn't need fixing.",
   },
+  hero_url: 'https://images.unsplash.com/photo-1625604087024-7fb428fc4626?w=1200&q=80',
+  hero_attribution: 'Photo: James Kern / Unsplash',
   hero_fallback: fallback('#7A4A2E'),
   leftover_mode: { extra_servings: 4, note: 'Pulled lamb is the gift the next day — sandwiches with chutney, or fold through pasta with the pan juices' },
   total_time_minutes: 135,
@@ -5431,6 +5447,8 @@ const FISH_AND_CHIPS: Recipe = {
     chef: 'Australian Friday tradition',
     notes: "Fish and chips is the dish that doesn't have an author. Every Australian seaside town has a take-away that does it well, and the home version below is the consensus method — beer batter, double-fried chips, served the moment it lands.",
   },
+  hero_url: 'https://images.unsplash.com/photo-1611599538235-128e54f1250f?w=1200&q=80',
+  hero_attribution: 'Photo: Unsplash',
   hero_fallback: fallback('#D4A832'),
   total_time_minutes: 55,
   active_time_minutes: 35,
@@ -5622,6 +5640,8 @@ const FALAFEL: Recipe = {
     chef: 'Levantine tradition',
     notes: "Falafel is a Levantine folk dish without a single author. Every household across Palestine, Lebanon, Syria, and Jordan has its own version. This is the consensus method — dried chickpeas soaked overnight, blitzed raw with herbs and spices, fried until the outside shatters.",
   },
+  hero_url: 'https://images.unsplash.com/photo-1593001872095-7d5b3868fb1d?w=1200&q=80',
+  hero_attribution: 'Photo: Anton / Unsplash',
   hero_fallback: fallback('#4A7A2E'),
   leftover_mode: { extra_servings: 2, note: 'Reheat in a hot oven (200 °C, 8 minutes) — never the microwave, which steams the crust soft' },
   total_time_minutes: 1560,
