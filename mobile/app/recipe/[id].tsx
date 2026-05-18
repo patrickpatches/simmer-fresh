@@ -96,6 +96,11 @@ export default function RecipeDetailScreen() {
 
   // Cook mode
   const [cooking, setCooking]       = useState(false);
+  // Build #117 — cook mode v2 single-step navigator. The list view stays
+  // for browse mode; cook mode renders ONE step at a time and the user
+  // advances via the full-width Next pill. Reset to 0 whenever cooking
+  // toggles on so a fresh cook session always starts at step 1.
+  const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [stepsDone, setStepsDone]   = useState<Record<string, boolean>>({});
   const [ingTicked, setIngTicked]   = useState<Record<string, boolean>>({});
 
@@ -237,6 +242,10 @@ export default function RecipeDetailScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     setCooking((c) => !c);
     if (cooking) { setStepsDone({}); setIngTicked({}); }
+    // Build #117 — reset cook-mode navigator on every toggle. Entering cook
+    // mode always starts at step 1; exiting clears it too so the next entry
+    // is clean.
+    setCurrentStepIdx(0);
   };
 
   const tickStep = (stepId: string) => {
@@ -1185,7 +1194,281 @@ export default function RecipeDetailScreen() {
 
         {/* Method */}
         <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
-          <SectionHeader title="Method" hint={cooking ? 'Tap the number to mark done' : undefined} inkColor={c.ink} mutedColor={c.muted} />
+          <SectionHeader title="Method" hint={cooking ? 'Tap Next to advance' : undefined} inkColor={c.ink} mutedColor={c.muted} />
+          {cooking ? (
+            // Build #117 — cook mode v2: single-step navigator.
+            // Renders the current step only, full-width photo block at top,
+            // doneness cue, big timer, why note, and a bottom Next pill.
+            // Preserves DECISION-015 step_overrides + "adapted for your swap"
+            // cue with sage border treatment.
+            (() => {
+              const step = recipe.steps[currentStepIdx];
+              if (!step) return null;
+              const isFinal = currentStepIdx >= recipe.steps.length - 1;
+              const nextStep = !isFinal ? recipe.steps[currentStepIdx + 1] : null;
+              const prevStep = currentStepIdx > 0 ? recipe.steps[currentStepIdx - 1] : null;
+              // step_overrides resolution — most recently active swap wins
+              let adaptedContent: string | undefined;
+              let adaptedSwapName: string | undefined;
+              for (const [, swap] of Object.entries(activeSwaps)) {
+                if (!swap) continue;
+                const o = swap.step_overrides?.[step.id];
+                if (o) { adaptedContent = o; adaptedSwapName = swap.ingredient; }
+              }
+              const isAdapted = !!adaptedContent;
+              const photoUri = step.photo_url ?? recipe.hero_url;
+              const bands = recipe.hero_fallback ?? [tokens.bgDeep, tokens.cream, tokens.bgDeep];
+              const onNext = () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+                if (!stepsDone[step.id]) setStepsDone(prev => ({ ...prev, [step.id]: true }));
+                if (isFinal) {
+                  // Final step "Done" exits cook mode entirely.
+                  setCooking(false);
+                  setCurrentStepIdx(0);
+                } else {
+                  setCurrentStepIdx(currentStepIdx + 1);
+                }
+              };
+              const onBack = () => {
+                Haptics.selectionAsync().catch(() => {});
+                setCurrentStepIdx(Math.max(0, currentStepIdx - 1));
+              };
+              return (
+                <View>
+                  {/* ── PHOTO BLOCK ── */}
+                  <View style={{ height: 224, borderRadius: 18, overflow: 'hidden', position: 'relative' }}>
+                    {photoUri ? (
+                      <Image
+                        source={{ uri: photoUri }}
+                        style={{ width: '100%', height: '100%' }}
+                        contentFit="cover"
+                        transition={200}
+                      />
+                    ) : (
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flex: 1, backgroundColor: bands[0] }} />
+                        <View style={{ flex: 1, backgroundColor: bands[1] }} />
+                        <View style={{ flex: 1, backgroundColor: bands[2] }} />
+                      </View>
+                    )}
+                    {/* Top fade */}
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 72, backgroundColor: 'rgba(0,0,0,0.55)' }} />
+                    {/* Bottom fade */}
+                    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, backgroundColor: 'rgba(0,0,0,0.85)' }} />
+                    {/* Progress segments */}
+                    <View style={{ position: 'absolute', top: 14, left: 14, right: 14, flexDirection: 'row', gap: 4 }}>
+                      {recipe.steps.map((sx, i) => {
+                        const pct = i < currentStepIdx ? '100%' : i === currentStepIdx ? '55%' : '0%';
+                        return (
+                          <View key={sx.id} style={{ flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 2, overflow: 'hidden' }}>
+                            <View style={{ width: pct, height: '100%', backgroundColor: tokens.gold }} />
+                          </View>
+                        );
+                      })}
+                    </View>
+                    {/* Step tag pill (bottom-left) */}
+                    <View
+                      style={{
+                        position: 'absolute', bottom: 14, left: 14,
+                        flexDirection: 'row', alignItems: 'center', gap: 5,
+                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)',
+                        borderRadius: 20, paddingHorizontal: 11, paddingVertical: 5,
+                      }}
+                    >
+                      <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: tokens.gold }} />
+                      <Text style={{ fontFamily: fonts.sansBold, fontSize: 10, color: 'rgba(245,242,236,0.88)', letterSpacing: 0.3 }}>
+                        Step {currentStepIdx + 1} · {recipe.title}
+                      </Text>
+                    </View>
+                    {/* Ghost step number watermark (bottom-right) */}
+                    <Text
+                      style={{
+                        position: 'absolute', right: 16, bottom: -8,
+                        fontFamily: fonts.display, fontSize: 64,
+                        color: 'rgba(245,242,236,0.08)', letterSpacing: -2,
+                      }}
+                    >
+                      {currentStepIdx + 1}
+                    </Text>
+                  </View>
+
+                  {/* ── TITLE ── */}
+                  <Text
+                    style={{
+                      fontFamily: fonts.display, fontSize: 24,
+                      color: c.ink, lineHeight: 28,
+                      marginTop: 18, marginBottom: 11,
+                    }}
+                  >
+                    {step.title}
+                  </Text>
+
+                  {/* ── BODY ── */}
+                  <Text
+                    style={{
+                      fontFamily: fonts.sans, fontSize: 14.5,
+                      color: 'rgba(245,242,236,0.88)', lineHeight: 24,
+                      marginBottom: 14,
+                    }}
+                  >
+                    {adaptedContent ?? step.content}
+                  </Text>
+
+                  {/* DECISION-015 — adapted-for-your-swap cue (preserved) */}
+                  {isAdapted ? (
+                    <View
+                      style={{
+                        marginBottom: 12, paddingTop: 8,
+                        borderTopWidth: 1, borderTopColor: 'rgba(74,124,89,0.25)',
+                        flexDirection: 'row', alignItems: 'center', gap: 6,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, color: c.sage }}>≈</Text>
+                      <Text
+                        style={{
+                          fontFamily: fonts.displayItalic, fontStyle: 'italic',
+                          fontSize: 11, color: c.sage,
+                        }}
+                      >
+                        adapted for your {adaptedSwapName} swap
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* ── DONENESS CUE (NEW v2 — from stage_note) ── */}
+                  {step.stage_note ? (
+                    <View
+                      style={{
+                        marginBottom: 12,
+                        borderLeftWidth: 3, borderLeftColor: tokens.gold,
+                        borderRightWidth: 1, borderTopWidth: 1, borderBottomWidth: 1,
+                        borderRightColor: 'rgba(242,204,42,0.35)',
+                        borderTopColor: 'rgba(242,204,42,0.35)',
+                        borderBottomColor: 'rgba(242,204,42,0.35)',
+                        backgroundColor: 'rgba(242,204,42,0.13)',
+                        borderTopRightRadius: 10, borderBottomRightRadius: 10,
+                        paddingVertical: 10, paddingHorizontal: 13,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: fonts.sansBold, fontSize: 9,
+                          letterSpacing: 0.7, textTransform: 'uppercase',
+                          color: tokens.gold, marginBottom: 4,
+                        }}
+                      >
+                        Look for this
+                      </Text>
+                      <Text
+                        style={{
+                          fontFamily: fonts.displayItalic, fontStyle: 'italic',
+                          fontSize: 12.5, color: 'rgba(242,204,42,0.82)', lineHeight: 18,
+                        }}
+                      >
+                        {step.stage_note}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* ── TIMER (NEW v2 — 38sp Playfair) ── */}
+                  {step.timer_seconds ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 14, marginBottom: 14 }}>
+                      <Text
+                        style={{
+                          fontFamily: fonts.display, fontSize: 38,
+                          color: c.ink, letterSpacing: -1, lineHeight: 40,
+                        }}
+                      >
+                        {formatTimer(step.timer_seconds)}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: c.muted, marginBottom: 6 }}>
+                        rough timer
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* ── WHY NOTE (preserved, restyled to Playfair italic) ── */}
+                  {step.why_note ? (
+                    <View
+                      style={{
+                        paddingTop: 12,
+                        borderTopWidth: 1, borderTopColor: c.line,
+                        marginBottom: 14,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: fonts.displayItalic, fontStyle: 'italic',
+                          fontSize: 12, color: c.muted, lineHeight: 19,
+                        }}
+                      >
+                        {step.why_note}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {/* ── BOTTOM ACTION ── */}
+                  <View style={{ marginTop: 8, gap: 10 }}>
+                    <Pressable
+                      onPress={onNext}
+                      android_ripple={{
+                        color: isFinal ? 'rgba(74,124,89,0.45)' : tokens.primaryDeep,
+                        borderless: false,
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={isFinal ? 'Finish cooking' : `Next step: ${nextStep?.title ?? ''}`}
+                      style={{
+                        backgroundColor: isFinal ? c.sage : tokens.primary,
+                        borderRadius: 18,
+                        paddingVertical: 16, paddingHorizontal: 22,
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                      }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            fontFamily: fonts.sansBold, fontSize: 15,
+                            color: '#FFFFFF', letterSpacing: 0.2,
+                          }}
+                        >
+                          {isFinal ? 'Done — finish cooking' : 'Next step'}
+                        </Text>
+                        {!isFinal && nextStep ? (
+                          <Text
+                            style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 1 }}
+                            numberOfLines={1}
+                          >
+                            {nextStep.title}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Text style={{ fontSize: 22, color: 'rgba(255,255,255,0.85)', marginLeft: 8 }}>›</Text>
+                    </Pressable>
+
+                    {/* Ghost back link */}
+                    {prevStep ? (
+                      <Pressable
+                        onPress={onBack}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Back to: ${prevStep.title}`}
+                        style={{ paddingVertical: 8 }}
+                      >
+                        <Text
+                          style={{
+                            textAlign: 'center', fontSize: 12,
+                            color: 'rgba(245,242,236,0.42)', letterSpacing: 0.2,
+                          }}
+                        >
+                          ‹  {prevStep.title}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </View>
+              );
+            })()
+          ) : (
           <View style={{ gap: 12 }}>
             {recipe.steps.map((step, idx) => {
               const done = !!stepsDone[step.id];
@@ -1378,6 +1661,7 @@ export default function RecipeDetailScreen() {
               );
             })}
           </View>
+          )}
 
           {/* Leftover note */}
           {recipe.leftover_mode ? (
