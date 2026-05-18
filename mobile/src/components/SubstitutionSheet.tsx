@@ -1,14 +1,17 @@
 /**
- * SubstitutionSheet — ingredient swap bottom sheet.
+ * SubstitutionSheet — ingredient swap bottom sheet (build #116 rewrite).
  *
- * Uses @gorhom/bottom-sheet BottomSheetModal for native-feel spring
- * animation and gesture dismissal (swipe down to close).
+ * Now built on React Native's built-in `Modal` component. Replaces the
+ * previous @gorhom/bottom-sheet implementation which had a portal layer
+ * that — under load — kept presenting the sheet on stray taps anywhere on
+ * the screen, including taps that had nothing to do with the swap UI
+ * (cook-mode ingredient ticks reported by Patrick on builds #113–#115).
  *
- * Flow: ingredient tap → sheet opens → select a substitution row →
- *   confirm button appears → tap Confirm → onSwap(sub) fires → sheet closes.
- * "Back to original" row appears when a swap is already active (activeSwapName set).
- *
- * Requires BottomSheetModalProvider at the root layout (added in app/_layout.tsx).
+ * Why the rewrite, not another patch: three rounds of defensive fixes
+ * (#114 row-Pressable inert, #115 single dismiss path + 350ms debounce)
+ * didn't kill the bug because the bug wasn't in the call sites — it was
+ * in the portal layer's lifecycle. Removing the portal entirely is the
+ * lowest-risk path to "this never happens again."
  *
  * DECISION-015 quality pills (per Designer's v2 prototype,
  * docs/prototypes/substitution-sheet-v2.html):
@@ -22,14 +25,16 @@
  * Cook mode: pass inCookMode=true; sheet surfaces switch to cookMode tokens.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-  type BottomSheetBackdropProps,
-} from '@gorhom/bottom-sheet';
+  Animated,
+  Easing,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { tokens, fonts } from '../theme/tokens';
 import type { Ingredient, Substitution } from '../data/types';
@@ -40,37 +45,21 @@ import { Icon } from './Icon';
 export interface SubstitutionSheetProps {
   ingredient: Ingredient | null;
   visible: boolean;
-  /** Name of the currently swapped ingredient — drives "Back to original" row. */
   activeSwapName?: string;
-  /** Pass true when recipe screen is in cook mode (switches surface tokens). */
   inCookMode?: boolean;
-  /** Fires with the chosen substitution, or null to restore the original. */
   onSwap: (sub: Substitution | null) => void;
   onDismiss: () => void;
 }
 
-// ── Selection state ───────────────────────────────────────────────────────────
-
 type Staged = Substitution | 'original' | null;
 
-// ── Quality pill config (DECISION-015 v2 — green/yellow/red) ─────────────────
-
-// Three semantic colours per Designer's v2 prototype. Each pill carries:
-//   - colour (bg + border + text)
-//   - icon (✓ / ≈ / ⚠)
-//   - text label ("Great swap" / "Some difference" / "Noticeable change")
-// Three signals on every pill — accessibility requires it. Never colour alone.
+// ── DECISION-015 v2 pill config ──────────────────────────────────────────────
 
 export interface PillConfig {
-  /** Foreground colour (text + icon + border). */
   fg: string;
-  /** Background tint at ~14% opacity. */
   bg: string;
-  /** Border colour at ~40% opacity. */
   border: string;
-  /** Glyph rendered to the left of the label. */
   icon: string;
-  /** Human-readable label. */
   label: string;
 }
 
@@ -94,57 +83,47 @@ export function SubstitutionSheet({
   onSwap,
   onDismiss,
 }: SubstitutionSheetProps) {
-  const ref = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ['82%'], []);
+  // We render the Modal only when `visible` is true so there's nothing
+  // floating around in the tree intercepting taps when the sheet is
+  // closed. That's the entire point of this rewrite vs the @gorhom version.
   const [staged, setStaged] = useState<Staged>(null);
+  const slide = useRef(new Animated.Value(0)).current; // 0=offscreen, 1=open
+  const backdrop = useRef(new Animated.Value(0)).current;
 
-  // Surface tokens differ in cook mode (OLED true-black surfaces).
   const surfaceBg = inCookMode ? tokens.cookMode.cardBg : tokens.cream;
   const divider   = inCookMode ? tokens.cookMode.lineDark : tokens.line;
 
-  // Sync the visible prop to present / dismiss.
-  // Note: calling dismiss() on an already-dismissed modal is a no-op in @gorhom/bottom-sheet.
   useEffect(() => {
     if (visible) {
       setStaged(null);
-      ref.current?.present();
+      Animated.parallel([
+        Animated.timing(slide,    { toValue: 1, duration: 240, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(backdrop, { toValue: 1, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      ]).start();
     } else {
-      ref.current?.dismiss();
+      slide.setValue(0);
+      backdrop.setValue(0);
     }
-  }, [visible]);
-
-  const handleSheetDismiss = useCallback(() => {
-    setStaged(null);
-    onDismiss();
-  }, [onDismiss]);
+  }, [visible, slide, backdrop]);
 
   const handleConfirm = useCallback(() => {
     if (staged === null) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    // Build #115 — single dismiss path. Previously this called
-    // ref.current?.dismiss() directly which triggered @gorhom's onDismiss
-    // callback which set parent visible=false which fired the useEffect
-    // which called dismiss() AGAIN — two competing dismiss paths racing
-    // against each other and producing odd post-dismiss re-open behaviour.
-    // Now: fire onSwap (which the parent uses to ALSO setSheetVisible(false)
-    // via the updated handleSwap). The useEffect on `visible` is the only
-    // thing that calls ref.current?.dismiss(). One path, one direction.
     onSwap(staged === 'original' ? null : staged as Substitution);
   }, [staged, onSwap]);
 
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.55}
-      />
-    ),
-    [],
-  );
+  // The Modal's onRequestClose handles Android hardware back-button.
+  const handleRequestClose = useCallback(() => {
+    setStaged(null);
+    onDismiss();
+  }, [onDismiss]);
 
-  if (!ingredient) return null;
+  if (!ingredient) {
+    // Defensive: don't render the Modal at all if there's no ingredient
+    // context. Avoids the "stale modal hanging around" failure mode that
+    // bit the @gorhom version.
+    return null;
+  }
 
   const subs = ingredient.substitutions ?? [];
   const hasActiveSwap = Boolean(activeSwapName) && activeSwapName !== ingredient.name;
@@ -156,207 +135,248 @@ export function SubstitutionSheet({
         ? `Swap to ${(staged as Substitution).ingredient}`
         : '';
 
+  // Slide transform: 600 → 0 as `slide` animates 0 → 1.
+  const translateY = slide.interpolate({ inputRange: [0, 1], outputRange: [600, 0] });
+
   return (
-    <BottomSheetModal
-      ref={ref}
-      snapPoints={snapPoints}
-      onDismiss={handleSheetDismiss}
-      backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: surfaceBg }}
-      handleIndicatorStyle={{
-        backgroundColor: tokens.muted,
-        width: 36,
-        height: 4,
-        borderRadius: 2,
-      }}
-      enablePanDownToClose
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={handleRequestClose}
     >
-      {/* ── Header ── */}
-      <View
+      {/* Backdrop. Tap to dismiss. */}
+      <Pressable
+        onPress={handleRequestClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close swap sheet"
         style={{
-          paddingHorizontal: 20,
-          paddingTop: 4,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: divider,
-          flexDirection: 'row',
-          alignItems: 'flex-start',
+          position: 'absolute',
+          left: 0, right: 0, top: 0, bottom: 0,
         }}
       >
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 10,
-              letterSpacing: 1.5,
-              textTransform: 'uppercase',
-              color: tokens.primary,
-              marginBottom: 6,
-            }}
-          >
-            Swap ingredient
-          </Text>
-          <Text
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 20,
-              lineHeight: 24,
-              color: tokens.ink,
-            }}
-            numberOfLines={2}
-          >
-            {ingredient.name}
-          </Text>
-          {hasActiveSwap && (
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 12,
-                color: tokens.muted,
-                marginTop: 3,
-              }}
-            >
-              Currently using: {activeSwapName}
-            </Text>
-          )}
-        </View>
-
-        <Pressable
-          onPress={() => onDismiss()}
-          hitSlop={14}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
+        <Animated.View
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 17,
-            backgroundColor: tokens.bgDeep,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 12,
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            opacity: backdrop,
           }}
-        >
-          <Icon name="x" size={15} color={tokens.ink} />
-        </Pressable>
-      </View>
+        />
+      </Pressable>
 
-      {/* ── Substitution rows ── */}
-      <BottomSheetScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
+      {/* Sheet itself. Catches its own touches so taps inside don't
+          bubble to the backdrop and dismiss prematurely. */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          left: 0, right: 0, bottom: 0,
+          maxHeight: '88%',
+          backgroundColor: surfaceBg,
+          borderTopLeftRadius: 22,
+          borderTopRightRadius: 22,
+          transform: [{ translateY }],
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.18,
+          shadowRadius: 16,
+          elevation: 16,
+        }}
+        pointerEvents="box-none"
       >
-        {/* Back to original row — only when a swap is currently active */}
-        {hasActiveSwap && (
-          <SubRow
-            name={ingredient.name}
-            description="Restore the original recipe ingredient."
-            badge={{ label: 'Original', bg: tokens.line, text: tokens.inkSoft }}
-            isStaged={staged === 'original'}
-            onPress={() => {
-              Haptics.selectionAsync().catch(() => {});
-              setStaged('original');
-            }}
-          />
-        )}
+        {/* Pull handle */}
+        <View
+          style={{
+            alignSelf: 'center',
+            marginTop: 8,
+            width: 40,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: tokens.muted,
+          }}
+        />
 
-        {/* Empty state */}
-        {subs.length === 0 && !hasActiveSwap && (
-          <View style={{ padding: 28, alignItems: 'center' }}>
-            <Text
-              style={{
-                fontFamily: fonts.display,
-                fontSize: 18,
-                color: tokens.muted,
-                marginBottom: 8,
-              }}
-            >
-              No swaps on file yet
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 13,
-                color: tokens.muted,
-                textAlign: 'center',
-                lineHeight: 19,
-              }}
-            >
-              We haven't researched substitutions for this ingredient yet.
-            </Text>
-          </View>
-        )}
-
-        {subs.map((sub, idx) => {
-          const badge = qualityConfig(sub.quality);
-          const isStaged =
-            staged !== null &&
-            staged !== 'original' &&
-            (staged as Substitution).ingredient === sub.ingredient;
-          return (
-            <SubRow
-              key={idx}
-              name={sub.ingredient}
-              description={sub.changes}
-              quantityNote={sub.quantity_note}
-              hardToFindNote={
-                sub.hard_to_find
-                  ? (sub.local_alternative ?? 'May be hard to find in some areas.')
-                  : undefined
-              }
-              badge={badge}
-              isStaged={isStaged}
-              onPress={() => {
-                Haptics.selectionAsync().catch(() => {});
-                setStaged(sub);
-              }}
-            />
-          );
-        })}
-      </BottomSheetScrollView>
-
-      {/* ── Confirm button — visible only once a row is staged ── */}
-      {staged !== null && (
+        {/* Header */}
         <View
           style={{
             paddingHorizontal: 20,
             paddingTop: 12,
-            paddingBottom: 24,
-            borderTopWidth: 1,
-            borderTopColor: divider,
+            paddingBottom: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: divider,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
           }}
         >
-          <Pressable
-            onPress={handleConfirm}
-            accessibilityRole="button"
-            accessibilityLabel={confirmLabel}
-            android_ripple={{ color: tokens.primaryDeep, borderless: false }}
-            style={{ borderRadius: 14 }}
-          >
-            <View style={{
-              backgroundColor: tokens.primary,
-              borderRadius: 14,
-              paddingVertical: 16,
-              alignItems: 'center',
-            }}>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontFamily: fonts.sansBold,
+                fontSize: 10,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                color: tokens.primary,
+                marginBottom: 6,
+              }}
+            >
+              Swap ingredient
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.display,
+                fontSize: 20,
+                lineHeight: 24,
+                color: tokens.ink,
+              }}
+              numberOfLines={2}
+            >
+              {ingredient.name}
+            </Text>
+            {hasActiveSwap && (
               <Text
                 style={{
-                  fontFamily: fonts.sansBold,
-                  fontSize: 15,
-                  color: tokens.onPrimary,
-                  letterSpacing: 0.2,
+                  fontFamily: fonts.sans,
+                  fontSize: 12,
+                  color: tokens.muted,
+                  marginTop: 3,
                 }}
               >
-                {confirmLabel}
+                Currently using: {activeSwapName}
               </Text>
-            </View>
+            )}
+          </View>
+
+          <Pressable
+            onPress={handleRequestClose}
+            hitSlop={14}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              backgroundColor: tokens.bgDeep,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 12,
+            }}
+          >
+            <Icon name="x" size={15} color={tokens.ink} />
           </Pressable>
         </View>
-      )}
-    </BottomSheetModal>
+
+        {/* Substitution rows */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {hasActiveSwap && (
+            <SubRow
+              name={ingredient.name}
+              description="Restore the original recipe ingredient."
+              badge={{ label: 'Original', bg: tokens.line, text: tokens.inkSoft }}
+              isStaged={staged === 'original'}
+              onPress={() => {
+                Haptics.selectionAsync().catch(() => {});
+                setStaged('original');
+              }}
+            />
+          )}
+
+          {subs.length === 0 && !hasActiveSwap && (
+            <View style={{ padding: 28, alignItems: 'center' }}>
+              <Text style={{ fontFamily: fonts.display, fontSize: 18, color: tokens.muted, marginBottom: 8 }}>
+                No swaps on file yet
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: 13,
+                  color: tokens.muted,
+                  textAlign: 'center',
+                  lineHeight: 19,
+                }}
+              >
+                We haven't researched substitutions for this ingredient yet.
+              </Text>
+            </View>
+          )}
+
+          {subs.map((sub, idx) => {
+            const badge = qualityConfig(sub.quality);
+            const isStaged =
+              staged !== null &&
+              staged !== 'original' &&
+              (staged as Substitution).ingredient === sub.ingredient;
+            return (
+              <SubRow
+                key={idx}
+                name={sub.ingredient}
+                description={sub.changes}
+                quantityNote={sub.quantity_note}
+                hardToFindNote={
+                  sub.hard_to_find
+                    ? (sub.local_alternative ?? 'May be hard to find in some areas.')
+                    : undefined
+                }
+                badge={badge}
+                isStaged={isStaged}
+                onPress={() => {
+                  Haptics.selectionAsync().catch(() => {});
+                  setStaged(sub);
+                }}
+              />
+            );
+          })}
+        </ScrollView>
+
+        {/* Confirm button — visible once a row is staged */}
+        {staged !== null && (
+          <View
+            style={{
+              paddingHorizontal: 20,
+              paddingTop: 12,
+              paddingBottom: 24,
+              borderTopWidth: 1,
+              borderTopColor: divider,
+            }}
+          >
+            <Pressable
+              onPress={handleConfirm}
+              accessibilityRole="button"
+              accessibilityLabel={confirmLabel}
+              android_ripple={{ color: tokens.primaryDeep, borderless: false }}
+              style={{ borderRadius: 14 }}
+            >
+              <View
+                style={{
+                  backgroundColor: tokens.primary,
+                  borderRadius: 14,
+                  paddingVertical: 16,
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: fonts.sansBold,
+                    fontSize: 15,
+                    color: tokens.onPrimary,
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  {confirmLabel}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        )}
+      </Animated.View>
+    </Modal>
   );
 }
 
-// ── Single substitution row ───────────────────────────────────────────────────
+// ── SubRow ────────────────────────────────────────────────────────────────────
 
 function SubRow({
   name,
@@ -371,13 +391,10 @@ function SubRow({
   description: string;
   quantityNote?: string;
   hardToFindNote?: string;
-  /** v2 pill config OR legacy badge shape for the 'Original' row. */
   badge: PillConfig | { label: string; bg: string; text: string };
   isStaged: boolean;
   onPress: () => void;
 }) {
-  // Discriminate between the v2 pill (has fg/border/icon) and the legacy
-  // 'Original' row badge (has just label/bg/text). Both render as small pills.
   const isV2 = 'icon' in badge && 'fg' in badge;
   return (
     <Pressable
@@ -391,146 +408,132 @@ function SubRow({
         alignItems: 'flex-start',
         paddingHorizontal: 20,
         paddingVertical: 14,
-        // Selected state: primaryLight bg + 3dp left border in primaryDeep
         backgroundColor: isStaged ? tokens.primaryLight : 'transparent',
         borderLeftWidth: isStaged ? 3 : 0,
         borderLeftColor: tokens.primaryDeep,
         gap: 14,
       }}>
-      {/* Radio dot */}
-      <View
-        style={{
-          width: 20,
-          height: 20,
-          borderRadius: 10,
-          borderWidth: 2,
-          borderColor: isStaged ? tokens.primary : tokens.line,
-          backgroundColor: 'transparent',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 2,
-          flexShrink: 0,
-        }}
-      >
-        {isStaged && (
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: tokens.primary,
-            }}
-          />
-        )}
-      </View>
-
-      {/* Text block */}
-      <View style={{ flex: 1, gap: 4 }}>
-        {/* Name + quality pill */}
         <View
           style={{
-            flexDirection: 'row',
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 2,
+            borderColor: isStaged ? tokens.primary : tokens.line,
+            backgroundColor: 'transparent',
             alignItems: 'center',
-            gap: 8,
-            flexWrap: 'wrap',
+            justifyContent: 'center',
+            marginTop: 2,
+            flexShrink: 0,
           }}
         >
-          <Text
-            style={{
-              fontFamily: fonts.sansBold,
-              fontSize: 14,
-              color: tokens.ink,
-              flexShrink: 1,
-            }}
-          >
-            {name}
-          </Text>
+          {isStaged && (
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: tokens.primary }} />
+          )}
+        </View>
+
+        <View style={{ flex: 1, gap: 4 }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
-              backgroundColor: badge.bg,
-              borderRadius: 999,
-              paddingHorizontal: 8,
-              paddingVertical: 3,
-              borderWidth: isV2 ? 1 : 0,
-              borderColor: isV2 ? (badge as PillConfig).border : 'transparent',
+              gap: 8,
+              flexWrap: 'wrap',
             }}
-            accessible
-            accessibilityLabel={isV2 ? `${(badge as PillConfig).label} — ${description}` : (badge as { label: string }).label}
           >
-            {isV2 ? (
-              <Text style={{ fontSize: 10, color: (badge as PillConfig).fg }}>{(badge as PillConfig).icon}</Text>
-            ) : null}
             <Text
               style={{
                 fontFamily: fonts.sansBold,
-                fontSize: 10,
-                color: isV2 ? (badge as PillConfig).fg : (badge as { text: string }).text,
-                letterSpacing: 0.3,
+                fontSize: 14,
+                color: tokens.ink,
+                flexShrink: 1,
               }}
             >
-              {badge.label}
+              {name}
             </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                backgroundColor: badge.bg,
+                borderRadius: 999,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderWidth: isV2 ? 1 : 0,
+                borderColor: isV2 ? (badge as PillConfig).border : 'transparent',
+              }}
+              accessible
+              accessibilityLabel={isV2 ? `${(badge as PillConfig).label} — ${description}` : (badge as { label: string }).label}
+            >
+              {isV2 ? (
+                <Text style={{ fontSize: 10, color: (badge as PillConfig).fg }}>{(badge as PillConfig).icon}</Text>
+              ) : null}
+              <Text
+                style={{
+                  fontFamily: fonts.sansBold,
+                  fontSize: 10,
+                  color: isV2 ? (badge as PillConfig).fg : (badge as { text: string }).text,
+                  letterSpacing: 0.3,
+                }}
+              >
+                {badge.label}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Description */}
-        <Text
-          style={{
-            fontFamily: fonts.sans,
-            fontSize: 13,
-            lineHeight: 18,
-            color: tokens.inkSoft,
-          }}
-        >
-          {description}
-        </Text>
-
-        {/* Quantity note — italic, ochre */}
-        {quantityNote && (
           <Text
             style={{
-              fontFamily: fonts.displayItalic,
-              fontStyle: 'italic',
-              fontSize: 12,
-              color: tokens.ochre,
-              marginTop: 2,
+              fontFamily: fonts.sans,
+              fontSize: 13,
+              lineHeight: 18,
+              color: tokens.inkSoft,
             }}
           >
-            {quantityNote}
+            {description}
           </Text>
-        )}
 
-        {/* Hard-to-find notice */}
-        {hardToFindNote && (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              gap: 6,
-              marginTop: 4,
-              backgroundColor: tokens.bgDeep,
-              borderRadius: 8,
-              padding: 8,
-            }}
-          >
-            <Icon name="alert" size={12} color={tokens.ochre} />
+          {quantityNote && (
             <Text
               style={{
-                fontFamily: fonts.sans,
+                fontFamily: fonts.displayItalic,
+                fontStyle: 'italic',
                 fontSize: 12,
-                lineHeight: 17,
                 color: tokens.ochre,
-                flex: 1,
+                marginTop: 2,
               }}
             >
-              {hardToFindNote}
+              {quantityNote}
             </Text>
-          </View>
-        )}
-      </View>
+          )}
+
+          {hardToFindNote && (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: 6,
+                marginTop: 4,
+                backgroundColor: tokens.bgDeep,
+                borderRadius: 8,
+                padding: 8,
+              }}
+            >
+              <Icon name="alert" size={12} color={tokens.ochre} />
+              <Text
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: 12,
+                  lineHeight: 17,
+                  color: tokens.ochre,
+                  flex: 1,
+                }}
+              >
+                {hardToFindNote}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
     </Pressable>
   );
