@@ -58,6 +58,39 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
+### HANDOFF → Senior Engineer · 2026-05-18 · OPEN
+**From:** Product Designer
+**Subject:** Cook mode step screen — visual redesign (cook-mode-v2)
+**Why:** The existing cook mode was functional but visually generic. Patrick asked for a world-class aesthetic upgrade beyond photo content. The v2 design addresses five specific weaknesses: no photo visible during cooking (violates Golden Rule #4), body text failing WCAG AA contrast, step number consuming screen real estate, unreadable timer, and overcomplicated navigation.
+**What's done:** Full redesign prototype at `docs/prototypes/cook-mode-v2.html` (commit `8cf7b085`). Three phone frames showing Pasta Carbonara steps — step with timer running, step with doneness cue + why note, final step completion state.
+
+Key design decisions (all spec'd in the prototype):
+- `--bg: #000000` — true OLED black for cook mode (distinct from browse mode's `#0F1A14`)
+- Photo block: 224px full-width at top, gradient fade to black (`linear-gradient(to bottom, transparent 40%, #000 100%)`). Progress segments overlaid on photo in gold.
+- Step number: 64sp Playfair Display at 8% opacity — ghost watermark inside photo, identifies step without taking real estate
+- Step title: 24sp Playfair Display below photo
+- Body text: 14.5sp Inter at `rgba(245,242,236,0.88)` — verified WCAG AA on `#000000`
+- Doneness cue card: `border-left: 3px solid var(--gold)` + `rgba(242,204,42,0.06)` background
+- Timer: 38sp Playfair number + 1px thin progress line. Renders only when `timer_seconds > 0` for the step.
+- "Why" note: Playfair italic at ink4 opacity. Renders only when `why_note` field is present.
+- Navigation: single full-width rust pill "Next step → [next step title]" + small ghost "← Back" link. One primary action, one escape.
+- Final step: sage green pill + sage-tinted cue card instead of rust. Colour signals completion vs. continuation.
+
+**What's needed:**
+1. Wire the 224px `photo_url` image block into the cook mode step view (`recipe/[id].tsx` cook mode branch). The gradient overlay and progress segments sit absolutely positioned over the image.
+2. Replace the existing step-number treatment with the 64sp ghost watermark (positioned absolute inside the photo container, `bottom: 12px; left: 16px; opacity: 0.08`).
+3. Implement the doneness cue card: read from `step.doneness_cue` field (may need schema addition — check if it exists or use a `why_note` variant). Gold left border, dim gold background.
+4. Replace current timer display with 38sp Playfair number + thin progress line.
+5. Implement "Next step" pill: full-width, rust background, shows truncated next step title (max ~30 chars). On final step: sage background, label "Done — plate and serve" (or appropriate completion verb from the step title).
+6. Ghost back link: 14sp Inter, `rgba(245,242,236,0.42)`, centred below the pill.
+
+**Files touched:**
+- `docs/prototypes/cook-mode-v2.html` — complete visual spec (view all states here)
+
+**Blocks:** Cook mode visual quality before any photography pass on stage photos. The photo block must be implemented before step photos do anything visible.
+
+---
+
 ### HANDOFF → Photography Director + COO · 2026-05-16 · OPEN (FALAFEL + PAVLOVA hero URLs were 404 — sourcing replacements)
 **From:** Senior Engineer
 **Subject:** The Unsplash URLs cook approved for FALAFEL (`photo-pQnsKWk5ljQ`) and PAVLOVA (`photo-5nCTfEru3Do`) return 404 on the CDN. They look like Unsplash page short-codes, not the `images.unsplash.com/photo-{numeric_id}-{hash}` CDN path that the app's `<Image>` component needs. CARBONARA (`photo-1612874742237-6526221588e3`) is the correct CDN format and resolves 200.
@@ -1359,36 +1392,4 @@ For each recipe below, either:
 4. **Future-proof:** consider adding a one-line check to the cook's session-end checklist — `grep "whole_food" docs/coo/culinary-research/<new-file>.md` should return zero hits.
 
 **Files referenced:**
-- `docs/coo/culinary-research/*.md` (cleaned, except smash-burger.md retirement narrative)
-- `docs/coo/specialists/culinary-verifier.md` (already clean)
-- `docs/coo/culinary-research/TEMPLATE.md` (already clean)
-
-**Blocks:**
-- The 11-recipe DECISION-009 migration (separate handoff below) is paused until the COO confirms the Cook has been briefed. Patrick's call — he doesn't want the term to come back in a Cook update.
-
----
-
-### HANDOFF → Senior Engineer · 2026-05-07 · DONE ✅ (kill whole_food_verified + verify Prep + Equipment populated)
-**Closed by Senior Engineer 2026-05-08.** Both tasks landed:
-- TASK 1 (kill whole_food_verified) — completed in commits `21198e5` + `474f500` on 2026-05-07. Removed from Zod schema, all 45 seed recipes, SQLite v7 migration, prototypes, BUGS.md, command-centre.md, handoffs.md, culinary-research/*.md, roadmap.md. Only deliberate retirement-doc references remain. tsc clean.
-- TASK 2 (verify Prep + Equipment populated) — completed in commits `5ac153b` + `e649f0f` + `c5f6a2d` on 2026-05-08. 44 of 45 recipes now carry full DECISION-008 fields. Sourdough-maintenance is the lone exception and renders the new "Equipment and prep notes are coming" placeholder.
-Patrick validates on-device. Per CLAUDE.md, the GitHub issue is not closed by the engineer.
-
-### Original handoff (preserved for audit) → Senior Engineer · 2026-05-07 · OPEN URGENT (kill whole_food_verified + verify all recipes show Prep + Equipment)
-**From:** Patrick (via COO)
-**Subject:** Two related cleanups: remove the whole-food-verified concept from the entire repo, and verify every recipe actually renders the Prep and Equipment sections on-device
-**Why:** The `whole_food_verified` field has caused recurring problems — it blocked SMASH_BURGER from rendering (6 May), the `.refine()` was removed, but the field remains in the schema and data. Patrick has decided to drop the concept entirely. Separately, Patrick is still seeing many recipes on-device with no Prep section and no Equipment list. Both need a definitive end.
-
-**TASK 1 — Remove whole_food_verified from the entire repo, locally and on GitHub.**
-
-Surfaces to clean (30 files referenced; engineer should grep to confirm):
-- `mobile/src/data/types.ts` — remove the field from the Zod schema
-- `mobile/src/data/seed-recipes.ts` — strip the field from every recipe object
-- `mobile/db/schema.ts` — remove the SQLite column (write a migration if data exists)
-- `mobile/db/seed.ts` and any seeder code — remove field references
-- Any UI rendering the badge: `mobile/app/recipe/[id].tsx`, RecipeCard, recipe-detail-v2.html, recipe-card-v2.html, recipe-detail-v2.1.html prototypes
-- Documentation: `BUGS.md`, `docs/coo/handoffs.md` (this file), `docs/coo/command-centre.md`, all session reports under `docs/sessions/` (these are historical — leave session-report mentions alone, they're the diary; only strip live reference docs)
-- Cook's research files: `docs/coo/culinary-research/*.md` — strip the field from each (the COO has already removed the rule from CLAUDE.md and the cook brief)
-
-Approach:
-1. Grep to find every reference. Keep historical session reports as-is (t
+- `docs/coo/culinary-research/*.md` (clea
