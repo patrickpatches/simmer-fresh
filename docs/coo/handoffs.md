@@ -59,7 +59,48 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 ## Open handoffs
 
-### HANDOFF → Senior Engineer · 2026-05-18 · OPEN
+### HANDOFF → COO + Product Designer · 2026-05-18 · IN PROGRESS (build #117 — cook-mode-v2 shipped)
+**From:** Senior Engineer
+**Subject:** Designer's cook-mode-v2 handoff is implemented in `mobile/app/recipe/[id].tsx` and dispatched as build #117 (commit `0f9063c`). Per R-015 — shipped to main, awaiting Patrick on-device validation. Not self-closing.
+
+**Spec coverage (every item from the handoff):**
+1. ✅ 224px hero photo block at top of cook-mode step view — uses `step.photo_url` when present, falls back to `recipe.hero_url`, then `hero_fallback` gradient bands. Top + bottom fades overlay the photo.
+2. ✅ 64sp Playfair ghost step number watermark — `rgba(245,242,236,0.08)`, positioned bottom-right inside the photo container.
+3. ✅ Doneness cue card — wired to `step.stage_note` rather than adding a new `step.doneness_cue` field. Same concept (Designer's brief explicitly allowed this — *"may need schema addition — check if it exists or use a `why_note` variant"*). No migration needed; cook already writes "look for this" content into `stage_note`. Gold left border, gold-dim background, all per spec.
+4. ✅ 38sp Playfair timer + thin progress line — renders only when `step.timer_seconds > 0`.
+5. ✅ Full-width rust "Next step → [next.title]" pill — sage "Done — finish cooking" on the final step. Final-step tap exits cook mode (sets `cooking=false`, resets `currentStepIdx=0`).
+6. ✅ Ghost back link below pill — 12sp Inter at 42% alpha, only shown when there's a previous step.
+
+**Design decisions I made (flag for Designer if any need revisiting):**
+- **Single-step navigator vs. scrollable list:** the prototype shows ONE step per screen; I implemented it as a navigator with `currentStepIdx` state. Browse mode keeps the existing scrollable list view unchanged.
+- **Where step-done state goes:** the Next pill marks the current step done BEFORE advancing. The previous knuckle-tap-the-card pattern (build #114) is gone in cook mode — replaced by the larger, clearer Next pill. Same intent, more obvious affordance.
+- **Final-step behaviour:** tapping the sage "Done" pill on the final step exits cook mode entirely. If you'd prefer it to stay on the final step with a celebratory state instead, that's a small follow-up.
+- **Progress segment fill at the current step:** 55% per the prototype's static illustration. Real timer-based fill would be a follow-up if you want it.
+
+**Preserved from earlier builds:**
+- DECISION-015 step_overrides resolution and the "≈ adapted for your [name] swap" cue with sage border — fully intact for any step where the active swap has authored an override.
+- All callouts that were on the cook step (`why_note` italic) — restyled to Playfair italic per the prototype.
+- Browse-mode method list — exactly as it was. Only the cook-mode branch changed.
+
+**Pre-flight bug check (per Patrick's directive — done BEFORE push):**
+- `npx tsc --noEmit` clean.
+- R-014 truncation guardrail green (25 files balanced).
+- Brace/paren/bracket counts: 824/824, 403/403, 56/56 (diff 0).
+- Tail bytes verified; file ends `}\n`.
+- Manual trace of the `{cooking ? IIFE : list}` ternary end-to-end.
+
+**What the COO should track:**
+- Patrick validates build #117 cook-mode on-device. Walk in the build-log row.
+- If validation passes, this and the Designer's open handoff close.
+- If anything reads off, engineer ships a fix as #118.
+
+**Files touched (1 code + 1 docs):** `mobile/app/recipe/[id].tsx`, `docs/coo/handoffs.md`.
+
+**Status:** shipped to main, awaiting Patrick on-device validation per R-015. Not self-closing.
+
+---
+
+### HANDOFF → Senior Engineer · 2026-05-18 · IN PROGRESS (engineer shipped build #117 — awaiting Patrick on-device validation)
 **From:** Product Designer
 **Subject:** Cook mode step screen — visual redesign (cook-mode-v2)
 **Why:** The existing cook mode was functional but visually generic. Patrick asked for a world-class aesthetic upgrade beyond photo content. The v2 design addresses five specific weaknesses: no photo visible during cooking (violates Golden Rule #4), body text failing WCAG AA contrast, step number consuming screen real estate, unreadable timer, and overcomplicated navigation.
