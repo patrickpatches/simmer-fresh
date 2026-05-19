@@ -29,6 +29,7 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 
 | Build | Commit | Summary |
 |---|---|---|
+| #119 | `pending` | **HUMMUS chocolate-sundae fix (Photography Director's 2026-05-18 brief).** Single-line data-only build. Patrick reported the Hummus card was rendering a chocolate milkshake in a mason jar with a Twix bar instead of hummus. Root cause (per Photography Director's session report, `Hone_Session_Report_18_May_2026.md`): `seed-recipes.ts` line 924 carried `photo-1577805947697-89e18249d767` from the 2026-05-15 hero-migration pass; that photo ID is a chocolate milkshake (CDN still serves it HTTP 200 — the bug is content, not link health). The ledger-approved interim was `photo-1637949385162-e416fb15b2ce` (Ludovic Avice, plain Levantine hummus) but never landed in the seed. **Fix:** swap the URL value to the Ludovic Avice photo, add `hero_attribution: 'Photo: Ludovic Avice / Unsplash'`, and migrate HUMMUS to the post-#118 convention (hero_url + hero_attribution BEFORE hero_fallback, matching the 11 recipes wired in #118). **Interim, not final:** Patrick will generate an AI-rendered traditional hummus wa rummaan (pomegranate arils piled in centre well) per the brief at `docs/coo/photography/image-briefs/hummus.md`; cook validates; engineer migrates as a future build. The Ludovic Avice photo ships now so users stop seeing the milkshake. **Smart pre-flight (every guardrail green):** tsc clean on seed-recipes.ts; R-014 truncation 25 files balanced; tail bytes end on `];`; brace/paren/bracket balance 1604/623/757 (all diff 0); new URL HTTP 200, old URL also HTTP 200 (so the bug was identity not link health); zero duplicate hero_url/hero_attribution; diff vs origin shows ONLY HUMMUS changed, exactly 3 lines (+2 added, -1 removed); 56-byte delta matches the line math. **Process flag for COO (not for me to action):** the 2026-05-15 ledger said one URL; the seed got another. Per Photography Director, no ledger-vs-seed comparison check existed. Worth a future automation — diff every `hero_url` in seed-recipes.ts against the ledger's APPROVED URL column. 1 file: `mobile/src/data/seed-recipes.ts`. |
 | #118 | `808970d` | **10 cook-approved hero URLs wired into seed-recipes.ts (Photography Director's 2026-05-15 handoff).** Data-only build. Wires the photo_url + photographer attribution for SMASH_BURGER (Eiliv Aceron), ROAST_CHICKEN (Unsplash), CHICKEN_SCHNITZEL (Mark König), ROAST_LAMB (James Kern), BEEF_LASAGNE (Unsplash), THAI_GREEN_CURRY (Unsplash), BUTTER_CHICKEN (Raman), WEEKDAY_BOLOGNESE (Homescreenify), FALAFEL (Unsplash, new CDN URL replacing 404'd `photo-pQnsKWk5ljQ`), PAVLOVA (Eugene Krasnaok, new CDN URL replacing 404'd `photo-5nCTfEru3Do`). PASTA_CARBONARA already wired since #110 — unchanged. **Design decisions (not literally in brief):** (1) Used `?w=1200&q=80` not the brief's `?w=600&q=80` — the hero block renders at 224px screen height with retina scaling, so 1200px is the right source width for sharpness; existing entries already used 1200; consistency wins. (2) Recovery from regex misfire — initial pass placed the bolognese URL in AGLIO_E_OLIO because the anchor `\n  hero_fallback:\s*fallback\(...\),` falls through past WEEKDAY_BOLOGNESE's array-literal `hero_fallback: ['#8B3A2F', '#C44536', '#D4A574']` and matched AGLIO's `fallback('#D4900A')`; caught by sanity grep, surgically reverted, anchored to the array-literal form, re-applied. (3) ROAST_CHICKEN and THAI_GREEN_CURRY each had a stale `hero_url` AFTER their `hero_fallback` from an older layout convention — would have caused TS1117 duplicate-property errors; removed both. **Not in this build:** FISH_AND_CHIPS, CHICKEN_SHAWARMA, HUMMUS, PAD_THAI all need cook signoff on their 15 May replacement candidates first (handoff still OPEN to cook). FLOUR_TORTILLAS replacement URL in the 15 May report is incomplete (`photo-1693193433392` without the dash-hash suffix); flagged to COO/Photography Director to recover the full CDN ID. **Tail-byte verified.** **R-014 truncation guardrail:** 25 files balanced. **tsc:** clean on seed-recipes.ts; pre-existing legacy-quality errors in `recipes-holding/index.ts` (good_swap / great_swap / perfect_swap / compromise — DECISION-015 migration not yet applied to holding) flagged for a future housekeeping pass — they don't reach the launch build because SEED_RECIPES_HOLDING is never seeded into SQLite (DECISION-013). 1 file: `mobile/src/data/seed-recipes.ts`. |
 | #117 | `0f9063c` | **Cook-mode v2 single-step navigator** — Designer's prototype (`docs/prototypes/cook-mode-v2.html`, commit `8cf7b08`) wired into `recipe/[id].tsx`. Cook mode now shows ONE step at a time with: 224px hero photo block (uses `step.photo_url` or falls back to `recipe.hero_url` or gradient bands), 5-segment gold progress bar overlaid at top, step tag pill bottom-left, 64sp ghost step number watermark bottom-right, 24sp Playfair title, 14.5sp Inter body, gold-bordered "Look for this" doneness cue from `step.stage_note`, 38sp Playfair timer when `timer_seconds` present, italic Playfair why-note when `why_note` present, full-width rust "Next step → [title]" pill (sage "Done — finish cooking" on the final step, exits cook mode on tap), and a ghost "‹ [prev step]" back link below. **Preserves:** DECISION-015 step_overrides with sage border + "adapted for your swap" cue (#107), step-done tracking on tap (the Next pill marks the current step done before advancing — fully replaces the #114 knuckle-tap-card pattern with a clearer affordance), browse-mode list view unchanged. **No schema change** — uses existing `stage_note`/`timer_seconds`/`why_note`/`photo_url`/`hero_url`/`hero_fallback` fields. State: new `currentStepIdx` that resets on every `toggleCooking`. One file: `recipe/[id].tsx`. Pre-flight bug check: tsc clean, R-014 guardrail green, brace/paren/bracket balanced (824/403/56 diff 0), tail bytes verified, manual render-path trace clean. |
 | #116 | `6ac056e` | **Rewrite SubstitutionSheet on React Native's built-in Modal — kills the @gorhom portal layer entirely.** Patrick reported on #115 that the bottom sheet still re-opens on stray taps, AND that the same symptom appears when ticking ingredients in cook mode (where the swap path is never invoked). That ruled out swap-trigger races: the bug was inside `@gorhom/bottom-sheet`'s portal layer keeping itself mounted and re-presenting on stray taps. Three rounds of patches (row-Pressable inert in #114, single dismiss path + 350ms debounce in #115) couldn't kill it because the bug wasn't in the call sites. Build #116 replaces `BottomSheetModal` with React Native's native `Modal` — no portal, no global gesture handler, no library. Custom slide-up animation via Animated.Value. Backdrop is a plain Pressable. The Modal renders only when `visible=true` (early-return when ingredient is null) so when closed there's nothing in the tree to intercept taps. Same `<SubstitutionSheet>` API for the parent. versionCode 49 → 50 so Patrick's install picks up unambiguously as an upgrade. 2 files: `SubstitutionSheet.tsx` (537-line rewrite), `app.json`. tsc clean. R-014 guardrail green. |
@@ -59,6 +60,50 @@ When a handoff is DONE, leave it in the file for one week so it's auditable, the
 ---
 
 ## Open handoffs
+
+### CLOSEOUT — Build #119 · Engineer · 2026-05-19
+
+**Scope:** HUMMUS chocolate-sundae fix — single hero_url swap. Photography Director's 2026-05-18 brief (`Hone_Session_Report_18_May_2026.md`).
+
+**Per-item coverage of the brief:**
+
+| Item | Status | Where it landed |
+|---|---|---|
+| Replace HUMMUS wrong `hero_url` (`photo-1577805947697-89e18249d767` chocolate milkshake) with ledger-approved interim (`photo-1637949385162-e416fb15b2ce` Ludovic Avice plain hummus) | ✅ wired | `mobile/src/data/seed-recipes.ts` HUMMUS block |
+| Add `hero_attribution: 'Photo: Ludovic Avice / Unsplash'` | ✅ wired | same block |
+| Migrate HUMMUS to post-#118 field-order convention (hero_url + hero_attribution BEFORE hero_fallback) | ✅ done | same block |
+
+**Design decisions I made (not literally in the brief — flag back to Photography Director if intent differs):**
+1. Used `?w=1200&q=80` (matching the 11 heroes wired in #118), not the brief's reference `?w=600&q=80`. Same reason as #118 — the hero block renders at 224px with retina scaling, 1200px source gives sharp pixels. Easy to flip if Photography Director wants 600 for data-cost reasons.
+2. Migrated HUMMUS's field order to put `hero_url` + `hero_attribution` BEFORE `hero_fallback` (matching the 11 recipes wired in #118 and the convention established there). Functionally identical, just consistent layout across the file.
+
+**Preserved from prior builds (COO regression check):**
+- All 11 build-#118 hero_url + hero_attribution pairs intact.
+- PASTA_CARBONARA, FALAFEL, PAVLOVA original wirings intact.
+- DECISION-015 substitution quality colours + step_overrides preserved (no `substitutions[]` array touched anywhere).
+- DECISION-014 portion-sizing fields preserved.
+- All `step.photo_url` fields preserved (SMASH_BURGER s1/s3 Gemini stage photos from `6813ddc`).
+- HUMMUS recipe body (ingredients, steps, scaling, substitutions) untouched.
+- All other 45 recipes untouched.
+
+**Smart pre-flight (every guardrail, no skips):**
+- ✅ `tsc` clean on `seed-recipes.ts`. (Pre-existing `recipes-holding/index.ts` legacy-quality errors flagged in #118 still pending; not on launch path per DECISION-013.)
+- ✅ R-014 truncation guardrail: 25 .ts/.tsx files all end on a balanced token.
+- ✅ Tail bytes verified: ends with `\n];` (CHICKEN_VEG_STIR_FRY closing SEED_RECIPES_HOLDING).
+- ✅ Brace/paren/bracket balance: 1604/1604, 623/623, 757/757 (all diff 0).
+- ✅ URL HTTP live test: new URL HTTP 200; old URL also HTTP 200 (confirms the bug was *content*, not *link health* — important detail because R-014 truncation-style automation can't catch content mismatches).
+- ✅ Sanity grep: chocolate-sundae photo ID (`1577805947697` or `89e18249d767`) returns zero hits anywhere in the file.
+- ✅ Sanity grep: new URL (`1637949385162`) appears exactly once.
+- ✅ No duplicate `hero_url` / `hero_attribution` keys anywhere across all 46 recipes.
+- ✅ Diff vs origin: only the HUMMUS block changed — exactly 3 lines (+2 added, -1 removed); 56-byte delta matches the line math.
+
+**What the COO should track next:**
+1. **Patrick on-device validation gate** — install build #119, open Kitchen tab, open the Hummus card. Expect a real photo of plain hummus with the small "Photo: Ludovic Avice / Unsplash" credit pill bottom-right of the hero. Per R-015, this build does NOT self-close anything.
+2. **AI hummus wa rummaan brief** — `docs/coo/photography/image-briefs/hummus.md`. Patrick generates from the prompt (DALL-E 3 / Imagen / Gemini) when he has time. Cook validates. Engineer migrates as a future data-only build that replaces the Ludovic Avice interim.
+3. **Ledger-vs-seed drift detection** — flagged by Photography Director as a process gap (the 15 May migration handoff had the right URL; the seed got a different one). Worth a future automation: a script that diffs every `hero_url` in `seed-recipes.ts` against the APPROVED URL column in `visual-assets-ledger.md` and fails the CI if any drift exists. Same shape as `check-ts-truncation.sh`. Not in this build.
+4. **Deferred to next build** — Patrick's two on-device bugs from #118 (Pantry "Show less" button differentiation + SubstitutionSheet confirm-button text overflow) are queued for the next build; held back at Patrick's request so he can add more items to the bundle.
+
+---
 
 ### CLOSEOUT — Build #118 · Engineer · 2026-05-19
 

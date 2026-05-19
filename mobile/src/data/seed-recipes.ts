@@ -920,8 +920,9 @@ const HUMMUS: Recipe = {
     notes: "From Reem Kassis, *The Palestinian Table* (Phaidon, 2017).",
   },
   emoji: '🫘',
+  hero_url: 'https://images.unsplash.com/photo-1637949385162-e416fb15b2ce?w=1200&q=80',
+  hero_attribution: 'Photo: Ludovic Avice / Unsplash',
   hero_fallback: fallback('#C4A04A'),
-  hero_url: 'https://images.unsplash.com/photo-1577805947697-89e18249d767?w=600&q=80',
   ingredients: [
     { id: 'i1', name: 'Dried chickpeas', amount: 250, unit: 'g', scales: 'linear', prep: 'Tinned chickpeas make edible hummus. They do not make good hummus.',
       substitutions: [
