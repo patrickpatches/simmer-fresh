@@ -128,12 +128,20 @@ export function SubstitutionSheet({
   const subs = ingredient.substitutions ?? [];
   const hasActiveSwap = Boolean(activeSwapName) && activeSwapName !== ingredient.name;
 
-  const confirmLabel =
-    staged === 'original'
-      ? `Restore ${ingredient.name}`
-      : staged !== null
-        ? `Swap to ${(staged as Substitution).ingredient}`
-        : '';
+  // Build #120 — short fixed-width label so long sub names (e.g. "Aleppo pepper (sweet, mild, fruity)")
+  // don't wrap across 3 lines inside the rust pill. The selected radio row above already shows the
+  // destination by name; the button just needs to say "do it". accessibilityLabel keeps the full
+  // descriptive form for screen readers.
+  const confirmLabel = staged === 'original'
+    ? 'Restore original'
+    : staged !== null
+      ? 'Confirm swap'
+      : '';
+  const confirmAccessibilityLabel = staged === 'original'
+    ? `Restore ${ingredient.name}`
+    : staged !== null
+      ? `Swap to ${(staged as Substitution).ingredient}`
+      : '';
 
   // Slide transform: 600 → 0 as `slide` animates 0 → 1.
   const translateY = slide.interpolate({ inputRange: [0, 1], outputRange: [600, 0] });
@@ -345,7 +353,7 @@ export function SubstitutionSheet({
             <Pressable
               onPress={handleConfirm}
               accessibilityRole="button"
-              accessibilityLabel={confirmLabel}
+              accessibilityLabel={confirmAccessibilityLabel}
               android_ripple={{ color: tokens.primaryDeep, borderless: false }}
               style={{ borderRadius: 14 }}
             >
@@ -358,6 +366,7 @@ export function SubstitutionSheet({
                 }}
               >
                 <Text
+                  numberOfLines={1}
                   style={{
                     fontFamily: fonts.sansBold,
                     fontSize: 15,

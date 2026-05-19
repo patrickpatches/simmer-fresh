@@ -830,7 +830,7 @@ export default function PantryTab() {
                   onRemove={() => removeItem(it)}
                 />
               ))}
-              {/* Expand / collapse chip */}
+              {/* Expand / collapse — filled action button, not a chip (build #120) */}
               {havePills.length > PILLS_SHOWN ? (
                 <Pressable
                   onPress={() => setPillsExpanded((x) => !x)}
@@ -840,30 +840,29 @@ export default function PantryTab() {
                       ? 'Show fewer ingredients'
                       : `Show ${havePills.length - PILLS_SHOWN} more ingredient${havePills.length - PILLS_SHOWN === 1 ? '' : 's'}`
                   }
-                  android_ripple={{ color: 'rgba(184,64,48,0.15)', borderless: false }}
+                  android_ripple={{ color: 'rgba(255,255,255,0.18)', borderless: false }}
                   style={{ borderRadius: 999 }}
                 >
                   <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
                     borderRadius: 999,
-                    backgroundColor: 'rgba(184,64,48,0.08)',
-                    borderWidth: 1,
-                    borderColor: 'rgba(184,64,48,0.30)',
+                    backgroundColor: tokens.primary,
                     gap: 4,
                   }}>
                     <Text
                       style={{
                         fontFamily: fonts.sansBold,
                         fontSize: 11,
-                        color: tokens.primary,
+                        color: tokens.onPrimary,
+                        letterSpacing: 0.2,
                       }}
                     >
                       {pillsExpanded
-                        ? 'Show less'
-                        : `+${havePills.length - PILLS_SHOWN} more`}
+                        ? 'Show less ↑'
+                        : `+${havePills.length - PILLS_SHOWN} more ↓`}
                     </Text>
                   </View>
                 </Pressable>

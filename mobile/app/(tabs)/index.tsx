@@ -67,7 +67,7 @@ interface Category {
 const CATEGORIES: Category[] = [
   { id: 'all',         label: 'All',         emoji: '🍽️' },
   { id: 'australian',  label: 'Australian',  emoji: '🇦🇺' },
-  { id: 'levantine',   label: 'Levantine',   emoji: '🇱🇧' },
+  { id: 'levantine',   label: 'Levantine',   emoji: '🫒' },
   { id: 'palestinian', label: 'Palestinian', emoji: '🇵🇸' },
   { id: 'italian',     label: 'Italian',     emoji: '🇮🇹' },
   { id: 'indian',      label: 'Indian',      emoji: '🇮🇳' },
@@ -549,75 +549,80 @@ export default function KitchenHome() {
         })}
       </ScrollView>
 
-      {/* ── RECIPE LIST HEADER ─────────────────────────────────────────────── */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 18,
-          paddingTop: 14,
-          paddingBottom: 10,
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: fonts.sansBold,
-            fontSize: 12,
-            color: tokens.ink,
-          }}
-        >
-          {category === 'all' ? 'All recipes' : CUISINE_LABELS[category as CuisineId] ?? 'Recipes'}
-        </Text>
-        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
-          {results.length} {results.length === 1 ? 'recipe' : 'recipes'}
-        </Text>
-      </View>
-
-      {/* ── RECIPE ROWS ────────────────────────────────────────────────────── */}
-      {listResults.length > 0 ? (
-        <View style={{ paddingHorizontal: 18, gap: 8 }}>
-          {listResults.map((r) => (
-            <RecipeRow
-              key={r.id}
-              recipe={r}
-              isPlanned={plannedIds.has(r.id)}
-              isFavorite={favoriteIds.has(r.id)}
-              onPress={() => router.push(`/recipe/${r.id}` as never)}
-            />
-          ))}
-        </View>
-      ) : (
+      {/* ── Hide section when hero is the only matching recipe (results>0 but listResults=0) — build #120 */}
+      {listResults.length > 0 || results.length === 0 ? (
+        <>
+        {/* ── RECIPE LIST HEADER ─────────────────────────────────────────────── */}
         <View
           style={{
-            marginHorizontal: 18,
-            marginTop: 12,
-            paddingVertical: 32,
-            paddingHorizontal: 24,
-            backgroundColor: tokens.cream,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: tokens.lineDark,
+            flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 18,
+            paddingTop: 14,
+            paddingBottom: 10,
           }}
         >
-          <Text style={{ fontFamily: fonts.display, fontSize: 16, color: tokens.ink, marginBottom: 4 }}>
-            Nothing here yet
-          </Text>
           <Text
             style={{
-              fontFamily: fonts.sans,
+              fontFamily: fonts.sansBold,
               fontSize: 12,
-              color: tokens.muted,
-              textAlign: 'center',
-              lineHeight: 17,
-              maxWidth: 240,
+              color: tokens.ink,
             }}
           >
-            Clear the search or pick a different cuisine to see more.
+            {category === 'all' ? 'All recipes' : CUISINE_LABELS[category as CuisineId] ?? 'Recipes'}
+          </Text>
+          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+            {results.length} {results.length === 1 ? 'recipe' : 'recipes'}
           </Text>
         </View>
-      )}
+
+        {/* ── RECIPE ROWS ────────────────────────────────────────────────────── */}
+        {listResults.length > 0 ? (
+          <View style={{ paddingHorizontal: 18, gap: 8 }}>
+            {listResults.map((r) => (
+              <RecipeRow
+                key={r.id}
+                recipe={r}
+                isPlanned={plannedIds.has(r.id)}
+                isFavorite={favoriteIds.has(r.id)}
+                onPress={() => router.push(`/recipe/${r.id}` as never)}
+              />
+            ))}
+          </View>
+        ) : (
+          <View
+            style={{
+              marginHorizontal: 18,
+              marginTop: 12,
+              paddingVertical: 32,
+              paddingHorizontal: 24,
+              backgroundColor: tokens.cream,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: tokens.lineDark,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ fontFamily: fonts.display, fontSize: 16, color: tokens.ink, marginBottom: 4 }}>
+              Nothing here yet
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: 12,
+                color: tokens.muted,
+                textAlign: 'center',
+                lineHeight: 17,
+                maxWidth: 240,
+              }}
+            >
+              Clear the search or pick a different cuisine to see more.
+            </Text>
+          </View>
+        )}
+        </>
+      ) : null}
     </ScrollView>
   );
 }
