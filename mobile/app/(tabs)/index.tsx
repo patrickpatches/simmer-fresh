@@ -218,22 +218,47 @@ export default function KitchenHome() {
     return r.categories?.cuisines.includes(category as CuisineId) ?? false;
   }), [recipes, search, category]);
 
-  // Pick the hero recipe.
-  //   1. First planned recipe (regardless of filter) — that's "tonight".
-  //   2. Else first recipe in the filtered list.
-  const heroRecipe = useMemo<Recipe | undefined>(() => {
-    const plannedRecipe = recipes.find((r) => plannedIds.has(r.id));
-    if (plannedRecipe) return plannedRecipe;
-    return results[0];
+  // Hero recipe — build #121: rotating slideshow through the active filter's results.
+  //   1. heroIdx is the position within `heroPool` (results, with any planned recipe pinned at index 0).
+  //   2. Auto-advance every HERO_ROTATE_MS while results.length >= 2.
+  //   3. Reset heroIdx to 0 whenever the active filter changes.
+  //
+  // Note: Patrick's earlier "Tonight" semantics put a planned recipe ahead of the filtered list as a
+  // global pin. We keep that — the planned recipe (if any) goes at slot 0 of the pool — but slots
+  // 1..N cycle through the active filter so the user sees the whole shelf, not just one card.
+  const HERO_ROTATE_MS = 8000;
+
+  const heroPool = useMemo<Recipe[]>(() => {
+    const planned = recipes.find((r) => plannedIds.has(r.id));
+    if (!planned) return results;
+    // If the planned recipe is already in results (e.g. filter matches it), keep it where it is;
+    // otherwise prepend it so "tonight" always opens the slideshow.
+    if (results.some((r) => r.id === planned.id)) return results;
+    return [planned, ...results];
   }, [recipes, plannedIds, results]);
 
+  const [heroIdx, setHeroIdx] = useState(0);
+
+  // Reset to slot 0 when the filter changes or the pool shrinks.
+  useEffect(() => {
+    setHeroIdx(0);
+  }, [category, search, heroPool.length]);
+
+  // Auto-rotate every HERO_ROTATE_MS when there are 2+ recipes in the pool.
+  useEffect(() => {
+    if (heroPool.length < 2) return;
+    const id = setInterval(() => {
+      setHeroIdx((i) => (i + 1) % heroPool.length);
+    }, HERO_ROTATE_MS);
+    return () => clearInterval(id);
+  }, [heroPool.length]);
+
+  const heroRecipe = heroPool.length > 0 ? heroPool[heroIdx % heroPool.length] : undefined;
   const heroIsPlanned = !!heroRecipe && plannedIds.has(heroRecipe.id);
 
-  // Recipes shown in the list — hide the hero from the list to avoid duplicate.
-  const listResults = useMemo(
-    () => results.filter((r) => r.id !== heroRecipe?.id),
-    [results, heroRecipe?.id],
-  );
+  // Recipes shown in the list — keep the hero in the list too (Patrick's #121 ask).
+  // Reads more naturally: tonight's Butter Chicken sits in the Indian section AND in the hero.
+  const listResults = results;
 
   if (loading) {
     return (
@@ -486,6 +511,37 @@ export default function KitchenHome() {
               </View>
             </View>
           </View>
+          {/* Pagination dots — build #121 slideshow indicator. Only renders when 2+ recipes in pool. */}
+          {heroPool.length >= 2 ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: 0, right: 0, bottom: 10,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                gap: 5,
+              }}
+            >
+              {heroPool.slice(0, Math.min(heroPool.length, 8)).map((r, i) => {
+                const isActive = i === (heroIdx % heroPool.length);
+                // When heroPool has more than 8 recipes, fold the trailing positions into the last dot
+                // so the row never overflows. Active still highlights correctly inside the visible 8.
+                const showActive = isActive || (heroPool.length > 8 && i === 7 && heroIdx >= 7);
+                return (
+                  <View
+                    key={r.id}
+                    style={{
+                      width: showActive ? 14 : 5,
+                      height: 5,
+                      borderRadius: 3,
+                      backgroundColor: showActive ? tokens.gold : 'rgba(245,242,236,0.45)',
+                    }}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
         </Pressable>
       ) : null}
 
@@ -549,80 +605,75 @@ export default function KitchenHome() {
         })}
       </ScrollView>
 
-      {/* ── Hide section when hero is the only matching recipe (results>0 but listResults=0) — build #120 */}
-      {listResults.length > 0 || results.length === 0 ? (
-        <>
-        {/* ── RECIPE LIST HEADER ─────────────────────────────────────────────── */}
-        <View
+      {/* ── RECIPE LIST HEADER ─────────────────────────────────────────────── */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 18,
+          paddingTop: 14,
+          paddingBottom: 10,
+        }}
+      >
+        <Text
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 18,
-            paddingTop: 14,
-            paddingBottom: 10,
+            fontFamily: fonts.sansBold,
+            fontSize: 12,
+            color: tokens.ink,
           }}
         >
+          {category === 'all' ? 'All recipes' : CUISINE_LABELS[category as CuisineId] ?? 'Recipes'}
+        </Text>
+        <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
+          {results.length} {results.length === 1 ? 'recipe' : 'recipes'}
+        </Text>
+      </View>
+
+      {/* ── RECIPE ROWS ────────────────────────────────────────────────────── */}
+      {listResults.length > 0 ? (
+        <View style={{ paddingHorizontal: 18, gap: 8 }}>
+          {listResults.map((r) => (
+            <RecipeRow
+              key={r.id}
+              recipe={r}
+              isPlanned={plannedIds.has(r.id)}
+              isFavorite={favoriteIds.has(r.id)}
+              onPress={() => router.push(`/recipe/${r.id}` as never)}
+            />
+          ))}
+        </View>
+      ) : (
+        <View
+          style={{
+            marginHorizontal: 18,
+            marginTop: 12,
+            paddingVertical: 32,
+            paddingHorizontal: 24,
+            backgroundColor: tokens.cream,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: tokens.lineDark,
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontFamily: fonts.display, fontSize: 16, color: tokens.ink, marginBottom: 4 }}>
+            Nothing here yet
+          </Text>
           <Text
             style={{
-              fontFamily: fonts.sansBold,
+              fontFamily: fonts.sans,
               fontSize: 12,
-              color: tokens.ink,
+              color: tokens.muted,
+              textAlign: 'center',
+              lineHeight: 17,
+              maxWidth: 240,
             }}
           >
-            {category === 'all' ? 'All recipes' : CUISINE_LABELS[category as CuisineId] ?? 'Recipes'}
-          </Text>
-          <Text style={{ fontFamily: fonts.sans, fontSize: 11, color: tokens.muted }}>
-            {results.length} {results.length === 1 ? 'recipe' : 'recipes'}
+            Clear the search or pick a different cuisine to see more.
           </Text>
         </View>
-
-        {/* ── RECIPE ROWS ────────────────────────────────────────────────────── */}
-        {listResults.length > 0 ? (
-          <View style={{ paddingHorizontal: 18, gap: 8 }}>
-            {listResults.map((r) => (
-              <RecipeRow
-                key={r.id}
-                recipe={r}
-                isPlanned={plannedIds.has(r.id)}
-                isFavorite={favoriteIds.has(r.id)}
-                onPress={() => router.push(`/recipe/${r.id}` as never)}
-              />
-            ))}
-          </View>
-        ) : (
-          <View
-            style={{
-              marginHorizontal: 18,
-              marginTop: 12,
-              paddingVertical: 32,
-              paddingHorizontal: 24,
-              backgroundColor: tokens.cream,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: tokens.lineDark,
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ fontFamily: fonts.display, fontSize: 16, color: tokens.ink, marginBottom: 4 }}>
-              Nothing here yet
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.sans,
-                fontSize: 12,
-                color: tokens.muted,
-                textAlign: 'center',
-                lineHeight: 17,
-                maxWidth: 240,
-              }}
-            >
-              Clear the search or pick a different cuisine to see more.
-            </Text>
-          </View>
-        )}
-        </>
-      ) : null}
+      )}
     </ScrollView>
   );
 }
